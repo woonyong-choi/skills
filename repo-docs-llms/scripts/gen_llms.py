@@ -61,9 +61,17 @@ def main(full: bool) -> int:
             raise SystemExit("공개 문서 경로 아님: " + relative)
     readme = open("README.md", encoding="utf-8").read()
     blocks = [block.strip() for block in re.split(r"\n\s*\n", readme) if block.strip()]
-    blocks = [block for block in blocks if not LANGUAGE_LINE.match(block)]
-    name = blocks[0].lstrip("# ").strip()
-    tagline, intro = blocks[1], blocks[2]
+    heading = re.search(r"<h1[^>]*>(.*?)</h1>|^# (.+)$", readme, re.MULTILINE)
+    name = (heading.group(1) or heading.group(2)).strip()
+    texts = []
+    for block in blocks:
+        if re.match(r"<h1|# ", block):
+            continue
+        lines = [re.sub(r"<[^>]+>", "", line).strip() for line in block.splitlines()]
+        lines = [line for line in lines if line and not LANGUAGE_LINE.match(line) and " · " not in line]
+        if lines:
+            texts.append(" ".join(lines))
+    tagline, intro = texts[0], texts[1]
     main_rows = [row for row in rows if not row[1].startswith(OPTIONAL_PREFIXES)]
     optional_rows = [row for row in rows if row[1].startswith(OPTIONAL_PREFIXES)]
     index = [f"# {name}", "", f"> {tagline}", "", intro, "", "## Docs", ""]

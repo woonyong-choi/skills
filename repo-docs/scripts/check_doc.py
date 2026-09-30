@@ -20,8 +20,9 @@ EN_CONNECTIVES = re.compile(r"(^|[.] |^- |^[0-9]+[.] )(Additionally|Furthermore|
 EN_CONTRACTION = re.compile(r"\b\w+n't\b|\b(it|that|there|what|here|who)'s\b|\b\w+'(re|ll|ve|d)\b", re.IGNORECASE)
 PUNCTUATION = re.compile(r"[?!]$|\.\.\.|…")
 HEADING = re.compile(r"^#{1,6} ")
-HTML_TAG = re.compile(r"<(/?)([a-zA-Z]+)[^>]*>|<!")
+HTML_TAG = re.compile(r"<(/?)([a-zA-Z][a-zA-Z0-9]*)[^>]*>|<!")
 ALLOWED_TAGS = {"picture", "source", "img", "details", "summary"}
+README_TAGS = ALLOWED_TAGS | {"p", "h1", "a", "br"}
 HANGUL = re.compile(r"[가-힣]")
 LETTER = re.compile(r"[A-Za-z가-힣]")
 
@@ -150,7 +151,7 @@ def english_errors(text: str) -> list[str]:
 # cost: time O(w), heap O(w), stack O(1), alloc ≈ 8
 # vars: w = 줄 글자 수
 # basis: estimate
-def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str) -> list[str]:
+def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str, tags_allowed: set[str]) -> list[str]:
     errors = []
     line = re.sub(r"`[^`]*`", "", raw)
     text = re.sub(r"^> ", "", line, count=1)
@@ -162,7 +163,7 @@ def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str) 
     tags = [match for match in HTML_TAG.finditer(line)]
     checks = [
         (re.search(r"[{}]", line), "자리표시자"),
-        (any(match.group(0) == "<!" or match.group(2).lower() not in ALLOWED_TAGS for match in tags), "HTML"),
+        (any(match.group(0) == "<!" or match.group(2).lower() not in tags_allowed for match in tags), "HTML"),
         ("**" in line or "__" in line, "굵게"),
         ("![](" in line, "대체 글 없음"),
         (raw.startswith("> ") and not QUOTE_ALERT.match(raw) and not QUOTE_ALERT.match(previous_quote), "인용 블록"),
@@ -202,7 +203,7 @@ def check(path: str) -> int:
                 is_blank = True
             elif not in_fence:
                 is_blank = False
-                errors += prose_errors(raw, is_formal, english, previous_quote)
+                errors += prose_errors(raw, is_formal, english, previous_quote, README_TAGS if name in ("README.md", "README.ko.md") else ALLOWED_TAGS)
                 previous_quote = raw
                 if HEADING.match(raw):
                     level = len(raw.split()[0])
