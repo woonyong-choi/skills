@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Tokens"
+  short_description: "화면 값 토큰 정본, 이름, 세 층, 다크 모드, 하드코딩 금지와 검사"
+  default_prompt: "$design-tokens 스킬로 처리해 줘: [요청]"

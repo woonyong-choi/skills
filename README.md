@@ -100,6 +100,9 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | code-style | 없음 | 리팩터링 기법 선택 → code-refactoring |
 | code-refactoring | code-style | 없음 |
 | code-style-rust, code-style-kotlin, code-style-python | code-style | 없음 |
+| code-style-javascript | code-style | CSS 문자열, 인라인 style, SVG 속성 값 작성 → design-tokens |
+| code-style-css | code-style, design-tokens | 없음 |
+| design-tokens | 없음 | CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색 → repo-docs-figures |
 | folder-naming | 없음 | 없음 |
 | skill-sync | 없음 | 원본 저장소 커밋 → git-commit |
 
@@ -125,14 +128,17 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | git-branch | 4636 | 1355 | 2084 | 60 |
 | git-issue | 5209 | 1581 | 2526 | 53 |
 | git-pull-request | 4205 | 1230 | 2013 | 51 |
-| code-style | 15738 | 4476 | 7020 | 52 |
+| code-style | 16123 | 4587 | 7181 | 52 |
 | code-refactoring | 12020 | 2947 | 4832 | 42 |
 | code-style-rust | 7764 | 2234 | 3135 | 55 |
 | code-style-kotlin | 6553 | 1894 | 2716 | 64 |
 | code-style-python | 5534 | 1631 | 2349 | 58 |
+| code-style-javascript | 6262 | 1820 | 2551 | 63 |
+| code-style-css | 7409 | 2149 | 3106 | 58 |
+| design-tokens | 7084 | 2197 | 3123 | 62 |
 | folder-naming | 3093 | 923 | 1390 | 60 |
 | skill-sync | 2541 | 727 | 1118 | 43 |
-| 합계 | 163843 | 47602 | 72711 | 1294 |
+| 합계 | 184983 | 53879 | 81652 | 1477 |
 
 요청별로 실제 올라가는 양과 형식 통일 전후 비교는 [실험 결과](experiments/skill-format-unification/report.md)에 있다.
 
@@ -170,7 +176,8 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 |---|---|---|
 | code-style | 언어 공통 원칙, 수치 기준, 이름, 조건식, 선언 순서, 에러와 로그, 주석, 비용 주석, 테스트 | 언어가 달라도 같은 기준으로 코드를 보기 위해서다 |
 | code-refactoring | 문제 신호별 해결 기법, 『리팩터링 2판』 기법 목록 | 리팩터링 기법을 고를 때만 불러 평소 코드 작업의 토큰을 줄이기 위해서다 |
-| code-style-rust, code-style-kotlin, code-style-python | 언어별로 공통 스킬이 맡긴 부분 | 언어 고유 규칙만 따로 두기 위해서다 |
+| code-style-rust, code-style-kotlin, code-style-python, code-style-javascript, code-style-css | 언어별로 공통 스킬이 맡긴 부분 | 언어 고유 규칙만 따로 두기 위해서다 |
+| design-tokens | 화면 값 토큰 정본, 이름, 세 층, 다크 모드, 하드코딩 금지, 생성·검사 스크립트 | 색과 크기를 코드마다 다르게 적어 화면 톤이 흩어지는 것을 막기 위해서다 |
 | folder-naming | 저장소 폴더 구조와 이름 | 폴더마다 구현 언어 경계가 드러나게 하기 위해서다 |
 
 ### 스킬 관리
@@ -214,6 +221,8 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | 스킬 카탈로그 문서를 따로 두지 않는다 | 이름과 description이 이미 모든 대화에 올라가는 카탈로그다(o200k 1248). 문서 종류 라우팅은 repo-docs 문서 목록 표가, 관리용 목록은 이 문서가 맡아 실행 중 추가 토큰이 없다 | 카탈로그 스킬(요청마다 추가 로드, 두 곳 관리) |
 | 문서 목록 표는 repo-docs에 둔다 | 인터페이스 문서를 쓸 때 repo-docs-design을 함께 부를 필요가 없어 명령 문서 작성 로드가 46.1% 줄었다 | repo-docs-design 안 문서 목록 |
 | 리팩터링 기법은 code-refactoring으로 분리 | 기법 목록이 code-style의 절반 가까이를 차지했고 리팩터링 기법을 고를 때만 필요하다 | code-style 한 파일 |
+| 디자인 토큰은 CSS 스킬과 나눈 별도 스킬이고 CSS 스킬의 기반이다 | 토큰은 CSS뿐 아니라 JavaScript가 만드는 SVG, 인라인 style에도 걸린다. CSS를 쓸 때는 항상 필요해 기반 줄로 함께 올린다 | code-style-css 안의 절 |
+| 하드코딩 금지는 검사 스크립트로 강제한다 | 규칙 문장만으로는 AI가 한 번만 쓰는 값을 직접 적는다. hex 색, 단위 붙은 길이와 시간, 글꼴 이름, breakpoint 밖 `@media` 숫자를 `check_tokens`가 찾아 `total 0`까지 고치게 한다 | 리뷰에서 눈으로 확인 |
 | 스킬 문체는 명사구 끝 | 끝말은 토큰 차이가 거의 없고, 설명 문장을 `{대상}: {값}` 명사구로 줄일 때 토큰이 줄었다. 끝이 하나면 검사할 수 있다 | `-다` 문장, `-함`, `-음` 혼용 |
 
 ## 검증
@@ -282,3 +291,4 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | 2026-09-30 | code-style 비용 주석 추가, check_doc Python 전환, 실행 코드 세 개를 `scripts/`로 분리, gen_llms 비공개 경로 차단, install.py로 세 도구 동일 배포 |
 | 2026-09-30 | 스킬 원본을 별도 저장소로 분리, skill-sync 추가, `LICENSE`를 라이선스를 정한 저장소에만 만들도록 변경, repo-docs-experiment 설명을 60토큰 안으로 축소 |
 | 2026-09-30 | `AGENTS.md` 명령 절의 출처를 CI와 검사 스크립트로 고정, 명령이 없으면 절 삭제. 옛 스킬 정리 완료 |
+| 2026-10-01 | code-style-javascript, code-style-css, design-tokens 추가. 토큰 생성(`build_tokens`)과 하드코딩 검사(`check_tokens`) 스크립트 추가 |
