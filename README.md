@@ -128,17 +128,17 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | git-branch | 4636 | 1355 | 2084 | 60 |
 | git-issue | 5209 | 1581 | 2526 | 53 |
 | git-pull-request | 4205 | 1230 | 2013 | 51 |
-| code-style | 16123 | 4587 | 7181 | 52 |
+| code-style | 16243 | 4629 | 7233 | 52 |
 | code-refactoring | 12020 | 2947 | 4832 | 42 |
 | code-style-rust | 7764 | 2234 | 3135 | 55 |
 | code-style-kotlin | 6553 | 1894 | 2716 | 64 |
 | code-style-python | 5534 | 1631 | 2349 | 58 |
-| code-style-javascript | 6262 | 1820 | 2551 | 63 |
-| code-style-css | 7409 | 2149 | 3106 | 58 |
-| design-tokens | 7084 | 2197 | 3123 | 62 |
+| code-style-javascript | 6238 | 1808 | 2505 | 63 |
+| code-style-css | 7002 | 2052 | 2913 | 58 |
+| design-tokens | 7308 | 2257 | 3207 | 62 |
 | folder-naming | 3093 | 923 | 1390 | 60 |
 | skill-sync | 2541 | 727 | 1118 | 43 |
-| 합계 | 184983 | 53879 | 81652 | 1477 |
+| 합계 | 184896 | 53872 | 81549 | 1477 |
 
 요청별로 실제 올라가는 양과 형식 통일 전후 비교는 [실험 결과](experiments/skill-format-unification/report.md)에 있다.
 

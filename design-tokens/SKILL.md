@@ -108,8 +108,8 @@ python3 <이 스킬 폴더>/scripts/build_tokens.py tokens.json --out <생성 �
 python3 <이 스킬 폴더>/scripts/check_tokens.py <검사할 폴더>
 ```
 
-- 찾는 것: hex 색, `rgb()`·`hsl()`·`oklch()` 색, 단위가 붙은 길이·시간(`px`, `rem`, `em`, `ms`, `s`), 글꼴 이름, 토큰 파일 밖의 사용자 정의 속성 값, breakpoint 토큰에 없는 `@media` 숫자
-- 대상: `.css`, `.scss`, `.html`, `.svg`, `.js`, `.mjs`, `.ts`, `.jsx`, `.tsx`, `.vue`, `.svelte`. JavaScript 계열은 문자열 안만
-- 제외: `tokens.json`, `tokens.dark.json`, 생성물, `node_modules`, `dist`, `.git`, `tokens-allow:` 주석이 있는 줄
+- 찾는 것: hex 색, 색 함수(`rgb()`, `oklch()` 등), 단위 붙은 길이·시간, 단위 없는 굵기·줄 높이·투명도·z-index·자간, 크기 표현 속성 숫자(`rx`, `stroke-width` 등), 글꼴 이름, 토큰 파일 밖 사용자 정의 속성 값, breakpoint 토큰에 없는 `@media`·`@container` 숫자
+- CSS 계열: 주석 밖 전체. 마크업 계열(`.html`, `.svg`, `.vue`, `.svelte`): `<style>`, `style` 속성, 표현 속성만. JavaScript 계열: 모든 문자열의 색, CSS·마크업 모양 문자열과 값 하나뿐인 문자열(`'12px'`)의 나머지 규칙
+- 제외: `tokens.json`, `tokens.dark.json`, 생성물, `docs/`(repo-docs-figures 그림), `node_modules`, `dist`, `build`, `.git`, `tokens-allow:` 줄
 - 출력 `total 0`까지 수정. 0이 아니면 종료 코드 1
-- 스크립트가 못 잡는 것은 직접 확인: 단위 없는 SVG 속성 숫자(`rx="10"`), 기본 토큰 직접 참조, 구성 요소 코드 안 테마 분기
+- 직접 확인: 객체 스타일의 숫자 값(`{ fontWeight: 600 }`), 기본 토큰 직접 참조, 구성 요소 코드 안 테마 분기
