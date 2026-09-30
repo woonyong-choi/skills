@@ -30,6 +30,8 @@ description: "코드 작성, 리뷰, 리팩터링 시 사용. 언어 공통 원�
 | Rust | `code-style-rust` | 이름 형식, 에러 처리(thiserror·anyhow), 로그(tracing), 공개 범위·문서 주석, 파일 구성, 테스트 위치, clippy 설정·검사 명령 |
 | Kotlin | `code-style-kotlin` | 이름 형식, 에러 처리, 로그(SLF4J), 공개 범위·KDoc, 파일·클래스 구성, 테스트 위치, detekt·ktlint 설정·검사 명령 |
 | Python | `code-style-python` | 이름 형식, 예외 처리, 로그(logging), 공개 범위·docstring, 모듈·클래스 구성, 테스트 위치, ruff·mypy 설정·검사 명령 |
+| JavaScript | `code-style-javascript` | 이름 형식, 모듈(ESM), 에러 처리, 로그, 공개 범위·JSDoc, 테스트 위치(node:test), ESLint·Prettier 설정·검사 명령 |
+| CSS | `code-style-css` | class 이름, 파일 구성, 속성 순서, 선택자, 값과 단위, 반응형·접근성, Stylelint 설정·검사 명령. 함수·에러·로그 항목은 해당 없음 |
 
 ## 원칙
 
