@@ -24,6 +24,7 @@ description: "코드 작성, 리뷰, 리팩터링 시 사용. 언어 공통 원�
 - 테스트 위치
 - 라이브러리 기본값: 로그, 에러 타입
 - 린터 설정과 검사 명령
+- CSS만: 선택자, 값과 단위, 반응형·접근성
 
 | 언어 | 스킬 | 다루는 것 |
 |---|---|---|
@@ -233,6 +234,7 @@ description: "코드 작성, 리뷰, 리팩터링 시 사용. 언어 공통 원�
 | Rust | `//` | `dhat` | `criterion` |
 | Kotlin | `//` | JFR 할당 기록 | JMH |
 | Python | `#` | `tracemalloc` | `pytest-benchmark` |
+| JavaScript | `//` | `node --heap-prof` | `node --cpu-prof` |
 
 ## 테스트
 

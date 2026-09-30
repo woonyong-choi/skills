@@ -63,7 +63,9 @@ description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반�
 ## 작업 중
 
 - 분기: 최신 `main`에서 `git switch -c {브랜치} origin/main`
-- 병렬 에이전트: 에이전트마다 worktree 하나, `git worktree add ../{폴더} -b {브랜치} origin/main`
+- 병렬 에이전트: 에이전트마다 이슈 하나, 브랜치 하나, worktree 하나. `git worktree add ../{저장소}.wt/{브랜치의 / 를 - 로} -b {브랜치} origin/main`
+- 같은 빌드 단위(crate, 패키지)의 컴파일과 테스트 통과는 에이전트 하나만 맡는다. 다른 에이전트는 자기 파일만 고치고 검사 실패는 보고
+- 임시 폴더, 저장소 사본, 두 번째 clone 금지. 검사는 자기 worktree에서만
 - 자기 작업 브랜치 push 허용
 - `main` 변경 반영: `git merge origin/main`
 
@@ -80,10 +82,21 @@ description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반�
 - squash 메시지: 첫 줄은 PR 제목, 본문과 꼬리말은 커밋 규칙, 꼬리말에 PR 본문 첫 줄과 같은 `Closes: #{번호}` 또는 `Refs: #{번호}`
 - GitHub가 자동으로 붙이는 커밋 목록, `Co-Authored-By` 줄 삭제
 - AI 몫: PR 생성까지. 머지는 요청이 있을 때만
-- 머지 후 자기 브랜치 삭제: 원격, 로컬, worktree
+- 머지 후 자기 브랜치 삭제: 원격, 로컬, worktree. 정리 스크립트로 한 번에(정리 절)
 
 ## 정리
 
+머지가 끝나면 저장소 안에서 실행. 먼저 미리보기, 목록 확인 뒤 `--apply`
+
+```sh
+python3 <이 스킬 폴더>/scripts/cleanup_merged.py
+python3 <이 스킬 폴더>/scripts/cleanup_merged.py --apply
+```
+
+- `<이 스킬 폴더>`: 이 SKILL.md가 있는 폴더. 스크립트 본문은 읽지 않고 실행만. Windows에서 `python3`가 없으면 `py -3`
+- 대상: GitHub에서 PR이 머지된 로컬 브랜치의 worktree, 로컬 브랜치, 원격 브랜치. 빈 `{저장소}.wt` 폴더 삭제
+- 커밋 안 된 변경이 있는 worktree는 남기고 `keep:`으로 보고
+- 병렬 작업을 모두 머지한 뒤 확인: `git worktree list`에 `main` 하나, `git branch`에 `main`과 열린 PR 브랜치만
 - 브랜치 생성 후 7일 넘게 머지 안 되면 사용자에게 보고
 - 이슈 취소 시 PR 닫기, 브랜치 삭제
 

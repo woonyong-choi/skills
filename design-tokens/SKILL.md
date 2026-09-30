@@ -13,15 +13,15 @@ description: "색, 글꼴, 간격, 반지름, 그림자, 시간 같은 화면 �
 
 | 원칙 | 규칙 |
 |---|---|
-| 하드코딩 금지 | 색, 글꼴, 글자 크기, 줄 높이, 간격, 반지름, 테두리 두께, 그림자, 투명도, z-index, 시간, 이징, 크기, breakpoint 값은 토큰으로만 사용. 예외 없음 |
+| 하드코딩 금지 | 색, 글꼴, 글자 크기, 줄 높이, 간격, 반지름, 테두리 두께, 그림자, 투명도, z-index, 시간, 이징, 크기, breakpoint 값은 토큰으로만 사용. 아래 허용 값 밖 예외 없음 |
 | 정본 하나 | 토큰 값은 저장소에 파일 하나(`tokens.json`)만. 다른 파일은 생성물이거나 토큰 참조 |
 | 먼저 만들고 쓰기 | 맞는 토큰이 없으면 코드에 값을 적지 않고 정본에 토큰 추가 후 사용 |
 | 의미로 쓰기 | 코드는 의미 토큰만 참조. 기본 토큰 직접 참조 금지 |
-| 테마는 의미 층에서 | 다크 모드, 고대비는 의미 토큰 값만 바꿈. 구성 요소 코드에 테마 분기 금지 |
+| 테마는 의미 층에서 | 다크 모드, 고대비는 의미 토큰 값만 변경. 구성 요소 코드에 테마 분기 금지 |
 
-토큰 없이 써도 되는 값: `0`, `auto`, `none`, `inherit`, `initial`, `unset`, `currentColor`, `transparent`, `100%`, `50%`(가운데 맞춤), `1`(flex 비율, 불투명)
+토큰 없이 써도 되는 값: `0`, `1`(flex 비율, 불투명), `auto`, `none`, `inherit`, `initial`, `unset`, `currentColor`, `transparent`, `100%`, `50%`(가운데 맞춤), `100vh`, `100vw`
 
-- 도형 좌표, 경로, 데이터에서 계산한 크기는 디자인 값이 아님. 토큰 대상 아님
+- 토큰 대상 제외: 도형 좌표, 경로, 데이터에서 계산한 크기
 - 외부 라이브러리가 요구하는 고정 값: 그 줄에 `tokens-allow: {이유}` 주석. 이유 없는 허용 금지
 
 ## 세 층
@@ -29,7 +29,7 @@ description: "색, 글꼴, 간격, 반지름, 그림자, 시간 같은 화면 �
 | 층 | 역할 | 이름 예 | 참조하는 쪽 |
 |---|---|---|---|
 | 기본(primitive) | 쓸 수 있는 값 목록. 뜻 없음 | `color.blue.600`, `space.4`, `size.text.14` | 의미 토큰만 |
-| 의미(semantic) | 용도. 테마마다 값이 바뀜 | `color.accent`, `color.text.muted`, `space.card.pad` | 구성 요소 토큰, 코드 |
+| 의미(semantic) | 용도. 테마마다 값 변경 | `color.accent`, `color.text.muted`, `space.card.pad` | 구성 요소 토큰, 코드 |
 | 구성 요소(component) | 한 구성 요소만의 값. 선택 | `button.height`, `tab.gap` | 그 구성 요소 코드 |
 
 - 구성 요소 토큰은 두 곳 이상에서 같은 값이 필요할 때만. 한 곳이면 의미 토큰 직접 사용
@@ -66,8 +66,8 @@ description: "색, 글꼴, 간격, 반지름, 그림자, 시간 같은 화면 �
 
 | 파일 | 내용 | 손으로 수정 |
 |---|---|---|
-| `tokens.json` | 정본. W3C Design Tokens 형식(`$value`, `$type`, `$description`) | 필수 |
-| `tokens.dark.json` | 다크 모드에서 바뀌는 의미 토큰만 | 필수 |
+| `tokens.json` | 정본. DTCG(Design Tokens Community Group) 2025.10 형식(`$value`, `$type`, `$description`) | 허용 |
+| `tokens.dark.json` | 다크 모드에서 바뀌는 의미 토큰만 | 허용 |
 | `tokens.css` | 생성물. `:root`의 CSS 사용자 정의 속성, 다크 모드 덮어쓰기 | 금지 |
 | `tokens.js` | 생성물. 토큰 경로 객체(값은 `var(--…)`)와 계산용 숫자 | 금지 |
 
@@ -77,6 +77,7 @@ python3 <이 스킬 폴더>/scripts/build_tokens.py tokens.json --out <생성 �
 
 - 위치: 저장소에 화면 코드가 한 곳이면 그 소스 루트, 여럿이면 공유 폴더 하나. 생성물은 커밋
 - 생성물 첫 줄: 정본 경로와 `생성물, 손으로 고치지 않음` 주석
+- 생성물은 포매터·린터 제외: `.prettierignore`, ESLint `ignores`, Stylelint `ignoreFiles`
 - 다크 모드: `@media (prefers-color-scheme: dark)`와 `[data-theme='dark']` 두 곳에 같은 값 생성. `[data-theme='light']`는 밝은 값 강제
 
 ## 쓰는 방법
@@ -88,9 +89,8 @@ python3 <이 스킬 폴더>/scripts/build_tokens.py tokens.json --out <생성 �
 | `@media` 조건 | breakpoint 토큰과 같은 숫자. `var()` 사용 불가 | `@media (min-width: 768px)` |
 | JavaScript가 만드는 CSS, 인라인 style, SVG 속성 | `tokens.js`의 값(`var(--…)` 문자열) | `` `fill="${tokens.color.accent}"` `` |
 | JavaScript 배치 계산 | `tokens.js`의 `values` 숫자 | `values.size.text['14']` |
-| 문서 그림(D2, Vega-Lite) | repo-docs-figures 색표. 이 스킬 대상 아님 | 해당 없음 |
 
-- SVG 속성에 `var()`를 쓰면 스타일시트 없는 곳(이미지로 넣은 SVG)에서 사라짐: 그 SVG 안에 `<style>`로 `tokens.css` 내용을 함께 넣기
+- 이미지로 넣는 SVG: 스타일시트가 없어 `var()` 값 소실. 그 SVG 안 `<style>`에 `tokens.css` 내용 포함
 - 테스트 코드의 기대값도 토큰 참조. 숫자 복사 금지
 
 ## 새 값이 필요할 때

@@ -12,7 +12,7 @@ description: "JavaScript(Node.js, 브라우저) 코드 작성, 리뷰, 리팩터
 ## 이름
 
 - 대소문자 표기: 변수·함수 camelCase, 클래스 PascalCase, 모듈 상수 UPPER_SNAKE_CASE. 포맷: Prettier
-- 파일: 소문자 kebab-case `.js` (folder-naming과 같은 기준). 테스트는 `{모듈}.test.js`
+- 파일: 소문자 kebab-case `.js` (folder-naming과 같은 기준)
 
 | 대상 | 규칙 | 예 |
 |---|---|---|
@@ -47,7 +47,7 @@ description: "JavaScript(Node.js, 브라우저) 코드 작성, 리뷰, 리팩터
 클래스:
 
 1. `static` 상수·필드
-2. `#` 비공개 필드 → 공개 필드
+2. 공개 필드 → `#` 비공개 필드
 3. `constructor`
 4. 이후는 code-style 타입 순서의 5~10 (팩토리 → 접근자 → 생명주기 → 공개 → 비공개 헬퍼 → 검증)
 
@@ -66,7 +66,6 @@ description: "JavaScript(Node.js, 브라우저) 코드 작성, 리뷰, 리팩터
 - 원인 보존: `throw new ConfigError('failed to read config', { cause: error })`
 - 라이브러리 모듈의 에러 클래스: `class {대상}Error extends Error`, `this.name` 지정
 - Promise: 반환하거나 `await`. 떠 있는 Promise 금지. 최상위는 top-level `await`
-- 빈 `catch {}` 금지. 무시하면 이유를 주석으로
 - 에러·로그 메시지는 소문자로 시작, 마침표 없음: `failed to read config`
 
 로그:
@@ -78,17 +77,15 @@ description: "JavaScript(Node.js, 브라우저) 코드 작성, 리뷰, 리팩터
 
 ## 공개 범위와 주석
 
-- export는 다른 모듈이 쓰는 것만
-- 공개 함수·클래스는 JSDoc 필수. 첫 줄 한 줄 요약, 빈 줄 뒤 설명. 실패하면 `@throws`
+- 문서 주석: JSDoc `/** */`. 실패 조건은 `@throws`
 - 타입은 JSDoc `@param`·`@returns`로. 타입 검사가 필요하면 `// @ts-check`와 `tsc --noEmit --checkJs`
-- 비용 주석(code-style)은 JSDoc 위 `//` 줄
 
 ## 테스트
 
 - `node:test`와 `node:assert/strict`. 저장소에 정한 테스트 도구가 있으면 그것 우선
 - 위치: `test/` 폴더, 파일은 `{모듈}.test.js`
 - 이름: code-style 형식, 대상은 함수 이름 그대로: `parseFlow_empty_input_throws`
-- 외부 명령·브라우저가 필요한 테스트: 없으면 `{ skip: '<이유>' }`로 건너뜀
+- 외부 명령·브라우저가 필요한 테스트: 없을 때 `{ skip: '<이유>' }`로 건너뛰기
 - 브라우저 동작: Playwright(`playwright-core`)로 실제 페이지를 열어 확인
 
 ## 린트 설정
@@ -97,11 +94,14 @@ description: "JavaScript(Node.js, 브라우저) 코드 작성, 리뷰, 리팩터
 
 ```js
 import js from '@eslint/js';
+import globals from 'globals';
 import sonarjs from 'eslint-plugin-sonarjs';
 
 export default [
+  { ignores: ['**/tokens.js'] },
   js.configs.recommended,
   {
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
     plugins: { sonarjs },
     rules: {
       'max-lines': ['warn', { max: 750, skipBlankLines: true, skipComments: true }],
@@ -111,7 +111,6 @@ export default [
       'sonarjs/cognitive-complexity': ['warn', 15],
       'no-throw-literal': 'error',
       'prefer-promise-reject-errors': 'error',
-      'no-empty': ['error', { allowEmptyCatch: false }],
       'no-console': ['warn', { allow: ['error'] }],
       yoda: 'error',
       eqeqeq: 'error',
@@ -119,14 +118,16 @@ export default [
       'no-nested-ternary': 'warn',
       'prefer-const': 'error',
       'no-var': 'error',
+      'no-restricted-syntax': ['error', 'ExportDefaultDeclaration'],
     },
   },
   { files: ['test/**'], rules: { 'max-lines-per-function': 'off' } },
+  { files: ['eslint.config.js'], rules: { 'no-restricted-syntax': 'off' } },
 ];
 ```
 
 - CLI 진입점 파일은 `no-console`을 파일 단위로 끔
-- ESLint가 못 잡는 것은 직접 확인: 이름, 비교 순서, `&&`·`||` 개수와 섞기, 선언 순서, bool 매개변수 수, `export default`, 비용 주석
+- ESLint가 못 잡는 것은 직접 확인: 이름, 비교 순서, `&&`·`||` 개수와 섞기, 선언 순서, bool 매개변수 수, 비용 주석
 
 `.prettierrc.json`:
 
