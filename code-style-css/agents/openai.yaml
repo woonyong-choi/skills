@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Style CSS"
+  short_description: "CSS class 이름, 파일 구성, 속성 순서, 선택자, 다크 모드, 접근성, Stylelint 기준"
+  default_prompt: "$code-style-css 스킬로 처리해 줘: [요청]"

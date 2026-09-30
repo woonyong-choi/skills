@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Style JavaScript"
+  short_description: "JavaScript 이름, 모듈, 에러, 로그, JSDoc, node:test, ESLint 기준"
+  default_prompt: "$code-style-javascript 스킬로 처리해 줘: [요청]"
