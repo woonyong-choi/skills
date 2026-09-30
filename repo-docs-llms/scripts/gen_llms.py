@@ -1,6 +1,6 @@
-"""README.md와 docs/README.md로 llms.txt, llms-full.txt 생성.
+"""README.md와 docs/README.md로 llms.txt(--full이면 llms-full.txt도) 생성.
 
-사용: python3 gen_llms.py (저장소 루트에서 실행)
+사용: python3 gen_llms.py [--full] (저장소 루트에서 실행)
 """
 import re
 import subprocess
@@ -9,6 +9,7 @@ from pathlib import Path
 
 OPTIONAL_PREFIXES = ("experiments/", "decisions/")
 ROW = re.compile(r"\| \[(.+?)\]\((.+?)\) \| (.+?) \|$")
+LANGUAGE_LINE = re.compile(r"^(English|\[English\])[^\n]*\|")
 
 
 # cost: time O(1), heap O(1), stack O(1), io 1
@@ -51,7 +52,7 @@ def is_public(root: Path, relative: str) -> bool:
 # cost: time O(t), heap O(t), stack O(1), io 1 + n
 # vars: t = README와 표 문서 글자 수 합, n = 표 행 수
 # basis: estimate
-def main() -> int:
+def main(full: bool) -> int:
     raw = raw_base_url()
     rows = read_rows()
     root = Path.cwd().resolve()
@@ -60,11 +61,12 @@ def main() -> int:
             raise SystemExit("공개 문서 경로 아님: " + relative)
     readme = open("README.md", encoding="utf-8").read()
     blocks = [block.strip() for block in re.split(r"\n\s*\n", readme) if block.strip()]
+    blocks = [block for block in blocks if not LANGUAGE_LINE.match(block)]
     name = blocks[0].lstrip("# ").strip()
     tagline, intro = blocks[1], blocks[2]
     main_rows = [row for row in rows if not row[1].startswith(OPTIONAL_PREFIXES)]
     optional_rows = [row for row in rows if row[1].startswith(OPTIONAL_PREFIXES)]
-    index = [f"# {name}", "", f"> {tagline}", "", intro, "", "## 문서", ""]
+    index = [f"# {name}", "", f"> {tagline}", "", intro, "", "## Docs", ""]
     index += [f"- [{title}]({raw}docs/{target}): {summary}" for title, target, summary in main_rows]
     extra = [f"- [{title}]({raw}docs/{target}): {summary}" for title, target, summary in optional_rows]
     try:
@@ -75,11 +77,12 @@ def main() -> int:
     if extra:
         index += ["", "## Optional", ""] + extra
     parts = ["README.md"] + ["docs/" + target for _, target, _ in rows]
-    full = [f"<!-- {part} -->\n\n" + open(part, encoding="utf-8").read().strip() + "\n" for part in parts]
+    full_text = [f"<!-- {part} -->\n\n" + open(part, encoding="utf-8").read().strip() + "\n" for part in parts]
     open("llms.txt", "w", encoding="utf-8").write("\n".join(index) + "\n")
-    open("llms-full.txt", "w", encoding="utf-8").write("\n".join(full))
+    if full:
+        open("llms-full.txt", "w", encoding="utf-8").write("\n".join(full_text))
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main("--full" in sys.argv[1:]))
