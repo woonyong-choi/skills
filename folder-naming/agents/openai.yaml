@@ -1,0 +1,4 @@
+interface:
+  display_name: "Folder Naming"
+  short_description: "저장소 폴더 구조와 폴더 이름 정하기"
+  default_prompt: "$folder-naming 스킬로 처리해 줘: [요청]"

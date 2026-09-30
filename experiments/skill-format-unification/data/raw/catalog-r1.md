@@ -1,0 +1,22 @@
+- code-refactoring: 리팩터링, 코드 스멜, 구조 개선 기법 선택 시 사용. 문제 신호별 해결 기법, 『리팩터링 2판』 기법 목록
+- code-style-kotlin: Kotlin(JVM 서버, CLI) 코드 작성, 리뷰, 리팩터링 시 사용. 이름 형식, 에러 처리, 로그(SLF4J), 공개 범위, KDoc, 파일·클래스 구성, 테스트, detekt·ktlint 설정과 검사 명령
+- code-style-python: Python 코드 작성, 리뷰, 리팩터링 시 사용. 이름 형식, 예외 처리, 로그(logging), 공개 범위, docstring, 모듈·클래스 구성, 테스트(pytest), ruff·mypy 설정과 검사 명령
+- code-style-rust: Rust 코드 작성, 리뷰, 리팩터링 시 사용. 이름 형식, 에러 처리(thiserror, anyhow), 로그(tracing), 공개 범위, 문서 주석, 파일 구성, 테스트, clippy 설정과 검사 명령
+- code-style: 코드 작성, 리뷰, 리팩터링 시 사용. 언어 공통 원칙, 수치 기준, 이름, 조건식, 선언 순서, 에러, 로그, 공개 범위, 주석, 테스트
+- folder-naming: 저장소 폴더 구조 설계, 폴더 이름 짓기·바꾸기 시 사용. 루트 소스 폴더 접두사, 비소스 폴더, 모듈 폴더, 배포 이름, 이름 변경 절차
+- git-branch: Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반영, 병렬 에이전트 작업 분배, 릴리스 시 사용. main + 짧은 작업 브랜치, 이슈 단위 작업, squash merge
+- git-commit: Git 커밋 생성, 커밋 메시지 작성·검토, 커밋 분리 시 사용. 형식 type(scope): 한글 설명
+- git-issue: GitHub 이슈를 만들거나 정리·닫을 때 사용. 종류와 라벨, 제목, 본문 틀, 마일스톤·하위 이슈·막힘 관계, 결정 댓글, 닫는 규칙
+- git-pull-request: PR 본문 작성, 계약 검토, 문서 동반 확인, 검토 댓글 작성 시 사용. PR 종류, 본문 틀, 문서 동반, 크기, 두 축 검토, 머지 조건
+- repo-docs-decision: 공개 결정 기록(docs/decisions, ADR)을 만들거나 고칠 때, 비공개 판단 기록을 공개용으로 다시 쓸 때 사용. 기록 대상, 고정 템플릿, 대체 규칙, 옮기는 것과 옮기지 않는 것 표
+- repo-docs-design: docs 설계 문서(문서 안내, 요구사항, 용어, 아키텍처, 구성 요소 설계)를 만들거나 고칠 때 사용. 새 기능을 넣는 자리, 파일별 템플릿, 코드로 옮기는 규칙
+- repo-docs-experiment: 설계 값, 외부 도구 동작을 재는 실험, 벤치마크를 설계, 실행, 보고할 때 사용. 사전 등록 설계, 원자료, 스크립트, 논문형 보고서 템플릿, 통계 규칙
+- repo-docs-figures: 문서 그림(구조도, 순서도, 상태도, 데이터 관계도, 차트, 데모 GIF)을 만들거나 고칠 때 사용. D2, Vega-Lite, VHS 템플릿, 색표, 대체 글, render_figures 변환
+- repo-docs-journal: 비공개 판단 기록(판단, 판단 변경), 큰 작업의 서사, 원칙 목록을 docs/archive에 쓰거나 갱신할 때 사용. 고정 템플릿, 근거 표시, 놓친 것 분류, 작성 시점
+- repo-docs-llms: 저장소 루트 llms.txt와 llms-full.txt를 만들거나 갱신할 때 사용. llmstxt.org 형식, README와 docs/README.md에서 내용을 옮기는 규칙, 두 파일을 만드는 gen_llms 함수
+- repo-docs-note: 개발 중 알게 된 것(insight)이나 조사한 사실(reference)을 docs/notes에 짧은 기록, TIL로 남기거나 고칠 때 사용. 종류 판정, 고정 템플릿, 파일 이름, 갱신 규칙
+- repo-docs-promo: 랜딩 페이지, 링크드인, 블로그용 홍보 영상 촬영을 준비할 때 사용. 촬영 순서표, 합성 데이터 데모 스크립트, 내보내기 규격, 녹화 뒤 확인 목록
+- repo-docs-readme: 저장소 루트 README.md를 만들거나 갱신할 때 사용. 프로젝트 단계별 절이 정해진 고정 템플릿(합쇼체), 대표 그림과 측정 결과 규칙, 로드맵에서 기능으로 옮기는 규칙
+- repo-docs-root: 저장소 루트와 .github 문서 파일(AGENTS.md, CLAUDE.md 링크, CHANGELOG, CONTRIBUTING, SECURITY, LICENSE)을 만들거나 갱신할 때 사용. 파일 위치, 단계별 파일, 고정 템플릿
+- repo-docs-spec: docs 인터페이스 문서(protocol, cli, ui, data, configuration, errors)를 만들거나 고칠 때 사용. 문서별 고정 템플릿, 항목별 표 형식
+- repo-docs: 저장소 문서(README, 루트 파일, docs, 결정 기록, 실험, 개발 기록, 그림, llms.txt)를 쓰거나 고칠 때 먼저 사용. 문서 목록, 문체, 서식, 용어, 사실 상태, 자리표시, 저장 전 검사

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Style Rust"
+  short_description: "Rust 이름, 에러 처리, 로그, 공개 범위, 파일 구성, 테스트, clippy 규칙"
+  default_prompt: "$code-style-rust 스킬로 처리해 줘: [요청]"

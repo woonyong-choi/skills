@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Docs Promo"
+  short_description: "홍보 영상 촬영 준비: 순서표, 합성 데이터 데모 스크립트, 내보내기 규격"
+  default_prompt: "$repo-docs-promo 스킬로 처리해 줘: [요청]"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Docs Journal"
+  short_description: "비공개 판단 기록, 서사, 원칙 템플릿"
+  default_prompt: "$repo-docs-journal 스킬로 처리해 줘: [요청]"

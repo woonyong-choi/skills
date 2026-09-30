@@ -1,0 +1,60 @@
+# 검증용 가상 사실 (이 사실만 근거로 쓴다)
+
+- 저장소: github.com/woonyong-choi/saturn, 이름 `saturn`, LICENSE 파일 있음(MIT), CONTRIBUTING.md 없음
+- 하는 일: Codex, Claude Code 같은 AI 코딩 도구(공급자)의 세션을 하나의 터미널 화면에서 실행하고, 모든 대화를 SQLite에 저장해 공급자가 바뀌어도 한 기록으로 이어 간다
+- 문제: 여러 AI 코딩 도구를 함께 쓰면 세션 기록과 맥락이 도구마다 흩어진다. 각 도구의 기록 기능은 그 도구 안에서만 이어진다
+- 사용자: 여러 AI 코딩 도구를 함께 쓰는 개인 개발자
+- 하지 않는 것: 공급자 CLI의 설정을 바꾸지 않는다, 원격 서버를 두지 않는다, 여러 사용자가 한 기록을 공유하지 않는다
+- 구성 요소:
+  - 엔진 `engine`: 공급자 프로세스 실행, 입력 대기열, JSON-RPC 서버. Rust, tokio. 위치 `crates/saturn-engine`. 모듈: `queue`(입력 대기열, `crates/saturn-engine/src/queue.rs`), `provider`(공급자 프로세스 관리, `src/provider.rs`), `rpc`(JSON-RPC 서버, `src/rpc.rs`), `store`(SQLite 기록, `src/store.rs`)
+  - 화면 `tui`: 채팅 화면과 입력. Rust, ratatui. 위치 `crates/saturn-tui`
+  - 명령 `cli`: 엔진과 화면을 시작하는 바이너리 `saturn`. Rust, clap. 위치 `crates/saturn-cli`
+  - 기록 저장소 `store`: SQLite 파일 `~/.local/share/saturn/saturn.db`, 엔진만 쓴다
+- 연결: 화면과 명령은 엔진과 Unix 소켓 위 JSON-RPC 2.0으로 통신한다. 엔진은 공급자 CLI를 자식 프로세스로 띄워 stdio로 통신한다
+- 기능과 요구사항, 테스트 상태:
+  - 세션 실행(공급자 세션을 엔진에서 시작하고 멈춤)
+    - 요구사항: 엔진은 `session/start` 요청을 받으면 공급자 프로세스를 띄운다. 테스트 `crates/saturn-engine/tests/session.rs`의 `start_spawns_provider` 통과
+    - 요구사항: 멈춤은 공급자의 하위 프로세스까지 멈춘다. 테스트 `crates/saturn-engine/tests/session.rs`의 `stop_kills_process_group` 통과
+  - 대화 기록(모든 입력과 응답을 SQLite에 저장)
+    - 요구사항: 입력은 저장이 끝난 뒤 공급자에 보낸다. 테스트 `crates/saturn-engine/tests/store.rs`의 `input_persisted_before_send` 통과
+  - 기록 검색(저장된 대화를 낱말로 찾음)
+    - 요구사항: 검색은 모든 세션의 입력과 응답을 대상으로 한다. 테스트 `crates/saturn-engine/tests/search.rs`의 `search_all_sessions` 아직 없음. 열린 build 이슈 #12
+  - 하위 에이전트 추적(공급자가 띄운 하위 에이전트를 부모 작업 아래 기록)
+    - 요구사항: 작업은 하위 에이전트까지 모두 쉴 때 끝난다. 테스트 `crates/saturn-engine/tests/subagent.rs`의 `task_ends_after_children` 아직 없음. 열린 build 이슈 #15, #18
+- 품질 요구사항: 신뢰성 — 엔진이 비정상 종료해도 저장이 끝난 입력은 잃지 않는다, 확인 `crates/saturn-engine/tests/store.rs`의 `crash_keeps_persisted_inputs`
+- 제약: macOS와 Linux, Rust 1.85 이상, Codex CLI와 Claude Code CLI 설치 필요
+- 배포: GitHub 릴리스 없음. `cargo build --workspace`는 성공한다. `saturn` 명령은 빌드되지만 화면이 아직 연결되지 않아 사용자가 쓸 수 있는 명령은 없다
+- CI 명령: `cargo build --workspace`, `cargo test --workspace`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo fmt --all --check`
+- docs에 있는 파일: requirements.md, glossary.md, architecture.md, components/engine.md, protocol.md, data.md, configuration.md
+- 실행 흐름: 세션 시작(명령이 엔진 시작 → 화면 연결 → 엔진이 공급자 실행), 입력 전송(화면 → 엔진 대기열 → 저장 → 공급자), 공급자 비정상 종료(엔진이 종료 감지 → 작업 보류 → 화면에 표시)
+- 기술 선택: 비동기 런타임 tokio(프로세스와 소켓을 한 런타임에서 다룬다), 화면 ratatui(터미널 화면 표준 라이브러리), 저장 SQLite(단일 파일, 트랜잭션), 통신 JSON-RPC 2.0(언어 무관 표준)
+- 실험: 이어 가기 판단의 한국어 정확도. 판단기(LLM)가 "진행해", "계속" 같은 짧은 한국어 입력을 보류 작업을 이어 가라는 뜻으로 맞게 분류하는지 확인. 입력 400개를 사용자가 직접 라벨. 오분류율 5% 이하가 채택 기준. 관련 설계 docs/components/engine.md. 이슈 #21. 모델 claude-haiku-4-5, 시드 고정 불가(API 샘플링), temperature 0
+- 목표: 공급자와 무관한 세션 기록 보존, 여러 공급자 세션의 한 화면 실행, 비정상 종료 뒤 입력 손실 없음
+- 프로세스: `saturn` 명령 프로세스(사용자가 시작, 화면을 닫을 때까지), 엔진 프로세스(`saturn` 명령이 시작, 마지막 화면이 닫히고 작업이 없을 때까지), 공급자 프로세스(엔진이 시작, 세션 중지까지)
+- 실험 추가 사실:
+  - 입력 400개는 2026-09-01~2026-09-20 사용자의 실제 Saturn 설계 대화에서 뽑은 짧은 한국어 입력, 사용자가 이어 가기/아님 두 값으로 라벨
+  - 크기 근거: 정밀도. 오분류율 3% 근처에서 95% Wilson 신뢰구간 반폭 약 1.7%p
+  - 배정: 입력 순서를 시드 42로 섞어 한 번씩 판단기에 보낸다
+  - 눈가림: 라벨은 판단기 출력을 보기 전에 붙인다
+  - 중단 규칙: 400개를 모두 보내면 멈춘다
+  - 반복과 예열: 입력마다 1번, 예열 없음
+  - 제외 기준: API 오류로 응답이 없는 입력은 제외하지 않고 오분류로 센다
+  - 판정: 채택이면 판단기 기준값 유지, 기각이면 이어 가기 판단을 사용자 확인으로 바꾼다, 보류(신뢰구간이 5%를 걸침)면 입력 400개를 더 모은다
+  - 위협: 내적(라벨 작성자가 설계자 본인), 구성(짧은 입력만 다뤄 긴 입력의 오분류를 재지 않음), 외적(한 사용자의 말투에만 맞춤). 대응: 내적은 라벨 기준표를 먼저 쓰고 고정, 구성은 긴 입력 실험을 따로 이슈로, 외적은 결론 범위를 이 사용자로 한정
+  - 탐색 분석: 오분류된 입력의 길이 분포
+- 원격 저장소: `git@github.com:woonyong-choi/saturn.git`
+- 루트 파일: LICENSE(MIT, 저작권자 woonyong-choi, 2026), `.github/ISSUE_TEMPLATE/` 있음, CHANGELOG 없음, SECURITY 없음
+- 비공개 판단 기록 `docs/archive/journal/2026-09-20-provider-stdio.md`의 내용(공개 결정 기록으로 다시 쓸 재료):
+  - 제목: 공급자와 표준 입출력으로 통신한다
+  - 문제: 엔진이 공급자 CLI와 어떤 통로로 통신할지 정해야 했다. 잘못 정하면 공급자마다 연결 코드를 따로 두게 된다
+  - 알던 것: Codex CLI와 Claude Code CLI 모두 stdio JSON 스트림 모드를 제공한다 [근거: 각 CLI 공식 문서]. 소켓 모드는 Codex만 제공한다 [근거: Codex 문서]
+  - 모르던 것: Claude Code가 소켓 모드를 추가할지 [미확인]. 사용자가 원격 공급자를 원할지 [추정]
+  - 선택지: stdio(얻는 것: 두 공급자 공통, 자식 프로세스 수명과 연결 수명이 같다 / 잃는 것: 원격 공급자 불가), Unix 소켓(얻는 것: 공급자를 따로 띄울 수 있다 / 잃는 것: Claude Code 미지원), TCP(얻는 것: 원격 가능 / 잃는 것: 인증 필요, 두 공급자 모두 미지원)
+  - 판단: stdio. 두 공급자가 모두 지원하는 유일한 통로라는 기준으로 골랐다. 확신 높음
+  - 틀렸다는 신호: 공급자가 stdio 모드를 없애거나, 사용자가 원격 공급자 실행을 요청함
+  - 관련: docs/architecture.md, 이슈 #7
+- 아키텍처 공통 규칙(저장): 기록 저장소는 엔진만 쓴다. 이유: 여러 프로세스가 같은 SQLite 파일에 쓰면 잠금 충돌이 난다
+- 아키텍처 외부 요소 표: Codex CLI(외부 프로그램, 입력과 응답), Claude Code CLI(외부 프로그램, 입력과 응답)
+- GitHub 저장소 설명: 여러 AI 코딩 도구의 세션을 한 화면에서 실행하고 기록하는 터미널 도구
+- docs/requirements.md 첫 문단(이미 있음): 여러 AI 코딩 도구를 함께 쓰면 세션 기록과 맥락이 도구마다 흩어진다. saturn은 공급자 세션을 한 터미널 화면에서 실행하고 모든 대화를 SQLite에 저장한다. 각 도구의 기록 기능과 달리 공급자가 바뀌어도 한 기록으로 이어 간다.
+- docs/requirements.md 기능 표(이미 있음): 세션 실행 | 공급자 세션 시작과 중지 / 대화 기록 | 모든 입력과 응답의 SQLite 저장 / 기록 검색 | 저장된 대화의 낱말 검색 / 하위 에이전트 추적 | 공급자가 띄운 하위 에이전트의 부모 작업 아래 기록

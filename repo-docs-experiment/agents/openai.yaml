@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Docs Experiment"
+  short_description: "사전 등록 실험 설계, 데이터, 스크립트, 결과 보고서 템플릿과 통계 규칙"
+  default_prompt: "$repo-docs-experiment 스킬로 처리해 줘: [요청]"

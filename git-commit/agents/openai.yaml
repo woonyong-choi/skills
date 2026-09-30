@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Commit"
+  short_description: "커밋 메시지 형식 type(scope): 한글 설명과 커밋 절차"
+  default_prompt: "$git-commit 스킬로 처리해 줘: [요청]"

@@ -1,0 +1,438 @@
+{
+  "audit": {
+    "pass1": {
+      "by_kind": {
+        "contradiction": 2,
+        "loss": 6,
+        "meaning": 10,
+        "preexisting": 1,
+        "wording": 7
+      },
+      "findings": 26,
+      "fixed": 24,
+      "loss": 6,
+      "loss_fixed": 6
+    },
+    "pass2": {
+      "by_kind": {
+        "contradiction": 8,
+        "preexisting": 1,
+        "wording": 1
+      },
+      "findings": 10,
+      "fixed": 10,
+      "loss": 0,
+      "loss_fixed": 0
+    }
+  },
+  "catalog_claude_legacy": {
+    "after": 2012,
+    "before": 2297
+  },
+  "catalog_o200k": {
+    "after": 1248,
+    "before": 1417
+  },
+  "determinism": {
+    "r1": {
+      "diff_ci": [
+        9.3,
+        21.6
+      ],
+      "diff_lines": 18,
+      "diff_pct": 14.4,
+      "files": 5,
+      "nonblank_lines": 125,
+      "round": "r1",
+      "same_file_set": 1,
+      "same_headings": 4
+    },
+    "r2": {
+      "diff_ci": [
+        6.3,
+        17.4
+      ],
+      "diff_lines": 13,
+      "diff_pct": 10.7,
+      "files": 5,
+      "nonblank_lines": 122,
+      "round": "r2",
+      "same_file_set": 1,
+      "same_headings": 5
+    },
+    "r3": {
+      "diff_ci": [
+        5.1,
+        15.4
+      ],
+      "diff_lines": 11,
+      "diff_pct": 9.0,
+      "files": 5,
+      "nonblank_lines": 122,
+      "round": "r3",
+      "same_file_set": 1,
+      "same_headings": 4
+    },
+    "r4": {
+      "diff_ci": [
+        2.8,
+        11.5
+      ],
+      "diff_lines": 7,
+      "diff_pct": 5.8,
+      "files": 5,
+      "nonblank_lines": 121,
+      "round": "r4",
+      "same_file_set": 1,
+      "same_headings": 5
+    }
+  },
+  "flow": {
+    "analyzed": 12,
+    "audit_passes": 2,
+    "collected": 12,
+    "excluded": 0,
+    "trigger_runs": 4,
+    "writer_outputs": 8
+  },
+  "hypotheses": {
+    "H1": {
+      "met": 6,
+      "n": 9,
+      "not_met": [
+        "s09",
+        "s10",
+        "s13"
+      ],
+      "verdict": "기각"
+    },
+    "H2": {
+      "met": 4,
+      "n": 5,
+      "not_met": [
+        "s06"
+      ],
+      "verdict": "기각"
+    },
+    "H3": {
+      "change_pct": -13.8,
+      "verdict": "채택"
+    },
+    "H4": {
+      "fixed": 24,
+      "kept": 2,
+      "reaudit_new": 10,
+      "reaudit_present": 24,
+      "verdict": "채택"
+    },
+    "H5": {
+      "max_over_selection": 1,
+      "runs": 3,
+      "runs_full_hit": 3,
+      "verdict": "채택"
+    },
+    "H6": {
+      "ci": [
+        2.8,
+        11.5
+      ],
+      "diff_pct": 5.8,
+      "round": "r4",
+      "verdict": "보류"
+    },
+    "H7": {
+      "before": 544,
+      "verdict": "채택",
+      "violations": 0
+    }
+  },
+  "scenario_summary": {
+    "decreased": 7,
+    "increased": 7,
+    "max_decrease_pct": -70.3,
+    "max_increase_pct": 14.6,
+    "n": 14,
+    "sum_after_o200k": 106293,
+    "sum_before_o200k": 123250,
+    "sum_change_pct": -13.8
+  },
+  "scenarios": {
+    "s01": {
+      "after_claude_legacy": 12125,
+      "after_o200k": 8006,
+      "before_claude_legacy": 15613,
+      "before_o200k": 10792,
+      "change_claude_legacy_pct": -22.3,
+      "change_o200k_pct": -25.8,
+      "request": "README 작성(그림 없음)"
+    },
+    "s02": {
+      "after_claude_legacy": 16582,
+      "after_o200k": 11389,
+      "before_claude_legacy": 15613,
+      "before_o200k": 10792,
+      "change_claude_legacy_pct": 6.2,
+      "change_o200k_pct": 5.5,
+      "request": "README 대표 그림 교체"
+    },
+    "s03": {
+      "after_claude_legacy": 12355,
+      "after_o200k": 8271,
+      "before_claude_legacy": 16391,
+      "before_o200k": 11335,
+      "change_claude_legacy_pct": -24.6,
+      "change_o200k_pct": -27.0,
+      "request": "아키텍처 문서 작성(그림 없음)"
+    },
+    "s04": {
+      "after_claude_legacy": 16812,
+      "after_o200k": 11654,
+      "before_claude_legacy": 16391,
+      "before_o200k": 11335,
+      "change_claude_legacy_pct": 2.6,
+      "change_o200k_pct": 2.8,
+      "request": "아키텍처 문서와 구성 요소 그림"
+    },
+    "s05": {
+      "after_claude_legacy": 10752,
+      "after_o200k": 7265,
+      "before_claude_legacy": 19607,
+      "before_o200k": 13467,
+      "change_claude_legacy_pct": -45.2,
+      "change_o200k_pct": -46.1,
+      "request": "명령 문서(cli.md) 작성"
+    },
+    "s06": {
+      "after_claude_legacy": 12741,
+      "after_o200k": 8295,
+      "before_claude_legacy": 11553,
+      "before_o200k": 7530,
+      "change_claude_legacy_pct": 10.3,
+      "change_o200k_pct": 10.2,
+      "request": "판단 기록에서 결정 기록 작성"
+    },
+    "s07": {
+      "after_claude_legacy": 12853,
+      "after_o200k": 8816,
+      "before_claude_legacy": 16421,
+      "before_o200k": 11575,
+      "change_claude_legacy_pct": -21.7,
+      "change_o200k_pct": -23.8,
+      "request": "실험 설계 작성"
+    },
+    "s08": {
+      "after_claude_legacy": 17310,
+      "after_o200k": 12199,
+      "before_claude_legacy": 16421,
+      "before_o200k": 11575,
+      "change_claude_legacy_pct": 5.4,
+      "change_o200k_pct": 5.4,
+      "request": "실험 보고서와 결과 차트"
+    },
+    "s09": {
+      "after_claude_legacy": 8775,
+      "after_o200k": 5962,
+      "before_claude_legacy": 7619,
+      "before_o200k": 5201,
+      "change_claude_legacy_pct": 15.2,
+      "change_o200k_pct": 14.6,
+      "request": "개발 기록 작성"
+    },
+    "s10": {
+      "after_claude_legacy": 10265,
+      "after_o200k": 6965,
+      "before_claude_legacy": 9008,
+      "before_o200k": 6129,
+      "change_claude_legacy_pct": 14.0,
+      "change_o200k_pct": 13.6,
+      "request": "AGENTS.md 작성"
+    },
+    "s11": {
+      "after_claude_legacy": 8959,
+      "after_o200k": 5899,
+      "before_claude_legacy": 13943,
+      "before_o200k": 8939,
+      "change_claude_legacy_pct": -35.7,
+      "change_o200k_pct": -34.0,
+      "request": "Rust 코드 작성"
+    },
+    "s12": {
+      "after_claude_legacy": 13791,
+      "after_o200k": 8846,
+      "before_claude_legacy": 13943,
+      "before_o200k": 8939,
+      "change_claude_legacy_pct": -1.1,
+      "change_o200k_pct": -1.0,
+      "request": "Rust 리팩터링 기법 선택"
+    },
+    "s13": {
+      "after_claude_legacy": 2275,
+      "after_o200k": 1496,
+      "before_claude_legacy": 2280,
+      "before_o200k": 1494,
+      "change_claude_legacy_pct": -0.2,
+      "change_o200k_pct": 0.1,
+      "request": "커밋 메시지 작성"
+    },
+    "s14": {
+      "after_claude_legacy": 2013,
+      "after_o200k": 1230,
+      "before_claude_legacy": 6478,
+      "before_o200k": 4147,
+      "change_claude_legacy_pct": -68.9,
+      "change_o200k_pct": -70.3,
+      "request": "PR 본문 작성"
+    }
+  },
+  "style_check": {
+    "after": {
+      "total": 0
+    },
+    "before": {
+      "description에 다른 스킬 이름": 23,
+      "description에 함께": 17,
+      "name 형식": 1,
+      "total": 544,
+      "끝말": 461,
+      "머리 1줄": 21,
+      "머리 2줄": 21
+    },
+    "r1": {
+      "total": 22,
+      "머리 1줄": 22
+    },
+    "r2": {
+      "total": 0
+    },
+    "r3": {
+      "total": 0
+    }
+  },
+  "totals": {
+    "after": {
+      "bytes": 161358,
+      "claude_legacy": 71812,
+      "desc_claude_legacy": 2012,
+      "desc_o200k": 1248,
+      "o200k": 47651,
+      "skills": 22
+    },
+    "before": {
+      "bytes": 162055,
+      "claude_legacy": 71811,
+      "desc_claude_legacy": 2297,
+      "desc_o200k": 1417,
+      "o200k": 47680,
+      "skills": 21
+    },
+    "r1": {
+      "bytes": 158424,
+      "claude_legacy": 70552,
+      "desc_claude_legacy": 2007,
+      "desc_o200k": 1245,
+      "o200k": 46847,
+      "skills": 22
+    },
+    "r2": {
+      "bytes": 160496,
+      "claude_legacy": 71429,
+      "desc_claude_legacy": 2012,
+      "desc_o200k": 1248,
+      "o200k": 47391,
+      "skills": 22
+    },
+    "r3": {
+      "bytes": 160856,
+      "claude_legacy": 71590,
+      "desc_claude_legacy": 2012,
+      "desc_o200k": 1248,
+      "o200k": 47508,
+      "skills": 22
+    }
+  },
+  "totals_change_pct": {
+    "bytes": -0.4,
+    "claude_legacy": 0.0,
+    "desc_claude_legacy": -12.4,
+    "desc_o200k": -11.9,
+    "o200k": -0.1
+  },
+  "trigger": {
+    "after-1": {
+      "extra": "24:repo-docs-design",
+      "hit_after_base": 30,
+      "hit_after_base_ci": [
+        88.6,
+        100.0
+      ],
+      "hit_after_base_pct": 100.0,
+      "hit_catalog": 28,
+      "hit_catalog_ci": [
+        78.7,
+        98.2
+      ],
+      "hit_catalog_pct": 93.3,
+      "missing": "",
+      "n": 30,
+      "over_selection": 1,
+      "run": "after-1"
+    },
+    "before-1": {
+      "extra": "24:repo-docs-design",
+      "hit_after_base": 29,
+      "hit_after_base_ci": [
+        83.3,
+        99.4
+      ],
+      "hit_after_base_pct": 96.7,
+      "hit_catalog": 29,
+      "hit_catalog_ci": [
+        83.3,
+        99.4
+      ],
+      "hit_catalog_pct": 96.7,
+      "missing": "23:git-branch",
+      "n": 30,
+      "over_selection": 1,
+      "run": "before-1"
+    },
+    "r1-1": {
+      "extra": "24:repo-docs-design",
+      "hit_after_base": 30,
+      "hit_after_base_ci": [
+        88.6,
+        100.0
+      ],
+      "hit_after_base_pct": 100.0,
+      "hit_catalog": 28,
+      "hit_catalog_ci": [
+        78.7,
+        98.2
+      ],
+      "hit_catalog_pct": 93.3,
+      "missing": "",
+      "n": 30,
+      "over_selection": 1,
+      "run": "r1-1"
+    },
+    "r1-2": {
+      "extra": "24:repo-docs-design",
+      "hit_after_base": 30,
+      "hit_after_base_ci": [
+        88.6,
+        100.0
+      ],
+      "hit_after_base_pct": 100.0,
+      "hit_catalog": 28,
+      "hit_catalog_ci": [
+        78.7,
+        98.2
+      ],
+      "hit_catalog_pct": 93.3,
+      "missing": "",
+      "n": 30,
+      "over_selection": 1,
+      "run": "r1-2"
+    }
+  }
+}

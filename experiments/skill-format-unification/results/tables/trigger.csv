@@ -1,0 +1,5 @@
+run,n,hit_catalog,hit_catalog_pct,hit_catalog_ci,hit_after_base,hit_after_base_pct,hit_after_base_ci,over_selection,missing,extra
+after-1,30,28,93.3,"[78.7, 98.2]",30,100.0,"[88.6, 100.0]",1,,24:repo-docs-design
+before-1,30,29,96.7,"[83.3, 99.4]",29,96.7,"[83.3, 99.4]",1,23:git-branch,24:repo-docs-design
+r1-1,30,28,93.3,"[78.7, 98.2]",30,100.0,"[88.6, 100.0]",1,,24:repo-docs-design
+r1-2,30,28,93.3,"[78.7, 98.2]",30,100.0,"[88.6, 100.0]",1,,24:repo-docs-design

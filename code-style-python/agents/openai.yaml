@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Style Python"
+  short_description: "Python 이름, 예외, 로그, 모듈 구성, ruff 기준"
+  default_prompt: "$code-style-python 스킬로 처리해 줘: [요청]"

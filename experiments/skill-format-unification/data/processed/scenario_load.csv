@@ -1,0 +1,29 @@
+scenario,request,version,skills,o200k,claude_legacy,catalog_o200k,catalog_claude_legacy
+s01,README 작성(그림 없음),before,repo-docs repo-docs-figures repo-docs-readme,10792,15613,1417,2297
+s01,README 작성(그림 없음),after,repo-docs repo-docs-readme,8006,12125,1248,2012
+s02,README 대표 그림 교체,before,repo-docs repo-docs-figures repo-docs-readme,10792,15613,1417,2297
+s02,README 대표 그림 교체,after,repo-docs repo-docs-figures repo-docs-readme,11389,16582,1248,2012
+s03,아키텍처 문서 작성(그림 없음),before,repo-docs repo-docs-design repo-docs-figures,11335,16391,1417,2297
+s03,아키텍처 문서 작성(그림 없음),after,repo-docs repo-docs-design,8271,12355,1248,2012
+s04,아키텍처 문서와 구성 요소 그림,before,repo-docs repo-docs-design repo-docs-figures,11335,16391,1417,2297
+s04,아키텍처 문서와 구성 요소 그림,after,repo-docs repo-docs-design repo-docs-figures,11654,16812,1248,2012
+s05,명령 문서(cli.md) 작성,before,repo-docs repo-docs-design repo-docs-figures repo-docs-spec,13467,19607,1417,2297
+s05,명령 문서(cli.md) 작성,after,repo-docs repo-docs-spec,7265,10752,1248,2012
+s06,판단 기록에서 결정 기록 작성,before,repo-docs repo-docs-decision repo-docs-journal,7530,11553,1417,2297
+s06,판단 기록에서 결정 기록 작성,after,repo-docs repo-docs-decision repo-docs-journal,8295,12741,1248,2012
+s07,실험 설계 작성,before,repo-docs repo-docs-experiment repo-docs-figures,11575,16421,1417,2297
+s07,실험 설계 작성,after,repo-docs repo-docs-experiment,8816,12853,1248,2012
+s08,실험 보고서와 결과 차트,before,repo-docs repo-docs-experiment repo-docs-figures,11575,16421,1417,2297
+s08,실험 보고서와 결과 차트,after,repo-docs repo-docs-experiment repo-docs-figures,12199,17310,1248,2012
+s09,개발 기록 작성,before,repo-docs repo-docs-note,5201,7619,1417,2297
+s09,개발 기록 작성,after,repo-docs repo-docs-note,5962,8775,1248,2012
+s10,AGENTS.md 작성,before,repo-docs repo-docs-root,6129,9008,1417,2297
+s10,AGENTS.md 작성,after,repo-docs repo-docs-root,6965,10265,1248,2012
+s11,Rust 코드 작성,before,code-style code-style-rust,8939,13943,1417,2297
+s11,Rust 코드 작성,after,code-style code-style-rust,5899,8959,1248,2012
+s12,Rust 리팩터링 기법 선택,before,code-style code-style-rust,8939,13943,1417,2297
+s12,Rust 리팩터링 기법 선택,after,code-refactoring code-style code-style-rust,8846,13791,1248,2012
+s13,커밋 메시지 작성,before,git-commit,1494,2280,1417,2297
+s13,커밋 메시지 작성,after,git-commit,1496,2275,1248,2012
+s14,PR 본문 작성,before,git-branch git-commit git-pull-request,4147,6478,1417,2297
+s14,PR 본문 작성,after,git-pull-request,1230,2013,1248,2012

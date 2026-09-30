@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Docs Llms"
+  short_description: "llms.txt와 llms-full.txt 형식과 gen_llms 생성"
+  default_prompt: "$repo-docs-llms 스킬로 처리해 줘: [요청]"
