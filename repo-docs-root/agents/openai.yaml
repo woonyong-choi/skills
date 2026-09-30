@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Docs Root"
+  short_description: "AGENTS.md, CLAUDE.md 링크, CHANGELOG, CONTRIBUTING, SECURITY, LICENSE 규칙"
+  default_prompt: "$repo-docs-root 스킬로 처리해 줘: [요청]"

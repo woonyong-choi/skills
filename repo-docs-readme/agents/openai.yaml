@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Docs Readme"
+  short_description: "루트 README 고정 템플릿(합쇼체), 단계별 절, 대표 그림과 측정 결과 규칙"
+  default_prompt: "$repo-docs-readme 스킬로 처리해 줘: [요청]"

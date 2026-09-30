@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Style"
+  short_description: "언어 공통 코드 원칙, 수치 기준, 이름, 순서, 에러, 로그, 비용 주석, 테스트 규칙"
+  default_prompt: "$code-style 스킬로 처리해 줘: [요청]"

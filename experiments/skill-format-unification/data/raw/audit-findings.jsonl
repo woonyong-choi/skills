@@ -1,0 +1,26 @@
+{"id": "A1", "group": "repo-docs", "file": "repo-docs", "kind": "meaning", "summary": "합쇼 파일 목록이 README.md 전체와 .github/*.md로 넓어짐", "fix": "루트 README.md, CHANGELOG.md, .github/CONTRIBUTING.md, .github/SECURITY.md로 한정", "fixed": 1}
+{"id": "A2", "group": "repo-docs", "file": "all", "kind": "meaning", "summary": "머리 1줄이 저장소 밖 스킬에도 우선권을 줌, 옛 '다른 규칙보다 우선' 소실", "fix": "'저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선'으로 통일", "fixed": 1}
+{"id": "A3", "group": "repo-docs", "file": "repo-docs-design", "kind": "contradiction", "summary": "'구성 요소 사이 흐름 단계'가 흐름 하나에 ### 하나 규칙과 충돌", "fix": "'구성 요소 사이 흐름'으로 복원", "fixed": 1}
+{"id": "A4", "group": "repo-docs", "file": "repo-docs", "kind": "contradiction", "summary": "문서 목록 표의 '-'가 서식 6(해당 없음 글자)과 충돌", "fix": "제목 칸을 '템플릿', '해당 없음'으로 교체", "fixed": 1}
+{"id": "A5", "group": "repo-docs", "file": "repo-docs-readme", "kind": "wording", "summary": "'단계 알림 절'이 제목 없는 알림을 절로 부름", "fix": "'단계 알림'으로 복원", "fixed": 1}
+{"id": "A6", "group": "repo-docs", "file": "repo-docs", "kind": "wording", "summary": "루트 문서 조건 'repo-docs-root 파일'의 가리키는 곳 모호", "fix": "'repo-docs-root 파일 표'로 명시", "fixed": 1}
+{"id": "A7", "group": "repo-docs", "file": "repo-docs", "kind": "preexisting", "summary": "LICENSE가 문서 목록 표에 없음(옛 버전부터)", "fix": "LICENSE 행 추가", "fixed": 1}
+{"id": "B1", "group": "records", "file": "repo-docs-root", "kind": "meaning", "summary": "단계 표 값 둠/뺌이 작성/제외로 바뀌어 매 단계 재작성으로 읽힘", "fix": "필수/없음으로 교체", "fixed": 1}
+{"id": "B2", "group": "records", "file": "repo-docs-promo", "kind": "meaning", "summary": "창 제목 변경 의무가 이름표로 약해짐", "fix": "'창 제목을 {이름}으로 변경'", "fixed": 1}
+{"id": "B3", "group": "records", "file": "repo-docs-promo", "kind": "meaning", "summary": "사용자 안내, 받은 파일 확인 의무의 동사 소실", "fix": "'사용자에게 아래 순서 안내', '받으면 아래 항목 확인'", "fixed": 1}
+{"id": "B4", "group": "records", "file": "all", "kind": "meaning", "summary": "A2와 같은 머리 1줄 문제", "fix": "A2와 같이 수정", "fixed": 1}
+{"id": "B5", "group": "records", "file": "repo-docs-experiment", "kind": "meaning", "summary": "description의 '벤치마크'가 범위 밖 CI 성능 회귀까지 끌어올 수 있음", "fix": "'일회성 벤치마크'로 한정", "fixed": 1}
+{"id": "B6", "group": "records", "file": "repo-docs-experiment", "kind": "wording", "summary": "보고서 규칙 행 이름 '흐름 표'와 절 이름 '흐름' 불일치", "fix": "'흐름'으로 복원", "fixed": 1}
+{"id": "C1", "group": "code", "file": "code-style family", "kind": "loss", "summary": "'없으면 이 스킬과 언어별 스킬이 다른 규칙보다 우선' 소실", "fix": "머리 1줄 통일로 복원", "fixed": 1}
+{"id": "C2", "group": "code", "file": "code-style-rust/kotlin/python", "kind": "loss", "summary": "언어별 스킬에서 code-style과 다를 때의 규칙 소실", "fix": "기반 줄에 '그 밖에서 code-style과 다르면 code-style 우선' 추가", "fixed": 1}
+{"id": "C3", "group": "code", "file": "code-style", "kind": "meaning", "summary": "'(folder-naming 금지)'가 folder-naming 자체 금지로 읽힘", "fix": "'(folder-naming과 같은 기준)'으로 복원", "fixed": 1}
+{"id": "C4", "group": "code", "file": "code-style", "kind": "wording", "summary": "'종류별 스킬'이 repo-docs 용어에서 복사됨", "fix": "'언어별 스킬'로 수정", "fixed": 1}
+{"id": "C5", "group": "code", "file": "code-style", "kind": "loss", "summary": "금지 목록에서 두 항목(기능과 리팩터링 한 커밋, 쓰지 않는 추상화) 소실. 원칙 표에는 남음", "fix": "금지 목록에 복원", "fixed": 1}
+{"id": "C6", "group": "code", "file": "code-style", "kind": "meaning", "summary": "테스트 수치 문장에 '지표', '우선'이 더해짐", "fix": "'커버리지·테스트 개수는 목표 아님. 위험한 곳 테스트'로 복원", "fixed": 1}
+{"id": "C7", "group": "code", "file": "code-style-python", "kind": "meaning", "summary": "타입 힌트 규칙이 린트 설정 절로 이동", "fix": "머리 목록으로 복원", "fixed": 1}
+{"id": "C8", "group": "code", "file": "code-style-rust", "kind": "loss", "summary": "'레벨은 code-style 로그 레벨 표' 소실", "fix": "'레벨: code-style 로그 레벨 표' 복원", "fixed": 1}
+{"id": "C9", "group": "code", "file": "code-style-kotlin/python", "kind": "loss", "summary": "'무시하는 예외는 이유를 주석으로' 소실", "fix": "복원", "fixed": 1}
+{"id": "C10", "group": "code", "file": "git-issue", "kind": "loss", "summary": "'한 이슈에 종류 하나' 명시 소실", "fix": "복원", "fixed": 1}
+{"id": "C11", "group": "code", "file": "git-commit", "kind": "wording", "summary": "'git-branch 스킬을 쓰는 저장소'가 '이슈 단위 브랜치(git-branch)를 쓰는 저장소'로 바뀜", "fix": "뜻이 같아 유지", "fixed": 0}
+{"id": "C12", "group": "code", "file": "git-issue", "kind": "wording", "summary": "상태 이름에 백틱 추가", "fix": "백틱 제거, 검사기에 상태 이름 예외 추가", "fixed": 1}
+{"id": "C13", "group": "code", "file": "code-refactoring", "kind": "wording", "summary": "절차가 한 항목 번호 목록", "fix": "기반 스킬(code-style) 절차를 따르므로 유지", "fixed": 0}

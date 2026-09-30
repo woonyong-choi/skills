@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Refactoring"
+  short_description: "문제 신호별 리팩터링 기법 선택과 기법 목록"
+  default_prompt: "$code-refactoring 스킬로 처리해 줘: [요청]"

@@ -1,0 +1,37 @@
+pass,id,group,file,kind,summary,fix,fixed
+1,A1,repo-docs,repo-docs,meaning,합쇼 파일 목록이 README.md 전체와 .github/*.md로 넓어짐,"루트 README.md, CHANGELOG.md, .github/CONTRIBUTING.md, .github/SECURITY.md로 한정",1
+1,A2,repo-docs,all,meaning,"머리 1줄이 저장소 밖 스킬에도 우선권을 줌, 옛 '다른 규칙보다 우선' 소실",'저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선'으로 통일,1
+1,A3,repo-docs,repo-docs-design,contradiction,'구성 요소 사이 흐름 단계'가 흐름 하나에 ### 하나 규칙과 충돌,'구성 요소 사이 흐름'으로 복원,1
+1,A4,repo-docs,repo-docs,contradiction,문서 목록 표의 '-'가 서식 6(해당 없음 글자)과 충돌,"제목 칸을 '템플릿', '해당 없음'으로 교체",1
+1,A5,repo-docs,repo-docs-readme,wording,'단계 알림 절'이 제목 없는 알림을 절로 부름,'단계 알림'으로 복원,1
+1,A6,repo-docs,repo-docs,wording,루트 문서 조건 'repo-docs-root 파일'의 가리키는 곳 모호,'repo-docs-root 파일 표'로 명시,1
+1,A7,repo-docs,repo-docs,preexisting,LICENSE가 문서 목록 표에 없음(옛 버전부터),LICENSE 행 추가,1
+1,B1,records,repo-docs-root,meaning,단계 표 값 둠/뺌이 작성/제외로 바뀌어 매 단계 재작성으로 읽힘,필수/없음으로 교체,1
+1,B2,records,repo-docs-promo,meaning,창 제목 변경 의무가 이름표로 약해짐,'창 제목을 {이름}으로 변경',1
+1,B3,records,repo-docs-promo,meaning,"사용자 안내, 받은 파일 확인 의무의 동사 소실","'사용자에게 아래 순서 안내', '받으면 아래 항목 확인'",1
+1,B4,records,all,meaning,A2와 같은 머리 1줄 문제,A2와 같이 수정,1
+1,B5,records,repo-docs-experiment,meaning,description의 '벤치마크'가 범위 밖 CI 성능 회귀까지 끌어올 수 있음,'일회성 벤치마크'로 한정,1
+1,B6,records,repo-docs-experiment,wording,보고서 규칙 행 이름 '흐름 표'와 절 이름 '흐름' 불일치,'흐름'으로 복원,1
+1,C1,code,code-style family,loss,'없으면 이 스킬과 언어별 스킬이 다른 규칙보다 우선' 소실,머리 1줄 통일로 복원,1
+1,C2,code,code-style-rust/kotlin/python,loss,언어별 스킬에서 code-style과 다를 때의 규칙 소실,기반 줄에 '그 밖에서 code-style과 다르면 code-style 우선' 추가,1
+1,C3,code,code-style,meaning,'(folder-naming 금지)'가 folder-naming 자체 금지로 읽힘,'(folder-naming과 같은 기준)'으로 복원,1
+1,C4,code,code-style,wording,'종류별 스킬'이 repo-docs 용어에서 복사됨,'언어별 스킬'로 수정,1
+1,C5,code,code-style,loss,"금지 목록에서 두 항목(기능과 리팩터링 한 커밋, 쓰지 않는 추상화) 소실. 원칙 표에는 남음",금지 목록에 복원,1
+1,C6,code,code-style,meaning,"테스트 수치 문장에 '지표', '우선'이 더해짐",'커버리지·테스트 개수는 목표 아님. 위험한 곳 테스트'로 복원,1
+1,C7,code,code-style-python,meaning,타입 힌트 규칙이 린트 설정 절로 이동,머리 목록으로 복원,1
+1,C8,code,code-style-rust,loss,'레벨은 code-style 로그 레벨 표' 소실,'레벨: code-style 로그 레벨 표' 복원,1
+1,C9,code,code-style-kotlin/python,loss,'무시하는 예외는 이유를 주석으로' 소실,복원,1
+1,C10,code,git-issue,loss,'한 이슈에 종류 하나' 명시 소실,복원,1
+1,C11,code,git-commit,wording,'git-branch 스킬을 쓰는 저장소'가 '이슈 단위 브랜치(git-branch)를 쓰는 저장소'로 바뀜,뜻이 같아 유지,0
+1,C12,code,git-issue,wording,상태 이름에 백틱 추가,"백틱 제거, 검사기에 상태 이름 예외 추가",1
+1,C13,code,code-refactoring,wording,절차가 한 항목 번호 목록,기반 스킬(code-style) 절차를 따르므로 유지,0
+2,D1,reaudit,repo-docs,contradiction,"원문 낱말 그대로 규칙이 용어 표 교체, 이름 통일, 결정 제목 용어 교체와 충돌","예외 목록(용어 표, 이름 통일, 끝 변환) 추가",1
+2,D2,reaudit,repo-docs-root,contradiction,"규칙 칸 예시가 끝 변환 규칙과 다른 변환(낱말 교체, 어순 변경)","끝 변환 규칙을 따르는 예시로 교체, 그 밖의 동사 변환 추가",1
+2,D3,reaudit,repo-docs,contradiction,끝 변환 `없다` → `없음`이 `-ㅁ` 금지와 충돌,서식 6 표기라는 예외 명시,1
+2,D4,reaudit,repo-docs-decision,contradiction,판단 기록 제목 옮기기가 비공개 문장 복사 금지와 충돌,"복사 금지에 옮기기 표가 정한 제목, 선택지 글자 예외 명시",1
+2,D5,reaudit,repo-docs-design,contradiction,기술 선택 예시 문장이 형용사 금지와 충돌,동작 문장 예시로 교체,1
+2,D6,reaudit,repo-docs-design,preexisting,링크 글자 `결정 기록`이 서식 9와 충돌,서식 9에 템플릿이 정한 문서 종류 이름 허용,1
+2,D7,reaudit,repo-docs-design,contradiction,그림 줄 삭제 규칙이 아키텍처 템플릿에만 있음,repo-docs 서식 8로 옮겨 모든 그림 줄에 적용,1
+2,D8,reaudit,repo-docs-root,contradiction,설계 문서 문장 조건과 고정 규칙 셋째 항목의 조건 불일치,docs/README.md가 없으면 셋째 항목도 삭제,1
+2,D9,reaudit,code-refactoring,contradiction,기반 스킬과 다를 때의 우선 규칙 없음,기반 줄에 code-style 우선 추가,1
+2,D10,reaudit,repo-docs,wording,검사 절 합쇼 파일 목록에 .github/ 경로 없음,경로 추가,1

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Docs Decision"
+  short_description: "공개 결정 기록 템플릿과 비공개 판단 기록을 공개용으로 다시 쓰는 규칙"
+  default_prompt: "$repo-docs-decision 스킬로 처리해 줘: [요청]"

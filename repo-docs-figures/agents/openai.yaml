@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Docs Figures"
+  short_description: "D2, Vega-Lite, VHS 그림 템플릿과 공통 색표, render_figures 변환"
+  default_prompt: "$repo-docs-figures 스킬로 처리해 줘: [요청]"

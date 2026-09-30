@@ -1,0 +1,15 @@
+scenario,request,before_skills,after_skills,before_o200k,after_o200k,change_o200k_pct,before_claude_legacy,after_claude_legacy,change_claude_legacy_pct
+s01,README 작성(그림 없음),repo-docs repo-docs-figures repo-docs-readme,repo-docs repo-docs-readme,10792,8006,-25.8,15613,12125,-22.3
+s02,README 대표 그림 교체,repo-docs repo-docs-figures repo-docs-readme,repo-docs repo-docs-figures repo-docs-readme,10792,11389,5.5,15613,16582,6.2
+s03,아키텍처 문서 작성(그림 없음),repo-docs repo-docs-design repo-docs-figures,repo-docs repo-docs-design,11335,8271,-27.0,16391,12355,-24.6
+s04,아키텍처 문서와 구성 요소 그림,repo-docs repo-docs-design repo-docs-figures,repo-docs repo-docs-design repo-docs-figures,11335,11654,2.8,16391,16812,2.6
+s05,명령 문서(cli.md) 작성,repo-docs repo-docs-design repo-docs-figures repo-docs-spec,repo-docs repo-docs-spec,13467,7265,-46.1,19607,10752,-45.2
+s06,판단 기록에서 결정 기록 작성,repo-docs repo-docs-decision repo-docs-journal,repo-docs repo-docs-decision repo-docs-journal,7530,8295,10.2,11553,12741,10.3
+s07,실험 설계 작성,repo-docs repo-docs-experiment repo-docs-figures,repo-docs repo-docs-experiment,11575,8816,-23.8,16421,12853,-21.7
+s08,실험 보고서와 결과 차트,repo-docs repo-docs-experiment repo-docs-figures,repo-docs repo-docs-experiment repo-docs-figures,11575,12199,5.4,16421,17310,5.4
+s09,개발 기록 작성,repo-docs repo-docs-note,repo-docs repo-docs-note,5201,5962,14.6,7619,8775,15.2
+s10,AGENTS.md 작성,repo-docs repo-docs-root,repo-docs repo-docs-root,6129,6965,13.6,9008,10265,14.0
+s11,Rust 코드 작성,code-style code-style-rust,code-style code-style-rust,8939,5899,-34.0,13943,8959,-35.7
+s12,Rust 리팩터링 기법 선택,code-style code-style-rust,code-refactoring code-style code-style-rust,8939,8846,-1.0,13943,13791,-1.1
+s13,커밋 메시지 작성,git-commit,git-commit,1494,1496,0.1,2280,2275,-0.2
+s14,PR 본문 작성,git-branch git-commit git-pull-request,git-pull-request,4147,1230,-70.3,6478,2013,-68.9

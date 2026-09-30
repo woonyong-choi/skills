@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Branch"
+  short_description: "main과 짧은 작업 브랜치, 이름, PR, squash merge 규칙"
+  default_prompt: "$git-branch 스킬로 처리해 줘: [요청]"

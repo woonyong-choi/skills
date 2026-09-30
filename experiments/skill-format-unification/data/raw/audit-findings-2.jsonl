@@ -1,0 +1,10 @@
+{"id": "D1", "group": "reaudit", "file": "repo-docs", "kind": "contradiction", "summary": "원문 낱말 그대로 규칙이 용어 표 교체, 이름 통일, 결정 제목 용어 교체와 충돌", "fix": "예외 목록(용어 표, 이름 통일, 끝 변환) 추가", "fixed": 1}
+{"id": "D2", "group": "reaudit", "file": "repo-docs-root", "kind": "contradiction", "summary": "규칙 칸 예시가 끝 변환 규칙과 다른 변환(낱말 교체, 어순 변경)", "fix": "끝 변환 규칙을 따르는 예시로 교체, 그 밖의 동사 변환 추가", "fixed": 1}
+{"id": "D3", "group": "reaudit", "file": "repo-docs", "kind": "contradiction", "summary": "끝 변환 `없다` → `없음`이 `-ㅁ` 금지와 충돌", "fix": "서식 6 표기라는 예외 명시", "fixed": 1}
+{"id": "D4", "group": "reaudit", "file": "repo-docs-decision", "kind": "contradiction", "summary": "판단 기록 제목 옮기기가 비공개 문장 복사 금지와 충돌", "fix": "복사 금지에 옮기기 표가 정한 제목, 선택지 글자 예외 명시", "fixed": 1}
+{"id": "D5", "group": "reaudit", "file": "repo-docs-design", "kind": "contradiction", "summary": "기술 선택 예시 문장이 형용사 금지와 충돌", "fix": "동작 문장 예시로 교체", "fixed": 1}
+{"id": "D6", "group": "reaudit", "file": "repo-docs-design", "kind": "preexisting", "summary": "링크 글자 `결정 기록`이 서식 9와 충돌", "fix": "서식 9에 템플릿이 정한 문서 종류 이름 허용", "fixed": 1}
+{"id": "D7", "group": "reaudit", "file": "repo-docs-design", "kind": "contradiction", "summary": "그림 줄 삭제 규칙이 아키텍처 템플릿에만 있음", "fix": "repo-docs 서식 8로 옮겨 모든 그림 줄에 적용", "fixed": 1}
+{"id": "D8", "group": "reaudit", "file": "repo-docs-root", "kind": "contradiction", "summary": "설계 문서 문장 조건과 고정 규칙 셋째 항목의 조건 불일치", "fix": "docs/README.md가 없으면 셋째 항목도 삭제", "fixed": 1}
+{"id": "D9", "group": "reaudit", "file": "code-refactoring", "kind": "contradiction", "summary": "기반 스킬과 다를 때의 우선 규칙 없음", "fix": "기반 줄에 code-style 우선 추가", "fixed": 1}
+{"id": "D10", "group": "reaudit", "file": "repo-docs", "kind": "wording", "summary": "검사 절 합쇼 파일 목록에 .github/ 경로 없음", "fix": "경로 추가", "fixed": 1}

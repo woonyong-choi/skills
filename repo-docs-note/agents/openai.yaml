@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Docs Note"
+  short_description: "개발 기록(insight, reference) 템플릿"
+  default_prompt: "$repo-docs-note 스킬로 처리해 줘: [요청]"
