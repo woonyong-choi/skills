@@ -65,14 +65,21 @@ description: "저장소 루트 README.md와 번역본 README.ko.md를 만들거�
 
 ## 머리
 
-제목부터 첫 `##` 전까지. 이 순서
+파일 처음부터 첫 `##` 전까지. 가운데 정렬 블록 하나와 그 뒤 본문
 
-1. 제목: `# {제품 이름}`. 제품 표기 그대로(저장소 이름이 소문자여도 `Saturn`)
-2. 언어 전환 줄(repo-docs 언어)
+가운데 정렬 블록: `<p align="center">`와 `<h1 align="center">`로, 이 순서
+
+1. 로고: 로고 파일이 있을 때만. `<picture>`로 다크 모드용 `docs/assets/logo-dark.png`와 기본 `docs/assets/logo-light.png`, 폭 `width="160"`, 대체 글 `{제품 이름} logo`
+2. 제목: `<h1 align="center">{제품 이름}</h1>`. 제품 표기 그대로(저장소 이름이 소문자여도 `Saturn`). 문서의 제목은 이것 하나
 3. 한 줄 소개: 한 문장, 영어 120자 이내. 무엇인지와 범주 하나. GitHub 저장소 설명과 같은 글자(마침표 제외)
-4. 소개 문단: 한 문단, 세 문장. 1 문제(누가 무엇을 할 때 무엇이 어려운가), 2 해결(제품이 무엇을 어떻게 하나), 3 차이(비교 대상과 무엇이 다른가). 비교 대상이 없으면 3 삭제
-5. 단계 알림: `> [!NOTE]`와 단계별 고정 문장. 배포 단계 제외
-6. 대표 그림
+4. 언어 전환 줄(repo-docs 언어). HTML 블록 안이라 `<a href="README.ko.md">한국어</a>` 형식
+5. 절 이동 링크: 언어 전환 줄 다음 줄(`<br>`로 구분). 이 README의 `##` 절 중 3~5개를 `<a href="#{앵커}">{절 이름}</a>`로, ` · `로 연결. HTML 블록 안이라 Markdown 링크 대신 `<a>`
+
+본문: 가운데 정렬 블록 뒤, 이 순서
+
+1. 소개 문단: 한 문단, 세 문장. 1 문제(누가 무엇을 할 때 무엇이 어려운가), 2 해결(제품이 무엇을 어떻게 하나), 3 차이(비교 대상과 무엇이 다른가). 비교 대상이 없으면 3 삭제
+2. 단계 알림: `> [!NOTE]`와 단계별 고정 문장. 배포 단계 제외
+3. 대표 그림
 
 | 단계 | 영어 알림 | 한국어 알림 |
 |---|---|---|
@@ -82,7 +89,7 @@ description: "저장소 루트 README.md와 번역본 README.ko.md를 만들거�
 
 | 단계 | 대표 그림 | 대체 글 |
 |---|---|---|
-| 설계, 개발 중 | 흐름 그림이나 `docs/assets/architecture.svg` | `Design: {그림이 보여 주는 결론}`, 한국어 `설계: {결론}` |
+| 설계, 개발 중 | 제품이 하는 일을 보여 주는 흐름 그림(순서 그림), 없으면 `docs/assets/architecture.svg` | `Design: {그림이 보여 주는 결론}`, 한국어 `설계: {결론}` |
 | 실행 가능, 배포 | 데모 GIF `docs/assets/demo.gif` | `{데모가 보여 주는 결론}` |
 
 - 소개 문단: 현재 범위만. 장기 목표와 확장 계획은 로드맵
@@ -162,11 +169,23 @@ description: "저장소 루트 README.md와 번역본 README.ko.md를 만들거�
 설계 단계 영어 원본의 절 구성. 글자 복사 대상 아님(repo-docs 절 구성 7)
 
 ````text
-# Tally
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png">
+    <img src="docs/assets/logo-light.png" alt="Tally logo" width="160">
+  </picture>
+</p>
 
-English | [한국어](README.ko.md)
+<h1 align="center">Tally</h1>
 
-A terminal tool that collects to-dos from many repositories into one list.
+<p align="center">
+  A terminal tool that collects to-dos from many repositories into one list.
+</p>
+
+<p align="center">
+  English | <a href="README.ko.md">한국어</a><br>
+  <a href="#how-it-works">How it works</a> · <a href="#status">Status</a> · <a href="#roadmap">Roadmap</a> · <a href="#documentation">Documentation</a>
+</p>
 
 Developers who maintain several repositories lose track of issues spread across them. Tally pulls open issues from every repository into one local list and keeps it in sync. Unlike the per-repository issue pages, it shows everything in one place without switching tabs.
 
@@ -207,6 +226,7 @@ The design documents are written in Korean.
 - `README.ko.md`: `README.md`와 절, 순서, 목록 항목 수, 그림, 링크 일대일(repo-docs 언어)
 - 문장: 뜻 유지, 자연스러운 한국어 합쇼체. 낱말 단위 직역 금지
 - 절 제목: 절 이름 목록의 한국어 글자. 단계 알림: 고정 한국어 문장
+- 가운데 정렬 블록: 한 줄 소개를 한국어로 번역, 절 이동 링크의 글자와 앵커는 한국어 절 제목 기준
 - 대체 글: 한국어로 번역, 표시 `설계:`, `합성 데이터:`
 - 원본과 번역본은 같은 PR에서 수정
 

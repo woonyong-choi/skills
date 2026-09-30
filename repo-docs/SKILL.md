@@ -142,7 +142,7 @@ description: "저장소 문서(README, 루트 파일, docs, 결정 기록, 실�
 7. 코드 블록: 백틱 세 개와 언어 태그 `sh`, `text`, 또는 코드 언어 이름(`rust`, `toml`, `json`, `python`). 명령 앞 `$` 금지
 8. 그림: 이미지 한 줄 `![{대체 글}]({상대 경로})`. 다크 모드 그림이 따로 있으면 `<picture>` 블록. 그림 파일이 없으면 그 줄 삭제(repo-docs-figures). mermaid와 텍스트 그림 금지(`docs/ui.md`와 `docs/design/` 화면 배치 그림만 예외)
 9. 저장소 안 링크: 상대 경로. 링크 글자: 문서 제목, 파일 이름, 또는 문서 종류 이름(`결정 기록`). `여기`, `이 링크`, `here` 금지
-10. 굵게, 기울임, 이모지, 각주, 배지 금지. HTML은 `<picture>`, `<source>`, `<img>`(`<picture>` 안), `<details>`, `<summary>`만
+10. 굵게, 기울임, 이모지, 각주, 배지 금지. HTML은 `<picture>`, `<source>`, `<img>`, `<details>`, `<summary>`와 README 머리의 `<p align="center">`, `<h1 align="center">`, `<a>`, `<br>`만
 11. 인용 블록: GitHub 알림 두 가지만. `> [!NOTE]`(알아 둘 사실), `> [!WARNING]`(어기면 데이터나 동작을 잃는 규칙). 다음 줄 `> {문장}` 한 줄
 12. 숫자와 단위: 한국어는 붙여 쓰기 `5초`, `1MB`, 영어는 띄어 쓰기 `5 s`, `1 MB`. 날짜 `YYYY-MM-DD`
 13. 조사: 영문과 코드 바로 뒤, 공백 없음 `tokio를`, `SQLite에`
