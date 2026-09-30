@@ -6,9 +6,7 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 # Code Style: CSS
 
 - 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
-- 기반: code-style, design-tokens 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 CSS 규칙. 그 밖에서 code-style과 다르면 code-style 우선
-- 적용 대상: `.css` 파일, JavaScript 템플릿 문자열 안 CSS, `<style>` 블록, 인라인 `style` 속성
-- code-style 가운데 함수, 매개변수, 에러, 로그, 비용 주석 항목: CSS에 해당 없음
+- 기반: code-style, design-tokens 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 CSS 규칙(`.css`, `<style>`, 인라인 `style`, JavaScript 문자열 안 CSS). 그 밖에서 code-style과 다르면 code-style 우선
 
 ## 이름
 
@@ -24,7 +22,7 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 | 사용자 정의 속성 | design-tokens 이름 규칙 | `--color-accent` |
 | 애니메이션 `@keyframes` | 동작 이름 kebab-case | `fade-in` |
 
-- `utils`, `common`, `misc`, `helper` 같은 이름의 class·파일 금지
+- `utils`, `common`, `misc`, `helpers`, `etc` 같은 이름의 class·파일 금지 (folder-naming 금지)
 - 모양을 뜻하는 이름 금지(`.blue-text`, `.mt-8`). 역할 이름만. 저장소가 유틸리티 CSS 프레임워크를 쓰면 그 규칙 우선
 
 ## 선언 순서
@@ -63,24 +61,22 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 
 - class 선택자 기본. id 선택자 금지. 태그 선택자는 기본 요소 스타일에만
 - 우선순위 최대: class 셋(0,3,0). 넘으면 구조 재설계
-- 중첩 깊이 최대 3 (CSS 중첩, 자손 결합자 포함)
+- 중첩 깊이 최대 3, 한 선택자의 복합 선택자 최대 3
 - `!important` 금지. 예외: `prefers-reduced-motion` 덮어쓰기, 외부 라이브러리 인라인 스타일 덮어쓰기. 예외마다 이유 주석
 - 전역 태그 선택자로 다른 구성 요소 스타일 변경 금지
 - 속성 선택자는 상태 표시용 `[aria-*]`, `[data-*]`에만
 
 ## 값
 
-- 색, 글꼴, 글자 크기, 간격, 반지름, 테두리 두께, 그림자, 시간, z-index: design-tokens 토큰만. 직접 값 금지 (design-tokens 하드코딩 금지)
+- 화면 값: 토큰만 (design-tokens 원칙)
 - 길이 단위: 글자 크기 `rem`, 테두리 `px` 토큰, 배치 비율 `%`·`fr`
 - `0`에 단위 금지(`0px` X)
-- 색 표기: 토큰 정의 파일 안에서만. 소문자 6자리 hex나 `oklch()`
-- 계산식: `calc()` 안에서도 토큰 사용 `calc(var(--space-4) * 2)`
+- 토큰 정의 파일의 색 표기: 소문자 6자리 hex나 `oklch()`
 
 ## 반응형과 접근성
 
 - 모바일 먼저: 기본 규칙은 좁은 화면, 넓은 화면은 `min-width` 덮어쓰기
-- breakpoint: `@media` 조건에는 `var()`를 쓸 수 없어 breakpoint 토큰과 같은 숫자만 허용. 다른 숫자 금지 (design-tokens 검사가 대조)
-- 다크 모드: `@media (prefers-color-scheme: dark)`나 `[data-theme='dark']`에서 의미 토큰만 다시 정의. 구성 요소 규칙에 다크 모드 값 직접 기재 금지
+- breakpoint, 다크 모드: (design-tokens 쓰는 방법)
 - 움직임: 모든 `transition`·`animation`에 `@media (prefers-reduced-motion: reduce)` 대응 필수
 - 초점: `:focus-visible` 스타일 필수. `outline: none` 단독 사용 금지
 - 누를 수 있는 요소 크기: 최소 24×24 CSS px(WCAG 2.2 2.5.8)
@@ -89,8 +85,8 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 ## 공개 범위와 주석
 
 - 다른 구성 요소 class를 밖에서 덮어쓰기 금지. 바꿀 값은 그 구성 요소의 사용자 정의 속성으로 열기
-- 주석 언어: code-style 공개 범위와 주석
-- 주석은 이유만: 브라우저 버그 우회, 외부 제약, 우선순위 예외. 구획 주석(`/* ---- 버튼 ---- */`)은 파일 구성 순서의 경계에만
+- 주석 언어와 쓰는 때: (code-style 공개 범위와 주석)
+- 구획 주석(`/* ---- 버튼 ---- */`): 선언 순서 파일 항목의 경계에만
 
 ## 테스트
 
@@ -111,19 +107,21 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
     "selector-max-id": 0,
     "selector-max-specificity": "0,3,0",
     "max-nesting-depth": 3,
+    "selector-max-compound-selectors": 3,
     "declaration-no-important": true,
-    "length-zero-no-unit": true,
     "color-no-hex": true,
+    "color-hex-length": "long",
+    "function-disallowed-list": ["rgb", "rgba", "hsl", "hsla", "hwb", "lab", "lch", "oklab", "oklch", "color"],
     "color-named": "never",
     "declaration-block-no-duplicate-properties": true,
     "declaration-block-no-shorthand-property-overrides": true,
     "scale-unlimited/declaration-strict-value": [
-      ["/color$/", "background", "fill", "stroke", "font-family", "font-size", "line-height", "/^(margin|padding|gap|inset)/", "border-radius", "border-width", "box-shadow", "z-index", "transition-duration", "animation-duration"],
-      { "ignoreValues": ["0", "auto", "none", "inherit", "initial", "unset", "currentcolor", "transparent", "100%"] }
+      ["/color$/", "background", "fill", "stroke", "/^font/", "line-height", "letter-spacing", "/^(margin|padding|gap|inset)/", "/^(min-|max-)?(width|height)$/", "border-radius", "border-width", "box-shadow", "opacity", "z-index", "/(duration|timing-function)$/"],
+      { "ignoreValues": ["0", "1", "auto", "none", "inherit", "initial", "unset", "currentcolor", "transparent", "100%", "50%", "100vh", "100vw"] }
     ]
   },
   "overrides": [
-    { "files": ["**/tokens.css"], "rules": { "color-no-hex": null, "scale-unlimited/declaration-strict-value": null } }
+    { "files": ["**/tokens.css"], "rules": { "color-no-hex": null, "function-disallowed-list": null, "scale-unlimited/declaration-strict-value": null } }
   ]
 }
 ```
@@ -138,5 +136,5 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 ```
 npx prettier --check "**/*.css"
 npx stylelint "**/*.css" --max-warnings 0
-python3 <design-tokens 스킬 폴더>/scripts/check_tokens.py .
+python3 <design-tokens 스킬 폴더>/scripts/check_tokens.py <소스 폴더>
 ```
