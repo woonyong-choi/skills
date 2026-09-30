@@ -2,28 +2,117 @@
 
 사용: python3 check_doc.py 파일 [파일 ...] (저장소 루트에서 실행)
 """
+import os
 import re
 import sys
 
-FORMAL_FILES = {"README.md", "CHANGELOG.md", ".github/CONTRIBUTING.md", ".github/SECURITY.md"}
+FORMAL_FILES = {"README.ko.md"}
 PRIVATE_PATH = re.compile(r"docs/+(\./)*archive|\]\((\.\.?/)*archive/|^\[[^\]]*\]: *(\.\.?/)*archive/")
 FENCE = re.compile(r"^`{3,}")
 FENCE_CLOSE = re.compile(r"^`+[ \t]*$")
-NOT_PARAGRAPH = re.compile(r"^(\||- |[0-9]+\. |#|!\[|\[!|---)|^[a-z_]+: ")
+NOT_PARAGRAPH = re.compile(r"^(\||- |[0-9]+\. |#|!\[|\[!|---|<)|^[a-z_]+: ")
 PARAGRAPH_ENDING = re.compile(r"(해요|십시오| 것이다|게 된다|함|음|임)\.$")
 QUOTE_ALERT = re.compile(r"^> \[!(NOTE|WARNING)\]$")
-BANNED_WORDS = re.compile(r"(계획|예정|향후|TBD|TODO|미측정|더미 데이터|목업|강력한|혁신적|쉽게|간단히|간단하게|다양한|효율적|원활|최적의|완벽한|매끄러운|차세대|것 같다|로 보인다|유저|리포지토리|레포지토리|커맨드|컨피그|구동)")
-CONNECTIVES = re.compile(r"(^|[.] |^- |^[0-9]+[.] )(또한|이를 통해|이에 따라|결론적으로|요약하면|참고로|기본적으로)")
+KO_BANNED = re.compile(r"(TBD|TODO|미측정|더미 데이터|목업|강력한|혁신적|쉽게|간단히|간단하게|다양한|효율적|원활|최적의|완벽한|매끄러운|차세대|것 같다|로 보인다|유저|리포지토리|레포지토리|커맨드|컨피그|구동)")
+KO_CONNECTIVES = re.compile(r"(^|[.] |^- |^[0-9]+[.] )(또한|이를 통해|이에 따라|결론적으로|요약하면|참고로|기본적으로)")
+EN_BANNED = re.compile(r"\b(TBD|TODO|blazing|powerful|seamless(ly)?|simply|easy|easily|revolutionary|next-generation|cutting-edge|world-class|best-in-class)\b", re.IGNORECASE)
+EN_CONNECTIVES = re.compile(r"(^|[.] |^- |^[0-9]+[.] )(Additionally|Furthermore|In conclusion|Basically)\b")
+EN_CONTRACTION = re.compile(r"\b\w+n't\b|\b(it|that|there|what|here|who)'s\b|\b\w+'(re|ll|ve|d)\b", re.IGNORECASE)
 PUNCTUATION = re.compile(r"[?!]$|\.\.\.|…")
 HEADING = re.compile(r"^#{1,6} ")
+HTML_TAG = re.compile(r"<(/?)([a-zA-Z]+)[^>]*>|<!")
+ALLOWED_TAGS = {"picture", "source", "img", "details", "summary"}
+HANGUL = re.compile(r"[가-힣]")
+LETTER = re.compile(r"[A-Za-z가-힣]")
+
+README_KO = ["작동 방식", "설치", "사용법", "기능", "측정 결과", "상태", "비교", "로드맵", "문서", "개발", "라이선스"]
+README_EN = ["How it works", "Installation", "Usage", "Features", "Benchmarks", "Status", "Comparison", "Roadmap", "Documentation", "Development", "License"]
+ARCHITECTURE_KO = ["맥락", "코드 지도", "실행 흐름", "불변 조건", "배치", "기술 선택"]
+ARCHITECTURE_EN = ["Context", "Code map", "Flows", "Invariants", "Deployment", "Technology choices"]
+DESIGN_KO = ["요약", "동기", "예시", "상세 설계", "단점", "대안", "미해결 질문"]
+DESIGN_EN = ["Summary", "Motivation", "Examples", "Design", "Drawbacks", "Alternatives", "Unresolved questions"]
+DECISION_KO = ["배경", "선택지", "결정", "결과", "다시 볼 조건"]
+DECISION_EN = ["Context", "Options", "Decision", "Consequences", "Revisit when"]
 
 
+# cost: time O(1), heap O(1), stack O(1), alloc 0
+# basis: estimate
+def section_lists(name: str) -> list[list[str]]:
+    if name in ("README.md", "README.ko.md"):
+        return [README_KO, README_EN]
+    if name == "docs/architecture.md":
+        return [ARCHITECTURE_KO, ARCHITECTURE_EN]
+    if name.startswith("docs/design/"):
+        return [DESIGN_KO, DESIGN_EN]
+    if re.match(r"docs/decisions/\d{4}-\d{2}-\d{2}-", name):
+        return [DECISION_KO, DECISION_EN]
+    return []
+
+
+# cost: time O(s), heap O(s), stack O(1), alloc ≈ s
+# vars: s = 절 수
+# basis: estimate
+def section_indexes(headings: list[str], lists: list[list[str]]) -> list[int]:
+    indexes = []
+    for heading in headings:
+        index = next((names.index(heading) for names in lists if heading in names), -1)
+        indexes.append(index)
+    return indexes
+
+
+# cost: time O(c), heap O(s), stack O(1), io 1
+# vars: c = 파일 글자 수, s = 절 수
+# basis: estimate
+def level_two_headings(path: str) -> list[str]:
+    headings = []
+    in_fence = False
+    with open(path, encoding="utf-8") as file:
+        for raw in file:
+            if FENCE.match(raw):
+                in_fence = not in_fence
+            elif not in_fence and raw.startswith("## "):
+                headings.append(raw[3:].strip())
+    return headings
+
+
+# cost: time O(s), heap O(s), stack O(1), io 2
+# vars: s = 절 수
+# basis: estimate
+def structure_errors(name: str, path: str) -> list[str]:
+    lists = section_lists(name)
+    if not lists:
+        return []
+    errors = []
+    indexes = [index for index in section_indexes(level_two_headings(path), lists) if index >= 0]
+    if indexes != sorted(indexes) or len(indexes) != len(set(indexes)):
+        errors.append("절 순서")
+    pair = {"README.md": "README.ko.md", "README.ko.md": "README.md"}.get(name)
+    if name == "README.ko.md" and os.path.exists(pair):
+        mine = section_indexes(level_two_headings(path), lists)
+        theirs = section_indexes(level_two_headings(pair), lists)
+        if mine != theirs:
+            errors.append("README.md와 절 대응 불일치")
+    return errors
+
+
+# cost: time O(c), heap O(1), stack O(1), io 1
+# vars: c = 파일 글자 수
+# basis: estimate
+def is_english(path: str) -> bool:
+    text = open(path, encoding="utf-8").read()
+    letters = len(LETTER.findall(text))
+    return letters > 0 and len(HANGUL.findall(text)) / letters < 0.2
+
+
+# cost: time O(k), heap O(1), stack O(1), alloc 0
+# vars: k = 칸 글자 수
+# basis: estimate
 def has_bad_cell_ending(cell: str) -> bool:
     return (
         (cell.endswith("니다") and not cell.endswith("아니다"))
         or cell.endswith(("해요", "세요", "십시오"))
         or (cell.endswith("함") and not cell.endswith(("포함", "결함")))
-        or (cell.endswith("음") and not cell.endswith(("없음", "다음")))
+        or (cell.endswith("음") and not cell.endswith(("없음", "다음", "처음", "마음")))
         or cell.endswith((" 것이다", "게 된다"))
     )
 
@@ -31,14 +120,8 @@ def has_bad_cell_ending(cell: str) -> bool:
 # cost: time O(w), heap O(w), stack O(1), alloc ≈ 6 + 2k
 # vars: w = 줄 글자 수, k = 표 칸 수
 # basis: estimate
-def prose_errors(raw: str, is_formal: bool, previous_quote: str) -> list[str]:
+def korean_errors(text: str, is_formal: bool) -> list[str]:
     errors = []
-    line = re.sub(r"`[^`]*`", "", raw)
-    text = re.sub(r"^> ", "", line, count=1)
-    text = re.sub(r" +$", "", text, count=1)
-    text = re.sub(r"\(\[[^\]]*\]\([^)]*\)\)\.$", ".", text, count=1)
-    if re.search(r"[ \t]$", raw):
-        errors.append("줄 끝 공백")
     if not NOT_PARAGRAPH.match(text):
         if is_formal and text.endswith("다.") and not text.endswith("니다."):
             errors.append("문체(합쇼)")
@@ -46,28 +129,56 @@ def prose_errors(raw: str, is_formal: bool, previous_quote: str) -> list[str]:
             errors.append("문체(평서)")
         if PARAGRAPH_ENDING.search(text):
             errors.append("문체")
-    else:
+    elif text.startswith("|"):
         errors += ["문체" for cell in text.split("|") if has_bad_cell_ending(re.sub(r"[ .]+$", "", cell))]
+    errors += ["쓰지 않는 말"] if KO_BANNED.search(text) else []
+    errors += ["연결어"] if KO_CONNECTIVES.search(text) else []
+    return errors
+
+
+# cost: time O(w), heap O(w), stack O(1), alloc ≈ 3
+# vars: w = 줄 글자 수
+# basis: estimate
+def english_errors(text: str) -> list[str]:
+    errors = []
+    errors += ["쓰지 않는 말"] if EN_BANNED.search(text) else []
+    errors += ["연결어"] if EN_CONNECTIVES.search(text) else []
+    errors += ["축약형"] if EN_CONTRACTION.search(text) else []
+    return errors
+
+
+# cost: time O(w), heap O(w), stack O(1), alloc ≈ 8
+# vars: w = 줄 글자 수
+# basis: estimate
+def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str) -> list[str]:
+    errors = []
+    line = re.sub(r"`[^`]*`", "", raw)
+    text = re.sub(r"^> ", "", line, count=1)
+    text = re.sub(r" +$", "", text, count=1)
+    text = re.sub(r"\(\[[^\]]*\]\([^)]*\)\)\.$", ".", text, count=1)
+    if re.search(r"[ \t]$", raw):
+        errors.append("줄 끝 공백")
+    errors += english_errors(text) if english else korean_errors(text, is_formal)
+    tags = [match for match in HTML_TAG.finditer(line)]
     checks = [
         (re.search(r"[{}]", line), "자리표시자"),
-        (re.search(r"<[a-zA-Z/!][^>]*>", line), "HTML"),
+        (any(match.group(0) == "<!" or match.group(2).lower() not in ALLOWED_TAGS for match in tags), "HTML"),
         ("**" in line or "__" in line, "굵게"),
         ("![](" in line, "대체 글 없음"),
         (raw.startswith("> ") and not QUOTE_ALERT.match(raw) and not QUOTE_ALERT.match(previous_quote), "인용 블록"),
-        (BANNED_WORDS.search(line), "쓰지 않는 말"),
-        (CONNECTIVES.search(line), "연결어"),
-        (PUNCTUATION.search(line), "문장부호"),
+        (PUNCTUATION.search(text), "문장부호"),
     ]
     return errors + [message for matched, message in checks if matched]
 
 
-# cost: time O(c), heap O(w), stack O(1), io 1 + e
+# cost: time O(c), heap O(w), stack O(1), io 3 + e
 # vars: c = 파일 글자 수, w = 가장 긴 줄 글자 수, e = 오류 수
 # basis: estimate
 def check(path: str) -> int:
     name = re.sub(r"^\./", "", path)
     is_private = name.lower().startswith("docs/archive/")
     is_formal = name in FORMAL_FILES
+    english = is_english(path)
     count = number = fence_length = previous_level = 0
     in_fence = is_blank = False
     previous_quote = ""
@@ -91,7 +202,7 @@ def check(path: str) -> int:
                 is_blank = True
             elif not in_fence:
                 is_blank = False
-                errors += prose_errors(raw, is_formal, previous_quote)
+                errors += prose_errors(raw, is_formal, english, previous_quote)
                 previous_quote = raw
                 if HEADING.match(raw):
                     level = len(raw.split()[0])
@@ -102,6 +213,9 @@ def check(path: str) -> int:
             count += len(errors)
     if in_fence:
         print(f"{name}:{number}: 코드 블록 닫힘 없음")
+        count += 1
+    for message in structure_errors(name, path):
+        print(f"{name}: {message}")
         count += 1
     return count
 

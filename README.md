@@ -82,8 +82,8 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | 스킬 | 기반 | 필요할 때만 읽기 |
 |---|---|---|
 | repo-docs | 없음 | 코드 주석 → code-style; 커밋, PR, 이슈, 브랜치 → git-* 스킬; 그림 파일, 대체 글 → repo-docs-figures |
-| repo-docs-readme | repo-docs | 대표 그림, 측정 결과 차트, 구성 그림 제작, 교체 → repo-docs-figures; README 재생성 뒤 `llms.txt` 재생성 → repo-docs-llms |
-| repo-docs-design | repo-docs | 인터페이스 문서 → repo-docs-spec; 맥락, 구성 요소, 순서, 상태 그림 → repo-docs-figures |
+| repo-docs-readme | repo-docs | 대표 그림, 흐름 그림, 측정 결과 차트, 데모 GIF 제작 → repo-docs-figures; README 갱신 뒤 `llms.txt` 재생성 → repo-docs-llms |
+| repo-docs-design | repo-docs | 코드에 들어간 인터페이스 문서 → repo-docs-spec; 맥락, 구성 요소, 순서, 상태 그림 → repo-docs-figures |
 | repo-docs-spec | repo-docs | 데이터 그림 → repo-docs-figures |
 | repo-docs-decision | repo-docs | 비공개 판단 기록에서 옮길 때 → repo-docs-journal |
 | repo-docs-experiment | repo-docs | 결과 차트 → repo-docs-figures |
@@ -105,22 +105,22 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 
 ## 크기
 
-2026-09-30 기준. o200k는 GPT, Codex 토크나이저 정확값, Claude 구는 공개된 Claude 구 토크나이저 근사치다. 카탈로그 줄은 `{이름}: {description}` 한 줄이며 모든 대화에 항상 올라간다. `scripts/` 파일은 읽지 않고 실행만 하므로 표에 넣지 않는다.
+2026-10-01 기준. o200k는 GPT, Codex 토크나이저 정확값, Claude 구는 공개된 Claude 구 토크나이저 근사치다. 카탈로그 줄은 `{이름}: {description}` 한 줄이며 모든 대화에 항상 올라간다. `scripts/` 파일은 읽지 않고 실행만 하므로 표에 넣지 않는다.
 
 | 스킬 | 바이트 | o200k | Claude 구 | 카탈로그 줄 o200k |
 |---|---|---|---|---|
-| repo-docs | 14990 | 4385 | 6676 | 63 |
-| repo-docs-readme | 10339 | 2885 | 4620 | 62 |
-| repo-docs-design | 10520 | 3150 | 4850 | 59 |
-| repo-docs-spec | 6819 | 2144 | 3247 | 46 |
-| repo-docs-decision | 4813 | 1344 | 2258 | 65 |
+| repo-docs | 16734 | 4782 | 7393 | 65 |
+| repo-docs-readme | 10752 | 2956 | 4518 | 65 |
+| repo-docs-design | 9004 | 2593 | 4110 | 57 |
+| repo-docs-spec | 6949 | 2179 | 3302 | 46 |
+| repo-docs-decision | 5379 | 1503 | 2523 | 65 |
 | repo-docs-experiment | 11580 | 3703 | 5349 | 63 |
 | repo-docs-note | 2809 | 841 | 1270 | 59 |
-| repo-docs-figures | 8265 | 2597 | 3700 | 65 |
-| repo-docs-root | 6671 | 1986 | 2992 | 58 |
-| repo-docs-llms | 2837 | 839 | 1233 | 61 |
+| repo-docs-figures | 8276 | 2601 | 3704 | 65 |
+| repo-docs-root | 6710 | 2000 | 3009 | 58 |
+| repo-docs-llms | 2993 | 881 | 1296 | 60 |
 | repo-docs-journal | 6204 | 1830 | 2978 | 60 |
-| repo-docs-promo | 4023 | 1235 | 1794 | 57 |
+| repo-docs-promo | 4042 | 1239 | 1801 | 57 |
 | git-commit | 5118 | 1496 | 2275 | 36 |
 | git-branch | 4636 | 1355 | 2084 | 60 |
 | git-issue | 5209 | 1581 | 2526 | 53 |
@@ -132,7 +132,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | code-style-python | 5534 | 1631 | 2349 | 58 |
 | folder-naming | 3093 | 923 | 1390 | 60 |
 | skill-sync | 2541 | 727 | 1118 | 43 |
-| 합계 | 162281 | 47433 | 72425 | 1292 |
+| 합계 | 163843 | 47602 | 72711 | 1294 |
 
 요청별로 실제 올라가는 양과 형식 통일 전후 비교는 [실험 결과](experiments/skill-format-unification/report.md)에 있다.
 
@@ -142,16 +142,16 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| repo-docs | 문서 목록(모든 문서 파일의 위치, 제목, 내용, 만드는 조건, 맡는 스킬), 위치별 문체, 서식, 용어, 사실 상태, 자리표시, 저장 전 검사 | 모든 문서의 공통 규칙을 한 곳에 두기 위해서다 |
-| repo-docs-readme | 루트 README 템플릿과 단계별 절 | 첫 화면이 프로젝트 단계와 사실을 정확히 보여 주게 하기 위해서다 |
-| repo-docs-design | 새 기능을 넣는 자리, `docs/README.md`와 요구사항, 용어, 아키텍처, 구성 요소 템플릿 | 설계 문서가 끝없이 늘지 않게 새 내용이 들어갈 자리를 정하기 위해서다 |
+| repo-docs | 원칙, 문서 목록(위치, 독자, 답할 질문, 만드는 조건, 맡는 스킬), 언어, 절 구성, 한국어와 영어 문체, 용어, 사실 상태, 자리표시, 기계 검사와 독자 검사 | 모든 문서의 공통 규칙을 한 곳에 두고, 형식보다 독자 질문을 기준으로 삼기 위해서다 |
+| repo-docs-readme | 영어 README와 한국어 번역본의 단계별 필수 절, 절 이름 목록, 번역 규칙 | 처음 온 사람이 무엇인지, 어떻게 쓰이는지, 지금 어떤 상태인지 바로 알게 하기 위해서다 |
+| repo-docs-design | 새 기능을 넣는 자리, `docs/README.md`, 아키텍처(코드 지도, 불변 조건), RFC형 기능 설계(미해결 질문 포함), 용어 | 설계 단계에도 정한 것과 미정인 것을 구분해 기여자가 읽을 수 있게 하기 위해서다 |
 | repo-docs-spec | 프로토콜, 명령, 화면, 데이터, 설정, 오류 문서 | 찾아보는 문서를 표 형식으로 고정하기 위해서다 |
 | repo-docs-decision | 공개 결정 기록 | 고른 이유와 버린 선택지를 공개로 남기기 위해서다 |
 | repo-docs-experiment | 사전 등록 설계, 데이터, 스크립트, 보고서 | 설계 값의 근거를 논문 수준으로 남기기 위해서다 |
 | repo-docs-note | 짧은 개발 기록(insight, reference) | 알게 된 것을 흩어지지 않게 남기기 위해서다 |
 | repo-docs-figures | D2, Vega-Lite, VHS 원본과 변환 스크립트, 공통 색표 | 그림을 코드로 만들어 다시 만들 수 있게 하기 위해서다 |
 | repo-docs-root | AGENTS.md, CLAUDE.md 링크, CHANGELOG, CONTRIBUTING, SECURITY | 루트 파일의 위치와 형식을 고정하기 위해서다 |
-| repo-docs-llms | llms.txt, llms-full.txt | AI가 문서를 한 번에 찾게 하기 위해서다 |
+| repo-docs-llms | llms.txt, 선택으로 llms-full.txt | AI가 문서를 한 번에 찾게 하기 위해서다 |
 | repo-docs-journal | 비공개 판단 기록, 서사, 원칙 | 판단 흐름과 놓친 것을 블로그 재료로 남기기 위해서다 |
 | repo-docs-promo | 홍보 영상 촬영 준비물 | 사용자가 녹화할 때 합성 데이터 데모와 규격을 바로 쓰게 하기 위해서다 |
 
