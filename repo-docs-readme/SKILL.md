@@ -143,7 +143,8 @@ description: "저장소 루트 README.md와 번역본 README.ko.md를 만들거�
 
 ### 문서
 
-- `docs/README.md` 표의 행 중 독자가 먼저 볼 것 3~6개, 같은 글자와 순서, 끝에 `docs/README.md` 링크
+- `docs/README.md` 표의 행 중 독자가 먼저 볼 것 3~6개, 같은 순서, 끝에 `docs/README.md` 링크. 형식 `- [{문서 제목}]({경로}): {답하는 것}`
+- 문서 제목: 작업 언어가 README 언어와 같으면 같은 글자, 다르면 README 언어로 번역
 - 작업 언어가 영어가 아니면 절 첫 문장에 표시: `The design documents are written in Korean.`
 - `docs/archive` 링크 금지
 
