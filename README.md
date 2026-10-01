@@ -105,7 +105,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | design-tokens | 없음 | CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색 → repo-docs-figures |
 | folder-naming | 없음 | 없음 |
 | skill-sync | 없음 | 원본 저장소 커밋 → git-commit |
-| visual-report | 없음 | 없음 |
+| html-report | 없음 | 없음 |
 
 ## 크기
 
@@ -139,8 +139,8 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | design-tokens | 7912 | 2450 | 3485 | 62 |
 | folder-naming | 3093 | 923 | 1390 | 60 |
 | skill-sync | 2541 | 727 | 1118 | 43 |
-| visual-report | 5875 | 1671 | 2573 | 53 |
-| 합계 | 191667 | 55822 | 84530 | 1530 |
+| html-report | 6362 | 1834 | 2824 | 53 |
+| 합계 | 192154 | 55985 | 84781 | 1530 |
 
 요청별로 실제 올라가는 양과 형식 통일 전후 비교는 [실험 결과](experiments/skill-format-unification/report.md)에 있다.
 
@@ -186,7 +186,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| visual-report | 그림을 나란히 보여 주는 결정 보고서와 결과 보고서 HTML의 구성, 모형 표시, `build_report` 생성, 확인 절차 | 그림을 보고 선택지를 고르거나 결과를 확인하는 보고서의 형식과 모형 표시를 매번 같게 하기 위해서다 |
+| html-report | 그림을 나란히 보여 주는 결정 보고서와 결과 보고서 HTML의 구성, 모형 표시, `build_report` 생성, 확인 절차 | 그림을 보고 선택지를 고르거나 결과를 확인하는 보고서의 형식과 모형 표시를 매번 같게 하기 위해서다 |
 
 ### 스킬 관리
 
@@ -305,3 +305,4 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | 2026-10-01 | 비용 주석 누락·위치 검사(`check_cost_comments`) 추가, `check_tokens`에 기본 토큰 참조·테마 분기·스타일 객체 숫자 검사 추가, 처음 보는 에이전트 두 번의 감사에서 찾은 결함 수정. 실제 저장소 적용 중 찾은 자간 분류 추가, 비용 주석 검사의 `.exec(` 오탐과 생성 파일 검사 수정 |
 | 2026-10-01 | report-compare-demo 추가. 질문별 A/B 그림 비교 보고서 생성 스크립트 |
 | 2026-10-02 | report-compare-demo를 승인해 visual-report로 이름 변경. 결과 보고서(`kind: result`, 확인할 점) 추가, 그림 칸 회색 바탕과 카드·표 선 대비 강화 |
+| 2026-10-02 | visual-report를 html-report로 이름 변경(채팅에서 `/html-report`), description에 사용 낱말, 사용 조건을 쓸 때와 쓰지 않을 때 표로 추가 |
