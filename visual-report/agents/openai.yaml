@@ -1,0 +1,4 @@
+interface:
+  display_name: "Visual Report"
+  short_description: "그림으로 선택지를 고르거나 결과(전/후)를 확인하는 보고서 HTML 생성"
+  default_prompt: "$visual-report 스킬로 처리해 줘: [요청]"
