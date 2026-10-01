@@ -21,7 +21,7 @@ section{margin:36px 0}
 .cols{display:grid;gap:16px;align-items:start;margin:10px 0}
 .c1{grid-template-columns:1fr}.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .c3{grid-template-columns:repeat(3,minmax(0,1fr))}.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
-.col{border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
+.col{padding:0;min-width:0}
 .col.mock{border:4px dashed var(--orange);padding:9px}
 .frame{display:flex;align-items:center;justify-content:center;background:var(--pane);padding:4px}
 .frame img{display:block;width:100%;height:auto;max-height:var(--max-h,360px);object-fit:contain}
