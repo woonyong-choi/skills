@@ -105,6 +105,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | design-tokens | 없음 | CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색 → repo-docs-figures |
 | folder-naming | 없음 | 없음 |
 | skill-sync | 없음 | 원본 저장소 커밋 → git-commit |
+| report-compare-demo | 없음 | 없음 |
 
 ## 크기
 
@@ -138,7 +139,8 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | design-tokens | 7912 | 2450 | 3485 | 62 |
 | folder-naming | 3093 | 923 | 1390 | 60 |
 | skill-sync | 2541 | 727 | 1118 | 43 |
-| 합계 | 185792 | 54151 | 81957 | 1477 |
+| report-compare-demo | 4432 | 1261 | 1940 | 49 |
+| 합계 | 190224 | 55412 | 83897 | 1526 |
 
 요청별로 실제 올라가는 양과 형식 통일 전후 비교는 [실험 결과](experiments/skill-format-unification/report.md)에 있다.
 
@@ -179,6 +181,12 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | code-style-rust, code-style-kotlin, code-style-python, code-style-javascript, code-style-css | 언어별로 공통 스킬이 맡긴 부분 | 언어 고유 규칙만 따로 두기 위해서다 |
 | design-tokens | 화면 값 토큰 정본, 이름, 세 층, 다크 모드, 하드코딩 금지, 생성·검사 스크립트 | 색과 크기를 코드마다 다르게 적어 화면 톤이 흩어지는 것을 막기 위해서다 |
 | folder-naming | 저장소 폴더 구조와 이름 | 폴더마다 구현 언어 경계가 드러나게 하기 위해서다 |
+
+### 결정 보고서
+
+| 스킬 | 맡는 것 | 만든 이유 |
+|---|---|---|
+| report-compare-demo | 그림을 나란히 보여 주는 결정용 비교 보고서 HTML의 구성, 모형 표시, `build_compare` 생성, 확인 절차 | 그림을 보고 선택지를 고르는 보고서의 형식과 모형 표시를 매번 같게 하기 위해서다. 승인 전이라 `-demo` |
 
 ### 스킬 관리
 
@@ -295,3 +303,4 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | 2026-09-30 | `AGENTS.md` 명령 절의 출처를 CI와 검사 스크립트로 고정, 명령이 없으면 절 삭제. 옛 스킬 정리 완료 |
 | 2026-10-01 | code-style-javascript, code-style-css, design-tokens 추가. 토큰 생성(`build_tokens`)과 하드코딩 검사(`check_tokens`) 스크립트 추가 |
 | 2026-10-01 | 비용 주석 누락·위치 검사(`check_cost_comments`) 추가, `check_tokens`에 기본 토큰 참조·테마 분기·스타일 객체 숫자 검사 추가, 처음 보는 에이전트 두 번의 감사에서 찾은 결함 수정. 실제 저장소 적용 중 찾은 자간 분류 추가, 비용 주석 검사의 `.exec(` 오탐과 생성 파일 검사 수정 |
+| 2026-10-01 | report-compare-demo 추가. 질문별 A/B 그림 비교 보고서 생성 스크립트 |
