@@ -42,6 +42,9 @@ def flatten_tokens(node: dict, path: Path = (), inherited_type: str | None = Non
     return tokens
 
 
+# cost: time O(g), heap O(g), stack O(1)
+# vars: g = 경로 길이
+# basis: estimate
 def to_css_name(path: Path) -> str:
     """토큰 경로를 CSS 사용자 정의 속성 이름으로 바꾼다."""
     return "--" + "-".join(path)
@@ -78,6 +81,9 @@ def to_css_value(value: Any, token_type: str | None) -> str:
     return str(value)
 
 
+# cost: time O(k), heap O(k), stack O(1)
+# vars: k = 색 성분 수
+# basis: estimate
 def format_color(color: dict) -> str:
     """DTCG 2025.10 색 객체. 불투명하고 `hex`가 있으면 hex, 아니면 CSS 색 함수로 쓴다."""
     alpha = color.get("alpha", 1)
@@ -222,6 +228,9 @@ def main() -> int:
     return 0
 
 
+# cost: time O(n), heap O(n), stack O(1), io 1
+# vars: n = 파일 글자 수
+# basis: estimate
 def read_json(path: str) -> dict:
     """JSON 파일을 읽는다."""
     with open(path, encoding="utf-8") as f:
