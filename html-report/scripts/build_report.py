@@ -12,7 +12,7 @@ from pathlib import Path
 CSS = """
 :root{--ink:#1c2025;--sub:#667;--line:#c9ced6;--tline:#dfe3e8;--pane:#f3f4f6;--blue:#2b78d9;--orange:#eb6834}
 *{box-sizing:border-box}
-body{font:15px/1.6 -apple-system,'Pretendard',sans-serif;max-width:1340px;margin:0 auto;padding:24px;color:var(--ink);background:#fafbfc}
+body{font-family:'Pretendard Variable',Pretendard,'Inter Variable',Inter,'Noto Sans KR Variable','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:15px;line-height:1.6;max-width:1340px;margin:0 auto;padding:24px;color:var(--ink);background:#fafbfc}
 h1{font-size:26px;margin:0 0 8px}
 h2{margin:0 0 8px;font-size:21px;border-bottom:2px solid var(--blue);padding-bottom:6px}
 h3{font-size:16px;margin:18px 0 6px}
@@ -39,7 +39,7 @@ thead th{background:#f5f7fa}
 .check{margin:12px 0 0}.check ul{margin:4px 0 0;padding-left:20px}
 .note{font-size:13px;color:var(--sub);margin:8px 0 0}
 .what{margin:6px 0}
-code{font-size:12px;white-space:normal}
+code{font-family:'JetBrains Mono Variable','JetBrains Mono',ui-monospace,monospace;font-size:12px;white-space:normal}
 .bad{color:#b3261e}.ok{color:#1b7a3a}
 nav{margin:8px 0}nav a{display:inline-block;min-width:22px;margin-right:6px;text-align:center}
 """
