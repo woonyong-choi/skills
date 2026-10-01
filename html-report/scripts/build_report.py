@@ -13,7 +13,7 @@ CSS = """
 :root{--ink:#1c2025;--sub:#667;--line:#c9ced6;--tline:#dfe3e8;--pane:#f3f4f6;--blue:#2b78d9;--orange:#eb6834;--bg:#fafbfc;--nav-offset:calc(4 * 24px)}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{font-family:'Pretendard Variable',Pretendard,'Inter Variable',Inter,'Noto Sans KR Variable','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:15px;line-height:1.6;max-width:1340px;margin:0 auto;padding:24px;color:var(--ink);background:var(--bg)}
+body{font-family:'Inter Variable',Inter,'Noto Sans KR Variable','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:15px;line-height:1.6;max-width:1340px;margin:0 auto;padding:24px;color:var(--ink);background:var(--bg)}
 h1{font-size:26px;margin:0 0 8px}
 h2{margin:0 0 8px;font-size:21px;border-bottom:2px solid var(--blue);padding-bottom:6px}
 h3{font-size:16px;margin:18px 0 6px}
