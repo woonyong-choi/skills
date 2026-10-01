@@ -132,8 +132,8 @@ tracing_subscriber::fmt()
 
 - 비공개 → `pub(crate)` → `pub` 순서로 필요한 만큼만 확대
 - 필드는 비공개로 두고 메서드로 접근. 검증 규칙 없는 단순 데이터 묶음만 `pub` 필드 허용
-- 공개 항목은 `///` 필수. 파일·모듈 설명은 `//!`
-- 문서 주석 절: 실패할 수 있으면 `# Errors`, panic할 수 있으면 `# Panics`, unsafe면 `# Safety`
+- 주석 기준은 code-style 공개 범위와 주석 절. 문서 주석은 `///`, 파일·모듈 설명은 `//!`
+- 문서 주석 절은 한 줄씩: 실패할 수 있으면 `# Errors`, panic할 수 있으면 `# Panics`, unsafe면 `# Safety`
 
 ## 테스트
 
@@ -147,7 +147,6 @@ tracing_subscriber::fmt()
 ```toml
 [workspace.lints.rust]
 unreachable_pub = "warn"
-missing_docs = "warn"
 
 [workspace.lints.clippy]
 too_many_lines = "warn"

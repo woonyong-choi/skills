@@ -79,7 +79,7 @@ description: "Python 코드 작성, 리뷰, 리팩터링 시 사용. 이름 형�
 
 - 비공개가 기본. 모듈 밖에서 쓸 것만 `_` 없이 이름 짓고 `__all__`에 기재
 - 필드 접근은 공개 속성과 `@property`로 (PEP 8)
-- 공개 모듈·클래스·함수는 docstring 필수. 첫 줄은 한 줄 요약, 빈 줄 뒤에 자세한 설명 (PEP 257)
+- docstring은 code-style 주석 기준대로 필요할 때만. 쓰면 한 줄 요약 (PEP 257)
 - docstring 형식은 Google 스타일. 발생하는 예외는 `Raises:` 절
 
 ## 테스트
@@ -96,6 +96,8 @@ description: "Python 코드 작성, 리뷰, 리팩터링 시 사용. 이름 형�
 ```toml
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "N", "UP", "B", "SIM", "PLR0913", "FBT", "D", "S101", "S110", "BLE", "G"]
+# 누락 docstring 규칙 제외: docstring은 필요할 때만
+ignore = ["D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107"]
 
 [tool.ruff.lint.pylint]
 max-args = 7
