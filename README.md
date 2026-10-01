@@ -135,10 +135,10 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | code-style-python | 5534 | 1631 | 2349 | 58 |
 | code-style-javascript | 6223 | 1804 | 2498 | 63 |
 | code-style-css | 7023 | 2058 | 2921 | 58 |
-| design-tokens | 7789 | 2403 | 3426 | 62 |
+| design-tokens | 7912 | 2450 | 3485 | 62 |
 | folder-naming | 3093 | 923 | 1390 | 60 |
 | skill-sync | 2541 | 727 | 1118 | 43 |
-| 합계 | 185669 | 54104 | 81898 | 1477 |
+| 합계 | 185792 | 54151 | 81957 | 1477 |
 
 요청별로 실제 올라가는 양과 형식 통일 전후 비교는 [실험 결과](experiments/skill-format-unification/report.md)에 있다.
 
@@ -294,4 +294,4 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | 2026-09-30 | 스킬 원본을 별도 저장소로 분리, skill-sync 추가, `LICENSE`를 라이선스를 정한 저장소에만 만들도록 변경, repo-docs-experiment 설명을 60토큰 안으로 축소 |
 | 2026-09-30 | `AGENTS.md` 명령 절의 출처를 CI와 검사 스크립트로 고정, 명령이 없으면 절 삭제. 옛 스킬 정리 완료 |
 | 2026-10-01 | code-style-javascript, code-style-css, design-tokens 추가. 토큰 생성(`build_tokens`)과 하드코딩 검사(`check_tokens`) 스크립트 추가 |
-| 2026-10-01 | 비용 주석 누락·위치 검사(`check_cost_comments`) 추가, `check_tokens`에 기본 토큰 참조·테마 분기·스타일 객체 숫자 검사 추가, 처음 보는 에이전트 두 번의 감사에서 찾은 결함 수정 |
+| 2026-10-01 | 비용 주석 누락·위치 검사(`check_cost_comments`) 추가, `check_tokens`에 기본 토큰 참조·테마 분기·스타일 객체 숫자 검사 추가, 처음 보는 에이전트 두 번의 감사에서 찾은 결함 수정. 실제 저장소 적용 중 찾은 자간 분류 추가, 비용 주석 검사의 `.exec(` 오탐과 생성 파일 검사 수정 |
