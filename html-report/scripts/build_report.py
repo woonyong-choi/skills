@@ -45,17 +45,102 @@ nav{margin:8px 0}nav a{display:inline-block;min-width:22px;margin-right:6px;text
 """
 
 
+class ReportError(Exception):
+    """입력이 틀렸을 때 던진다. main이 `build_report.py: 메시지`로 바꿔 종료한다."""
+
+
+ALIGNS = ("left", "center", "right")
+MAX_COLUMNS = 4
+
+
+# cost: time O(1), heap O(1), stack O(1)
+# basis: estimate
+def _need(obj, key, where, kind=None):
+    if not isinstance(obj, dict) or key not in obj:
+        raise ReportError(f"{where} is missing required field {key}")
+    value = obj[key]
+    if kind is not None and not isinstance(value, kind):
+        raise ReportError(f"{where}.{key} must be {kind.__name__}")
+    if kind in (str, list) and not value:
+        raise ReportError(f"{where}.{key} must not be empty")
+    return value
+
+
+# cost: time O(rows * cols), heap O(1), stack O(1)
+# vars: rows = table rows, cols = table columns
+# basis: estimate
+def _check_table(spec, where):
+    _need(spec, "head", where, list)
+    for r, row in enumerate(_need(spec, "rows", where, list)):
+        if not isinstance(row, list):
+            raise ReportError(f"{where}.rows[{r}] must be list")
+    for a in spec.get("align", []):
+        if a not in ALIGNS:
+            raise ReportError(f"{where}.align must be one of {list(ALIGNS)}: {a}")
+
+
+# cost: time O(options), heap O(1), stack O(1)
+# vars: options = options in one row of columns
+# basis: estimate
+def _check_options(opts, where):
+    if len(opts) > MAX_COLUMNS:
+        raise ReportError(f"{where} has {len(opts)} options, at most {MAX_COLUMNS} allowed")
+    for k, opt in enumerate(opts):
+        at = f"{where}[{k}]"
+        _need(opt, "label", at, str)
+        for m, img in enumerate(opt.get("images", [])):
+            _need(img, "src", f"{at}.images[{m}]", str)
+        if "table" in opt:
+            _check_table(opt["table"], f"{at}.table")
+
+
+# cost: time O(options + effect rows), heap O(1), stack O(1)
+# basis: estimate
+def _check_question(q, where):
+    _need(q, "title", where, str)
+    _need(q, "what", where, str)
+    _check_options(_need(q, "options", where, list), f"{where}.options")
+    for r, row in enumerate(_need(q, "effect", where, list)):
+        if not isinstance(row, list) or len(row) != 3:
+            raise ReportError(f"{where}.effect[{r}] must have 3 cells")
+    if len(_need(q, "rec", where, list)) != 2:
+        raise ReportError(f"{where}.rec must have 2 items")
+    for e, extra in enumerate(q.get("extra", [])):
+        _need(extra, "title", f"{where}.extra[{e}]", str)
+        _check_options(_need(extra, "options", f"{where}.extra[{e}]", list), f"{where}.extra[{e}].options")
+
+
+# cost: time O(questions * options), heap O(1), stack O(1)
+# basis: estimate
+def _validate(spec):
+    kind = spec.get("kind", "decision") if isinstance(spec, dict) else None
+    if kind not in KINDS:
+        raise ReportError(f"kind must be one of {sorted(KINDS)}: {kind}")
+    _need(spec, "title", "input", str)
+    _need(spec, "intro", "input", str)
+    for n, q in enumerate(_need(spec, "questions", "input", list), 1):
+        _check_question(q, f"questions[{n}]")
+
+
+# cost: time O(n), heap O(n), stack O(1)
+# vars: n = len(text)
+# basis: estimate
 def _inline(text):
     """이스케이프 뒤 `코드`만 code 태그로 바꾼다."""
     return re.sub(r"`([^`]+)`", r"<code>\1</code>", html.escape(text))
 
 
+# cost: time O(1), heap O(1), stack O(1), io 1
+# basis: estimate
 def _picture(img, base):
     src = img["src"]
     if not (base / src).is_file():
-        raise FileNotFoundError(f"image not found: {base / src}")
+        raise ReportError(f"image not found: {base / src}")
     alt = html.escape(img.get("alt", ""))
-    style = f' style="--max-h:{int(img["max_height"])}px"' if "max_height" in img else ""
+    try:
+        style = f' style="--max-h:{int(img["max_height"])}px"' if "max_height" in img else ""
+    except (TypeError, ValueError):
+        raise ReportError(f"max_height must be a number: {img['max_height']}") from None
     cap = f"<figcaption>{alt}</figcaption>" if alt else ""
     return (f'<figure><div class="frame"{style}><img src="{html.escape(src)}" alt="{alt}"></div>'
             f"{cap}</figure>")
@@ -92,9 +177,12 @@ def _option(opt, base):
     return f'<div class="{cls}"><h4>{_inline(opt["label"])}</h4>{body}</div>'
 
 
+# cost: time O(options * images), heap O(size of output)
+# vars: options = len(opts)
+# basis: estimate
 def _options(opts, base):
     inner = "".join(_option(o, base) for o in opts)
-    return f'<div class="cols c{min(max(len(opts), 1), 4)}">{inner}</div>'
+    return f'<div class="cols c{min(max(len(opts), 1), MAX_COLUMNS)}">{inner}</div>'
 
 
 KINDS = {
@@ -125,9 +213,8 @@ def _question(n, q, base, kind):
 
 # cost: time O(questions * options), heap O(size of output)
 def build(spec, base):
+    _validate(spec)
     kind = spec.get("kind", "decision")
-    if kind not in KINDS:
-        raise ValueError(f"kind must be one of {sorted(KINDS)}: {kind}")
     questions = spec["questions"]
     sections = "".join(_question(i, q, base, kind) for i, q in enumerate(questions, 1))
     nav = "".join(f'<a href="#q{i}">{i}</a>' for i in range(1, len(questions) + 1))
@@ -137,14 +224,21 @@ def build(spec, base):
             f'<p>{_inline(spec["intro"])}</p><nav>{nav}</nav>{sections}</body></html>')
 
 
+# cost: time O(size of input), heap O(size of input), io 3
+# vars: size of input = JSON bytes plus image count
+# basis: estimate
 def main():
     if len(sys.argv) not in (2, 3):
         sys.exit("usage: build_report.py <input.json> [output.html]")
     src = Path(sys.argv[1]).resolve()
     out = Path(sys.argv[2]).resolve() if len(sys.argv) == 3 else src.parent / "index.html"
-    if out.parent != src.parent:
-        sys.exit("output must be in the same folder as the input (image paths are relative)")
-    out.write_text(build(json.loads(src.read_text(encoding="utf-8")), src.parent), encoding="utf-8")
+    try:
+        if out.parent != src.parent:
+            raise ReportError("output must be in the same folder as the input")
+        spec = json.loads(src.read_text(encoding="utf-8"))
+        out.write_text(build(spec, src.parent), encoding="utf-8")
+    except (OSError, ValueError, ReportError) as err:
+        sys.exit(f"build_report.py: {err}")
     print(f"wrote {out}")
 
 

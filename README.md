@@ -139,8 +139,8 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | design-tokens | 7912 | 2450 | 3485 | 62 |
 | folder-naming | 3093 | 923 | 1390 | 60 |
 | skill-sync | 2541 | 727 | 1118 | 43 |
-| html-report | 6362 | 1834 | 2824 | 53 |
-| 합계 | 192154 | 55985 | 84781 | 1530 |
+| html-report | 5608 | 1644 | 2824 | 53 |
+| 합계 | 191400 | 55795 | 84781 | 1530 |
 
 요청별로 실제 올라가는 양과 형식 통일 전후 비교는 [실험 결과](experiments/skill-format-unification/report.md)에 있다.
 
@@ -306,3 +306,4 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | 2026-10-01 | report-compare-demo 추가. 질문별 A/B 그림 비교 보고서 생성 스크립트 |
 | 2026-10-02 | report-compare-demo를 승인해 visual-report로 이름 변경. 결과 보고서(`kind: result`, 확인할 점) 추가, 그림 칸 회색 바탕과 카드·표 선 대비 강화 |
 | 2026-10-02 | visual-report를 html-report로 이름 변경(채팅에서 `/html-report`), description에 사용 낱말, 사용 조건을 쓸 때와 쓰지 않을 때 표로 추가 |
+| 2026-10-02 | html-report에 라이트·다크 PNG, 긴 캡처 분할, 캡처 정리 규칙과 금지 절 추가, 스크립트 입력 검증과 비용 주석 추가, 본문 압축 |
