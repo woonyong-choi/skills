@@ -38,11 +38,12 @@ description: "저장소 문서(README, 루트 파일, docs, 결정 기록, 실�
 | `docs/experiments/README.md`, `docs/experiments/**` | 기여자 | 설계 값을 어떻게 확인했나 | 실험이 하나 이상 | experiment |
 | `docs/notes/**` | 기여자 | 개발 중 무엇을 알게 됐나 | 기록할 insight나 reference가 있을 때 | note |
 | `docs/assets/**` | 해당 없음 | 해당 없음 | 문서에 그림이 있을 때 | figures |
-| `docs/archive/journal/**`, `docs/archive/stories/**`, `docs/archive/principles.md` | 본인 | 무엇을 왜 판단했나 | 기록할 판단, 큰 작업, 교훈이 있을 때 | journal |
-| `docs/archive/promo/**` | 본인 | 무엇을 어떻게 찍나 | 홍보 영상 촬영 준비 때 | promo |
+| `.local/journal/**`, `.local/stories/**`, `.local/principles.md` | 본인 | 무엇을 왜 판단했나 | 기록할 판단, 큰 작업, 교훈이 있을 때 | journal |
+| `.local/promo/**` | 본인 | 무엇을 어떻게 찍나 | 홍보 영상 촬영 준비 때 | promo |
 
 - `docs/README.md` 표 순서: `architecture.md`, `design/` 문서(읽는 순서), `glossary.md`, spec 문서(위 표 순서), `decisions/README.md`, `experiments/README.md`
-- 비공개: `docs/archive/**`만. 공개 문서에서 `docs/archive` 링크와 내용 전재 금지
+- 비공개: `.local/**`만. 저장 전 `git check-ignore .local`로 git 제외를 확인. 제외되지 않으면 저장 금지, 보고
+- 공개 문서에서 `.local` 링크와 내용 전재 금지
 - 비공개 설계서를 공개 문서로 옮길 때: 확인된 사실만 골라 새로 작성, 원문 문장과 내부 기호 복사 금지
 - 그림 파일 위치: `docs/assets/`와 실험 폴더의 `results/figures/`만. 파일 이름: 영어 소문자 kebab-case
 
@@ -54,7 +55,7 @@ description: "저장소 문서(README, 루트 파일, docs, 결정 기록, 실�
 | `README.ko.md` | 한국어. `README.md`의 번역 |
 | `CHANGELOG.md`, `.github/**`, `LICENSE` | 영어 |
 | `AGENTS.md`, `llms.txt` 밖의 `docs/**` | 작업 언어 하나. `docs/README.md` 첫 문단에 명시 |
-| `docs/archive/**` | 한국어 |
+| `.local/**` | 한국어 |
 
 - 번역본: 원본과 절, 순서, 목록 항목 수, 그림, 링크, 코드 블록 일대일. 원본을 고치는 PR에서 번역본도 수정
 - 언어 전환 줄: 제목 바로 아래 한 줄. 원본 `English | [한국어](README.ko.md)`, 번역본 `[English](README.md) | 한국어`

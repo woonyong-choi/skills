@@ -10,12 +10,12 @@ description: "랜딩 페이지, 링크드인, 블로그용 홍보 영상 촬영�
 
 - 녹화, 편집: 사용자가 화면 녹화 앱으로 직접. 에이전트의 녹화 앱 조작 금지
 - README와 docs의 데모 GIF: VHS(repo-docs-figures), 이 스킬 대상 밖
-- 위치: 비공개 폴더 `docs/archive/promo/{영상}/`. `{영상}`은 영어 소문자 kebab-case 2~5단어
+- 위치: 비공개 폴더 `.local/promo/{영상}/`. `{영상}`은 영어 소문자 kebab-case 2~5단어
 
 ## 폴더
 
 ```text
-docs/archive/promo/{영상}/
+.local/promo/{영상}/
   shot.md
   demo.command
   go
@@ -92,7 +92,7 @@ sleep 4
 
 1. 사용자: Finder에서 `demo.command` 실행. 터미널 창이 열리고 빈 화면에서 정지
 2. 사용자: 화면 녹화 앱에서 그 터미널 창을 녹화 대상으로 골라 녹화 시작
-3. 에이전트나 사용자: `docs/archive/promo/{영상}/go` 파일 생성. 데모 재생
+3. 에이전트나 사용자: `.local/promo/{영상}/go` 파일 생성. 데모 재생
 4. 사용자: 재생이 끝나면 녹화 중지, 확대와 배경 편집, `shot.md` 내보내기 표대로 저장
 
 - 키보드로 다루는 터미널 화면은 커서 추적 자동 확대가 거의 없음. 확대는 편집에서 장면마다 직접 넣도록 안내

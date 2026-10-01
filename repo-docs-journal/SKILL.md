@@ -1,6 +1,6 @@
 ---
 name: repo-docs-journal
-description: "비공개 판단 기록(판단, 판단 변경), 큰 작업의 서사, 원칙 목록을 docs/archive에 쓰거나 갱신할 때 사용. 고정 템플릿, 근거 표시, 놓친 것 분류, 작성 시점"
+description: "비공개 판단 기록(판단, 판단 변경), 큰 작업의 서사, 원칙 목록을 .local에 쓰거나 갱신할 때 사용. 고정 템플릿, 근거 표시, 놓친 것 분류, 작성 시점"
 ---
 
 # Repo Docs Journal
@@ -11,19 +11,19 @@ description: "비공개 판단 기록(판단, 판단 변경), 큰 작업의 서�
 
 - 비공개 기록. 공개 문서, 이슈, PR, 커밋에 링크나 문장 옮기기 금지
 - 공개할 가치가 있는 판단: 공개 결정 기록으로 재작성, 그 뒤 이 기록 `관련` 칸에 그 경로 추가
-- 저장 전 `git check-ignore docs/archive`로 git 제외 확인. 제외되지 않으면 저장 금지, 보고
+- 저장 전 `git check-ignore .local`로 git 제외 확인. 제외되지 않으면 저장 금지, 보고
 
 ## 종류
 
 | 종류 | 쓰는 때 | 파일 |
 |---|---|---|
-| 판단 | 선택지 중 하나 결정 | `docs/archive/journal/{YYYY-MM-DD}-{주제}.md` |
-| 판단 변경 | 이전 판단 변경 | `docs/archive/journal/{YYYY-MM-DD}-{주제}.md` |
-| 서사 | 큰 작업(마일스톤, 설계 문서 둘 이상 변경, 공개 계약 변경)의 처음부터 끝까지 | `docs/archive/stories/{작업}.md` |
-| 원칙 | 판단 변경에서 얻은 교훈 | `docs/archive/principles.md` |
+| 판단 | 선택지 중 하나 결정 | `.local/journal/{YYYY-MM-DD}-{주제}.md` |
+| 판단 변경 | 이전 판단 변경 | `.local/journal/{YYYY-MM-DD}-{주제}.md` |
+| 서사 | 큰 작업(마일스톤, 설계 문서 둘 이상 변경, 공개 계약 변경)의 처음부터 끝까지 | `.local/stories/{작업}.md` |
+| 원칙 | 판단 변경에서 얻은 교훈 | `.local/principles.md` |
 
 - `{주제}`, `{작업}`: 영어 소문자 kebab-case 2~5단어
-- 목록: `docs/archive/journal/README.md` 표 하나
+- 목록: `.local/journal/README.md` 표 하나
 
 ## 표시
 
