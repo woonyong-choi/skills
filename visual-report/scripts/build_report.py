@@ -1,6 +1,6 @@
-"""질문 목록 JSON에서 그림 비교 보고서 index.html 한 장을 만든다.
+"""질문 목록 JSON에서 그림 보고서(결정, 결과) index.html 한 장을 만든다.
 
-사용: python3 build_compare.py <입력.json> [출력.html]
+사용: python3 build_report.py <입력.json> [출력.html]
 출력 기본값은 입력 파일 옆의 index.html. 그림 경로는 입력 파일 폴더 기준.
 """
 import html
@@ -10,20 +10,20 @@ import sys
 from pathlib import Path
 
 CSS = """
-:root{--ink:#1c2025;--sub:#667;--line:#dfe3e8;--blue:#2b78d9;--orange:#eb6834}
+:root{--ink:#1c2025;--sub:#667;--line:#c9ced6;--line-strong:#9aa3af;--pane:#f3f4f6;--blue:#2b78d9;--orange:#eb6834}
 *{box-sizing:border-box}
 body{font:15px/1.6 -apple-system,'Pretendard',sans-serif;max-width:1340px;margin:0 auto;padding:24px;color:var(--ink);background:#fafbfc}
 h1{font-size:26px;margin:0 0 8px}
 h2{margin:0 0 8px;font-size:21px;border-bottom:2px solid var(--blue);padding-bottom:6px}
 h3{font-size:16px;margin:18px 0 6px}
 h4{margin:0 0 6px;font-size:15px;line-height:1.4}
-section{background:#fff;border:1px solid #d9dee5;border-radius:10px;padding:20px 24px;margin:28px 0}
+section{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px 24px;margin:28px 0}
 .cols{display:grid;gap:16px;align-items:start;margin:10px 0}
 .c1{grid-template-columns:1fr}.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .c3{grid-template-columns:repeat(3,minmax(0,1fr))}.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
-.col{border:1px solid #e1e5ea;border-radius:8px;padding:12px;min-width:0}
+.col{border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
 .col.mock{border:4px dashed var(--orange);padding:9px}
-.frame{display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #eef0f3;padding:4px}
+.frame{display:flex;align-items:center;justify-content:center;background:var(--pane);border:1px solid var(--line);padding:4px}
 .frame img{display:block;width:100%;height:auto;max-height:var(--max-h,360px);object-fit:contain}
 figure{margin:0 0 10px}figure:last-child{margin-bottom:0}
 figcaption{font-size:12px;color:var(--sub);margin-top:4px}
@@ -31,11 +31,12 @@ pre.msg{white-space:pre-wrap;word-break:break-all;background:#f3f4f6;padding:8px
 figure+pre.msg{margin-top:0}
 table{border-collapse:collapse;width:100%;table-layout:fixed}
 th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:middle;font-size:14px;text-align:left;overflow-wrap:anywhere}
-thead th{background:#f5f7fa}
+thead th{background:#f5f7fa;border-bottom:2px solid var(--line-strong)}
 .al-center{text-align:center}.al-right{text-align:right;font-variant-numeric:tabular-nums}
 .effect{margin-top:12px}.effect th:first-child,.effect td:first-child{width:64px;text-align:center}
 .effect td{vertical-align:top}
 .rec{background:#eef5ff;border-left:4px solid var(--blue);padding:8px 12px;margin:12px 0 0}
+.check{margin:12px 0 0}.check ul{margin:4px 0 0;padding-left:20px}
 .note{font-size:13px;color:var(--sub);margin:8px 0 0}
 .what{margin:6px 0}
 code{font-size:12px;white-space:normal}
@@ -96,27 +97,39 @@ def _options(opts, base):
     return f'<div class="cols c{min(max(len(opts), 1), 4)}">{inner}</div>'
 
 
+KINDS = {
+    "decision": {"what": "무슨 질문인가", "bad": "나쁜 점", "rec": "추천"},
+    "result": {"what": "무엇이 바뀌었나", "bad": "남은 문제", "rec": "판단"},
+}
+
+
 # cost: time O(options + images), heap O(size of output)
-def _question(n, q, base):
+def _question(n, q, base, kind):
+    words = KINDS[kind]
     effect = "".join(
         f"<tr><th>{_inline(k)}</th><td>{_inline(good)}</td><td>{_inline(bad)}</td></tr>"
         for k, good, bad in q["effect"])
     extra = "".join(
         f'<h3>{_inline(e["title"])}</h3>{_options(e["options"], base)}' for e in q.get("extra", []))
     note = f'<p class="note">{_inline(q["note"])}</p>' if q.get("note") else ""
+    items = "".join(f"<li>{_inline(c)}</li>" for c in q.get("check", []))
+    check = f'<div class="check"><b>확인할 점</b><ul>{items}</ul></div>' if items else ""
     rec_key, rec_why = q["rec"]
     return (f'<section id="q{n}"><h2>{n}. {_inline(q["title"])}</h2>'
-            f'<p class="what"><b>무슨 질문인가</b> {_inline(q["what"])}</p>'
+            f'<p class="what"><b>{words["what"]}</b> {_inline(q["what"])}</p>'
             f'{_options(q["options"], base)}{extra}{note}'
             '<table class="effect"><colgroup><col><col style="width:50%"><col style="width:50%"></colgroup>'
-            f"<thead><tr><th></th><th>좋은 점</th><th>나쁜 점</th></tr></thead><tbody>{effect}</tbody></table>"
-            f'<p class="rec"><b>추천 {_inline(rec_key)}</b> {_inline(rec_why)}</p></section>')
+            f'<thead><tr><th></th><th>좋은 점</th><th>{words["bad"]}</th></tr></thead><tbody>{effect}</tbody></table>'
+            f'{check}<p class="rec"><b>{words["rec"]} {_inline(rec_key)}</b> {_inline(rec_why)}</p></section>')
 
 
 # cost: time O(questions * options), heap O(size of output)
 def build(spec, base):
+    kind = spec.get("kind", "decision")
+    if kind not in KINDS:
+        raise ValueError(f"kind must be one of {sorted(KINDS)}: {kind}")
     questions = spec["questions"]
-    sections = "".join(_question(i, q, base) for i, q in enumerate(questions, 1))
+    sections = "".join(_question(i, q, base, kind) for i, q in enumerate(questions, 1))
     nav = "".join(f'<a href="#q{i}">{i}</a>' for i in range(1, len(questions) + 1))
     title = html.escape(spec["title"])
     return (f'<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>{title}</title>'
@@ -126,7 +139,7 @@ def build(spec, base):
 
 def main():
     if len(sys.argv) not in (2, 3):
-        sys.exit("usage: build_compare.py <input.json> [output.html]")
+        sys.exit("usage: build_report.py <input.json> [output.html]")
     src = Path(sys.argv[1]).resolve()
     out = Path(sys.argv[2]).resolve() if len(sys.argv) == 3 else src.parent / "index.html"
     if out.parent != src.parent:
