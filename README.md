@@ -139,8 +139,8 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | design-tokens | 7912 | 2450 | 3485 | 62 |
 | folder-naming | 3093 | 923 | 1390 | 60 |
 | skill-sync | 4125 | 1148 | 1118 | 43 |
-| html-report | 5563 | 1615 | 2824 | 53 |
-| 합계 | 196383 | 57180 | 84781 | 1530 |
+| html-report | 5597 | 1626 | 2516 | 53 |
+| 합계 | 196417 | 57191 | 84473 | 1530 |
 
 요청별로 실제 올라가는 양과 형식 통일 전후 비교는 [실험 결과](experiments/skill-format-unification/report.md)에 있다.
 
