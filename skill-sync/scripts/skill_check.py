@@ -4,6 +4,9 @@ NOUN_OK = ('흐름', '알림', '없음', '다음', '포함', '결함', '마음',
 NAME_OK = ('안 함', '막힘')  # 상태 이름
 BAD_END = re.compile(r'(다|함|음|임|됨|봄|름|룸|듦|눔|힘|움|씀|셈|뺌|김|춤|침|줌|둠|꿈|옮|듬|숨|엶|앎|삶|짐|킴|림|핌|닮)$')
 
+# cost: time O(n·k), heap O(n), stack O(1), io 1
+# vars: n = SKILL.md 줄 수, k = 다른 스킬 이름 수
+# basis: estimate
 def check(path, names):
     errs = []
     s = open(path, encoding='utf-8').read()

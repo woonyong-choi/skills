@@ -5,7 +5,9 @@
 출력: `{경로}:{줄}: {규칙}: {찾은 글자}` 줄들과 마지막 `total {개수}`. 개수가 0이 아니면 종료 코드 1.
 - CSS 계열: 주석을 뺀 전체
 - 마크업 계열: `<style>` 블록, `style` 속성, 색·크기 표현 속성만. 본문 글자는 보지 않는다
-- JavaScript 계열: 모든 문자열의 색, CSS·마크업으로 보이는 문자열과 값 하나뿐인 문자열(`'12px'`)의 나머지 규칙
+- JavaScript 계열: 모든 문자열의 색, CSS·마크업으로 보이는 문자열과 값 하나뿐인 문자열(`'12px'`)의 나머지 규칙,
+  코드의 기본 토큰 경로(`tokens.color.blue['600']`)와 스타일 객체 숫자(`{ fontWeight: 600 }`)
+- 모든 계열: 색·그림자 기본 토큰 직접 참조(`var(--color-blue-600)`), 토큰 파일 밖 테마 분기(`prefers-color-scheme`, `[data-theme`)
 """
 
 from __future__ import annotations
@@ -50,31 +52,67 @@ LOOKS_STYLED = re.compile(r"[\w-]+\s*:\s*[^;]+;|<\w[^>]*=|[\w-]+=\"")
 # 값 하나뿐인 문자열: `'12px'`, `'1.5rem'`, `'200ms'`
 BARE_VALUE = re.compile(r"^['\"`]\s*-?\d*\.?\d+(?:px|rem|em|ms|s|pt)\s*['\"`]$")
 
+VAR_REFERENCE = re.compile(r"var\(\s*(--[\w-]+)")
+THEME_BRANCH = re.compile(r"prefers-color-scheme|\[data-theme(?![\w-])")
+JS_TOKEN_PATH = re.compile(r"\b(?:tokens|values)((?:\.[A-Za-z_$][\w$]*|\[\s*(?:['\"`][^'\"`]+['\"`]|\d+)\s*\])+)")
+JS_PATH_PART = re.compile(r"\.([A-Za-z_$][\w$]*)|\[\s*['\"`]?([^'\"`\]\s]+)['\"`]?\s*\]")
+JS_COMMENT_OR_STRING = re.compile(r"(\"(?:[^\"\\\n]|\\.)*\"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`)|//[^\n]*|/\*[\s\S]*?\*/")
+# 스타일 객체: `style={{`, `style: {`, `sx: {`, `css: {`, `styles = {` 뒤 중괄호 안만 숫자를 본다.
+STYLE_OBJECT_START = re.compile(r"\b(?:style|styles|sx|css)\s*[:=]\s*\{\{?")
+STYLE_OBJECT_NUMBER = re.compile(
+    r"\b(fontSize|fontWeight|lineHeight|letterSpacing|opacity|zIndex|borderRadius|borderWidth|gap|rowGap|columnGap"
+    r"|strokeWidth|top|right|bottom|left|(?:padding|margin|inset)(?:Top|Right|Bottom|Left|Inline|Block)?|(?:min|max)?(?:Width|Height)|width|height)"
+    r"\s*:\s*(-?\d+(?:\.\d+)?)\b"
+)
+
+# 테마에 따라 바뀌어 의미 토큰으로만 써야 하는 타입
+THEMED_TYPES = {"color", "shadow"}
+
 Finding = tuple[str, int, str, str]
 
 
-# cost: time O(t), heap O(b), stack O(1), io 1
-# vars: t = 토큰 수, b = breakpoint 토큰 수
+class TokenInfo:
+    """정본에서 읽은 검사 기준: breakpoint px 숫자, 테마 기본 토큰(색, 그림자)의 CSS 이름과 경로."""
+
+    def __init__(self, breakpoints: set[str], primitive_names: set[str], primitive_paths: set[tuple[str, ...]]) -> None:
+        self.breakpoints = breakpoints
+        self.primitive_names = primitive_names
+        self.primitive_paths = primitive_paths
+
+
+# cost: time O(t), heap O(t), stack O(1), io 1
+# vars: t = 토큰 수
 # basis: estimate
-def load_breakpoints(path: str | None) -> set[str]:
-    """breakpoint 토큰의 px 숫자. `@media`, `@container` 조건에 이 숫자만 허용한다."""
+def load_token_info(path: str | None) -> TokenInfo:
+    """정본에서 breakpoint 숫자와 테마 기본 토큰을 읽는다.
+
+    테마 기본 토큰: 값이 다른 토큰 참조가 아니고 타입이 색이나 그림자인 토큰. 코드는 이 토큰 대신 의미 토큰을 쓴다.
+    """
+    info = TokenInfo(set(), set(), set())
     if not path:
-        return set()
+        return info
     with open(path, encoding="utf-8") as f:
-        group = json.load(f).get("breakpoint")
-    numbers: set[str] = set()
-    stack = [group] if isinstance(group, dict) else []
+        root = json.load(f)
+    stack: list[tuple[tuple[str, ...], dict, str | None]] = [((), root, root.get("$type"))]
     while stack:
-        for key, child in stack.pop().items():
+        prefix, node, group_type = stack.pop()
+        for key, child in node.items():
             if key.startswith("$") or not isinstance(child, dict):
                 continue
+            token_path = prefix + (key,)
+            token_type = child.get("$type", group_type)
             if "$value" not in child:
-                stack.append(child)
+                stack.append((token_path, child, token_type))
                 continue
             value = child["$value"]
-            raw = value.get("value") if isinstance(value, dict) else value
-            numbers.add(re.sub(r"px$", "", str(raw)))
-    return numbers
+            if token_path[0] == "breakpoint":
+                raw = value.get("value") if isinstance(value, dict) else value
+                info.breakpoints.add(re.sub(r"px$", "", str(raw)))
+            is_reference = bool(re.search(r"\{[\w.-]+\}", json.dumps(value)))
+            if not is_reference and token_type in THEMED_TYPES:
+                info.primitive_names.add("--" + "-".join(token_path))
+                info.primitive_paths.add(token_path)
+    return info
 
 
 # cost: time O(n), heap O(n), stack O(1)
@@ -100,15 +138,17 @@ def is_styled_string(literal: str) -> bool:
 # cost: time O(n), heap O(f), stack O(1)
 # vars: n = 조각 글자 수, f = 찾은 수
 # basis: estimate
-def find_hardcoded(segment: str, breakpoints: set[str], is_styled: bool) -> list[tuple[int, str, str]]:
+def find_hardcoded(segment: str, info: TokenInfo, is_styled: bool) -> list[tuple[int, str, str]]:
     """조각 안 하드코딩. (조각 안 위치, 규칙, 글자) 목록. 한 자리는 한 번만 보고한다."""
     found = [(m.start(), "hex color", m.group(0)) for m in HEX_COLOR.finditer(segment)]
     found += [(m.start(), "color function", m.group(0)) for m in COLOR_FUNCTION.finditer(segment)]
+    found += [(m.start(), "primitive token reference", m.group(1)) for m in VAR_REFERENCE.finditer(segment) if m.group(1) in info.primitive_names]
+    found += [(m.start(), "theme branch outside tokens", m.group(0)) for m in THEME_BRANCH.finditer(segment)]
     if not is_styled:
         return found
-    conditions = [(m.start(), m.end()) for m in AT_CONDITION.finditer(segment)]
+    conditions = [(m.start(), m.end()) for m in AT_CONDITION.finditer(segment) if "prefers-color-scheme" not in m.group(0)]
     for start, end in conditions:
-        found += find_condition_values(segment[start:end], start, breakpoints)
+        found += find_condition_values(segment[start:end], start, info.breakpoints)
     reported = [(m.start(), m.end()) for m in CUSTOM_PROPERTY.finditer(segment) if is_raw_custom_value(m.group(2))]
     skip = conditions + reported
     found = [f for f in found if not is_inside(f[0], reported)]
@@ -152,7 +192,7 @@ def is_inside(position: int, spans: list[tuple[int, int]]) -> bool:
 # cost: time O(n + f log l), heap O(n), stack O(1), io 1
 # vars: n = 파일 글자 수, f = 찾은 수, l = 줄 수
 # basis: estimate
-def check_file(path: str, breakpoints: set[str]) -> list[Finding]:
+def check_file(path: str, info: TokenInfo) -> list[Finding]:
     """파일 하나의 하드코딩. 생성물과 `tokens-allow:` 줄은 건너뛴다."""
     ext = os.path.splitext(path)[1].lower()
     with open(path, encoding="utf-8", errors="replace") as f:
@@ -163,13 +203,59 @@ def check_file(path: str, breakpoints: set[str]) -> list[Finding]:
     line_starts = [0]
     for line in lines[:-1]:
         line_starts.append(line_starts[-1] + len(line) + 1)
+    if ext in SCRIPT_EXTS:
+        text = strip_js_comments(text)
+    found = [(offset + pos, rule, snippet) for offset, segment, is_styled in find_segments(text, ext) for pos, rule, snippet in find_hardcoded(segment, info, is_styled)]
+    if ext in SCRIPT_EXTS:
+        found += find_script_values(text, info)
     results = []
-    for offset, segment, is_styled in find_segments(text, ext):
-        for pos, rule, snippet in find_hardcoded(segment, breakpoints, is_styled):
-            line_number = find_line_number(line_starts, offset + pos)
-            if ALLOW_MARK not in lines[line_number - 1]:
-                results.append((path, line_number, rule, snippet[:80]))
+    for pos, rule, snippet in found:
+        line_number = find_line_number(line_starts, pos)
+        if ALLOW_MARK not in lines[line_number - 1]:
+            results.append((path, line_number, rule, snippet[:80]))
     return results
+
+
+# cost: time O(n), heap O(n), stack O(1)
+# vars: n = 파일 글자 수
+# basis: estimate
+def strip_js_comments(text: str) -> str:
+    """문자열은 두고 `//`, `/* */` 주석만 같은 길이의 공백으로 바꾼다. 줄 번호를 지키기 위해서다."""
+    return JS_COMMENT_OR_STRING.sub(lambda m: m.group(1) or re.sub(r"[^\n]", " ", m.group(0)), text)
+
+
+# cost: time O(n), heap O(n), stack O(1)
+# vars: n = 파일 글자 수
+# basis: estimate
+def find_script_values(text: str, info: TokenInfo) -> list[tuple[int, str, str]]:
+    """JavaScript 코드의 색·그림자 기본 토큰 경로 참조와 스타일 객체 숫자. 주석은 이미 지운 글자를 받는다."""
+    found = []
+    # 일반 문자열 안 글자는 코드가 아니다. `['600']` 같은 경로 키와 템플릿 문자열은 남긴다.
+    code_and_templates = re.sub(r"(?<!\[)\s*('(?:[^'\\\n]|\\.)*'|\"(?:[^\"\\\n]|\\.)*\")", lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
+    for m in JS_TOKEN_PATH.finditer(code_and_templates):
+        token_path = tuple(a or b for a, b in JS_PATH_PART.findall(m.group(1)))
+        if token_path in info.primitive_paths:
+            found.append((m.start(), "primitive token reference", m.group(0)))
+    code = STRING.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
+    for start, end in find_style_objects(code):
+        found += [(start + m.start(), f"{m.group(1)} number", m.group(0)) for m in STYLE_OBJECT_NUMBER.finditer(code[start:end]) if m.group(2) not in FREE_NUMBERS]
+    return found
+
+
+# cost: time O(n), heap O(s), stack O(1)
+# vars: n = 코드 글자 수, s = 스타일 객체 수
+# basis: estimate
+def find_style_objects(code: str) -> list[tuple[int, int]]:
+    """스타일 객체 중괄호 구간. 여는 중괄호부터 짝이 맞는 닫는 중괄호까지."""
+    spans = []
+    for m in STYLE_OBJECT_START.finditer(code):
+        depth = 0
+        for position in range(m.end() - 1, len(code)):
+            depth += {"{": 1, "}": -1}.get(code[position], 0)
+            if depth == 0:
+                spans.append((m.end(), position))
+                break
+    return spans
 
 
 # cost: time O(log l), heap O(1), stack O(1)
@@ -237,9 +323,9 @@ def main() -> int:
     args = parser.parse_args()
     tokens_path = args.tokens or find_tokens_file(args.targets)
     if not tokens_path:
-        print("tokens.json not found: every @media and @container number is reported", file=sys.stderr)
-    breakpoints = load_breakpoints(tokens_path)
-    results = [finding for path in iter_files(args.targets) for finding in check_file(path, breakpoints)]
+        print("tokens.json not found: every @media and @container number is reported, primitive references are not checked", file=sys.stderr)
+    info = load_token_info(tokens_path)
+    results = [finding for path in iter_files(args.targets) for finding in check_file(path, info)]
     results.sort(key=lambda r: (r[0], r[1]))
     for path, line, rule, snippet in results:
         print(f"{path}:{line}: {rule}: {snippet}")

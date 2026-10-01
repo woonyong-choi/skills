@@ -76,7 +76,7 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 ## 반응형과 접근성
 
 - 모바일 먼저: 기본 규칙은 좁은 화면, 넓은 화면은 `min-width` 덮어쓰기
-- breakpoint, 다크 모드: (design-tokens 쓰는 방법)
+- breakpoint, 다크 모드: (design-tokens 쓰는 방법, 정본과 생성물)
 - 움직임: 모든 `transition`·`animation`에 `@media (prefers-reduced-motion: reduce)` 대응 필수
 - 초점: `:focus-visible` 스타일 필수. `outline: none` 단독 사용 금지
 - 누를 수 있는 요소 크기: 최소 24×24 CSS px(WCAG 2.2 2.5.8)
