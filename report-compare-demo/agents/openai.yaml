@@ -1,0 +1,4 @@
+interface:
+  display_name: "Report Compare Demo"
+  short_description: "그림을 나란히 보여 주는 결정용 비교 보고서 HTML 생성"
+  default_prompt: "$report-compare-demo 스킬로 처리해 줘: [요청]"
