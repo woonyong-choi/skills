@@ -10,14 +10,15 @@ import sys
 from pathlib import Path
 
 CSS = """
-:root{--ink:#1c2025;--sub:#667;--line:#c9ced6;--tline:#dfe3e8;--pane:#f3f4f6;--blue:#2b78d9;--orange:#eb6834}
+:root{--ink:#1c2025;--sub:#667;--line:#c9ced6;--tline:#dfe3e8;--pane:#f3f4f6;--blue:#2b78d9;--orange:#eb6834;--bg:#fafbfc;--nav-offset:calc(4 * 24px)}
 *{box-sizing:border-box}
-body{font-family:'Pretendard Variable',Pretendard,'Inter Variable',Inter,'Noto Sans KR Variable','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:15px;line-height:1.6;max-width:1340px;margin:0 auto;padding:24px;color:var(--ink);background:#fafbfc}
+html{scroll-behavior:smooth}
+body{font-family:'Pretendard Variable',Pretendard,'Inter Variable',Inter,'Noto Sans KR Variable','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:15px;line-height:1.6;max-width:1340px;margin:0 auto;padding:24px;color:var(--ink);background:var(--bg)}
 h1{font-size:26px;margin:0 0 8px}
 h2{margin:0 0 8px;font-size:21px;border-bottom:2px solid var(--blue);padding-bottom:6px}
 h3{font-size:16px;margin:18px 0 6px}
 h4{margin:0 0 6px;font-size:15px;line-height:1.4}
-section{margin:36px 0}
+section{scroll-margin-top:var(--nav-offset);margin:36px 0}
 .cols{display:grid;gap:16px;align-items:start;margin:10px 0}
 .c1{grid-template-columns:1fr}.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .c3{grid-template-columns:repeat(3,minmax(0,1fr))}.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -41,7 +42,11 @@ thead th{background:#f5f7fa}
 .what{margin:6px 0}
 code{font-family:'JetBrains Mono Variable','JetBrains Mono',ui-monospace,monospace;font-size:12px;white-space:normal}
 .bad{color:#b3261e}.ok{color:#1b7a3a}
-nav{margin:8px 0}nav a{display:inline-block;min-width:22px;margin-right:6px;text-align:center}
+nav{position:sticky;top:0;z-index:1;display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;padding:8px 0;background:var(--bg);border-bottom:1px solid var(--line)}
+nav a{display:inline-flex;align-items:center;gap:6px;min-height:24px;max-width:calc(16 * 21px);padding:4px 8px;color:var(--ink);text-decoration:none;background:var(--pane);border-radius:6px}
+nav a:hover,nav a:focus-visible{background:var(--tline)}nav a.is-active{color:var(--pane);background:var(--ink)}
+.nav-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media print{nav{display:none}}
 """
 
 
@@ -51,6 +56,7 @@ class ReportError(Exception):
 
 ALIGNS = ("left", "center", "right")
 MAX_COLUMNS = 4
+NAV_TITLE_MAX_LENGTH = 24
 
 
 # cost: time O(1), heap O(1), stack O(1)
@@ -128,6 +134,15 @@ def _validate(spec):
 def _inline(text):
     """이스케이프 뒤 `코드`만 code 태그로 바꾼다."""
     return re.sub(r"`([^`]+)`", r"<code>\1</code>", html.escape(text))
+
+
+# cost: time O(n), heap O(n), stack O(1)
+# vars: n = len(title)
+# basis: estimate
+def _nav_title(title: str) -> str:
+    if len(title) <= NAV_TITLE_MAX_LENGTH:
+        return title
+    return title[:NAV_TITLE_MAX_LENGTH - 1] + "…"
 
 
 # cost: time O(1), heap O(1), stack O(1), io 1
@@ -217,11 +232,18 @@ def build(spec, base):
     kind = spec.get("kind", "decision")
     questions = spec["questions"]
     sections = "".join(_question(i, q, base, kind) for i, q in enumerate(questions, 1))
-    nav = "".join(f'<a href="#q{i}">{i}</a>' for i in range(1, len(questions) + 1))
+    nav = "".join(
+        f'<a href="#q{i}" title="{html.escape(q["title"])}"><span>{i}</span>'
+        f'<span class="nav-title">{_inline(_nav_title(q["title"]))}</span></a>'
+        for i, q in enumerate(questions, 1))
     title = html.escape(spec["title"])
     return (f'<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>{title}</title>'
             f"<style>{CSS}</style></head><body><h1>{title} ({len(questions)}개)</h1>"
-            f'<p>{_inline(spec["intro"])}</p><nav>{nav}</nav>{sections}</body></html>')
+            f'<p>{_inline(spec["intro"])}</p><nav aria-label="보고서 섹션">{nav}</nav>{sections}'
+            '<script>const nav=document.querySelector("nav"),links=[...nav.querySelectorAll("a")],sections=[...document.querySelectorAll("section")];'
+            'const setActive=()=>{const current=sections.find(section=>section.getBoundingClientRect().bottom>nav.getBoundingClientRect().bottom);if(!current)return;'
+            'links.forEach(link=>{const active=link.hash==="#"+current.id;link.classList.toggle("is-active",active);link.setAttribute("aria-current",active?"true":"false")})};'
+            'const observer=new IntersectionObserver(setActive);sections.forEach(section=>observer.observe(section));setActive();</script></body></html>')
 
 
 # cost: time O(size of input), heap O(size of input), io 3
