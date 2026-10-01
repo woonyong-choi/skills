@@ -113,34 +113,34 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 
 | 스킬 | 바이트 | o200k | Claude 구 | 카탈로그 줄 o200k |
 |---|---|---|---|---|
-| repo-docs | 16734 | 4782 | 7393 | 65 |
-| repo-docs-readme | 10752 | 2956 | 4518 | 65 |
-| repo-docs-design | 9004 | 2593 | 4110 | 57 |
+| repo-docs | 17061 | 4864 | 7393 | 65 |
+| repo-docs-readme | 12270 | 3400 | 4518 | 65 |
+| repo-docs-design | 9021 | 2599 | 4110 | 57 |
 | repo-docs-spec | 6949 | 2179 | 3302 | 46 |
-| repo-docs-decision | 5379 | 1503 | 2523 | 65 |
+| repo-docs-decision | 5376 | 1502 | 2523 | 65 |
 | repo-docs-experiment | 11580 | 3703 | 5349 | 63 |
 | repo-docs-note | 2809 | 841 | 1270 | 59 |
 | repo-docs-figures | 8276 | 2601 | 3704 | 65 |
 | repo-docs-root | 6710 | 2000 | 3009 | 58 |
 | repo-docs-llms | 2993 | 881 | 1296 | 60 |
-| repo-docs-journal | 6204 | 1830 | 2978 | 60 |
-| repo-docs-promo | 4042 | 1239 | 1801 | 57 |
+| repo-docs-journal | 6162 | 1825 | 2978 | 60 |
+| repo-docs-promo | 4024 | 1236 | 1801 | 57 |
 | git-commit | 5118 | 1496 | 2275 | 36 |
-| git-branch | 4636 | 1355 | 2084 | 60 |
+| git-branch | 5755 | 1680 | 2084 | 60 |
 | git-issue | 5209 | 1581 | 2526 | 53 |
 | git-pull-request | 4205 | 1230 | 2013 | 51 |
-| code-style | 16529 | 4713 | 7362 | 52 |
+| code-style | 16884 | 4805 | 7362 | 52 |
 | code-refactoring | 12020 | 2947 | 4832 | 42 |
-| code-style-rust | 7764 | 2234 | 3135 | 55 |
-| code-style-kotlin | 6553 | 1894 | 2716 | 64 |
-| code-style-python | 5534 | 1631 | 2349 | 58 |
+| code-style-rust | 7806 | 2244 | 3135 | 55 |
+| code-style-kotlin | 6573 | 1898 | 2716 | 64 |
+| code-style-python | 5643 | 1670 | 2349 | 58 |
 | code-style-javascript | 6223 | 1804 | 2498 | 63 |
 | code-style-css | 7023 | 2058 | 2921 | 58 |
 | design-tokens | 7912 | 2450 | 3485 | 62 |
 | folder-naming | 3093 | 923 | 1390 | 60 |
-| skill-sync | 2541 | 727 | 1118 | 43 |
-| html-report | 5608 | 1644 | 2824 | 53 |
-| 합계 | 191400 | 55795 | 84781 | 1530 |
+| skill-sync | 4125 | 1148 | 1118 | 43 |
+| html-report | 5563 | 1615 | 2824 | 53 |
+| 합계 | 196383 | 57180 | 84781 | 1530 |
 
 요청별로 실제 올라가는 양과 형식 통일 전후 비교는 [실험 결과](experiments/skill-format-unification/report.md)에 있다.
 

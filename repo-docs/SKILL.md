@@ -40,6 +40,7 @@ description: "저장소 문서(README, 루트 파일, docs, 결정 기록, 실�
 | `docs/assets/**` | 해당 없음 | 해당 없음 | 문서에 그림이 있을 때 | figures |
 | `.local/journal/**`, `.local/stories/**`, `.local/principles.md` | 본인 | 무엇을 왜 판단했나 | 기록할 판단, 큰 작업, 교훈이 있을 때 | journal |
 | `.local/promo/**` | 본인 | 무엇을 어떻게 찍나 | 홍보 영상 촬영 준비 때 | promo |
+| `.local/reports/{YYYY-MM-DD}-{주제}/` | 본인 | 그림으로 무엇을 결정하거나 확인했나 | 프로젝트 보고서가 있을 때 | html-report |
 
 - `docs/README.md` 표 순서: `architecture.md`, `design/` 문서(읽는 순서), `glossary.md`, spec 문서(위 표 순서), `decisions/README.md`, `experiments/README.md`
 - 비공개: `.local/**`만. 저장 전 `git check-ignore .local`로 git 제외를 확인. 제외되지 않으면 저장 금지, 보고
