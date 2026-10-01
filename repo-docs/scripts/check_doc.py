@@ -7,7 +7,7 @@ import re
 import sys
 
 FORMAL_FILES = {"README.ko.md"}
-PRIVATE_PATH = re.compile(r"docs/+(\./)*archive|\]\((\.\.?/)*archive/|^\[[^\]]*\]: *(\.\.?/)*archive/")
+PRIVATE_PATH = re.compile(r"\]\((\.\.?/)*(?:docs/+(\./)*archive|archive|\.local)(?:/|[?#)])|^\[[^\]]*\]: *(\.\.?/)*(?:docs/+(\./)*archive|archive|\.local)(?:/|[?#])")
 FENCE = re.compile(r"^`{3,}")
 FENCE_CLOSE = re.compile(r"^`+[ \t]*$")
 NOT_PARAGRAPH = re.compile(r"^(\||- |[0-9]+\. |#|!\[|\[!|---|<)|^[a-z_]+: ")
@@ -177,7 +177,7 @@ def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str, 
 # basis: estimate
 def check(path: str) -> int:
     name = re.sub(r"^\./", "", path)
-    is_private = name.lower().startswith("docs/archive/")
+    is_private = name.lower().startswith((".local/", "docs/archive/"))
     is_formal = name in FORMAL_FILES
     english = is_english(path)
     count = number = fence_length = previous_level = 0
