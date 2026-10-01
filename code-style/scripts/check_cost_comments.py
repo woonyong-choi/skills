@@ -16,6 +16,8 @@ import re
 import sys
 from collections.abc import Iterator
 
+# 생성 파일 첫 줄 표시. design-tokens 생성물과 일반적인 `@generated` 표시
+GENERATED_MARKS = ("생성물, 손으로 고치지 않음", "@generated")
 SKIP_DIRS = {"node_modules", "dist", "build", "coverage", "target", ".git", ".venv", "venv", "__pycache__"}
 LANGUAGES = {
     ".py": "python",
@@ -58,7 +60,8 @@ LOOP = {
 }
 IO = {
     "python": re.compile(r"\bopen\(|\bsubprocess\.|\bos\.(?:walk|listdir|remove|makedirs)\(|\brequests\.|\burllib\.|\bprint\("),
-    "js": re.compile(r"\bfetch\(|\b(?:readFile|writeFile|readdir|mkdir|rm|spawn|exec|execFile)(?:Sync)?\(|\bconsole\.|\bawait\b"),
+    # `.exec(`는 정규식 메서드라 제외한다(앞에 점이 없는 호출만 프로세스 실행으로 본다).
+    "js": re.compile(r"\bfetch\(|(?<![.\w])(?:readFile|writeFile|readdir|mkdir|rm|spawn|exec|execFile)(?:Sync)?\(|\bconsole\.|\bawait\b"),
     "rust": re.compile(r"\bstd::fs::|\bfs::|\bFile::|\bCommand::|\breqwest::|\.await\b|\bprintln!|\beprintln!"),
     "kotlin": re.compile(r"\bFile\(|\breadText\(|\bwriteText\(|\bProcessBuilder\(|\bprintln\(|\bwithContext\("),
 }
@@ -72,6 +75,8 @@ def check_file(path: str) -> list[tuple[str, int, str, str]]:
     language = LANGUAGES[os.path.splitext(path)[1].lower()]
     with open(path, encoding="utf-8", errors="replace") as f:
         lines = f.read().split("\n")
+    if any(mark in lines[0] for mark in GENERATED_MARKS):
+        return []
     findings = []
     for index, line in enumerate(lines):
         match = next((m for pattern in DECLARATION[language] if (m := pattern.match(line))), None)
