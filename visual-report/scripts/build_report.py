@@ -10,28 +10,28 @@ import sys
 from pathlib import Path
 
 CSS = """
-:root{--ink:#1c2025;--sub:#667;--line:#c9ced6;--line-strong:#9aa3af;--pane:#f3f4f6;--blue:#2b78d9;--orange:#eb6834}
+:root{--ink:#1c2025;--sub:#667;--line:#c9ced6;--tline:#dfe3e8;--pane:#f3f4f6;--blue:#2b78d9;--orange:#eb6834}
 *{box-sizing:border-box}
 body{font:15px/1.6 -apple-system,'Pretendard',sans-serif;max-width:1340px;margin:0 auto;padding:24px;color:var(--ink);background:#fafbfc}
 h1{font-size:26px;margin:0 0 8px}
 h2{margin:0 0 8px;font-size:21px;border-bottom:2px solid var(--blue);padding-bottom:6px}
 h3{font-size:16px;margin:18px 0 6px}
 h4{margin:0 0 6px;font-size:15px;line-height:1.4}
-section{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px 24px;margin:28px 0}
+section{margin:36px 0}
 .cols{display:grid;gap:16px;align-items:start;margin:10px 0}
 .c1{grid-template-columns:1fr}.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .c3{grid-template-columns:repeat(3,minmax(0,1fr))}.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .col{border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
 .col.mock{border:4px dashed var(--orange);padding:9px}
-.frame{display:flex;align-items:center;justify-content:center;background:var(--pane);border:1px solid var(--line);padding:4px}
+.frame{display:flex;align-items:center;justify-content:center;background:var(--pane);padding:4px}
 .frame img{display:block;width:100%;height:auto;max-height:var(--max-h,360px);object-fit:contain}
 figure{margin:0 0 10px}figure:last-child{margin-bottom:0}
 figcaption{font-size:12px;color:var(--sub);margin-top:4px}
 pre.msg{white-space:pre-wrap;word-break:break-all;background:#f3f4f6;padding:8px;border-radius:6px;font-size:12px;margin:8px 0 0}
 figure+pre.msg{margin-top:0}
 table{border-collapse:collapse;width:100%;table-layout:fixed}
-th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:middle;font-size:14px;text-align:left;overflow-wrap:anywhere}
-thead th{background:#f5f7fa;border-bottom:2px solid var(--line-strong)}
+th,td{border:1px solid var(--tline);padding:6px 10px;vertical-align:middle;font-size:14px;text-align:left;overflow-wrap:anywhere}
+thead th{background:#f5f7fa}
 .al-center{text-align:center}.al-right{text-align:right;font-variant-numeric:tabular-nums}
 .effect{margin-top:12px}.effect th:first-child,.effect td:first-child{width:64px;text-align:center}
 .effect td{vertical-align:top}
