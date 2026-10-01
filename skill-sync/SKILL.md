@@ -18,7 +18,7 @@ description: "스킬을 만들거나 고친 뒤 검사하고 Codex, Claude, Anti
 2. 형식 검사, 출력 `total 0`까지 수정
 3. 스킬 연결 줄이나 크기가 바뀌면 원본 저장소 `README.md`의 스킬 연결 표, 크기 표 수정
 4. 세 도구에 설치
-5. 설치 출력 마지막 줄 `Claude 계정에 올릴 zip`의 파일을 Claude 설정의 스킬 메뉴에 업로드. 브라우저 도구가 있으면 직접 업로드, 없으면 파일 목록 보고
+5. 설치 출력 마지막 줄 `Claude 계정에 올릴 zip`의 파일을 Claude 설정의 스킬 메뉴에 업로드. 브라우저 도구가 있으면 직접 업로드, 없으면 `node <이 스킬 폴더>/scripts/claude_upload.mjs --upload {이름,...}`, 그것도 안 되면 파일 목록 보고
 6. 원본 저장소 커밋
 
 ```sh
@@ -42,6 +42,16 @@ python3 <이 스킬 폴더>/scripts/install.py
 - 관리 범위: 이 스크립트가 설치한 스킬만(도구 폴더의 `.repo-skills.json`). 원본에서 빠진 스킬은 `~/.skill-trash/`로 이동
 - 스킬 제거: `install.py --remove {이름}`. 휴지통 폴더로 이동, 영구 삭제 없음
 - 바꿀 내용만 확인: `install.py --dry-run`
+
+## Claude 계정 업로드 스크립트
+
+- 요구 조건: Node, 전역 `playwright-core`(`npm install -g playwright-core`, 스킬 폴더에 `node_modules` 금지), 시스템 Chrome
+- 인자: `--upload {이름,...}` 업로드, `--delete {이름,...}` 삭제, 없으면 계정에 없는 zip 목록만 보고. 업로드와 삭제 뒤 스킬 목록을 다시 읽어 확인. `--source {원본}`
+- 프로필: `~/.config/skills/browser-profile`(권한 700). 로그인 쿠키가 남음. 다른 Chrome 프로필 복사 금지. 비밀번호 저장 없음
+- 흐름: headless로 로그인 확인. 로그인이 없거나 보안 확인(Cloudflare)에 막히면 Chrome 창을 띄우고 사용자가 직접 로그인할 때까지 최대 15분 대기(10초 간격)
+- 화면 구조가 다르거나 버튼을 못 찾으면 못 찾은 항목과 스크린샷 경로를 출력하고 실패 코드로 종료. 진단 파일은 `~/.config/skills/browser-logs/`에만
+- 삭제는 `--delete`로 지정한 이름만. 원본에 없는 계정 스킬 자동 삭제 금지
+- 화면 탐색용 `--probe [--click {글자|btn:이름}]`: 화면 글자와 컨트롤 목록 출력
 
 ## 금지
 
