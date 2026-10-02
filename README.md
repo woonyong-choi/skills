@@ -96,7 +96,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | git-commit | 없음 | 없음 |
 | git-branch | 없음 | 커밋 메시지, PR 제목, squash 메시지 → git-commit; PR 본문 → git-pull-request |
 | git-issue | 없음 | build, docs 제목의 끝말, 영역 라벨의 scope 단어 → git-commit |
-| git-pull-request | 없음 | 없음 |
+| git-pull-request | 없음 | 테스트 변경 근거 확인 → code-style |
 | code-style | 없음 | 리팩터링 기법 선택 → code-refactoring |
 | code-refactoring | code-style | 없음 |
 | code-style-rust, code-style-kotlin, code-style-python | code-style | 없음 |
@@ -113,34 +113,34 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 
 | 스킬 | 바이트 | o200k | Claude 구 | 카탈로그 줄 o200k |
 |---|---|---|---|---|
-| repo-docs | 17061 | 4864 | 7393 | 65 |
-| repo-docs-readme | 12270 | 3400 | 4518 | 65 |
-| repo-docs-design | 9021 | 2599 | 4110 | 57 |
+| repo-docs | 17061 | 4864 | 7514 | 65 |
+| repo-docs-readme | 12270 | 3400 | 5149 | 65 |
+| repo-docs-design | 9021 | 2599 | 4117 | 57 |
 | repo-docs-spec | 6949 | 2179 | 3302 | 46 |
-| repo-docs-decision | 5376 | 1502 | 2523 | 65 |
+| repo-docs-decision | 5376 | 1502 | 2522 | 65 |
 | repo-docs-experiment | 11580 | 3703 | 5349 | 63 |
 | repo-docs-note | 2809 | 841 | 1270 | 59 |
 | repo-docs-figures | 8276 | 2601 | 3704 | 65 |
 | repo-docs-root | 6710 | 2000 | 3009 | 58 |
 | repo-docs-llms | 2993 | 881 | 1296 | 60 |
-| repo-docs-journal | 6162 | 1825 | 2978 | 60 |
-| repo-docs-promo | 4024 | 1236 | 1801 | 57 |
+| repo-docs-journal | 6162 | 1825 | 2966 | 60 |
+| repo-docs-promo | 4024 | 1236 | 1796 | 57 |
 | git-commit | 5118 | 1496 | 2275 | 36 |
-| git-branch | 5755 | 1680 | 2084 | 60 |
+| git-branch | 5755 | 1680 | 2577 | 60 |
 | git-issue | 5209 | 1581 | 2526 | 53 |
-| git-pull-request | 4205 | 1230 | 2013 | 51 |
-| code-style | 16884 | 4805 | 7362 | 52 |
+| git-pull-request | 4486 | 1297 | 2145 | 51 |
+| code-style | 18345 | 5163 | 8164 | 52 |
 | code-refactoring | 12020 | 2947 | 4832 | 42 |
-| code-style-rust | 7806 | 2244 | 3135 | 55 |
-| code-style-kotlin | 6573 | 1898 | 2716 | 64 |
-| code-style-python | 5643 | 1670 | 2349 | 58 |
+| code-style-rust | 7806 | 2244 | 3152 | 55 |
+| code-style-kotlin | 6573 | 1898 | 2722 | 64 |
+| code-style-python | 5643 | 1670 | 2390 | 58 |
 | code-style-javascript | 6223 | 1804 | 2498 | 63 |
 | code-style-css | 7023 | 2058 | 2921 | 58 |
 | design-tokens | 7912 | 2450 | 3485 | 62 |
 | folder-naming | 3093 | 923 | 1390 | 60 |
-| skill-sync | 4125 | 1148 | 1118 | 43 |
+| skill-sync | 4125 | 1148 | 1781 | 43 |
 | html-report | 5597 | 1626 | 2516 | 53 |
-| 합계 | 196417 | 57191 | 84473 | 1530 |
+| 합계 | 198159 | 57616 | 87368 | 1530 |
 
 요청별로 실제 올라가는 양과 형식 통일 전후 비교는 [실험 결과](experiments/skill-format-unification/report.md)에 있다.
 
@@ -170,13 +170,13 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | git-commit | 커밋 형식 `type(scope): 한글 설명` | 영어 부담 없이 일관된 기록을 남기기 위해서다 |
 | git-branch | 브랜치 이름과 이슈 단위 작업 | 브랜치와 이슈를 한 줄로 잇기 위해서다 |
 | git-issue | 이슈 종류와 템플릿, 상태 관리 | 설계, 구현, 버그, 실험 상태를 문서가 아니라 이슈로 관리하기 위해서다 |
-| git-pull-request | PR 종류, 본문, 문서 동반, 검토 | 계약을 먼저 합의하고 구현을 믿을 수 있게 하기 위해서다 |
+| git-pull-request | PR 종류, 본문, 테스트 변경 근거, 문서 동반, 검토 | 계약을 먼저 합의하고 구현을 믿을 수 있게 하기 위해서다 |
 
 ### 코드와 폴더
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| code-style | 언어 공통 원칙, 수치 기준, 이름, 조건식, 선언 순서, 에러와 로그, 주석, 비용 주석, 테스트 | 언어가 달라도 같은 기준으로 코드를 보기 위해서다 |
+| code-style | 언어 공통 원칙, 수치 기준, 이름, 조건식, 선언 순서, 에러와 로그, 주석, 비용 주석, 근거 있는 최소 테스트 | 언어가 달라도 같은 기준으로 코드를 보기 위해서다 |
 | code-refactoring | 문제 신호별 해결 기법, 『리팩터링 2판』 기법 목록 | 리팩터링 기법을 고를 때만 불러 평소 코드 작업의 토큰을 줄이기 위해서다 |
 | code-style-rust, code-style-kotlin, code-style-python, code-style-javascript, code-style-css | 언어별로 공통 스킬이 맡긴 부분 | 언어 고유 규칙만 따로 두기 위해서다 |
 | design-tokens | 화면 값 토큰 정본, 이름, 세 층, 다크 모드, 하드코딩 금지, 생성·검사 스크립트 | 색과 크기를 코드마다 다르게 적어 화면 톤이 흩어지는 것을 막기 위해서다 |
