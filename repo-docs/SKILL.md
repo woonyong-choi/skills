@@ -46,7 +46,7 @@ description: "저장소 문서(README, 루트 파일, docs, 결정 기록, 실�
 - 비공개: `.local/**`만. 저장 전 `git check-ignore .local`로 git 제외를 확인. 제외되지 않으면 저장 금지, 보고
 - 공개 문서에서 `.local` 링크와 내용 전재 금지
 - 비공개 설계서를 공개 문서로 옮길 때: 확인된 사실만 골라 새로 작성, 원문 문장과 내부 기호 복사 금지
-- 그림 파일 위치: `docs/assets/`와 실험 폴더의 `results/figures/`만. 파일 이름: 영어 소문자 kebab-case
+- 그림 원본·산출물 위치와 이름: (repo-docs-figures 도구와 파일)
 
 ## 언어
 

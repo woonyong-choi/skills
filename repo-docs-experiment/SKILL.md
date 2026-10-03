@@ -42,8 +42,6 @@ docs/experiments/
     results/
       summary.json
       tables/{이름}.csv
-      figures/{이름}.vl.json
-      figures/{이름}.svg
 ```
 
 | 이름 | 규칙 |
@@ -54,7 +52,7 @@ docs/experiments/
 | `processed/` | 스크립트만 생성. 지워도 `run.sh process`로 재생성 |
 | `scripts/` | 번호 = 실행 순서. 입력은 앞 단계 파일만 |
 | `results/summary.json` | 보고서의 모든 수치. 보고서 수치는 이 파일에서만 |
-| `results/figures/` | `03-analyze`가 Vega-Lite 원본 `{이름}.vl.json`, `render_figures`(repo-docs-figures)가 `{이름}.svg` 생성 |
+| 결과 차트 | 원본·산출물 위치, JSON 입력과 변환·검사(repo-docs-figures 실험 차트) |
 | `run.sh` | `collect`, `process`, `analyze`, `verify`, `all` 다섯 명령. `analyze`는 `raw/`만으로 결과 재생성 |
 | `env.json` | 실행 환경: 운영체제, CPU, 메모리, 도구와 버전, 모델 이름, 실행 날짜, 커밋 |
 | 파일 크기 | 한 파일 50MB 이하. 넘으면 저장소 밖에 두고 `data/README.md`에 경로와 SHA-256만 |
@@ -66,7 +64,7 @@ docs/experiments/
 3. 일반 실측: 2번 설계 커밋을 같은 PR의 첫 기준점으로 두고, 수집·결과를 더해 함께 머지
 4. 독립적인 사전 검토가 필요한 실험만 2번을 사전 등록 PR로 먼저 머지. 이슈 연결은 git-issue 닫기 절
 5. `./run.sh collect`로 수집. 그 전 데이터 열람 금지
-6. `./run.sh verify`, `./run.sh analyze`, `render_figures`(repo-docs-figures)로 `docs/experiments/{실험}/results/figures/*.vl.json` 변환
+6. `./run.sh verify`, `./run.sh analyze` 후 결과 차트 변환(repo-docs-figures 변환)
 7. `report.md`, `data/README.md` 작성, `docs/experiments/README.md` 결론 칸 기입
 8. 결론이 설계를 바꾸면 같은 PR에서 설계 문서 수정
 
@@ -262,7 +260,7 @@ docs/experiments/
 |---|---|---|---|---|---|
 | H1 | {지표} | {값} | [{하한}, {상한}] | {n} | {채택, 기각, 보류} |
 
-![{결론 문장}](results/figures/{이름}.svg)
+![{결론 문장}](../../assets/{이름}.svg)
 
 ### 탐색 분석
 
@@ -333,7 +331,7 @@ docs/experiments/
 
 1. 수집 전 설계 커밋이 첫 `raw/` 파일 커밋의 조상
 2. `./run.sh verify` 통과
-3. `./run.sh analyze`, `render_figures` 두 번 실행 시 `results/` 같은 바이트
+3. `./run.sh analyze` 두 번 실행 시 `results/` 같은 바이트, 차트 재현 검사(repo-docs-figures 검사)
 4. 보고서의 모든 수치가 `results/summary.json`에 존재
 5. `설계와 다른 점` 절 존재
 6. 실패, 제외한 실행 전부 흐름 표에
