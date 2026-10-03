@@ -1,15 +1,15 @@
 ---
 name: repo-docs-experiment
-description: "설계 값, 외부 도구 동작을 재는 실험, 벤치마크를 설계, 실행, 보고할 때 사용. 사전 등록 설계, 원자료, 스크립트, 보고서 템플릿, 통계 규칙"
+description: "설계 값, 외부 도구 동작을 재는 실험, 벤치마크를 설계, 실행, 보고할 때 사용. 수집 전 설계 고정, 원자료, 스크립트, 보고서 템플릿, 통계 규칙"
 ---
 
 # Repo Docs Experiment
 
 - 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 실험 대상, 폴더, 흐름, 템플릿, 통계 규칙, 검사
-- 필요할 때만 읽기: 결과 차트를 만들거나 바꿀 때 → repo-docs-figures; 실험 이슈, 사전 등록·결과 PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit
+- 필요할 때만 읽기: 결과 차트를 만들거나 바꿀 때 → repo-docs-figures; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit
 
-- 실험 하나 = 폴더 하나. 설계 머지 → 수집 → 보고서 머지
+- 실험 하나 = 폴더 하나. 수집 전 설계 커밋 → 수집 → 결과 보고
 - 진행 상태: `experiment` 이슈. 문서에 기록 금지
 
 ## 대상
@@ -62,13 +62,16 @@ docs/experiments/
 ## 흐름
 
 1. `experiment` 이슈 생성 (git-issue)
-2. `design.md`, `run.sh`, `scripts/` 작성 후 PR 머지 = 사전 등록
-3. `./run.sh collect`로 수집. 그 전 데이터 열람 금지
-4. `./run.sh verify`, `./run.sh analyze`, `render_figures`(repo-docs-figures)로 `docs/experiments/{실험}/results/figures/*.vl.json` 변환
-5. `report.md`, `data/README.md` 작성, `docs/experiments/README.md` 결론 칸 기입
-6. 결론이 설계를 바꾸면 같은 PR에서 설계 문서 수정
+2. `design.md`, `run.sh`, `scripts/` 작성, 수집 전 설계·가설·판정 기준을 커밋으로 고정
+3. 일반 실측: 2번 설계 커밋을 같은 PR의 첫 기준점으로 두고, 수집·결과를 더해 함께 머지
+4. 독립적인 사전 검토가 필요한 실험만 2번을 사전 등록 PR로 먼저 머지. 이슈 연결은 git-issue 닫기 절
+5. `./run.sh collect`로 수집. 그 전 데이터 열람 금지
+6. `./run.sh verify`, `./run.sh analyze`, `render_figures`(repo-docs-figures)로 `docs/experiments/{실험}/results/figures/*.vl.json` 변환
+7. `report.md`, `data/README.md` 작성, `docs/experiments/README.md` 결론 칸 기입
+8. 결론이 설계를 바꾸면 같은 PR에서 설계 문서 수정
 
-- 2번 뒤 `design.md` 수정 금지. 변경은 보고서 `설계와 다른 점`에
+- 수집 시작 뒤 `design.md`의 가설·판정 기준 수정 금지
+- 결과를 본 뒤 설계·가설·판정 기준을 바꾸면 보고서 `설계와 다른 점`에 기록. 바뀐 부분의 분석은 `탐색 분석`으로 구분하고 확인 분석 판정에 사용 금지
 
 ## 문체
 
@@ -88,7 +91,7 @@ docs/experiments/
 | [{실험}]({실험}/report.md) | {확인할 것} | [{문서 제목}](../{파일}) | {결론 한 줄} |
 ```
 
-- 행 순서: 사전 등록 머지 순
+- 행 순서: 수집 전 설계 커밋 순
 - 링크 글자: 폴더 이름 그대로, 인라인 코드 없이
 - 보고서 전: 링크 `{실험}/design.md`, 결론 `측정 전`
 - 결론: `{가설} {채택, 기각, 보류}: {수치}`. 예: `H1 채택: 오분류율 3.1% [2.0, 4.7]`
@@ -232,7 +235,7 @@ docs/experiments/
 
 | 항목 | 값 |
 |---|---|
-| 설계 | [실험 설계](design.md), 커밋 `{7자리}` |
+| 설계 | [실험 설계](design.md), 커밋 `{설계 커밋 해시}` |
 | 실행 id | `{실행 id}` |
 | 환경 | [env.json](env.json) |
 | 표본 | 설계 {n}, 실제 {n} |
@@ -328,7 +331,7 @@ docs/experiments/
 
 보고서 머지 전 확인:
 
-1. `design.md` 머지 커밋이 첫 `raw/` 파일 커밋보다 먼저
+1. 수집 전 설계 커밋이 첫 `raw/` 파일 커밋의 조상
 2. `./run.sh verify` 통과
 3. `./run.sh analyze`, `render_figures` 두 번 실행 시 `results/` 같은 바이트
 4. 보고서의 모든 수치가 `results/summary.json`에 존재
