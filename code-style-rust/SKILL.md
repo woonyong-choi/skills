@@ -46,7 +46,7 @@ description: "Rust 코드 작성, 리뷰, 리팩터링 시 사용. 이름 형식
 | 테스트 | `unwrap`·`expect`·`panic!` 허용 |
 
 - 테스트 밖에서 `unwrap`, `panic!`, `todo!`, `unimplemented!` 금지
-- 예외: 초안 PR의 계약 커밋에서 본문 자리 `todo!("#<이슈 번호>")`. PR 준비 완료 전 0개 (git-pull-request 종류)
+- 초안 PR의 미완성 자리표시 예외: code-style 에러와 로그 절
 - `expect` 메시지는 성립해야 하는 이유를 `should`로: `expect("config should be loaded before start")`
 - 에러·로그 메시지는 소문자로 시작, 마침표 없음: `invalid digit found in string`
 - 무시하는 에러는 이유를 주석으로: `let _ = tx.send(event); // 받는 쪽이 이미 종료됨`
