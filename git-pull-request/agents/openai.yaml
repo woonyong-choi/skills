@@ -1,4 +1,4 @@
 interface:
   display_name: "Git Pull Request"
-  short_description: "PR 이슈 연결, 본문 틀, 문서 동반, 두 축 검토, 머지 조건"
+  short_description: "PR 공유 계약 검토, 이슈 연결, 본문 틀, 문서 동반, 두 축 검토, 머지 조건"
   default_prompt: "$git-pull-request 스킬로 처리해 줘: [요청]"
