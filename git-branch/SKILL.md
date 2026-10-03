@@ -1,6 +1,6 @@
 ---
 name: git-branch
-description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반영, 병렬 에이전트 작업 분배, 릴리스 시 사용. main + 짧은 작업 브랜치, 이슈 단위 작업, squash merge"
+description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반영, 병렬 에이전트 작업 분배, 릴리스 시 사용. main + 짧은 작업 브랜치, 이슈 작업, PR 연결, squash merge"
 ---
 
 # Git Branch
@@ -27,18 +27,19 @@ description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반�
 
 ## 작업 단위
 
-이슈 하나 = 브랜치 하나 = PR 하나 = 작업 주체 하나.
+이슈로 추적하는 작업 하나 = 브랜치 하나 = PR 하나 = 작업 주체 하나.
 
-- 모든 작업에 이슈 번호. 이슈가 없으면 먼저 생성, 생성 불가면 중단하고 보고
+- 독립 추적이 필요 없는 형식, 주석, 죽은 코드, 문서 동기화 정리: 이슈 없이 PR 허용 (git-issue 닫기)
 - 작업 주체: 사람은 이슈 담당자(assignee), 같은 계정을 쓰는 AI 에이전트는 그 브랜치를 만든 에이전트
 - `experiment` 이슈의 사전 등록 PR 여부와 결과 연결: repo-docs-experiment 흐름
-- 서로 독립된 변경이면 이슈부터 분리
+- 서로 독립된 추적 작업이면 이슈부터 분리
 - 큰 작업: 브랜치가 아니라 이슈를 하위 이슈로 분할. 하위 이슈마다 브랜치 하나
 
 ## 이름
 
-`type/이슈번호-scope-설명`
+`type/이슈번호-scope-설명` 또는 `type/scope-설명`
 
+- 이슈를 추적하면 첫 형식, 이슈 없는 작은 정리는 둘째 형식
 - type, scope: 커밋과 같은 단어 (git-commit type, scope)
 - 설명: 영어 소문자 kebab-case, 2~5단어
 
@@ -47,18 +48,19 @@ description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반�
 | `feat/12-engine-rpc-server` | 12번 이슈, engine에 RPC 서버 추가 |
 | `fix/31-tui-live-area-height` | 31번 이슈, tui 실행 영역 높이 버그 |
 | `docs/40-readme-install` | 40번 이슈, README 설치 방법 |
+| `docs/repo-comment-cleanup` | 이슈 없는 주석 정리 |
 | `release/v0.1` | 릴리스 브랜치 (예외 형식) |
 
 ## 시작 전 확인
 
 1. 착수 가능한 이슈 중 git-issue 우선순위 순서 확인
 2. `git fetch origin --prune`
-3. 같은 이슈 번호 브랜치: `git branch -a --list "*/{번호}-*"`
-4. 같은 이슈 번호 열린 PR: `gh pr list --state open --search "{번호} in:title,body"`
+3. 이슈 작업이면 같은 이슈 번호 브랜치: `git branch -a --list "*/{번호}-*"`
+4. 이슈 작업이면 같은 이슈 번호 열린 PR: `gh pr list --state open --search "{번호} in:title,body"`
 5. 사용 중인 worktree: `git worktree list`
-6. 이슈 담당자: 비어 있으면 자기 계정 지정, 다른 사람이면 중단
+6. 이슈 작업이면 담당자: 비어 있으면 자기 계정 지정, 다른 사람이면 중단
 
-- 3~5에서 같은 이슈가 나오면 새 브랜치 금지
+- 이슈 작업에서 3~5에 같은 이슈가 나오면 새 브랜치 금지
 - 사용자가 그 브랜치를 이어서 하라고 지정했으면 이어서 작업, 아니면 중단하고 보고
 
 ## 작업 중
@@ -80,7 +82,7 @@ description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반�
 ## 머지
 
 - squash merge만
-- squash 메시지: 첫 줄은 PR 제목, 본문과 꼬리말은 커밋 규칙, 꼬리말에 PR 본문 첫 줄과 같은 `Closes: #{번호}` 또는 `Refs: #{번호}`
+- squash 메시지: 첫 줄은 PR 제목, 본문과 꼬리말은 커밋 규칙, 이슈 연결이 있으면 PR 본문과 같은 `Closes: #{번호}` 또는 `Refs: #{번호}`
 - GitHub가 자동으로 붙이는 커밋 목록, `Co-Authored-By` 줄 삭제
 - AI 몫: PR 생성까지. 머지는 요청이 있을 때만
 - 머지 후 자기 브랜치 삭제: 원격, 로컬, worktree. 정리 스크립트로 한 번에(정리 절)
