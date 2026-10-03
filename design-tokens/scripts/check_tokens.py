@@ -22,7 +22,7 @@ from collections.abc import Iterator
 CSS_EXTS = {".css", ".scss"}
 MARKUP_EXTS = {".html", ".svg", ".vue", ".svelte"}
 SCRIPT_EXTS = {".js", ".mjs", ".cjs", ".ts", ".jsx", ".tsx"}
-# docs/는 repo-docs-figures 그림(D2, Vega-Lite 산출물) 자리라 이 검사 대상이 아니다.
+# docs/는 repo-docs-figures 그림(mutoscope 산출물) 자리라 이 검사 대상이 아니다.
 SKIP_DIRS = {"node_modules", "dist", "build", "coverage", ".git", "docs"}
 TOKEN_FILES = {"tokens.json", "tokens.dark.json"}
 GENERATED_MARK = "생성물, 손으로 고치지 않음"

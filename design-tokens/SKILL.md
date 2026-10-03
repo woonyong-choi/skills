@@ -7,7 +7,7 @@ description: "색, 글꼴, 간격, 반지름, 그림자, 시간 같은 화면 �
 
 - 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
 - 범위: 화면에 보이는 모든 값의 정의, 이름, 사용 방법, 하드코딩 검사
-- 필요할 때만 읽기: CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림(D2, Vega-Lite) 색 → repo-docs-figures; 기대값 근거 확인 → code-style
+- 필요할 때만 읽기: CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림(mutoscope) 색·글꼴·크기 → repo-docs-figures; 기대값 근거 확인 → code-style
 
 ## 원칙
 
@@ -22,6 +22,7 @@ description: "색, 글꼴, 간격, 반지름, 그림자, 시간 같은 화면 �
 토큰 없이 써도 되는 값: `0`, `1`(flex 비율, 불투명), `auto`, `none`, `inherit`, `initial`, `unset`, `currentColor`, `transparent`, `100%`, `50%`(가운데 맞춤), `100vh`, `100vw`
 
 - 토큰 대상 제외: 도형 좌표, 경로, 데이터에서 계산한 크기
+- 문서 그림 토큰·색 역할·대비: (repo-docs-figures 도구와 파일). 이 스킬의 토큰을 그림 원본에 복제 금지
 - 외부 라이브러리가 요구하는 고정 값: 그 줄에 `tokens-allow: {이유}` 주석. 이유 없는 허용 금지
 
 ## 세 층

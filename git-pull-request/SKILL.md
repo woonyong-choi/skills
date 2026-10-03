@@ -7,7 +7,7 @@ description: "PR 본문 작성, 공유 계약 검토, 문서 동반 확인, 검�
 
 - 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
 - 범위: PR 종류, 본문, 계약 검토, 문서 동반, 검토 댓글, 머지 조건. 제목, 브랜치, 머지 절차(git-branch)와 제목 형식(git-commit) 제외
-- 필요할 때만 읽기: 테스트 변경 근거 확인 → code-style
+- 필요할 때만 읽기: 테스트 변경 근거 확인 → code-style; 그림 원본·입력·산출물 변경 → repo-docs-figures
 
 ## 종류
 
@@ -56,7 +56,7 @@ Closes: #{번호} 또는 Refs: #{번호}
 - 계약 PR: 설계 문서의 인터페이스 절을 코드 위치로 교체 (repo-docs-design)
 - 실험 결과가 설계를 바꾸면 실험 문서와 설계 문서를 같은 PR에서
 - 결정 기록 대상 표에 맞는 `design` 이슈 결정: 같은 PR에 결정 기록 (repo-docs-decision 대상)
-- 그림 원본(`.d2`, `.vl.json`, `.tape`)을 고치면 만든 그림도 같은 PR에서 (repo-docs-figures)
+- 그림 원본·입력 JSON 변경 시 산출물 동반과 변환 검증: (repo-docs-figures 검사)
 - README나 `docs/` 문서가 바뀌면 `llms.txt`, `llms-full.txt`도 같은 PR에서 (repo-docs-llms)
 - 릴리스 PR: `CHANGELOG.md`를 같은 PR에서 (repo-docs-root)
 
