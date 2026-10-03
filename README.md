@@ -93,10 +93,10 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | repo-docs-llms | repo-docs | 없음 |
 | repo-docs-journal | repo-docs | 판단이 공개 설계를 정했을 때 → repo-docs-decision |
 | repo-docs-promo | repo-docs | 없음 |
-| git-commit | 없음 | 없음 |
+| git-commit | 없음 | 커밋 메시지 작성·검토 → repo-docs |
 | git-branch | 없음 | 작업 선택, 시작 전 이슈 우선순위와 막힘 확인 → git-issue; 커밋 메시지, PR 제목, squash 메시지 → git-commit; PR 본문 → git-pull-request |
-| git-issue | 없음 | build, docs 제목의 끝말, 영역 라벨의 scope 단어 → git-commit |
-| git-pull-request | 없음 | 테스트 변경 근거 확인 → code-style; 그림 원본·입력·산출물 변경 → repo-docs-figures |
+| git-issue | 없음 | 제목·본문·댓글 작성·검토 → repo-docs; build, docs 제목의 끝말이나 영역 라벨의 scope 단어 → git-commit |
+| git-pull-request | 없음 | 제목·본문·댓글 작성·검토 → repo-docs; 테스트 변경 근거 확인 → code-style; 그림 원본·입력·산출물 변경 → repo-docs-figures |
 | code-style | 없음 | 리팩터링 기법 선택 → code-refactoring |
 | code-refactoring | code-style | 없음 |
 | code-style-rust, code-style-kotlin, code-style-python | code-style | 없음 |
@@ -113,7 +113,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| repo-docs | 원칙, 문서 목록(위치, 독자, 답할 질문, 만드는 조건, 맡는 스킬), 언어, 절 구성, 한국어와 영어 문체, 용어, 사실 상태, 자리표시, 기계 검사와 독자 검사 | 모든 문서의 공통 규칙을 한 곳에 두고, 형식보다 독자 질문을 기준으로 삼기 위해서다 |
+| repo-docs | 원칙, 문서 목록(위치, 독자, 답할 질문, 만드는 조건, 맡는 스킬), 언어, 절 구성, 한국어와 영어 문체, 사람이 쓴 문서처럼 쓰는 규칙, 용어, 사실 상태, 자리표시, 문체 신호 기계 검사와 독자 검사 | 모든 문서의 공통 규칙을 한 곳에 두고, 형식보다 독자 질문을 기준으로 삼기 위해서다 |
 | repo-docs-readme | 영어 README와 한국어 번역본의 단계별 필수 절, 절 이름 목록, 번역 규칙 | 처음 온 사람이 무엇인지, 어떻게 쓰이는지, 지금 어떤 상태인지 바로 알게 하기 위해서다 |
 | repo-docs-design | 새 기능을 넣는 자리, `docs/README.md`, 아키텍처(코드 지도, 불변 조건), RFC형 기능 설계(미해결 질문 포함), 요구·검증 범위와 호환 사례, 용어 | 설계 단계에도 정한 것과 미정인 것을 구분해 기여자가 읽을 수 있게 하기 위해서다 |
 | repo-docs-spec | 프로토콜, 명령, 화면, 데이터, 설정, 오류 문서, 요구사항 검증 정본 참조 | 찾아보는 문서를 표 형식으로 고정하기 위해서다 |
@@ -130,10 +130,10 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| git-commit | 커밋 형식 `type(scope): 한글 설명` | 영어 부담 없이 일관된 기록을 남기기 위해서다 |
+| git-commit | 커밋 형식 `type(scope): 한글 설명`, 문체 정본 참조와 AI 흔적 금지 | 영어 부담 없이 일관된 기록을 남기기 위해서다 |
 | git-branch | 브랜치 이름과 이슈 단위 작업, 병렬 검사 소유권과 대상 HEAD 확인 | 브랜치와 이슈를 한 줄로 잇기 위해서다 |
-| git-issue | 이슈 종류와 템플릿, 상태 관리, 완료 범위 변경과 시간 추정 | 설계, 구현, 버그, 실험 상태를 문서가 아니라 이슈로 관리하기 위해서다 |
-| git-pull-request | PR 종류, 본문, 테스트 변경 근거, 문서 동반, 사용자 결과별 크기, 최종 출력 수용표와 검토 | 계약을 먼저 합의하고 구현을 믿을 수 있게 하기 위해서다 |
+| git-issue | 이슈 종류와 템플릿, 상태 관리, 완료 범위 변경과 시간 추정, 문체 정본 참조와 AI 흔적 금지 | 설계, 구현, 버그, 실험 상태를 문서가 아니라 이슈로 관리하기 위해서다 |
+| git-pull-request | PR 종류, 본문, 테스트 변경 근거, 문서 동반, 사용자 결과별 크기, 최종 출력 수용표와 검토, 문체 정본 참조와 AI 흔적 금지 | 계약을 먼저 합의하고 구현을 믿을 수 있게 하기 위해서다 |
 
 ### 코드와 폴더
 
@@ -173,11 +173,11 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | design-tokens | 117 | 8,134 |
 | folder-naming | 72 | 3,093 |
 | git-branch | 121 | 6,375 |
-| git-commit | 133 | 5,118 |
-| git-issue | 219 | 7,061 |
-| git-pull-request | 108 | 5,164 |
+| git-commit | 135 | 5,372 |
+| git-issue | 219 | 7,326 |
+| git-pull-request | 108 | 5,393 |
 | html-report | 115 | 5,844 |
-| repo-docs | 219 | 17,018 |
+| repo-docs | 241 | 19,233 |
 | repo-docs-decision | 117 | 5,376 |
 | repo-docs-design | 166 | 9,560 |
 | repo-docs-experiment | 339 | 12,202 |
