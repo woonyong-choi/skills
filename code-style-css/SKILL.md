@@ -80,7 +80,7 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 - 움직임: 모든 `transition`·`animation`에 `@media (prefers-reduced-motion: reduce)` 대응 필수
 - 초점: `:focus-visible` 스타일 필수. `outline: none` 단독 사용 금지
 - 누를 수 있는 요소 크기: 최소 24×24 CSS px(WCAG 2.2 2.5.8)
-- 글자 대비: 본문 4.5:1, 큰 글자·아이콘 3:1 이상. 토큰 조합으로 확인
+- 글자 대비: 본문 4.5:1, 큰 글자·아이콘 3:1 이상. 실제 화면 검증(테스트)
 
 ## 공개 범위와 주석
 
@@ -91,6 +91,7 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 ## 테스트
 
 - 화면 확인: Playwright로 밝은 화면, 어두운 화면, 좁은 화면(390px), 넓은 화면(1440px) 스크린샷
+- 실제 배경 면 위의 최종 합성 색·불투명도·전환 상태 확인. 정지 화면과 움직이는 중간 상태의 규칙 적용 범위 구분
 - `prefers-reduced-motion: reduce` 에뮬레이션에서 움직임 정지 확인
 - 넘침 확인: 버튼·탭 글자가 상자를 넘지 않는지 `scrollWidth <= clientWidth`
 - 스크린샷 비교를 저장소에 두면 기준 이미지는 `test/screenshots/`
