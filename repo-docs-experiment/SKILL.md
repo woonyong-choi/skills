@@ -7,7 +7,7 @@ description: "설계 값, 외부 도구 동작을 재는 실험, 벤치마크를
 
 - 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 실험 대상, 폴더, 흐름, 템플릿, 통계 규칙, 검사
-- 필요할 때만 읽기: 결과 차트를 만들거나 바꿀 때 → repo-docs-figures
+- 필요할 때만 읽기: 결과 차트를 만들거나 바꿀 때 → repo-docs-figures; 실험 이슈, 사전 등록·결과 PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit
 
 - 실험 하나 = 폴더 하나. 설계 머지 → 수집 → 보고서 머지
 - 진행 상태: `experiment` 이슈. 문서에 기록 금지

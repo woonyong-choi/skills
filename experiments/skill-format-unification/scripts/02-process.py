@@ -1,5 +1,5 @@
 """raw/ -> processed/*.csv. 입력은 data/raw만."""
-import csv, glob, json, os, re, subprocess, sys, tarfile, tempfile
+import csv, glob, json, os, re, subprocess, sys, tarfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 EXP = os.path.dirname(HERE)
@@ -27,15 +27,7 @@ def tokens(texts):
     return json.loads(r.stdout)
 
 
-def extract(ver, tmp):
-    d = os.path.join(tmp, ver)
-    with tarfile.open(os.path.join(RAW, f"skills-{ver}.tar.gz")) as t:
-        t.extractall(d, filter="data")
-    return os.path.join(d, "skills")
-
-
-def parse(path):
-    s = open(path, encoding="utf-8").read()
+def parse(s):
     name = re.search(r"^name: (.+)$", s, re.M).group(1).strip().strip('"')
     desc = re.search(r'^description: "?(.*?)"?$', s, re.M).group(1)
     body = s.split("---", 2)[2]
@@ -43,9 +35,64 @@ def parse(path):
     return {"name": name, "text": s, "desc": desc, "base": base.group(1) if base else None}
 
 
-def load(ver, tmp):
-    root = extract(ver, tmp)
-    return {os.path.basename(os.path.dirname(p)): parse(p) for p in glob.glob(root + "/*/SKILL.md")}, root
+def load(ver):
+    skills = {}
+    with tarfile.open(os.path.join(RAW, f"skills-{ver}.tar.gz")) as bundle:
+        for member in bundle.getmembers():
+            if member.isfile() and member.name.startswith("skills/") and member.name.endswith("/SKILL.md"):
+                skills[os.path.basename(os.path.dirname(member.name))] = parse(bundle.extractfile(member).read().decode())
+    return skills
+
+
+NOUN_OK = ('흐름', '알림', '없음', '다음', '포함', '결함', '마음', '처음', '이름', '모음', '요금', '그림', '묶음', '느낌', '믿음', '물음', '걸음', '기본값', '보관함', '수신함')
+NAME_OK = ('안 함', '막힘')
+BAD_END = re.compile(r'(다|함|음|임|됨|봄|름|룸|듦|눔|힘|움|씀|셈|뺌|김|춤|침|줌|둠|꿈|옮|듬|숨|엶|앎|삶|짐|킴|림|핌|닮)$')
+
+
+def check_text(s, me, names):
+    errs = []
+    lines = s.split('\n')
+    m = re.search(r'^description: "(.*)"$', s, re.M)
+    if not m:
+        errs.append('description 형식')
+    else:
+        d = m.group(1)
+        for n in names:
+            if n != me and re.search(r'(?<![\w-])' + re.escape(n) + r'(?![a-z-])', d):
+                errs.append('description에 다른 스킬 이름: ' + n)
+        if '함께' in d:
+            errs.append('description에 함께')
+    if not re.search(r'^name: [a-z0-9-]+$', s, re.M):
+        errs.append('name 형식')
+    body = s.split('---', 2)[2].lstrip('\n').split('\n')
+    if not body[0].startswith('# '):
+        errs.append('제목 없음')
+    head = [line for line in body[1:6] if line.startswith('- ')]
+    if not head or head[0] != '- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선':
+        errs.append('머리 1줄')
+    if len(head) < 2 or not (head[1].startswith('- 기반: ') or head[1].startswith('- 범위: ')):
+        errs.append('머리 2줄')
+    fence = 0
+    for number, line in enumerate(lines, 1):
+        if fence == 0 and line.startswith('```'):
+            fence = len(line) - len(line.lstrip('`'))
+            continue
+        if fence and re.fullmatch('`{%d}' % fence, line.strip()):
+            fence = 0
+            continue
+        if fence or number <= 4 or not line.strip() or line.startswith('#') or line.startswith('name:') or line.startswith('description:') or line == '---':
+            continue
+        text = re.sub(r'`[^`]*`', '', line)
+        cells = [cell.strip() for cell in text.split('|')] if text.startswith('|') else [text]
+        for cell in cells:
+            cell = re.sub(r'^[-0-9. ]+', '', cell).strip().rstrip('.').strip()
+            cell = re.sub(r'\([^()]*\)$', '', cell).strip()
+            if not cell or set(cell) <= set('-: ') or cell in NAME_OK:
+                continue
+            word = cell.split()[-1]
+            if BAD_END.search(word) and not word.endswith(NOUN_OK):
+                errs.append(f'{number}: 끝말 {word}')
+    return errs
 
 
 def closure_before(sk, start):
@@ -102,18 +149,17 @@ def write(name, rows, fields):
 
 
 def main():
-    tmp = tempfile.mkdtemp()
-    sets = {v: load(v, tmp) for v in VERSIONS}
+    sets = {v: load(v) for v in VERSIONS}
 
     # 1. 스킬별 크기
     texts = {}
-    for v, (sk, _) in sets.items():
+    for v, sk in sets.items():
         for n, s in sk.items():
             texts[f"{v}|{n}|body"] = s["text"]
             texts[f"{v}|{n}|desc"] = f"{n}: {s['desc']}"
     tk = tokens(texts)
     rows = []
-    for v, (sk, _) in sets.items():
+    for v, sk in sets.items():
         for n in sorted(sk):
             b, d = tk[f"{v}|{n}|body"], tk[f"{v}|{n}|desc"]
             rows.append({"version": v, "skill": n, "bytes": len(sk[n]["text"].encode()),
@@ -126,7 +172,7 @@ def main():
     srows = []
     for sid, req, st_b, st_a in SCENARIOS:
         for v, st, fn in (("before", st_b, closure_before), ("after", st_a, closure_after)):
-            sk = sets[v][0]
+            sk = sets[v]
             ld = sorted(fn(sk, st))
             srows.append({"scenario": sid, "request": req, "version": v, "skills": " ".join(ld),
                           "o200k": sum(size[(v, n)]["o200k"] for n in ld),
@@ -136,12 +182,16 @@ def main():
     write("scenario_load.csv", srows, list(srows[0]))
 
     # 3. 문체 검사
-    chk = os.path.join(HERE, "skill_check.py")
     crows = []
-    for v, (sk, root) in sets.items():
-        r = subprocess.run([sys.executable, chk, "--json", root], capture_output=True, text=True, check=True)
-        for kind, n in json.loads(r.stdout).items():
-            crows.append({"version": v, "kind": kind, "count": n})
+    for v, sk in sets.items():
+        kinds = {}
+        for name in sorted(sk):
+            for error in check_text(sk[name]["text"], name, sk):
+                kind = '끝말' if '끝말' in error else error.split(':')[0]
+                kinds[kind] = kinds.get(kind, 0) + 1
+        kinds['total'] = sum(kinds.values())
+        for kind, count in kinds.items():
+            crows.append({"version": v, "kind": kind, "count": count})
     write("style_check.csv", crows, ["version", "kind", "count"])
 
     # 4. 트리거
@@ -151,7 +201,7 @@ def main():
         run = os.path.basename(p)[8:-5]
         ver = run.rsplit("-", 1)[0]
         got = json.load(open(p))
-        sk = sets[ver][0]
+        sk = sets[ver]
         fn = closure_before if ver == "before" else closure_after
         for k in sorted(exp, key=int):
             e, g = set(exp[k]), set(got.get(k, []))

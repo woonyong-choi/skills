@@ -7,7 +7,6 @@ import os
 import re
 import subprocess
 import sys
-import tempfile
 
 D2_PALETTE = """vars: {
   d2-config: {
@@ -61,11 +60,13 @@ def render_d2(source: str) -> None:
         print(f"{source}: 손그림 금지")
         raise SystemExit(1)
     target = source[: -len(".d2")] + ".svg"
-    with tempfile.TemporaryDirectory() as folder:
-        merged = os.path.join(folder, "in.d2")
-        open(merged, "w", encoding="utf-8").write(D2_PALETTE + text)
-        if subprocess.run(["d2", "--layout", "elk", "--theme", "0", "--pad", "24", merged, target]).returncode:
-            raise SystemExit(1)
+    result = subprocess.run(
+        ["d2", "--layout", "elk", "--theme", "0", "--pad", "24", "-", target],
+        input=D2_PALETTE + text,
+        text=True,
+    )
+    if result.returncode:
+        raise SystemExit(1)
     os.chmod(target, 0o644)
 
 
