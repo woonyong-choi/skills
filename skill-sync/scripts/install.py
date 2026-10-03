@@ -29,7 +29,7 @@ TOOL_HOMES = {"codex": HOME / ".codex", "antigravity": HOME / ".gemini", "claude
 MANIFEST = ".repo-skills.json"
 POINTER = HOME / ".config" / "skills" / "source"
 TRASH = HOME / ".skill-trash"
-SKIP = {"__pycache__", ".DS_Store"}
+SKIP = {".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__"}
 
 
 # cost: time O(k), heap O(k), stack O(1), io k
@@ -95,21 +95,35 @@ def sync(root: Path, skills: list[Path], dry_run: bool) -> None:
     manifest_path = root / MANIFEST
     installed = json.loads(manifest_path.read_text()) if manifest_path.is_file() else {}
     current = {skill.name: tree_hash(skill) for skill in skills}
+    next_manifest = dict(installed)
     for skill in skills:
         target = root / skill.name
         if installed.get(skill.name) == current[skill.name] and target.is_dir() and tree_hash(target) == current[skill.name]:
+            continue
+        if skill.name not in installed and target.exists():
+            print(f"{target}: manifest에 없는 같은 이름 대상, 충돌로 건너뜀")
             continue
         print(f"{target}: 설치")
         if not dry_run:
             if target.exists():
                 shutil.rmtree(target)
             shutil.copytree(skill, target, ignore=shutil.ignore_patterns(*SKIP))
+        next_manifest[skill.name] = current[skill.name]
     for name in sorted(set(installed) - set(current)):
         print(f"{root / name}: 원본에서 빠진 스킬, 휴지통 폴더로 이동")
         if not dry_run:
             move_to_trash(root / name)
+        next_manifest.pop(name)
     if not dry_run:
-        manifest_path.write_text(json.dumps(current, indent=2, sort_keys=True) + "\n")
+        manifest_path.write_text(json.dumps(next_manifest, indent=2, sort_keys=True) + "\n")
+
+
+# cost: time O(f), heap O(1), stack O(1), io f
+# vars: f = zip 안 파일 수
+# basis: estimate
+def archive_has_cache(archive: Path) -> bool:
+    with zipfile.ZipFile(archive) as bundle:
+        return any(SKIP.intersection(Path(item.filename).parts) for item in bundle.infolist())
 
 
 # cost: time O(s·b), heap O(s), stack O(d), io s·f
@@ -120,10 +134,19 @@ def build_claude_zips(source: Path, skills: list[Path], dry_run: bool) -> list[P
     record_path = output / MANIFEST
     record = json.loads(record_path.read_text()) if record_path.is_file() else {}
     changed = []
+    record_changed = False
+    current_names = {skill.name for skill in skills}
+    for name in sorted(set(record) - current_names):
+        archive = output / f"{name}.zip"
+        print(f"{archive}: 원본에서 빠진 스킬, 배포 zip 제거")
+        if not dry_run and archive.exists():
+            archive.unlink()
+        record.pop(name)
+        record_changed = True
     for skill in skills:
         digest = tree_hash(skill)
         archive = output / f"{skill.name}.zip"
-        if record.get(skill.name) == digest and archive.is_file():
+        if record.get(skill.name) == digest and archive.is_file() and not archive_has_cache(archive):
             continue
         changed.append(archive)
         if dry_run:
@@ -136,7 +159,8 @@ def build_claude_zips(source: Path, skills: list[Path], dry_run: bool) -> list[P
                     info.external_attr = 0o644 << 16
                     bundle.writestr(info, path.read_bytes(), zipfile.ZIP_DEFLATED)
         record[skill.name] = digest
-    if not dry_run and changed:
+        record_changed = True
+    if not dry_run and record_changed:
         record_path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
     return changed
 

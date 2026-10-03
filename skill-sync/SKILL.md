@@ -16,7 +16,7 @@ description: "스킬을 만들거나 고친 뒤 검사하고 Codex, Claude, Anti
 
 1. 원본 저장소에서 스킬 수정
 2. 형식 검사, 출력 `total 0`까지 수정
-3. 스킬 연결 줄이나 크기가 바뀌면 원본 저장소 `README.md`의 스킬 연결 표, 크기 표 수정
+3. 스킬 연결 줄이 바뀌면 원본 저장소 `README.md`의 스킬 연결 표 수정
 4. 세 도구에 설치
 5. 설치 출력 마지막 줄 `Claude 계정에 올릴 zip`의 파일을 Claude 설정의 스킬 메뉴에 업로드. 브라우저 도구가 있으면 직접 업로드, 같을 이름을 교체하면 `node <이 스킬 폴더>/scripts/claude_upload.mjs --replace {이름,...}`, 그것도 안 되면 파일 목록 보고
 6. 원본 저장소 커밋
@@ -39,7 +39,7 @@ python3 <이 스킬 폴더>/scripts/install.py
 
 - 도구 폴더가 없는 도구: 설치 제외
 - 원본 저장소 찾는 순서: `--source`, 환경 변수 `SKILLS_SOURCE`, 스크립트가 든 git 저장소, 마지막으로 쓴 원본(`~/.config/skills/source`). 모두 없으면 사용자에게 원본 경로 확인
-- 관리 범위: 이 스크립트가 설치한 스킬만(도구 폴더의 `.repo-skills.json`). 원본에서 빠진 스킬은 `~/.skill-trash/`로 이동
+- 관리 범위: 이 스크립트가 설치한 스킬만(도구 폴더의 `.repo-skills.json`). manifest에 없는 같은 이름 폴더는 충돌로 남기고 설치 제외. 원본에서 빠진 manifest 항목은 대상 폴더를 `~/.skill-trash/`로 이동, Claude 배포 zip과 manifest 항목 정리
 - 스킬 제거: `install.py --remove {이름}`. 휴지통 폴더로 이동, 영구 삭제 없음
 - 바꿀 내용만 확인: `install.py --dry-run`
 
