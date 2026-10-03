@@ -8,8 +8,8 @@ import sys
 
 FORMAL_FILES = {"README.ko.md"}
 PRIVATE_PATH = re.compile(r"\]\((\.\.?/)*(?:docs/+(\./)*archive|archive|\.local)(?:/|[?#)])|^\[[^\]]*\]: *(\.\.?/)*(?:docs/+(\./)*archive|archive|\.local)(?:/|[?#])")
-FENCE = re.compile(r"^`{3,}")
-FENCE_CLOSE = re.compile(r"^`+[ \t]*$")
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+FENCE_CLOSE = re.compile(r"^ {0,3}(?:`+|~+)[ \t]*$")
 NOT_PARAGRAPH = re.compile(r"^(\||- |[0-9]+\. |#|!\[|\[!|---|<)|^[a-z_]+: ")
 PARAGRAPH_ENDING = re.compile(r"(해요|십시오| 것이다|게 된다|함|음|임)\.$")
 QUOTE_ALERT = re.compile(r"^> \[!(NOTE|WARNING)\]$")
@@ -25,6 +25,23 @@ ALLOWED_TAGS = {"picture", "source", "img", "details", "summary"}
 README_TAGS = ALLOWED_TAGS | {"p", "h1", "a", "br"}
 HANGUL = re.compile(r"[가-힣]")
 LETTER = re.compile(r"[A-Za-z가-힣]")
+INLINE_CODE = re.compile(r"(`+)(?!`)(.+?)(?<!`)\1(?!`)")
+BOLD = re.compile(r"(?<!\\)(?P<mark>\*\*|(?<!\w)__)(?=\S)(?P<body>.+?)(?<=\S)(?P=mark)")
+GUIDE_PHRASES = re.compile(
+    r"다음과\s+같습니다|살펴보겠습니다|\blet['’]s\b"
+    r"|(?:^|[.!?]\s+|^\s*(?:[-*]|\d+\.)\s+|\|\s*)in\s+summary\b(?![./_-]\w)"
+    r"|\bit['’]s\s+worth\s+noting\b",
+    re.IGNORECASE,
+)
+EMOJI = re.compile(
+    r"[\U0001F1E6-\U0001F1FF\U0001F300-\U0001FAFF]"
+    r"|[\u2300-\u27FF\u00A9\u00AE\u3030\u303D\u3297\u3299]\uFE0F"
+    r"|[\u231A\u231B\u23E9-\u23EC\u23F0\u23F3\u25FD\u25FE\u2614\u2615"
+    r"\u2648-\u2653\u267F\u2693\u26A1\u26AA\u26AB\u26BD\u26BE\u26C4\u26C5"
+    r"\u26CE\u26D4\u26EA\u26F2\u26F3\u26F5\u26FA\u26FD\u2705\u270A\u270B"
+    r"\u2728\u274C\u274E\u2753-\u2755\u2757\u2795-\u2797\u27B0\u27BF\u2B1B\u2B1C\u2B50\u2B55]"
+    r"|[#*0-9]\uFE0F?\u20E3"
+)
 
 README_KO = ["작동 방식", "설치", "사용법", "기능", "측정 결과", "상태", "비교", "로드맵", "문서", "개발", "라이선스"]
 README_EN = ["How it works", "Installation", "Usage", "Features", "Benchmarks", "Status", "Comparison", "Roadmap", "Documentation", "Development", "License"]
@@ -164,7 +181,6 @@ def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str, 
     checks = [
         (re.search(r"[{}]", line), "자리표시자"),
         (any(match.group(0) == "<!" or match.group(2).lower() not in tags_allowed for match in tags), "HTML"),
-        ("**" in line or "__" in line, "굵게"),
         ("![](" in line, "대체 글 없음"),
         (raw.startswith("> ") and not QUOTE_ALERT.match(raw) and not QUOTE_ALERT.match(previous_quote), "인용 블록"),
         (PUNCTUATION.search(text), "문장부호"),
@@ -172,16 +188,79 @@ def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str, 
     return errors + [message for matched, message in checks if matched]
 
 
-# cost: time O(c), heap O(w), stack O(1), io 3 + e
-# vars: c = 파일 글자 수, w = 가장 긴 줄 글자 수, e = 오류 수
+# cost: time O(w²), heap O(w), stack O(1), alloc O(w)
+# vars: w = 줄 글자 수
+# basis: estimate, 닫히지 않은 코드·링크 정규식의 재탐색 상한
+def _style_text(raw: str, previous_quote: str) -> str:
+    if raw.lstrip().startswith(">") and not QUOTE_ALERT.match(previous_quote):
+        return ""
+    text = INLINE_CODE.sub("", raw)
+    if re.match(r"^ {0,3}\[[^\]]+\]:", text):
+        return ""
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"!?\[([^\]]*)\]\[[^\]]*\]", r"\1", text)
+    text = re.sub(r"<[^>]*>|https?://\S+", "", text)
+    return text
+
+
+# cost: time O(w²), heap O(w), stack O(1), alloc O(w)
+# vars: w = 줄 글자 수
+# basis: estimate, 닫히지 않은 강조 정규식의 재탐색 상한
+def _style_errors(text: str) -> list[str]:
+    errors = []
+    for cell in text.split("|"):
+        left, separator, right = cell.partition("—")
+        if separator and LETTER.search(left) and LETTER.search(right):
+            errors.append("줄표 문장 연결")
+            break
+    if EMOJI.search(text):
+        errors.append("이모지")
+    if GUIDE_PHRASES.search(BOLD.sub(r"\g<body>", text)):
+        errors.append("안내 말")
+    if BOLD.search(text):
+        errors.append("굵게")
+    return errors
+
+
+# cost: time O(w), heap O(w), stack O(1), alloc O(w)
+# vars: w = 줄 글자 수
 # basis: estimate
+def _visible_length(text: str) -> int:
+    text = re.sub(r"^\s*(?:#{1,6}\s+|(?:[-+*]|\d+\.)\s+)", "", text)
+    return len(re.sub(r"[\s*_#|>\[\]]", "", text))
+
+
+# cost: time O(w), heap O(w), stack O(1), alloc O(w)
+# vars: w = 줄 글자 수
+# basis: estimate
+def _without_comments(raw: str, in_comment: bool) -> tuple[str, bool]:
+    parts = []
+    start = 0
+    while start < len(raw):
+        marker = "-->" if in_comment else "<!--"
+        end = raw.find(marker, start)
+        if not in_comment:
+            parts.append(raw[start:] if end < 0 else raw[start:end])
+        if end < 0:
+            break
+        parts.append(" ")
+        start = end + len(marker)
+        in_comment = not in_comment
+    return "".join(parts), in_comment
+
+
+# cost: time O(Σw²), heap O(c), stack O(1), io O(1) + e
+# vars: c = 파일 글자 수, w = 줄별 글자 수, e = 오류 수
+# basis: estimate, 줄마다 Markdown 표식 정규식 재탐색 가능
 def check(path: str) -> int:
     name = re.sub(r"^\./", "", path)
     is_private = name.lower().startswith((".local/", "docs/archive/"))
     is_formal = name in FORMAL_FILES
     english = is_english(path)
     count = number = fence_length = previous_level = 0
-    in_fence = is_blank = False
+    bold_chars = visible_chars = bold_spans = 0
+    fence_marker = ""
+    in_fence = in_comment = is_blank = False
     previous_quote = ""
     with open(path, encoding="utf-8") as file:
         for number, raw in enumerate(file, 1):
@@ -189,21 +268,33 @@ def check(path: str) -> int:
             errors = []
             if not is_private and PRIVATE_PATH.search(raw.lower()):
                 errors.append("비공개 경로")
-            fence = FENCE.match(raw)
+            style_raw = raw
+            if not in_fence:
+                style_raw, in_comment = _without_comments(raw, in_comment)
+            fence = FENCE.match(style_raw)
             if fence:
+                previous_quote = ""
                 if not in_fence:
-                    fence_length, in_fence = len(fence.group()), True
-                    errors += ["코드 블록 언어 없음"] if raw == "```" else []
+                    fence_marker = fence.group(1)[0]
+                    fence_length, in_fence = len(fence.group(1)), True
+                    errors += ["코드 블록 언어 없음"] if raw.strip() == fence.group(1) else []
                     errors += ["mermaid"] if raw.startswith("```mermaid") else []
-                elif len(fence.group()) >= fence_length and FENCE_CLOSE.match(raw):
+                elif fence.group(1)[0] == fence_marker and len(fence.group(1)) >= fence_length and FENCE_CLOSE.match(raw):
                     in_fence = False
                 is_blank = False
             elif not in_fence and raw == "":
                 errors += ["빈 줄 연속"] if is_blank else []
                 is_blank = True
+                previous_quote = ""
             elif not in_fence:
                 is_blank = False
                 errors += prose_errors(raw, is_formal, english, previous_quote, README_TAGS if name in ("README.md", "README.ko.md") else ALLOWED_TAGS)
+                text = _style_text(style_raw, previous_quote)
+                errors += _style_errors(text)
+                for match in BOLD.finditer(text):
+                    bold_chars += _visible_length(match["body"])
+                    bold_spans += 1
+                visible_chars += _visible_length(text)
                 previous_quote = raw
                 if HEADING.match(raw):
                     level = len(raw.split()[0])
@@ -212,6 +303,9 @@ def check(path: str) -> int:
             for message in errors:
                 print(f"{name}:{number}: {message}")
             count += len(errors)
+    if bold_spans >= 3 and visible_chars and bold_chars / visible_chars >= 0.2:
+        print(f"{name}: 굵게 남용 비율 {bold_chars / visible_chars:.0%} (강조 {bold_spans}개, 기준 20%·3개 이상)")
+        count += 1
     if in_fence:
         print(f"{name}:{number}: 코드 블록 닫힘 없음")
         count += 1
@@ -221,9 +315,9 @@ def check(path: str) -> int:
     return count
 
 
-# cost: time O(Σc), heap O(w), stack O(1), io f + e
-# vars: c = 파일별 글자 수, w = 가장 긴 줄 글자 수, f = 파일 수, e = 오류 수
-# basis: estimate
+# cost: time O(Σw²), heap O(c), stack O(1), io O(f + e)
+# vars: c = 가장 큰 파일 글자 수, w = 줄별 글자 수, f = 파일 수, e = 오류 수
+# basis: estimate, 파일마다 줄 검사와 문서 구조 검사
 def main(paths: list[str]) -> int:
     if not paths:
         print("usage: check_doc.py FILE [FILE ...]", file=sys.stderr)

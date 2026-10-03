@@ -7,7 +7,7 @@ description: "GitHub 이슈를 만들거나 정리·닫을 때 사용. 종류·�
 
 - 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
 - 범위: 이슈 종류, 라벨, 제목, 본문 틀, 묶음, 상태, 닫기. 브랜치와 PR 흐름(git-branch), PR 본문(git-pull-request), 커밋 형식(git-commit) 제외
-- 필요할 때만 읽기: build, docs 제목의 끝말이나 영역 라벨의 scope 단어 → git-commit
+- 필요할 때만 읽기: 제목·본문·댓글 작성·검토 → repo-docs; build, docs 제목의 끝말이나 영역 라벨의 scope 단어 → git-commit
 
 ## 종류
 
@@ -28,7 +28,7 @@ description: "GitHub 이슈를 만들거나 정리·닫을 때 사용. 종류·�
 
 - 종류별 틀. 섹션 이름, 순서 그대로. 내용 없으면 빼는 절: `원인`, `범위 밖`, `관련`만
 - 틀 파일: `.github/ISSUE_TEMPLATE/{종류 라벨}.md`. 파일 머리 `---` 사이에 GitHub 틀 머리말 `name: {종류 라벨}`, `about: {쓰는 때}`, `labels: [{종류 라벨}]`
-- 문장, 목록, 표: 평서 문체 (repo-docs 문체)
+- 제목·본문·댓글: 사람이 쓴 문서처럼 쓰는 공통 규칙 (repo-docs 문체). 본문·댓글은 한국어 문체 절의 자리별 기준
 - 저장소 파일 링크: 전체 URL `https://github.com/{소유자}/{저장소}/blob/main/{경로}`. 이유: 이슈에서 상대 경로 열기 불가
 
 design
@@ -216,4 +216,4 @@ experiment
 - 우선순위 라벨 없는 열린 이슈, 우선순위 라벨 둘 이상
 - 결정 댓글 없이 design 닫기
 - 본문, 댓글에 비공개 기록 링크나 내용
-- AI 흔적: 모델 이름, 생성 문구, 세션 링크
+- 제목·본문·댓글의 AI 흔적: `Co-Authored-By`, `Generated with`, 로봇 이모지(`U+1F916`), 모델 이름을 붙인 작성 표시, 생성 문구, 세션 링크
