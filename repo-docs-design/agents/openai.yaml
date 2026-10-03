@@ -1,4 +1,4 @@
 interface:
   display_name: "Repo Docs Design"
-  short_description: "새 기능을 넣는 자리와 요구사항·용어·아키텍처·구성 요소 설계 템플릿"
+  short_description: "새 기능 위치와 요구사항·용어·아키텍처·타입·주석 경계 설계 템플릿"
   default_prompt: "$repo-docs-design 스킬로 처리해 줘: [요청]"
