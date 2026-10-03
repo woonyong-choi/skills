@@ -120,7 +120,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | repo-docs-decision | 공개 결정 기록 | 고른 이유와 버린 선택지를 공개로 남기기 위해서다 |
 | repo-docs-experiment | 사전 등록 설계, 데이터, 스크립트, 보고서, 범위·시간 추정 변경 정본 참조 | 설계 값의 근거를 논문 수준으로 남기기 위해서다 |
 | repo-docs-note | 짧은 개발 기록(insight, reference) | 알게 된 것을 흩어지지 않게 남기기 위해서다 |
-| repo-docs-figures | mutoscope·VHS 원본, SVG 변환과 검사, 대체 글, 도구 교체 검증 | 그림을 코드로 만들어 다시 만들 수 있게 하기 위해서다 |
+| repo-docs-figures | mutoscope·VHS 원본, 차이·행 기준·축 확대 차트 선택, Markdown 블록과 SVG 최신성 검사, GitHub Action 정본 참조, 대체 글, 도구 교체 검증 | 그림을 코드로 만들어 다시 만들 수 있게 하기 위해서다 |
 | repo-docs-root | AGENTS.md, CLAUDE.md 링크, CHANGELOG, CONTRIBUTING, SECURITY | 루트 파일의 위치와 형식을 고정하기 위해서다 |
 | repo-docs-llms | llms.txt, 선택으로 llms-full.txt | AI가 문서를 한 번에 찾게 하기 위해서다 |
 | repo-docs-journal | 비공개 판단 기록, 서사, 원칙 | 판단 흐름과 놓친 것을 블로그 재료로 남기기 위해서다 |
