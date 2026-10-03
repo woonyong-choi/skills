@@ -1,4 +1,4 @@
 interface:
   display_name: "Git Issue"
-  short_description: "이슈 종류·영역·우선순위 라벨, 본문 틀, 결정 댓글, 닫는 규칙"
+  short_description: "이슈 종류·영역·우선순위 라벨, 본문 틀, PR 연결, 결정 댓글, 닫는 규칙"
   default_prompt: "$git-issue 스킬로 처리해 줘: [요청]"
