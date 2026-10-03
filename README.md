@@ -84,9 +84,9 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | repo-docs | 없음 | 코드 주석 → code-style; 커밋, PR, 이슈, 브랜치 → git-* 스킬; 그림 파일, 대체 글 → repo-docs-figures |
 | repo-docs-readme | repo-docs | 대표 그림, 흐름 그림, 측정 결과 차트, 데모 GIF 제작 → repo-docs-figures; README 갱신 뒤 `llms.txt` 재생성 → repo-docs-llms |
 | repo-docs-design | repo-docs | 코드에 들어간 인터페이스 문서 → repo-docs-spec; 맥락, 구성 요소, 순서, 상태 그림 → repo-docs-figures |
-| repo-docs-spec | repo-docs | 데이터 그림 → repo-docs-figures |
+| repo-docs-spec | repo-docs | 데이터 그림 → repo-docs-figures; 요구·검증 범위, 생성표 의미, 호환성 확인 → repo-docs-design |
 | repo-docs-decision | repo-docs | 비공개 판단 기록에서 옮길 때 → repo-docs-journal |
-| repo-docs-experiment | repo-docs | 결과 차트 → repo-docs-figures; 실험 이슈, 사전 등록·결과 PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit |
+| repo-docs-experiment | repo-docs | 결과 차트 → repo-docs-figures; 완료 조건의 범위·시간 추정 변경 → git-issue; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit |
 | repo-docs-note | repo-docs | 없음 |
 | repo-docs-figures | repo-docs | 없음 |
 | repo-docs-root | repo-docs | 단계 판정, 필요한 도구 문장 → repo-docs-readme; CONTRIBUTING 커밋과 PR 절 → git-branch, git-commit, git-pull-request |
@@ -102,7 +102,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | code-style-rust, code-style-kotlin, code-style-python | code-style | 없음 |
 | code-style-javascript | code-style | CSS 문자열, 인라인 style, SVG 속성 값 작성 → design-tokens |
 | code-style-css | code-style, design-tokens | 없음 |
-| design-tokens | 없음 | CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색 → repo-docs-figures |
+| design-tokens | 없음 | CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색 → repo-docs-figures; 기대값 근거 확인 → code-style |
 | folder-naming | 없음 | 없음 |
 | skill-sync | 없음 | 원본 저장소 커밋 → git-commit |
 | html-report | 없음 | 없음 |
@@ -115,12 +115,12 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 |---|---|---|
 | repo-docs | 원칙, 문서 목록(위치, 독자, 답할 질문, 만드는 조건, 맡는 스킬), 언어, 절 구성, 한국어와 영어 문체, 용어, 사실 상태, 자리표시, 기계 검사와 독자 검사 | 모든 문서의 공통 규칙을 한 곳에 두고, 형식보다 독자 질문을 기준으로 삼기 위해서다 |
 | repo-docs-readme | 영어 README와 한국어 번역본의 단계별 필수 절, 절 이름 목록, 번역 규칙 | 처음 온 사람이 무엇인지, 어떻게 쓰이는지, 지금 어떤 상태인지 바로 알게 하기 위해서다 |
-| repo-docs-design | 새 기능을 넣는 자리, `docs/README.md`, 아키텍처(코드 지도, 불변 조건), RFC형 기능 설계(미해결 질문 포함), 용어 | 설계 단계에도 정한 것과 미정인 것을 구분해 기여자가 읽을 수 있게 하기 위해서다 |
-| repo-docs-spec | 프로토콜, 명령, 화면, 데이터, 설정, 오류 문서 | 찾아보는 문서를 표 형식으로 고정하기 위해서다 |
+| repo-docs-design | 새 기능을 넣는 자리, `docs/README.md`, 아키텍처(코드 지도, 불변 조건), RFC형 기능 설계(미해결 질문 포함), 요구·검증 범위와 호환 사례, 용어 | 설계 단계에도 정한 것과 미정인 것을 구분해 기여자가 읽을 수 있게 하기 위해서다 |
+| repo-docs-spec | 프로토콜, 명령, 화면, 데이터, 설정, 오류 문서, 요구사항 검증 정본 참조 | 찾아보는 문서를 표 형식으로 고정하기 위해서다 |
 | repo-docs-decision | 공개 결정 기록 | 고른 이유와 버린 선택지를 공개로 남기기 위해서다 |
-| repo-docs-experiment | 사전 등록 설계, 데이터, 스크립트, 보고서 | 설계 값의 근거를 논문 수준으로 남기기 위해서다 |
+| repo-docs-experiment | 사전 등록 설계, 데이터, 스크립트, 보고서, 범위·시간 추정 변경 정본 참조 | 설계 값의 근거를 논문 수준으로 남기기 위해서다 |
 | repo-docs-note | 짧은 개발 기록(insight, reference) | 알게 된 것을 흩어지지 않게 남기기 위해서다 |
-| repo-docs-figures | D2, Vega-Lite, VHS 원본과 변환 스크립트, 공통 색표 | 그림을 코드로 만들어 다시 만들 수 있게 하기 위해서다 |
+| repo-docs-figures | D2, Vega-Lite, VHS 원본과 변환 스크립트, 공통 색표, 변환 도구 교체 검증 | 그림을 코드로 만들어 다시 만들 수 있게 하기 위해서다 |
 | repo-docs-root | AGENTS.md, CLAUDE.md 링크, CHANGELOG, CONTRIBUTING, SECURITY | 루트 파일의 위치와 형식을 고정하기 위해서다 |
 | repo-docs-llms | llms.txt, 선택으로 llms-full.txt | AI가 문서를 한 번에 찾게 하기 위해서다 |
 | repo-docs-journal | 비공개 판단 기록, 서사, 원칙 | 판단 흐름과 놓친 것을 블로그 재료로 남기기 위해서다 |
@@ -131,25 +131,25 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
 | git-commit | 커밋 형식 `type(scope): 한글 설명` | 영어 부담 없이 일관된 기록을 남기기 위해서다 |
-| git-branch | 브랜치 이름과 이슈 단위 작업 | 브랜치와 이슈를 한 줄로 잇기 위해서다 |
-| git-issue | 이슈 종류와 템플릿, 상태 관리 | 설계, 구현, 버그, 실험 상태를 문서가 아니라 이슈로 관리하기 위해서다 |
-| git-pull-request | PR 종류, 본문, 테스트 변경 근거, 문서 동반, 검토 | 계약을 먼저 합의하고 구현을 믿을 수 있게 하기 위해서다 |
+| git-branch | 브랜치 이름과 이슈 단위 작업, 병렬 검사 소유권과 대상 HEAD 확인 | 브랜치와 이슈를 한 줄로 잇기 위해서다 |
+| git-issue | 이슈 종류와 템플릿, 상태 관리, 완료 범위 변경과 시간 추정 | 설계, 구현, 버그, 실험 상태를 문서가 아니라 이슈로 관리하기 위해서다 |
+| git-pull-request | PR 종류, 본문, 테스트 변경 근거, 문서 동반, 사용자 결과별 크기, 최종 출력 수용표와 검토 | 계약을 먼저 합의하고 구현을 믿을 수 있게 하기 위해서다 |
 
 ### 코드와 폴더
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| code-style | 언어 공통 원칙, 수치 기준, 이름, 조건식, 선언 순서, 에러와 로그, 주석, 비용 주석, 근거 있는 최소 테스트 | 언어가 달라도 같은 기준으로 코드를 보기 위해서다 |
-| code-refactoring | 문제 신호별 해결 기법, 『리팩터링 2판』 기법 목록 | 리팩터링 기법을 고를 때만 불러 평소 코드 작업의 토큰을 줄이기 위해서다 |
-| code-style-rust, code-style-kotlin, code-style-python, code-style-javascript, code-style-css | 언어별로 공통 스킬이 맡긴 부분 | 언어 고유 규칙만 따로 두기 위해서다 |
-| design-tokens | 화면 값 토큰 정본, 이름, 세 층, 다크 모드, 하드코딩 금지, 생성·검사 스크립트 | 색과 크기를 코드마다 다르게 적어 화면 톤이 흩어지는 것을 막기 위해서다 |
+| code-style | 언어 공통 원칙, 수치 기준, 이름, 조건식, 선언 순서, 에러와 로그, 주석, 비용 주석 갱신, 테스트 근거와 기대값 독립성 | 언어가 달라도 같은 기준으로 코드를 보기 위해서다 |
+| code-refactoring | 책임·의존·미사용 경로 확인, 공통 기하 계산, 문제 신호별 해결 기법, 『리팩터링 2판』 기법 목록 | 리팩터링 기법을 고를 때만 불러 평소 코드 작업의 토큰을 줄이기 위해서다 |
+| code-style-rust, code-style-kotlin, code-style-python, code-style-javascript, code-style-css | 언어별로 공통 스킬이 맡긴 부분, JavaScript 구문 검사 범위, CSS 합성 색·전환 상태 검증 | 언어 고유 규칙만 따로 두기 위해서다 |
+| design-tokens | 화면 값 토큰 정본, 이름, 세 층, 다크 모드, 하드코딩 금지, 생성·검사 스크립트, 기대값 근거 정본 참조 | 색과 크기를 코드마다 다르게 적어 화면 톤이 흩어지는 것을 막기 위해서다 |
 | folder-naming | 저장소 폴더 구조와 이름 | 폴더마다 구현 언어 경계가 드러나게 하기 위해서다 |
 
 ### 그림 보고서
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| html-report | 그림을 나란히 보여 주는 결정 보고서와 결과 보고서 HTML의 구성, 모형 표시, `build_report` 생성, 확인 절차 | 그림을 보고 선택지를 고르거나 결과를 확인하는 보고서의 형식과 모형 표시를 매번 같게 하기 위해서다 |
+| html-report | 그림을 나란히 보여 주는 결정 보고서와 결과 보고서 HTML의 구성, 모형 표시, `build_report` 생성, 대상 버전·입력·캡처 시각, 실제 로드·움직임 확인 | 그림을 보고 선택지를 고르거나 결과를 확인하는 보고서의 형식과 모형 표시를 매번 같게 하기 위해서다 |
 
 ### 스킬 관리
 
