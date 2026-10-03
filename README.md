@@ -11,7 +11,7 @@
 | AI가 말하지 않은 것을 알아서 정하고 없는 사실을 채운다 | 설계만 있는 기능이 현재형으로 쓰였다 |
 | 문서마다 수정을 요청하는 데 시간과 토큰이 든다 | 방향만 주는 이전 글쓰기 스킬은 결과가 매번 달랐다 |
 
-목표는 포매터처럼 좁은 규칙이다. 고정 템플릿, 칸마다 채우는 기준, 없을 때 빼는 규칙, 문체 규칙, 저장 전 검사를 정해 누가 써도 같은 문서가 나오게 한다.
+목표는 포매터처럼 좁은 규칙이다. 문서 종류별 규칙과 저장 전 검사를 정해 누가 써도 같은 문서가 나오게 한다.
 
 ## 문서가 쓰이는 곳
 
@@ -86,7 +86,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | repo-docs-design | repo-docs | 코드에 들어간 인터페이스 문서 → repo-docs-spec; 맥락, 구성 요소, 순서, 상태 그림 → repo-docs-figures |
 | repo-docs-spec | repo-docs | 데이터 그림 → repo-docs-figures |
 | repo-docs-decision | repo-docs | 비공개 판단 기록에서 옮길 때 → repo-docs-journal |
-| repo-docs-experiment | repo-docs | 결과 차트 → repo-docs-figures |
+| repo-docs-experiment | repo-docs | 결과 차트 → repo-docs-figures; 실험 이슈, 사전 등록·결과 PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit |
 | repo-docs-note | repo-docs | 없음 |
 | repo-docs-figures | repo-docs | 없음 |
 | repo-docs-root | repo-docs | 단계 판정, 필요한 도구 문장 → repo-docs-readme; CONTRIBUTING 커밋과 PR 절 → git-branch, git-commit, git-pull-request |
@@ -94,7 +94,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | repo-docs-journal | repo-docs | 판단이 공개 설계를 정했을 때 → repo-docs-decision |
 | repo-docs-promo | repo-docs | 없음 |
 | git-commit | 없음 | 없음 |
-| git-branch | 없음 | 커밋 메시지, PR 제목, squash 메시지 → git-commit; PR 본문 → git-pull-request |
+| git-branch | 없음 | 작업 선택, 시작 전 이슈 우선순위와 막힘 확인 → git-issue; 커밋 메시지, PR 제목, squash 메시지 → git-commit; PR 본문 → git-pull-request |
 | git-issue | 없음 | build, docs 제목의 끝말, 영역 라벨의 scope 단어 → git-commit |
 | git-pull-request | 없음 | 테스트 변경 근거 확인 → code-style |
 | code-style | 없음 | 리팩터링 기법 선택 → code-refactoring |
@@ -106,43 +106,6 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | folder-naming | 없음 | 없음 |
 | skill-sync | 없음 | 원본 저장소 커밋 → git-commit |
 | html-report | 없음 | 없음 |
-
-## 크기
-
-2026-10-02 기준. o200k는 GPT, Codex 토크나이저 정확값, Claude 구는 공개된 Claude 구 토크나이저 근사치다. 카탈로그 줄은 `{이름}: {description}` 한 줄이며 모든 대화에 항상 올라간다. `scripts/` 파일은 읽지 않고 실행만 하므로 표에 넣지 않는다.
-
-| 스킬 | 바이트 | o200k | Claude 구 | 카탈로그 줄 o200k |
-|---|---|---|---|---|
-| repo-docs | 17061 | 4864 | 7514 | 65 |
-| repo-docs-readme | 12270 | 3400 | 5149 | 65 |
-| repo-docs-design | 9021 | 2599 | 4117 | 57 |
-| repo-docs-spec | 6949 | 2179 | 3302 | 46 |
-| repo-docs-decision | 5376 | 1502 | 2522 | 65 |
-| repo-docs-experiment | 11580 | 3703 | 5349 | 63 |
-| repo-docs-note | 2809 | 841 | 1270 | 59 |
-| repo-docs-figures | 8276 | 2601 | 3704 | 65 |
-| repo-docs-root | 6710 | 2000 | 3009 | 58 |
-| repo-docs-llms | 2993 | 881 | 1296 | 60 |
-| repo-docs-journal | 6162 | 1825 | 2966 | 60 |
-| repo-docs-promo | 4024 | 1236 | 1796 | 57 |
-| git-commit | 5118 | 1496 | 2275 | 36 |
-| git-branch | 5755 | 1680 | 2577 | 60 |
-| git-issue | 5209 | 1581 | 2526 | 53 |
-| git-pull-request | 4486 | 1297 | 2145 | 51 |
-| code-style | 18345 | 5163 | 8164 | 52 |
-| code-refactoring | 12020 | 2947 | 4832 | 42 |
-| code-style-rust | 7806 | 2244 | 3152 | 55 |
-| code-style-kotlin | 6573 | 1898 | 2722 | 64 |
-| code-style-python | 5643 | 1670 | 2390 | 58 |
-| code-style-javascript | 6223 | 1804 | 2498 | 63 |
-| code-style-css | 7023 | 2058 | 2921 | 58 |
-| design-tokens | 7912 | 2450 | 3485 | 62 |
-| folder-naming | 3093 | 923 | 1390 | 60 |
-| skill-sync | 4125 | 1148 | 1781 | 43 |
-| html-report | 5597 | 1626 | 2516 | 53 |
-| 합계 | 198159 | 57616 | 87368 | 1530 |
-
-요청별로 실제 올라가는 양과 형식 통일 전후 비교는 [실험 결과](experiments/skill-format-unification/report.md)에 있다.
 
 ## 스킬 목록
 
@@ -202,11 +165,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | `AGENTS.md` 명령 절은 CI나 검사 스크립트의 명령만 쓰고, 없으면 절을 뺀다 | 설계 단계에는 README 개발 절이 없어 명령을 가져올 곳이 없다. 없는 명령을 지어내지 않는다 | 설계 단계에도 README 개발 절 추가 |
 | `LICENSE`는 라이선스를 정한 저장소에만 만든다 | 미정이거나 비공개 배포인 저장소에서 AI가 라이선스를 임의로 고르거나 문서를 못 만드는 교착을 막는다 | 모든 저장소에 필수 |
 | 스킬 이름은 `repo-docs-*`, `git-*` | GitHub에 배포되는 문서라는 목적이 이름에 드러나고, 저장소 밖 마크다운에서 켜지지 않는다 | `markdown-*`: 형식 이름이라 켜지는 범위가 넓고 마크다운이 아닌 산출물(D2, JSON, `.tape`, llms.txt)과 맞지 않는다 |
-| 방향만 주는 글쓰기 스킬 대신 고정 템플릿 | 결과가 매번 같아야 수정 요청이 줄어든다 | 이전 `writing-*-demo` 스킬 |
-| 설계 문서 목록을 닫는다 | 새 기능마다 파일이 생기면 정본이 흩어진다. 새 내용은 정해진 파일의 행이나 절로 넣는다 | 기능마다 설계 파일 |
-| 설계 문서에는 현재 설계만, 상태는 GitHub 이슈 | 문서가 항상 최신이고 사실만 남는다 | 문서 안 진행 상태와 이력 |
-| README 단계는 설계, 개발 중, 실행 가능, 배포 | 단계마다 들어갈 절이 정해져야 없는 기능을 쓰지 않는다 | 자유 구성 |
-| 아직 없는 기능은 `로드맵`이라고 쓴다 | 한 단어로 통일해야 상태가 헷갈리지 않는다 | `계획`, `예정`, `향후`, `TODO` |
+| 문서 형식, 기능 설계, 사실 상태 | [repo-docs](repo-docs/SKILL.md), [repo-docs-design](repo-docs-design/SKILL.md), [repo-docs-readme](repo-docs-readme/SKILL.md)의 종류별 정본 | README에 규칙 복제 |
 | 문체는 위치로 정한다. README와 루트 대외 문서는 합쇼, docs와 기록은 평서, 제목·목록·표는 명사형, 요청은 `-세요` | 번역된 주요 오픈소스 문서 7곳이 모두 합쇼였고, 국내 기술 문서(K8s 개념 문서, NHN)는 평어였다. 한 파일 안 혼용이 가장 큰 문제였다 | 모든 문서 평서, 해요체(토스, 당근), `-십시오` |
 | 가짜 대신 표시가 붙은 자리표시 | 공개 문서와 포트폴리오에 가짜 수치나 화면이 있으면 신뢰를 잃는다 | 가짜 화면 이미지, 예상 수치 |
 | 구조도는 D2, 손그림 모드 금지 | mermaid는 보기 좋지 않고 연구 저장소 느낌이 나지 않는다. 손그림은 문서 톤과 맞지 않는다 | mermaid, D2 손그림 |
@@ -218,7 +177,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | 실행 코드는 SKILL.md 본문 대신 `scripts/` 파일로 둔다 | AI가 코드 본문을 읽지 않고 실행만 해서 문서 작업마다 토큰이 준다. Codex, Claude, Antigravity 모두 스킬 폴더의 `scripts/`를 지원한다 | 본문 코드 블록(읽을 때마다 토큰 소비), 저장소 안 스크립트 |
 | README 그림은 대표 그림, 결과 차트, 구성 그림 하나씩까지 | 첫 화면을 짧게 두고 나머지는 docs로 보낸다 | 그림 여러 장 |
 | README 수치는 실험 보고서 링크와 함께만 | 근거 없는 성능 주장을 막는다 | 링크 없는 수치 |
-| 배지, 굵게, HTML 금지 | 주요 오픈소스(codex, ollama)도 배지 없이 설치 명령을 첫 화면에 둔다. 서식이 단순해야 검사할 수 있다 | 배지 줄 |
+| README 서식 | [repo-docs](repo-docs/SKILL.md)와 [repo-docs-readme](repo-docs-readme/SKILL.md)의 정본 | README에 서식 규칙 복제 |
 | AGENTS.md가 원본, CLAUDE.md는 심볼릭 링크 | 여러 에이전트가 한 지침을 읽는다. 조사한 오픈소스 18곳 중 15곳이 AGENTS.md를 둔다 | 에이전트별 지침 파일 |
 | llms.txt를 둔다 | AI가 문서 목록과 원문을 한 번에 찾는다. 손으로 쓰지 않고 스크립트로 만든다 | 없음 |
 | CONTRIBUTING, SECURITY는 `.github/`, CHANGELOG는 루트 | GitHub는 커뮤니티 파일을 `.github`, 루트, `docs` 순서로 찾는다. CHANGELOG는 그 대상이 아니다 | 모두 루트 |
@@ -248,28 +207,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 
 ## 배포와 수정
 
-| 대상 | 위치 |
-|---|---|
-| 원본 | 이 저장소 |
-| Codex | `~/.codex/skills/` |
-| Antigravity | `~/.gemini/config/skills/` |
-| Claude Code | `~/.claude/skills/` |
-| Claude 계정(웹, 데스크톱, 원격 세션) | `dist/claude/{스킬}.zip`을 설정의 스킬 메뉴에서 올림 |
-
-- 세 도구 모두 같은 폴더 구조(`SKILL.md`, `scripts/`, `agents/`)를 그대로 읽는다
-- 설치 스크립트: `skill-sync/scripts/install.py`. SKILL.md가 있는 폴더만 설치하고, 도구 폴더가 없는 도구는 건너뛴다
-- 설치 스크립트가 설치한 스킬만 관리(도구 폴더의 `.repo-skills.json`). 원본에서 빠진 스킬과 `--remove`로 지정한 스킬은 지우지 않고 `~/.skill-trash/`로 이동
-
-1. 이 저장소에서 스킬을 고친다
-2. 관련 스킬을 모두 읽고 공통 원칙 표의 교차 확인을 한다
-3. 작성 형식 검사를 `total 0`까지 돌린다. 스킬을 이어 부르는 줄을 바꾸면 스킬 연결 표를, 크기가 바뀌면 크기 표를 고친다
-4. 스킬마다 `agents/openai.yaml`의 이름과 설명을 SKILL.md와 맞춘다
-5. 새 스킬이면 이 문서의 스킬 목록에, 결정을 바꾸면 주요 결정에 행을 고친다
-6. `python3 skill-sync/scripts/install.py`로 설치된 도구 폴더를 동기화하고 바뀐 스킬의 `dist/claude/*.zip`을 만든다. `--dry-run`은 바꿀 내용만 출력한다
-7. Claude 계정에는 출력 마지막 줄의 zip을 올린다. 업로드 명령과 API가 없어 설정 화면에서 올린다. 저장 카드는 SKILL.md 하나만 저장하므로 쓰지 않는다
-8. 커밋한다
-
-이 순서는 skill-sync 스킬에도 있어 AI가 스킬을 고치면 같은 순서로 검사와 설치를 한다.
+설치와 Claude 계정 배포 절차, 관리 범위: [skill-sync](skill-sync/SKILL.md).
 
 ## 정리할 옛 스킬
 
