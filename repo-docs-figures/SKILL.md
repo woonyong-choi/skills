@@ -16,24 +16,22 @@ description: "문서 그림·차트·데모 GIF를 만들거나 고칠 때 사�
 | 그림 | 도구 | 원본 | 산출물 |
 |---|---|---|---|
 | 구조도, 순서도, 상태도, 데이터 관계도, 차트 | mutoscope | `docs/assets/{이름}.muto` | `docs/assets/{이름}.svg` |
+| 문서 안에서 관리하는 그림 | mutoscope md | Markdown의 `muto` 코드 블록 | 문서의 이미지 줄과 SVG(markdown 정본) |
 | 터미널 데모 | VHS | `docs/assets/{이름}.tape` | `docs/assets/{이름}.gif` |
 
 - `.muto` 하나에 그림 하나. 이름: 영어 소문자 kebab-case
 - 실험 차트도 같은 위치. 입력은 `03-analyze`가 만든 `docs/experiments/{실험}/results/summary.json` 또는 그 파일에서 생성한 차트용 JSON. 원자료·추출 경로·생성 명령 보존
 - 그림 문법 정본: [figure-syntax](https://github.com/woonyong-choi/mutoscope/blob/main/docs/design/figure-syntax.md)의 문법 표와 호환 규칙. 문법·기본값 복제 금지
 - 색·글꼴·크기: mutoscope 토큰에서 결정. 색 역할·대비 정본: [docs-integration](https://github.com/woonyong-choi/mutoscope/blob/main/docs/design/docs-integration.md). 스킬·원본·변환 스크립트에 값 복사 금지
-- 문서에 SVG만 포함. HTML 재생기는 검증용. Markdown 표는 기존 문서 규칙 유지
+- 문서 그림 표시: SVG. 문서 안 원본 관리 시 `muto` 블록도 보존, HTML 재생기는 검증용. Markdown 표는 기존 문서 규칙 유지
 
 ## 설치와 실행
 
-- Node.js 20 이상. 공개 저장소 소스 설치만 확인(2026-10-03). 패키지는 private `0.0.0`, 공개 npm 릴리스로 간주 금지
-- 아래 `mutoscope`는 설치 폴더 이름. 실행 시 `<mutoscope 경로>`를 clone한 절대 경로로 교체
+- 실행 환경: Node.js 20 이상. 설치·배포 정본: [README](https://github.com/woonyong-choi/mutoscope/blob/main/README.md#installation). 패키지 버전만으로 npm 배포 여부 판단 금지
+- `<mutoscope 경로>`: 의존성이 설치된 기존 작업본의 절대 경로. 아래 명령은 문서 저장소 루트에서 실행
 
 ```sh
-git clone https://github.com/woonyong-choi/mutoscope.git
-cd mutoscope
-npm ci
-node src/cli.js --help
+node <mutoscope 경로>/src/cli.js --help
 ```
 
 ```sh
@@ -46,16 +44,39 @@ node <mutoscope 경로>/src/cli.js render docs/assets/architecture.muto --strict
 - 같은 원본·같은 도구 커밋으로 재현. 확인한 커밋과 Node 버전 기록
 - 두 render 명령은 같은 SVG 경로 사용. 문서 목적에 맞는 한 가지 선택, 비교 검증만 `--out`으로 폴더 분리
 
+## Markdown과 CI
+
+- 문서 안 그림 관리: `mutoscope md`로 `muto` 코드 블록에서 SVG 생성과 이미지 줄 갱신. 블록·파일 이름·출력 위치·오래된 SVG 정리 규칙: [markdown](https://github.com/woonyong-choi/mutoscope/blob/main/docs/design/markdown.md). 문법·기본값 복제 금지
+- 원본 문서와 생성 SVG 함께 커밋. 생성 이미지 줄의 대체 글은 블록의 `title`에서 결정하므로 `title`도 대체 글 규칙 적용
+- 읽기 전용 최신성 검사: 아래 명령. 확인 원본: mutoscope의 `docs/design/markdown.md`, `main ed59d50`, Node `v26.9.0`(2026-10-03). 일반 검사 종료 코드 0, 정지 출력 검사는 저장된 움직이는 SVG와의 차이로 종료 코드 1, 두 검사 모두 파일 변경 없음
+
+```sh
+node <mutoscope 경로>/src/cli.js md <문서 경로>.md --check --strict
+node <mutoscope 경로>/src/cli.js md <문서 경로>.md --check --strict --static
+```
+
+- 생성 명령과 GitHub Action 연결 예: [README 사용법](https://github.com/woonyong-choi/mutoscope/blob/main/README.md#keep-figures-in-a-markdown-document). 위 검사와 생성에 같은 출력 옵션 사용
+- Action 정본: [action.yml](https://github.com/woonyong-choi/mutoscope/blob/main/action.yml). 추적 파일 대상으로 원본 검사와 Markdown 최신성 검사, 생성 모드는 파일 갱신만 수행하고 자동 커밋 없음. 입력 문법·기본값은 정본 참조
+- Action 검증 범위: 로컬 정본 대조. GitHub 실행 확인과 구분
+
 ## 그림 작성
 
-| 보여 줄 것 | 첫 문장·선언 | 정본 |
+| 보여 줄 것 | 종류·선언 | 정본 |
 |---|---|---|
 | 맥락, 구성 요소와 요청 흐름 | `flow right` 또는 `flow down`, `person`, `box`, `external`, `store`, `group` | figure-syntax |
 | 메시지 순서 | `sequence`, 참여자 선언 뒤 `step` 안 메시지 | [figure-kinds](https://github.com/woonyong-choi/mutoscope/blob/main/docs/design/figure-kinds.md) |
 | 상태와 전이 | `state down`, `state`, `start`, `final` | figure-kinds |
 | 테이블과 외래 키 | `data right`, `table`, 열의 `fk=` | figure-kinds |
 | 비트 필드, 배열, 스택, 행렬 | `flow`, `grid`, `item`, `gap` | [grid](https://github.com/woonyong-choi/mutoscope/blob/main/docs/design/grid.md) |
-| 조건별 값, 두 방식 비교, 분포, 관계, 변화, 교차표 | `chart bar`, `dumbbell`, `box`, `scatter`, `line`, `heatmap` | [charts](https://github.com/woonyong-choi/mutoscope/blob/main/docs/design/charts.md) |
+| 조건별 값과 신뢰구간, 행마다 다른 기준(`rule=`) | 막대 | [charts](https://github.com/woonyong-choi/mutoscope/blob/main/docs/design/charts.md) |
+| 같은 입력에서 두 방식의 값 비교 | 덤벨 | charts |
+| 연속값 분포 | 상자 | charts |
+| 두 변수의 관계 | 산점도 | charts |
+| 순서·시간에 따른 변화, 작은 변화의 축 확대(`zero off`) | 선 | charts |
+| 판정 교차표 | 히트맵 | charts |
+| 음수일 수 있는 차이 값과 신뢰구간, 0선·음수 기준선 | 차이(`chart difference`) | charts |
+
+- 차트 선언·값 출처·축 제약: charts 정본. 차이 값은 차이 차트, 조건별 원래 값은 막대·덤벨 선택. 막대 행 기준과 공통 기준선 구분, 선 차트 축 확대 시 잘림 표시 확인
 
 - 라벨·상태·테이블·열: 문서 표와 같은 이름과 순서. 연결: 문서에 근거가 있는 관계만
 - 맥락 그림: 외부 요소 표의 요소와 시스템. 구성 요소 그림: 구성 요소 표의 행마다 도형 하나
@@ -69,13 +90,13 @@ node <mutoscope 경로>/src/cli.js render docs/assets/architecture.muto --strict
 - JSON 배열 형식이 다르면 `03-analyze`에서 차트용 JSON 생성. 수치 재입력 금지
 - 계열 키: `series`의 `key=` 또는 계열 이름. 신뢰구간: 같은 키의 `.low`, `.high`. 행 키·결측값·계열 수: charts 값 출처 정본
 - `data`와 인라인 `row`·`point`·`cell` 혼용 금지. 예시 데이터만 자리표시 규칙에 따른 인라인 값 허용(repo-docs 자리표시)
-- `title`: 측정 대상 명사구. `subtitle`: 표본 수와 기준선 설명. 값 축 제목: 괄호 안 단위
+- `title`: 측정 대상 명사구. 문서 안 블록은 대체 글 규칙 적용. `subtitle`: 표본 수와 기준선 설명. 값 축 제목: 괄호 안 단위
 - 통계·신뢰구간 필요 여부: 실험 설계와 통계 규칙(repo-docs-experiment 통계 규칙). 계열 역할·색: docs-integration 정본
 
 ## 대체 글
 
 - 결론 한 문장, 마침표 없음. 문체는 해당 문서 기준. 그림 이름·종류만 적기 금지
-- 문서 이미지의 대체 글 필수. SVG `title`로 대체 금지
+- 문서 이미지의 대체 글 필수. SVG `title`만으로 대체 금지. 문서 안 블록은 생성 이미지 줄의 대체 글까지 확인
 - 설계·합성 데이터·예시 데이터의 표시와 파일 이름: (repo-docs 자리표시). 별도 상태 규칙 추가 금지
 - `title`·`subtitle`·`step` 설명도 같은 사실 상태 유지. 예시 데이터 차트의 `subtitle`에 자리표시 표의 부제 접두사 적용
 - 합성 데이터 데모: 화면 안 표시와 대체 글 모두 자리표시 표 적용
@@ -128,7 +149,7 @@ python3 <이 스킬 폴더>/scripts/render_figures.py --mutoscope <mutoscope 경
 ## 검사
 
 1. `mutoscope check --strict`: 출력 없음과 종료 코드 0 확인. 소스 설치에서는 설치와 실행 절의 `node` 접두사 사용
-2. 실험 차트: `--require-data` 추가. 신뢰구간이 필요한 막대·덤벨·선 차트: `--require-ci`도 추가. 같은 옵션으로 render 실행
+2. 실험 차트: `--require-data` 추가. 신뢰구간이 필요한 막대·덤벨·선·차이 차트: `--require-ci`도 추가. 같은 옵션으로 render 실행, 문서 안 블록은 md에 같은 검사 옵션 적용
 3. 원본 수와 SVG 수·문서 링크 대조. 같은 이름의 다른 원본을 한 `--out`에 쓰기 금지
 4. 같은 원본·입력 JSON·도구 커밋으로 두 번 변환 후 SVG 바이트 동일 확인. VHS 제외
 5. 실제 문서 삽입 환경에서 라이트·다크의 글자, 겹침, 잘림, 빈 영역과 움직임 확인. 시간차 두 장면과 정지 출력 대조, 정지 출력의 움직임 없음 확인
