@@ -33,7 +33,7 @@
 | 원칙 | 이유 |
 |---|---|
 | 작업 중인 저장소 안에 같은 역할의 규칙이 있으면 그것을 따르고, 없으면 스킬이 다른 규칙보다 우선한다 | 다른 프로젝트의 관례를 덮어쓰지 않고, 관례가 없을 때는 결과를 고정하기 위해서다 |
-| 스킬에 특정 프로젝트, 제품, 사람 이름을 넣지 않는다. D2, GitHub, Rust 같은 표준 도구 이름은 쓴다 | 다른 저장소에도 그대로 쓰기 위해서다 |
+| 스킬에 특정 프로젝트, 제품, 사람 이름을 넣지 않는다. mutoscope, GitHub, Rust 같은 도구 이름은 쓴다 | 다른 저장소에도 그대로 쓰기 위해서다 |
 | 공통 규칙은 공통 스킬 하나가 정본이고, 종류별이나 언어별 스킬은 맡긴 부분(템플릿, 그 종류에만 있는 규칙)만 정한다 | 같은 규칙이 두 곳에서 어긋나지 않기 위해서다 |
 | 긴 설명 대신 AI가 골라 쓰는 표와 목록으로 쓴다 | 토큰을 줄이고 판단 여지를 없애기 위해서다 |
 | 채울 사실이 없으면 저장하지 않고 빠진 칸을 보고한다 | 지어낸 내용을 막기 위해서다 |
@@ -83,7 +83,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 |---|---|---|
 | repo-docs | 없음 | 코드 주석 → code-style; 커밋, PR, 이슈, 브랜치 → git-* 스킬; 그림 파일, 대체 글 → repo-docs-figures |
 | repo-docs-readme | repo-docs | 대표 그림, 흐름 그림, 측정 결과 차트, 데모 GIF 제작 → repo-docs-figures; README 갱신 뒤 `llms.txt` 재생성 → repo-docs-llms |
-| repo-docs-design | repo-docs | 코드에 들어간 인터페이스 문서 → repo-docs-spec; 맥락, 구성 요소, 순서, 상태 그림 → repo-docs-figures |
+| repo-docs-design | repo-docs | 코드에 들어간 인터페이스 문서 → repo-docs-spec; 타입 밖 실패 조건·제약을 코드 주석으로 이동 → code-style; 맥락, 구성 요소, 순서, 상태 그림 → repo-docs-figures |
 | repo-docs-spec | repo-docs | 데이터 그림 → repo-docs-figures; 요구·검증 범위, 생성표 의미, 호환성 확인 → repo-docs-design |
 | repo-docs-decision | repo-docs | 비공개 판단 기록에서 옮길 때 → repo-docs-journal |
 | repo-docs-experiment | repo-docs | 결과 차트 → repo-docs-figures; 완료 조건의 범위·시간 추정 변경 → git-issue; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit |
@@ -96,13 +96,13 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | git-commit | 없음 | 없음 |
 | git-branch | 없음 | 작업 선택, 시작 전 이슈 우선순위와 막힘 확인 → git-issue; 커밋 메시지, PR 제목, squash 메시지 → git-commit; PR 본문 → git-pull-request |
 | git-issue | 없음 | build, docs 제목의 끝말, 영역 라벨의 scope 단어 → git-commit |
-| git-pull-request | 없음 | 테스트 변경 근거 확인 → code-style |
+| git-pull-request | 없음 | 테스트 변경 근거 확인 → code-style; 그림 원본·입력·산출물 변경 → repo-docs-figures |
 | code-style | 없음 | 리팩터링 기법 선택 → code-refactoring |
 | code-refactoring | code-style | 없음 |
 | code-style-rust, code-style-kotlin, code-style-python | code-style | 없음 |
 | code-style-javascript | code-style | CSS 문자열, 인라인 style, SVG 속성 값 작성 → design-tokens |
 | code-style-css | code-style, design-tokens | 없음 |
-| design-tokens | 없음 | CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색 → repo-docs-figures; 기대값 근거 확인 → code-style |
+| design-tokens | 없음 | CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색·글꼴·크기 → repo-docs-figures; 기대값 근거 확인 → code-style |
 | folder-naming | 없음 | 없음 |
 | skill-sync | 없음 | 원본 저장소 커밋 → git-commit |
 | html-report | 없음 | 없음 |
@@ -120,7 +120,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | repo-docs-decision | 공개 결정 기록 | 고른 이유와 버린 선택지를 공개로 남기기 위해서다 |
 | repo-docs-experiment | 사전 등록 설계, 데이터, 스크립트, 보고서, 범위·시간 추정 변경 정본 참조 | 설계 값의 근거를 논문 수준으로 남기기 위해서다 |
 | repo-docs-note | 짧은 개발 기록(insight, reference) | 알게 된 것을 흩어지지 않게 남기기 위해서다 |
-| repo-docs-figures | D2, Vega-Lite, VHS 원본과 변환 스크립트, 공통 색표, 변환 도구 교체 검증 | 그림을 코드로 만들어 다시 만들 수 있게 하기 위해서다 |
+| repo-docs-figures | mutoscope·VHS 원본, SVG 변환과 검사, 대체 글, 도구 교체 검증 | 그림을 코드로 만들어 다시 만들 수 있게 하기 위해서다 |
 | repo-docs-root | AGENTS.md, CLAUDE.md 링크, CHANGELOG, CONTRIBUTING, SECURITY | 루트 파일의 위치와 형식을 고정하기 위해서다 |
 | repo-docs-llms | llms.txt, 선택으로 llms-full.txt | AI가 문서를 한 번에 찾게 하기 위해서다 |
 | repo-docs-journal | 비공개 판단 기록, 서사, 원칙 | 판단 흐름과 놓친 것을 블로그 재료로 남기기 위해서다 |
@@ -157,6 +157,40 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 |---|---|---|
 | skill-sync | 형식 검사, 세 도구 설치, Claude 계정 zip | 스킬을 고칠 때마다 같은 검사와 설치를 한 번에 하기 위해서다 |
 
+## 스킬 크기
+
+2026-10-03 기준 `SKILL.md` 본문과 frontmatter를 포함한 줄 수와 UTF-8 바이트 수다. 스크립트는 제외한다.
+
+| 스킬 | 줄 | 바이트 |
+|---|---|---|
+| code-refactoring | 135 | 12,271 |
+| code-style | 282 | 19,339 |
+| code-style-css | 141 | 7,185 |
+| code-style-javascript | 148 | 6,362 |
+| code-style-kotlin | 155 | 6,573 |
+| code-style-python | 131 | 5,643 |
+| code-style-rust | 191 | 7,691 |
+| design-tokens | 117 | 8,134 |
+| folder-naming | 72 | 3,093 |
+| git-branch | 121 | 6,375 |
+| git-commit | 133 | 5,118 |
+| git-issue | 219 | 7,061 |
+| git-pull-request | 108 | 5,164 |
+| html-report | 115 | 5,844 |
+| repo-docs | 219 | 17,018 |
+| repo-docs-decision | 117 | 5,376 |
+| repo-docs-design | 166 | 9,560 |
+| repo-docs-experiment | 339 | 12,202 |
+| repo-docs-figures | 139 | 9,022 |
+| repo-docs-journal | 217 | 6,162 |
+| repo-docs-llms | 72 | 2,993 |
+| repo-docs-note | 111 | 2,809 |
+| repo-docs-promo | 107 | 4,024 |
+| repo-docs-readme | 243 | 12,270 |
+| repo-docs-root | 184 | 6,710 |
+| repo-docs-spec | 297 | 7,063 |
+| skill-sync | 60 | 4,249 |
+
 ## 주요 결정
 
 | 결정 | 이유 | 버린 선택지 |
@@ -164,13 +198,11 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | 스킬 원본은 프로젝트 저장소와 분리한 별도 저장소에 둔다 | 여러 프로젝트가 같은 스킬을 쓰고, 프로젝트의 비공개 폴더와 섞이지 않는다 | 프로젝트 `.local/skills` 복사본 |
 | `AGENTS.md` 명령 절은 CI나 검사 스크립트의 명령만 쓰고, 없으면 절을 뺀다 | 설계 단계에는 README 개발 절이 없어 명령을 가져올 곳이 없다. 없는 명령을 지어내지 않는다 | 설계 단계에도 README 개발 절 추가 |
 | `LICENSE`는 라이선스를 정한 저장소에만 만든다 | 미정이거나 비공개 배포인 저장소에서 AI가 라이선스를 임의로 고르거나 문서를 못 만드는 교착을 막는다 | 모든 저장소에 필수 |
-| 스킬 이름은 `repo-docs-*`, `git-*` | GitHub에 배포되는 문서라는 목적이 이름에 드러나고, 저장소 밖 마크다운에서 켜지지 않는다 | `markdown-*`: 형식 이름이라 켜지는 범위가 넓고 마크다운이 아닌 산출물(D2, JSON, `.tape`, llms.txt)과 맞지 않는다 |
+| 스킬 이름은 `repo-docs-*`, `git-*` | GitHub에 배포되는 문서라는 목적이 이름에 드러나고, 저장소 밖 마크다운에서 켜지지 않는다 | `markdown-*`: 형식 이름이라 켜지는 범위가 넓고 마크다운이 아닌 산출물(`.muto`, JSON, `.tape`, llms.txt)과 맞지 않는다 |
 | 문서 형식, 기능 설계, 사실 상태 | [repo-docs](repo-docs/SKILL.md), [repo-docs-design](repo-docs-design/SKILL.md), [repo-docs-readme](repo-docs-readme/SKILL.md)의 종류별 정본 | README에 규칙 복제 |
 | 문체는 위치로 정한다. README와 루트 대외 문서는 합쇼, docs와 기록은 평서, 제목·목록·표는 명사형, 요청은 `-세요` | 번역된 주요 오픈소스 문서 7곳이 모두 합쇼였고, 국내 기술 문서(K8s 개념 문서, NHN)는 평어였다. 한 파일 안 혼용이 가장 큰 문제였다 | 모든 문서 평서, 해요체(토스, 당근), `-십시오` |
 | 가짜 대신 표시가 붙은 자리표시 | 공개 문서와 포트폴리오에 가짜 수치나 화면이 있으면 신뢰를 잃는다 | 가짜 화면 이미지, 예상 수치 |
-| 구조도는 D2, 손그림 모드 금지 | mermaid는 보기 좋지 않고 연구 저장소 느낌이 나지 않는다. 손그림은 문서 톤과 맞지 않는다 | mermaid, D2 손그림 |
-| 차트는 Vega-Lite와 vl-convert | 브라우저 없이 같은 SVG를 다시 만들 수 있다 | matplotlib, Observable Framework(배포 명령이 폐기됨) |
-| D2와 Vega-Lite가 공통 색표를 쓴다 | 흰 바탕에 핵심 색 두 개로 그림 톤을 맞춘다 | 도구별 기본 색 |
+| 문서 그림과 차트는 mutoscope | 원본·색 역할·글꼴·움직임을 한 도구에서 정한다. 사용 규칙은 [repo-docs-figures](repo-docs-figures/SKILL.md)가 맡는다 | 도구별 템플릿과 스킬 색표 |
 | README와 docs 데모 GIF는 VHS | 스크립트로 같은 영상을 다시 만들고 CI에서도 돌릴 수 있다 | 화면 녹화 앱 |
 | 홍보 영상은 사용자가 화면 녹화 앱(Recordly)으로 직접 찍는다 | AI가 조작해 보니 녹화 앱 조작 창이 AI 화면 캡처에 잡히지 않고, 커서 기반 자동 확대가 키보드 화면에서 거의 일어나지 않았으며, 매번 같은 영상이 나오지 않았다 | AI가 녹화 앱 조작 |
 | 변환 스크립트는 스킬 폴더 안에 둔다 | 저장소마다 변환 스크립트가 흩어지고 달라지는 것을 막는다 | 저장소별 스크립트 |
@@ -199,7 +231,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 - 같은 가상 사실로 에이전트 둘이 각자 문서를 만들고 비교했다. 2026-09-29 검증에서 `docs/README.md`와 실험 목록은 같았고 README는 네 줄만 달랐다. 2026-09-30 검증에서 `docs/README.md`와 결정 목록은 같았고, 그림 식별자, AGENTS.md 규칙, 결정 문장처럼 달라진 곳은 규칙을 좁혀 고쳤다
 - 처음 보는 에이전트 하나가 스킬 사이 모순, 문체 위반, 스크립트 오류를 따로 검사했고 찾은 18건을 고쳤다
 - `check_doc`(repo-docs)는 Python 표준 라이브러리로 문체, 금지어, 서식, 비공개 경로를 검사한다. 합쇼 파일과 평서 파일을 경로로 나눠 검사한다
-- `render_figures`(repo-docs-figures)는 두 번 실행해도 결과가 같은 바이트인지 확인했다
+- 2026-10-03 mutoscope 전환: 기존 문서 그림과 실험 JSON 차트의 움직이는·정지 SVG, 두 번 렌더한 바이트, 오류 입력의 쓰기 차단을 확인했다
 - 세 스크립트를 본문에서 `scripts/`로 옮길 때 옮기기 전과 같은 결과를 확인했다. `check_doc`은 Markdown 251개와 반례 20개, `gen_llms`는 정상 저장소 두 곳의 출력 바이트, `render_figures`는 D2와 Vega-Lite SVG 바이트로 비교했다. VHS 변환은 설치 환경이 없어 비교하지 못했다
 - `gen_llms`는 비공개 폴더 직접 링크, 심볼릭 링크, 상위 경로, 대소문자 변형, 코드 블록 안 행을 넣은 반례에서 두 파일을 쓰지 않고 중단한다
 - 2026-09-30 형식 통일 실험: 누락 대조 26건 중 소실 6건 포함 24건 수정, 기반 줄을 따른 스킬 선택 30/30, 에이전트 둘의 줄 차이 14.4%에서 5.8%로 감소. 가설, 기준, 원자료, 판정은 [실험 결과](experiments/skill-format-unification/report.md)
@@ -245,3 +277,4 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 | 2026-10-02 | report-compare-demo를 승인해 visual-report로 이름 변경. 결과 보고서(`kind: result`, 확인할 점) 추가, 그림 칸 회색 바탕과 카드·표 선 대비 강화 |
 | 2026-10-02 | visual-report를 html-report로 이름 변경(채팅에서 `/html-report`), description에 사용 낱말, 사용 조건을 쓸 때와 쓰지 않을 때 표로 추가 |
 | 2026-10-02 | html-report에 라이트·다크 PNG, 긴 캡처 분할, 캡처 정리 규칙과 금지 절 추가, 스크립트 입력 검증과 비용 주석 추가, 본문 압축 |
+| 2026-10-03 | 문서 그림 도구를 mutoscope로 변경. 관련 스킬의 그림 규칙을 repo-docs-figures 참조로 통합 |
