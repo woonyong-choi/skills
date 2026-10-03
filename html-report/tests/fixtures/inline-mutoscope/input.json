@@ -1,0 +1,16 @@
+{
+  "kind": "result",
+  "title": "Mutoscope 인라인 보고서 예제",
+  "intro": "모형이 아닌 mutoscope 원본 두 개를 재생기 그대로 넣는 예제",
+  "questions": [{
+    "title": "두 재생기 분리",
+    "what": "같은 도형 id를 쓰는 그림도 서로의 SVG id와 스타일에 영향을 주지 않아야 한다",
+    "options": [
+      {"label": "전", "images": [{"muto": "flow-a.muto", "alt": "요청 흐름 A"}]},
+      {"label": "후", "images": [{"muto": "flow-b.muto", "alt": "요청 흐름 B"}]}
+    ],
+    "effect": [["재생기", "탭과 일시정지 등 HTML 상호작용 유지", "iframe 높이는 첫 로드 뒤 조정"]],
+    "rec": ["후", "각 재생기는 srcdoc iframe으로 분리되어 id와 CSS가 충돌하지 않는다"],
+    "check": ["테마 단추가 보고서와 두 재생기에 함께 적용되는지 확인"]
+  }]
+}
