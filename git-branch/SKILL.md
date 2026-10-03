@@ -7,7 +7,7 @@ description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반�
 
 - 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
 - 범위: 브랜치 구조, 작업 단위, 브랜치 이름, PR 생성, 머지, 릴리스
-- 필요할 때만 읽기: 커밋 메시지, PR 제목, squash 메시지 작성 → git-commit; PR 본문 작성 → git-pull-request
+- 필요할 때만 읽기: 작업 선택, 시작 전 이슈 우선순위와 막힘 확인 → git-issue; 커밋 메시지, PR 제목, squash 메시지 작성 → git-commit; PR 본문 작성 → git-pull-request
 
 ## 구조
 
@@ -51,13 +51,14 @@ description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반�
 
 ## 시작 전 확인
 
-1. `git fetch origin --prune`
-2. 같은 이슈 번호 브랜치: `git branch -a --list "*/{번호}-*"`
-3. 같은 이슈 번호 열린 PR: `gh pr list --state open --search "{번호} in:title,body"`
-4. 사용 중인 worktree: `git worktree list`
-5. 이슈 담당자: 비어 있으면 자기 계정 지정, 다른 사람이면 중단
+1. 착수 가능한 이슈 중 git-issue 우선순위 순서 확인
+2. `git fetch origin --prune`
+3. 같은 이슈 번호 브랜치: `git branch -a --list "*/{번호}-*"`
+4. 같은 이슈 번호 열린 PR: `gh pr list --state open --search "{번호} in:title,body"`
+5. 사용 중인 worktree: `git worktree list`
+6. 이슈 담당자: 비어 있으면 자기 계정 지정, 다른 사람이면 중단
 
-- 2~4에서 같은 이슈가 나오면 새 브랜치 금지
+- 3~5에서 같은 이슈가 나오면 새 브랜치 금지
 - 사용자가 그 브랜치를 이어서 하라고 지정했으면 이어서 작업, 아니면 중단하고 보고
 
 ## 작업 중
@@ -89,13 +90,14 @@ description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반�
 머지가 끝나면 저장소 안에서 실행. 먼저 미리보기, 목록 확인 뒤 `--apply`
 
 ```sh
-python3 <이 스킬 폴더>/scripts/cleanup_merged.py
-python3 <이 스킬 폴더>/scripts/cleanup_merged.py --apply
+python3 <이 스킬 폴더>/scripts/cleanup_merged.py <PR 번호 또는 브랜치>
+python3 <이 스킬 폴더>/scripts/cleanup_merged.py <PR 번호 또는 브랜치> --apply
 ```
 
 - `<이 스킬 폴더>`: 이 SKILL.md가 있는 폴더. 스크립트 본문은 읽지 않고 실행만. Windows에서 `python3`가 없으면 `py -3`
-- 대상: GitHub에서 PR이 머지된 로컬 브랜치의 worktree, 로컬 브랜치, 원격 브랜치. 빈 `{저장소}.wt` 폴더 삭제
-- 커밋 안 된 변경이 있는 worktree는 남기고 `keep:`으로 보고
+- 대상: 지정한 GitHub 머지 PR의 로컬 브랜치 worktree, 로컬 브랜치, 원격 브랜치
+- PR 마지막 head SHA가 로컬·원격 브랜치 head와 모두 같을 때만 정리. 하나라도 다르거나 없으면 `skip:` 이유 출력
+- 커밋 안 된 변경이 있는 worktree는 남기고 `skip:` 이유 출력
 - 병렬 작업을 모두 머지한 뒤 확인: `git worktree list`에 `main` 하나, `git branch`에 `main`과 열린 PR 브랜치만
 - 브랜치 생성 후 7일 넘게 머지 안 되면 사용자에게 보고
 - 이슈 취소 시 PR 닫기, 브랜치 삭제
