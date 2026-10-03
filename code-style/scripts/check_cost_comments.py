@@ -3,8 +3,8 @@
 사용: python3 check_cost_comments.py <폴더나 파일 ...>
 
 출력: `{경로}:{줄}: {함수 이름}: {이유}` 줄들과 마지막 `total {개수}`. 개수가 0이 아니면 종료 코드 1.
-code-style은 시간 O(1), 할당 없음, 재귀 없음, I/O 없음인 함수만 비용 주석을 생략하게 한다.
-스크립트는 그 판정을 다 할 수 없으므로, 반복, 컬렉션 순회, 재귀, I/O가 보이는 함수만 검사한다.
+code-style은 비용이 드러나지 않는 알고리즘, 병목, 외부 호출 경계에만 비용 주석을 요구한다.
+스크립트는 정적으로 식별 가능한 파일·네트워크·프로세스·모델 호출 경계만 검사한다.
 대상: Python(`def`), JavaScript·TypeScript(`function`, 블록 본문 화살표 함수), Rust(`fn`), Kotlin(`fun`).
 """
 
@@ -52,18 +52,12 @@ DECLARATION = {
 DOC_OR_ATTRIBUTE = re.compile(r"^\s*(?:@|#\[|///|//!|/\*\*|\*|\*/)")
 COMMENT_MARK = {"python": "#", "js": "//", "rust": "//", "kotlin": "//"}
 STRING = re.compile(r"\"\"\"[\s\S]*?\"\"\"|\'\'\'[\s\S]*?\'\'\'|'(?:[^'\\\n]|\\.)*'|\"(?:[^\"\\\n]|\\.)*\"|`(?:[^`\\]|\\.)*`")
-LOOP = {
-    "python": re.compile(r"\b(?:for|while)\b|\b(?:sorted|sum|min|max|map|filter|any|all|zip|enumerate|reversed)\(|\.join\(|\.sort\("),
-    "js": re.compile(r"\b(?:for|while)\b|\.(?:map|filter|reduce|forEach|some|every|find|findIndex|flatMap|sort|join|includes|indexOf)\(|\.\.\.\w|Object\.(?:keys|values|entries|fromEntries)\("),
-    "rust": re.compile(r"\b(?:for|while|loop)\b|\.(?:iter|into_iter|iter_mut|map|filter|fold|collect|sort|sort_by|join|contains)\("),
-    "kotlin": re.compile(r"\b(?:for|while)\b|\.(?:map|filter|forEach|fold|reduce|sorted|sortedBy|joinToString|any|all|first|find)\s*[({]"),
-}
 IO = {
     "python": re.compile(r"\bopen\(|\bsubprocess\.|\bos\.(?:walk|listdir|remove|makedirs)\(|\brequests\.|\burllib\.|\bprint\("),
     # `.exec(`는 정규식 메서드라 제외한다(앞에 점이 없는 호출만 프로세스 실행으로 본다).
-    "js": re.compile(r"\bfetch\(|(?<![.\w])(?:readFile|writeFile|readdir|mkdir|rm|spawn|exec|execFile)(?:Sync)?\(|\bconsole\.|\bawait\b"),
-    "rust": re.compile(r"\bstd::fs::|\bfs::|\bFile::|\bCommand::|\breqwest::|\.await\b|\bprintln!|\beprintln!"),
-    "kotlin": re.compile(r"\bFile\(|\breadText\(|\bwriteText\(|\bProcessBuilder\(|\bprintln\(|\bwithContext\("),
+    "js": re.compile(r"\bfetch\(|(?<![.\w])(?:readFile|writeFile|readdir|mkdir|rm|spawn|exec|execFile)(?:Sync)?\(|\bconsole\."),
+    "rust": re.compile(r"\bstd::fs::|\bfs::|\bFile::|\bCommand::|\breqwest::|\bprintln!|\beprintln!"),
+    "kotlin": re.compile(r"\bFile\(|\breadText\(|\bwriteText\(|\bProcessBuilder\(|\bprintln\("),
 }
 
 
@@ -87,7 +81,7 @@ def check_file(path: str) -> list[tuple[str, int, str, str]]:
         if placement == "below":
             findings.append((path, index + 1, name, "cost comment below doc comment or attribute"))
             continue
-        reason = find_cost_reason(name, find_body(lines, index, language), language)
+        reason = find_cost_reason(find_body(lines, index, language), language)
         if reason and placement == "missing":
             findings.append((path, index + 1, name, reason))
     return findings
@@ -150,17 +144,13 @@ def strip_strings(line: str) -> str:
 # cost: time O(b), heap O(b), stack O(1)
 # vars: b = 함수 본문 글자 수
 # basis: estimate
-def find_cost_reason(name: str, body: list[str], language: str) -> str | None:
-    """비용 주석이 필요한 이유. 반복·순회, 재귀, I/O 중 처음 보인 것, 없으면 None."""
+def find_cost_reason(body: list[str], language: str) -> str | None:
+    """비용 주석이 필요한 외부 호출 경계, 없으면 None."""
     marker = COMMENT_MARK[language]
     text = STRING.sub("''", "\n".join(body))
     text = "\n".join(line.split(marker)[0] if marker != "#" else re.sub(r"#.*$", "", line) for line in text.split("\n"))
-    if LOOP[language].search(text):
-        return "loop or iteration without cost comment"
-    if re.search(rf"\b{re.escape(name)}\s*\(", text):
-        return "recursion without cost comment"
     if IO[language].search(text):
-        return "io without cost comment"
+        return "external call without cost comment"
     return None
 
 
