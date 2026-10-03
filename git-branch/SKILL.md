@@ -67,7 +67,8 @@ description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반�
 
 - 분기: 최신 `main`에서 `git switch -c {브랜치} origin/main`
 - 병렬 에이전트: 에이전트마다 이슈 하나, 브랜치 하나, worktree 하나. `git worktree add ../{저장소}.wt/{브랜치의 / 를 - 로} -b {브랜치} origin/main`
-- 같은 빌드 단위(crate, 패키지)의 컴파일과 테스트 통과는 에이전트 하나만 맡는다. 다른 에이전트는 자기 파일만 고치고 검사 실패는 보고
+- 같은 생성물·빌드 단위(crate, 패키지)의 검사 담당은 하나. 다른 에이전트는 자기 파일만 수정, 검사 실패 보고. 읽기 검토·독립 조사는 병행 허용
+- 검사 시작·종료 시 대상 HEAD 대조, 변경 여부 기록
 - 임시 폴더, 저장소 사본, 두 번째 clone 금지. 검사는 자기 worktree에서만
 - 자기 작업 브랜치 push 허용
 - `main` 변경 반영: `git merge origin/main`
