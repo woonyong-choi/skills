@@ -37,18 +37,22 @@ COLOR_FUNCTION = re.compile(r"\b(?:rgba?|hsla?|oklch|oklab|lab|lch|hwb|color)\("
 FONT_FAMILY = re.compile(rf"font-family\s*:(?!\s*{FONT_KEYWORDS})[^;}}\n]+|\bfont\s*:(?!\s*{FONT_KEYWORDS})[^;}}\n]*(?:serif|monospace|system-ui)")
 LENGTH = re.compile(r"(?<![\w.#-])-?\d*\.?\d+(?:px|rem|em|ms|s|vh|vw|pt)\b")
 UNITLESS_PROPERTY = re.compile(r"\b(font-weight|line-height|opacity|z-index|letter-spacing)\s*:\s*(-?[\d.]+)\b")
-UNITLESS_ATTRIBUTE = re.compile(r"\b(rx|ry|stroke-width|font-size|font-weight|opacity|fill-opacity|stroke-opacity|letter-spacing)=\"\s*(-?[\d.]+)\s*\"")
+UNITLESS_ATTRIBUTE = re.compile(
+    r"\b(rx|ry|stroke-width|font-size|font-weight|opacity|fill-opacity|stroke-opacity|letter-spacing)\s*=\s*"
+    r"(?P<quote>['\"])\s*(?P<value>-?[\d.]+)\s*(?P=quote)"
+)
 CUSTOM_PROPERTY = re.compile(r"(--[\w-]+)\s*:\s*(?!var\()([^;}\n]+)")
 AT_CONDITION = re.compile(r"@(?:media|container)[^{]*")
 COMMENT = re.compile(r"/\*.*?\*/|<!--.*?-->", re.S)
 STRING = re.compile(r"'(?:[^'\\\n]|\\.)*'|\"(?:[^\"\\\n]|\\.)*\"|`(?:[^`\\]|\\.)*`", re.S)
 STYLE_BLOCK = re.compile(r"<style[^>]*>(.*?)</style>", re.S | re.I)
 STYLED_ATTRIBUTE = re.compile(
-    r"\b(?:style|fill|stroke|color|stop-color|flood-color|rx|ry|stroke-width|font-size|font-weight|font-family|opacity|fill-opacity|stroke-opacity|letter-spacing)=\"[^\"]*\"",
+    r"\b(?:style|fill|stroke|color|stop-color|flood-color|rx|ry|stroke-width|font-size|font-weight|font-family|opacity|fill-opacity|stroke-opacity|letter-spacing)\s*=\s*"
+    r"(?P<quote>['\"])[\s\S]*?(?P=quote)",
     re.I,
 )
 # CSS 선언(`속성: 값;`)이나 마크업 속성(`이름="값"`)이 든 문자열
-LOOKS_STYLED = re.compile(r"[\w-]+\s*:\s*[^;]+;|<\w[^>]*=|[\w-]+=\"")
+LOOKS_STYLED = re.compile(r"[\w-]+\s*:\s*[^;]+;|<\w[^>]*=|[\w-]+\s*=\s*['\"]")
 # 값 하나뿐인 문자열: `'12px'`, `'1.5rem'`, `'200ms'`
 BARE_VALUE = re.compile(r"^['\"`]\s*-?\d*\.?\d+(?:px|rem|em|ms|s|pt)\s*['\"`]$")
 
@@ -156,7 +160,10 @@ def find_hardcoded(segment: str, info: TokenInfo, is_styled: bool) -> list[tuple
     found += [(m.start(), "font family", m.group(0).strip()) for m in FONT_FAMILY.finditer(segment) if not is_inside(m.start(), skip)]
     found += [(m.start(), "length or time", m.group(0)) for m in LENGTH.finditer(segment) if m.group(0) not in FREE_LENGTHS and not is_inside(m.start(), skip)]
     for pattern in (UNITLESS_PROPERTY, UNITLESS_ATTRIBUTE):
-        found += [(m.start(), f"{m.group(1)} number", m.group(0)) for m in pattern.finditer(segment) if m.group(2) not in FREE_NUMBERS and not is_inside(m.start(), reported)]
+        for match in pattern.finditer(segment):
+            number = match.group("value") if "value" in pattern.groupindex else match.group(2)
+            if number not in FREE_NUMBERS and not is_inside(match.start(), reported):
+                found.append((match.start(), f"{match.group(1)} number", match.group(0)))
     return found
 
 
