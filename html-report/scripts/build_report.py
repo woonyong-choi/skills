@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 CSS = """
-:root{color-scheme:light dark;--report-ink:var(--color-fg,CanvasText);--report-sub:var(--color-muted,GrayText);--report-line:var(--color-border,GrayText);--report-pane:var(--color-bg,Canvas);--report-page:var(--color-page,Canvas);--report-active:var(--color-state-active,Highlight);--report-active-fill:var(--color-card-on,Highlight);--report-active-ink:var(--color-state-active-text,LinkText);--report-radius:var(--radius-md,6px);--nav-offset:calc(4 * 24px)}
+:root{color-scheme:light dark;--report-ink:var(--color-fg,CanvasText);--report-sub:var(--color-muted,GrayText);--report-line:var(--color-border,GrayText);--report-pane:var(--color-bg,Canvas);--report-page:var(--color-page,Canvas);--report-active:var(--color-state-active,Highlight);--report-active-fill:var(--color-card-on,Highlight);--report-active-ink:var(--color-state-active-text,LinkText);--report-chip-ink:var(--color-fg,CanvasText);--report-chip-fill:var(--color-bg,Canvas);--report-chip-border:var(--color-border,GrayText);--report-chip-hover-fill:var(--color-surface,ButtonFace);--report-chip-active-ink:var(--color-state-on-active,HighlightText);--report-chip-active-fill:var(--color-state-active-fill,Highlight);--report-chip-active-border:var(--color-state-active,Highlight);--report-chip-focus:var(--color-ui-focus,Highlight);--report-radius:var(--radius-md,6px);--nav-offset:calc(4 * 24px)}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:var(--font-sans,system-ui,sans-serif);font-size:15px;line-height:1.6;max-width:1340px;margin:0 auto;padding:24px;color:var(--report-ink);background:var(--report-page)}
 h1{font-size:26px;margin:0 0 8px}h2{margin:0 0 8px;font-size:21px;border-bottom:2px solid var(--report-active);padding-bottom:6px}h3{font-size:16px;margin:18px 0 6px}h4{margin:0 0 6px;font-size:15px;line-height:1.4}section{scroll-margin-top:var(--nav-offset);margin:36px 0}
 .theme{display:flex;align-items:center;gap:6px;margin:0 0 12px}.theme strong{font-size:13px}.theme button{font:inherit;color:var(--report-ink);background:var(--report-pane);border:var(--border-thin,1px) solid var(--report-line);border-radius:var(--radius-full,999px);padding:3px 9px;cursor:pointer}.theme button[aria-pressed="true"]{color:var(--report-active-ink);background:var(--report-active-fill);border-color:var(--report-active)}.theme button:focus-visible,nav a:focus-visible{outline:var(--border-strong,2px) solid var(--report-active);outline-offset:2px}
@@ -27,7 +27,7 @@ h1{font-size:26px;margin:0 0 8px}h2{margin:0 0 8px;font-size:21px;border-bottom:
 .frame{display:flex;align-items:center;justify-content:center;background:var(--report-pane);padding:4px}.frame img{display:block;width:100%;height:auto;max-height:var(--max-h,360px);object-fit:contain}.frame.muto-frame{padding:0;align-items:stretch;overflow:hidden}.frame.muto-frame iframe{display:block;width:100%;min-height:320px;height:var(--max-h,560px);border:0;background:transparent}
 figure{margin:0 0 10px}figure:last-child{margin-bottom:0}figcaption{font-size:12px;color:var(--report-sub);margin-top:4px}pre.msg{white-space:pre-wrap;word-break:break-all;background:var(--report-pane);padding:8px;border-radius:var(--report-radius);font-size:12px;margin:8px 0 0}figure+pre.msg{margin-top:0}
 table{border-collapse:collapse;width:100%;table-layout:fixed}th,td{border:var(--border-thin,1px) solid var(--report-line);padding:6px 10px;vertical-align:middle;font-size:14px;text-align:left;overflow-wrap:anywhere}thead th{background:var(--report-pane)}.al-center{text-align:center}.al-right{text-align:right;font-variant-numeric:tabular-nums}.effect{margin-top:12px}.effect th:first-child,.effect td:first-child{width:64px;text-align:center}.effect td{vertical-align:top}.rec{background:var(--report-active-fill);border-left:4px solid var(--report-active);padding:8px 12px;margin:12px 0 0}.check{margin:12px 0 0}.check ul{margin:4px 0 0;padding-left:20px}.note{font-size:13px;color:var(--report-sub);margin:8px 0}.what{margin:6px 0}code{font-family:var(--font-mono,ui-monospace,monospace);font-size:12px;white-space:normal}
-nav{position:sticky;top:0;z-index:1;display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;padding:8px 0;background:var(--report-page);border-bottom:var(--border-thin,1px) solid var(--report-line)}nav a{display:inline-flex;align-items:center;gap:6px;min-height:24px;max-width:calc(16 * 21px);padding:4px 8px;color:var(--report-ink);text-decoration:none;background:var(--report-pane);border-radius:var(--report-radius)}nav a:hover{background:var(--color-surface,ButtonFace)}nav a.is-active{color:var(--color-state-on-active,HighlightText);background:var(--report-active-fill);border:var(--border-thin,1px) solid var(--report-active)}.nav-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+nav{position:sticky;top:0;z-index:1;display:flex;flex-wrap:nowrap;gap:6px;margin:8px 0;padding:8px 0;overflow-x:auto;overflow-y:hidden;background:var(--report-page);border-bottom:var(--border-thin,1px) solid var(--report-line)}nav a{display:inline-flex;flex:0 0 auto;align-items:center;gap:6px;min-height:24px;max-width:calc(16 * 21px);padding:4px 8px;color:var(--report-chip-ink);text-decoration:none;white-space:nowrap;background:var(--report-chip-fill);border:var(--border-thin,1px) solid var(--report-chip-border);border-radius:var(--report-radius)}nav a:hover{background:var(--report-chip-hover-fill)}nav a.is-active{color:var(--report-chip-active-ink);background:var(--report-chip-active-fill);border-color:var(--report-chip-active-border)}nav a:focus-visible{outline:var(--border-strong,2px) solid var(--report-chip-focus);outline-offset:2px}.nav-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media print{nav,.theme{display:none}}
 """
 
@@ -81,6 +81,12 @@ addEventListener('message', (event) => {
 });
 parent.postMessage({ themeRequest: true }, '*');
 </script>
+"""
+
+NAVIGATION_SCRIPT = """
+const nav=document.querySelector("nav"),links=[...nav.querySelectorAll("a")],sections=[...document.querySelectorAll("section")];
+const setActive=()=>{const current=sections.find(section=>section.getBoundingClientRect().bottom>nav.getBoundingClientRect().bottom);if(!current)return;const activeLink=links.find(link=>link.hash==="#"+current.id);if(!activeLink)return;links.forEach(link=>{const active=link===activeLink;link.classList.toggle("is-active",active);link.setAttribute("aria-current",active?"true":"false")});activeLink.scrollIntoView({block:"nearest",inline:"nearest"})};
+const observer=new IntersectionObserver(setActive);sections.forEach(section=>observer.observe(section));addEventListener("scroll",setActive,{passive:true});setActive();
 """
 
 
@@ -425,10 +431,7 @@ def build(spec: dict[str, Any], renderer: FigureRenderer, tokens_css: str) -> st
         f"<title>{title}</title><style>{tokens_css}{CSS}</style><script>{THEME_SCRIPT}</script></head><body>"
         f"<h1>{title} ({len(questions)}개)</h1>{theme}<p>{_inline(spec['intro'])}</p>"
         f'<nav aria-label="보고서 섹션">{navigation}</nav>{sections}'
-        '<script>const nav=document.querySelector("nav"),links=[...nav.querySelectorAll("a")],sections=[...document.querySelectorAll("section")];'
-        "const setActive=()=>{const current=sections.find(section=>section.getBoundingClientRect().bottom>nav.getBoundingClientRect().bottom);if(!current)return;"
-        'links.forEach(link=>{const active=link.hash==="#"+current.id;link.classList.toggle("is-active",active);link.setAttribute("aria-current",active?"true":"false")})};'
-        "const observer=new IntersectionObserver(setActive);sections.forEach(section=>observer.observe(section));setActive();</script></body></html>"
+        f"<script>{NAVIGATION_SCRIPT}</script></body></html>"
     )
 
 
