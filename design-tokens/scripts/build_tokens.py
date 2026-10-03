@@ -172,18 +172,38 @@ def build_js(source: str, tokens: list[Token], table: dict[Path, tuple[Any, str 
         "}\n\n"
         "/** CSS에 넣을 토큰 참조. 값은 `var(--…)` 문자열이다. */\n"
         f"export const tokens = freeze({json.dumps(refs, ensure_ascii=False, indent=2)});\n\n"
-        "/** 배치 계산에 쓸 밝은 테마의 실제 값. 크기는 px 숫자, 시간은 ms 숫자다. */\n"
+        "/** 배치 계산에 쓸 밝은 테마의 실제 값. px와 s·ms만 단위 없는 숫자로 바꾼다. */\n"
         f"export const values = freeze({json.dumps(values, ensure_ascii=False, indent=2)});\n"
     )
 
 
 def to_number(value: Any, token_type: str | None) -> Any:
-    """크기와 시간을 단위 없는 숫자로 바꾼다. `{value, unit}` 객체와 `"8px"` 글자도 받는다."""
+    """계산 가능한 px와 시간만 단위 없는 숫자로 바꾼다. 문맥이 필요한 단위는 CSS 값으로 남긴다."""
     if isinstance(value, dict) and "value" in value:
-        return value["value"]
+        unit = value.get("unit")
+        number = value["value"]
+        if token_type == "dimension" and unit == "px":
+            return number
+        if token_type == "duration" and unit == "ms":
+            return number
+        if token_type == "duration" and unit == "s" and isinstance(number, (int, float)):
+            return number * 1000
+        return to_css_value(value, token_type)
     if isinstance(value, str):
-        match = re.match(r"^(-?\d+(?:\.\d+)?)(px|ms)?$", value)
-        return float(match.group(1)) if match else value
+        match = re.fullmatch(r"(-?\d+(?:\.\d+)?)(px|ms|s)?", value)
+        if not match:
+            return value
+        number = float(match.group(1))
+        unit = match.group(2)
+        if token_type == "dimension" and unit == "px":
+            return number
+        if token_type == "duration" and unit == "ms":
+            return number
+        if token_type == "duration" and unit == "s":
+            return number * 1000
+        if token_type in {"number", "fontWeight"} and unit is None:
+            return number
+        return value
     return value
 
 
@@ -213,7 +233,12 @@ def main() -> int:
     table = {p: (v, t) for p, v, t in tokens}
     try:
         check_references(tokens, table, "tokens.json")
-        check_references(dark_tokens, table, "tokens.dark.json")
+        for path, _, _ in dark_tokens:
+            if path not in table:
+                raise ValueError(f"tokens.dark.json has a token missing from tokens.json: {'.'.join(path)}")
+        dark_table = dict(table)
+        dark_table.update({path: (value, token_type) for path, value, token_type in dark_tokens})
+        check_references(dark_tokens, dark_table, "tokens.dark.json")
         css = build_css(os.path.basename(args.source), tokens, dark_tokens)
         js = build_js(os.path.basename(args.source), tokens, table)
     except ValueError as error:
