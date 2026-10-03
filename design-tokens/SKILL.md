@@ -7,7 +7,7 @@ description: "색, 글꼴, 간격, 반지름, 그림자, 시간 같은 화면 �
 
 - 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
 - 범위: 화면에 보이는 모든 값의 정의, 이름, 사용 방법, 하드코딩 검사
-- 필요할 때만 읽기: CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림(D2, Vega-Lite) 색 → repo-docs-figures
+- 필요할 때만 읽기: CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림(D2, Vega-Lite) 색 → repo-docs-figures; 기대값 근거 확인 → code-style
 
 ## 원칙
 
@@ -92,7 +92,6 @@ python3 <이 스킬 폴더>/scripts/build_tokens.py tokens.json --out <생성 �
 | JavaScript 배치 계산 | `tokens.js`의 `values` 숫자 | `values.size.text['14']` |
 
 - 이미지로 넣는 SVG: 스타일시트가 없어 `var()` 값 소실. 그 SVG 안 `<style>`에 `tokens.css` 내용 포함
-- 테스트 코드의 기대값도 토큰 참조. 숫자 복사 금지
 
 ## 새 값이 필요할 때
 
@@ -114,3 +113,4 @@ python3 <이 스킬 폴더>/scripts/check_tokens.py <검사할 폴더>
 - 제외: `tokens.json`, `tokens.dark.json`, 생성물, `docs/`(repo-docs-figures 그림), `node_modules`, `dist`, `build`, `.git`, `tokens-allow:` 줄
 - 출력 `total 0`까지 수정. 0이 아니면 종료 코드 1
 - 직접 확인: 토큰 이름이 용도를 드러내는지, 구성 요소 토큰을 두 곳 이상에서 쓰는지, `style`·`sx`·`css` 밖 이름의 스타일 객체 숫자
+- 기대값 근거: (code-style 테스트). 화면 구현값의 하드코딩과 검증 기대값 구분

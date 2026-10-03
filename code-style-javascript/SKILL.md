@@ -139,6 +139,8 @@ export default [
 
 경고도 실패 처리
 
+- 함수 인자·중첩 검사 도구: 실제 구문 경계 처리 필수. 정규식 탐색만이면 미검사 범위를 결과에 명시
+
 ```
 npx prettier --check .
 npx eslint --max-warnings 0 .
