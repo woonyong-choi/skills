@@ -13,9 +13,6 @@ const PROFILE_DIR = join(homedir(), ".config/skills/browser-profile");
 const LOG_DIR = join(homedir(), ".config/skills/browser-logs");
 const POINTER = join(homedir(), ".config/skills/source");
 const SKILLS_URL = "https://claude.ai/customize/skills";
-const LOGIN_URL = "https://claude.ai/login";
-const LOGIN_WAIT_MS = 15 * 60 * 1000;
-const LOGIN_POLL_MS = 10 * 1000;
 const UPLOAD_WAIT_MS = 60 * 1000;
 const MY_SKILLS_URL = "https://claude.ai/customize/skills/yours";
 
@@ -30,15 +27,11 @@ mkdirSync(PROFILE_DIR, { recursive: true, mode: 0o700 });
 chmodSync(PROFILE_DIR, 0o700);
 mkdirSync(LOG_DIR, { recursive: true, mode: 0o700 });
 
-let context = await openContext(false);
+const context = await openContext();
 try {
-  let page = context.pages()[0] ?? (await context.newPage());
+  const page = context.pages()[0] ?? (await context.newPage());
   if (!(await isLoggedIn(page))) {
-    // 로그인이 없거나 보안 확인(Cloudflare)에 막힐 때만 창을 화면 안에 띄움
-    await context.close();
-    context = await openContext(true);
-    page = context.pages()[0] ?? (await context.newPage());
-    if (!(await isLoggedIn(page))) await waitForLogin(page);
+    await fail(page, "로그인이 없거나 보안 확인에 막혀 업로드 중단");
   }
   await openMySkills(page);
   if (args.probe) {
@@ -101,14 +94,14 @@ function listZips(root) {
     .map((file) => ({ name: basename(file, ".zip"), path: join(dir, file) }));
 }
 
-// visible=false: headless는 Cloudflare에 막히므로 창을 화면 밖에 둔 일반 창으로 실행
-function openContext(visible) {
+// headless는 Cloudflare에 막히므로 창을 화면 밖에 둔 일반 창으로 실행
+function openContext() {
   const hidden = ["--window-position=-32000,-32000", "--window-size=960,720"];
   return playwright.chromium.launchPersistentContext(PROFILE_DIR, {
     executablePath: CHROME,
     headless: false,
     viewport: { width: 1280, height: 900 },
-    args: ["--disable-blink-features=AutomationControlled", ...(visible ? [] : hidden)],
+    args: ["--disable-blink-features=AutomationControlled", ...hidden],
   });
 }
 
@@ -132,21 +125,10 @@ async function isLoggedIn(page) {
   return false;
 }
 
-async function waitForLogin(page) {
-  await page.goto(LOGIN_URL, { waitUntil: "domcontentloaded" });
-  console.log("Chrome 창에서 claude.ai에 로그인하세요");
-  const deadline = Date.now() + LOGIN_WAIT_MS;
-  while (Date.now() < deadline) {
-    await page.waitForTimeout(LOGIN_POLL_MS);
-    if ((await pageState(page)) === "app") return;
-  }
-  throw new UiError("로그인 대기 15분 초과");
-}
-
 async function openMySkills(page) {
   await page.goto(MY_SKILLS_URL, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "스킬 추가", exact: true }).waitFor({ timeout: 30000 }).catch(() => fail(page, "스킬 목록 화면의 '스킬 추가' 버튼을 찾지 못함"));
-  await page.waitForTimeout(2000);
+  await page.locator("button[aria-label$=' 보기']").first().waitFor({ timeout: 30000 }).catch(() => fail(page, "스킬 목록의 행이 로드되지 않음"));
 }
 
 async function accountSkills(page) {
@@ -199,6 +181,12 @@ async function uploadSkill(page, zip) {
   }
   await clickOrFail(page, page.getByRole("button", { name: "업로드", exact: true }), "대화상자의 '업로드' 버튼");
   await waitForUpload(page, zip.name);
+  // 업로드가 끝나면 상세 화면으로 이동하므로 다음 작업 전에 목록 복귀와 저장 확인이 필요하다.
+  await openMySkills(page);
+  if (!(await accountSkills(page)).includes(zip.name)) await fail(page, `'${zip.name}' 업로드 뒤 목록에 없음`);
+  const updatedAt = await accountSkillUpdatedAt(page, zip.name);
+  if (updatedAt !== "지금" && updatedAt !== "방금") await fail(page, `'${zip.name}'의 업로드 직후 갱신 시각이 지금이 아님: ${updatedAt}`);
+  console.log(`업로드 직후 확인: ${zip.name} 갱신 시각 ${updatedAt}`);
 }
 
 async function waitForUpload(page, name) {
@@ -266,7 +254,7 @@ async function syncSkills(page, zips) {
       await openMySkills(page);
       await uploadSkill(page, zip);
     } catch (error) {
-      console.error(`\n!!! 경고: 계정에 '${name}' 스킬이 없으며 교체 업로드는 실패함 !!!`);
+      console.error(`\n!!! 경고: '${name}' 교체 완료를 확인하지 못함. 계정 목록 재확인 필요 !!!`);
       console.error(`!!! 수동 업로드: claude.ai 사용자 지정 > 스킬 > 추가 > 스킬 업로드에서 ${zip.path} 선택 !!!\n`);
       throw error;
     }
@@ -279,10 +267,9 @@ async function syncSkills(page, zips) {
     ...[...args.upload, ...args.replace].filter((name) => !present.includes(name)).map((name) => `${name} 아직 없음`),
   ];
   if (problems.length) await fail(page, `확인 실패: ${problems.join(", ")}`);
-  for (const name of args.replace) {
+  for (const name of [...args.upload, ...args.replace]) {
     const updatedAt = await accountSkillUpdatedAt(page, name);
     if (!updatedAt) await fail(page, `'${name}'의 갱신 시각을 목록에서 찾지 못함`);
-    if (updatedAt !== "지금" && updatedAt !== "방금") await fail(page, `'${name}'의 갱신 시각이 지금이 아님: ${updatedAt}`);
     console.log(`확인: ${name} 갱신 시각 ${updatedAt}`);
   }
   const missing = zips.map((zip) => zip.name).filter((name) => !present.includes(name));
