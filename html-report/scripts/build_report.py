@@ -41,7 +41,6 @@ thead th{background:#f5f7fa}
 .note{font-size:13px;color:var(--sub);margin:8px 0 0}
 .what{margin:6px 0}
 code{font-family:'JetBrains Mono Variable','JetBrains Mono',ui-monospace,monospace;font-size:12px;white-space:normal}
-.bad{color:#b3261e}.ok{color:#1b7a3a}
 nav{position:sticky;top:0;z-index:1;display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;padding:8px 0;background:var(--bg);border-bottom:1px solid var(--line)}
 nav a{display:inline-flex;align-items:center;gap:6px;min-height:24px;max-width:calc(16 * 21px);padding:4px 8px;color:var(--ink);text-decoration:none;background:var(--pane);border-radius:6px}
 nav a:hover,nav a:focus-visible{background:var(--tline)}nav a.is-active{color:var(--pane);background:var(--ink)}
