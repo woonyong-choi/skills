@@ -1,0 +1,7 @@
+flow right
+title "요청 흐름 B"
+box client "클라이언트"
+box server "서버"
+client -> server "재시도"
+step "재시도" "클라이언트가 서버에 다시 요청을 보낸다"
+  client -> server

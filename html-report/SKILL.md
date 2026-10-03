@@ -46,7 +46,12 @@ description: "그림, 스크린샷, 코드, 실행 출력 HTML 보고서 작성 
 ## 그림
 
 - 그림 색 변경 금지
-- 라이트와 다크를 둘 다 보여야 하면 각각 고정해 찍은 PNG로 넣기. 브라우저 테마를 따르는 SVG를 직접 넣으면 다크 브라우저에서 다크로만 보임. 캡처는 색 구성표를 고정한 브라우저로
+- 구조도, 순서도, 상태도, 데이터 관계도, 차트: mutoscope 원본 `.muto` 우선. 생성 스크립트가 `node <mutoscope 경로>/src/cli.js render ... --strict --html`로 만든 HTML 재생기를 보고서의 `iframe srcdoc`에 넣기. 외부 파일 참조와 `<img>` 사용 금지
+- `inline`: 미리 만든 mutoscope SVG 또는 HTML 조각 경로. 같은 `iframe srcdoc`에 넣기. 그림마다 독립 문서라 SVG id·`<style>`·재생기 스크립트 충돌 없음
+- `muto`: `<mutoscope 경로>`는 `--mutoscope` 인자 또는 `MUTOSCOPE_PATH` 환경 변수. 렌더 실패는 보고서 생성 실패. `--static`은 움직임 없는 SVG를 같은 방식으로 넣기
+- `src`: mutoscope로 그릴 수 없는 스크린샷, 실행 화면 캡처만. 라이트 모드로 고정해 캡처한 파일만 사용
+- 보고서 틀은 mutoscope `src/tokens.css`를 읽어 역할 토큰만 사용. 토큰 색 값 복사 금지
+- 보고서 기본 테마: 시스템. 맨 위 `시스템 / 라이트 / 다크` 선택. 선택값은 `mutoscope-theme` localStorage에 기억하고, 루트 `data-theme`·`color-scheme`과 모든 인라인 재생기에 함께 적용
 
 ## 모형 표시
 
@@ -59,7 +64,7 @@ description: "그림, 스크린샷, 코드, 실행 출력 HTML 보고서 작성 
 
 프로젝트가 없는 보고서: 워크스페이스 규칙의 작업 기록 폴더. 없으면 사용자에게 확인. 임시 폴더 금지
 
-`index.html`(결과), `choices.json`(입력), `index.png`(전체 캡처), `svg/`(그림 SVG, PNG), `sources/`(그림을 만든 시험 코드와 원본 입력)
+`index.html`(결과), `choices.json`(입력), `index.png`(라이트 모드 전체 캡처), `muto/`(원본), `.muto-rendered/`(생성 중간 산출물), `sources/`(그림을 만든 시험 코드와 원본 입력)
 
 그림 경로: 입력 JSON 폴더 기준 상대 경로
 
@@ -71,10 +76,12 @@ description: "그림, 스크린샷, 코드, 실행 출력 HTML 보고서 작성 
 ## 생성
 
 ```sh
-python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html]
+python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html] --mutoscope <mutoscope 경로>
 ```
 
 - 출력 기본값: 입력 파일 옆 `index.html`
+- `--mutoscope`: 작업본 루트 또는 `src/cli.js` 경로. `MUTOSCOPE_PATH` 환경 변수로 대체 가능. `.muto`가 없으면 생략 가능하나 보고서 틀은 시스템 색으로만 표시
+- `--static`: `.muto`를 멈춘 SVG로 렌더. 기본은 상호작용 가능한 HTML 재생기
 - 결과 보고서의 `effect`는 `["후", "좋은 점", "남은 문제"]`, `rec`는 `["머지 권장", "이유"]`
 - `intro`·`what`: 보고 대상 버전(HEAD·미커밋 변경), 입력, 캡처 시각 명시. 움직임 과제는 라이브 URL 함께 제공
 
@@ -87,8 +94,10 @@ python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html]
   "questions*": [{
     "title*": "", "what*": "",
     "options*": [
-      {"label*": "A", "images": [{"src*": "svg/a.svg", "alt": "", "max_height": 300}], "mock": true, "text": ""},
-      {"label*": "B", "table": {"head*": ["항목"], "rows*": [["x"]], "align": ["left"], "widths": ["70%"]}}
+      {"label*": "A", "images": [{"muto": "muto/a.muto", "alt": "", "max_height": 300}], "mock": true, "text": ""},
+      {"label*": "B", "images": [{"inline": "muto/b.html", "alt": ""}]},
+      {"label*": "C", "images": [{"src": "screens/light-result.png", "alt": "라이트 모드 캡처"}]},
+      {"label*": "D", "table": {"head*": ["항목"], "rows*": [["x"]], "align": ["left"], "widths": ["70%"]}}
     ],
     "effect*": [["A", "좋은 점", "나쁜 점"]],
     "rec*": ["A", "이유 한 문장"],
@@ -101,10 +110,11 @@ python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html]
 ## 확인 절차
 
 1. 생성 스크립트 오류 없이 종료
-2. 브라우저로 열어 예상 그림 수와 실제 수 일치·0개 아님 확인. 모든 `img`의 `naturalWidth` > 0, iframe 내부 실제 그림 로드 확인
-3. 화면 캡처로 확인: 표 칸 정렬, 그림 위 여백, 모형 테두리 굵기. 전체 캡처가 브라우저 높이 제한(약 8000px)에서 잘리면 섹션 단위로 나눠 찍어 확인
-4. 질문마다 구성 칸·모형 표시 확인. 움직임 과제는 라이브 URL에서 시간 변화 관찰·판정 기록
-5. 확인용 캡처 삭제, `index.png`(전체 캡처) 하나만 보존
+2. 브라우저로 열어 예상 그림 수와 실제 수 일치·0개 아님 확인. 스크린샷 `img`만 `naturalWidth` > 0, mutoscope iframe마다 내부 SVG 또는 재생기 로드 확인
+3. `시스템 / 라이트 / 다크`를 각각 눌러 보고서 틀과 모든 인라인 그림이 함께 바뀌는지 확인. SVG·HTML 그림이 여러 개면 id·스타일·재생 상태가 서로 섞이지 않는지 확인
+4. 라이트 모드에서 화면 캡처로 확인: 표 칸 정렬, 그림 위 여백, 모형 테두리 굵기. 전체 캡처가 브라우저 높이 제한(약 8000px)에서 잘리면 섹션 단위로 나눠 찍어 확인
+5. 질문마다 구성 칸·모형 표시 확인. 움직임 과제는 탭·일시정지·시간 변화를 직접 관찰하고 판정 기록
+6. 확인용 캡처 삭제, 라이트 모드 `index.png`(전체 캡처) 하나만 보존
 
 ## 금지
 
