@@ -1,6 +1,6 @@
 ---
 name: git-pull-request
-description: "PR 본문 작성, 공유 계약 검토, 문서 동반 확인, 검토 댓글 작성 시 사용. PR 종류, 이슈 연결, 본문 틀, 문서 동반, 크기, 두 축 검토, 머지 조건"
+description: "PR 본문과 검토 댓글을 작성하거나 계약·문서 동반·머지 조건을 검토할 때 사용."
 ---
 
 # Git Pull Request
