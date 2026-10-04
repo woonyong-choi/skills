@@ -1,6 +1,6 @@
 # 아키텍처
 
-saturn은 4개 구성 요소로 이루어진다. 화면과 명령은 엔진과 Unix 소켓 위 JSON-RPC 2.0으로 통신한다.
+sample-app은 4개 구성 요소로 이루어진다. 화면과 명령은 엔진과 Unix 소켓 위 JSON-RPC 2.0으로 통신한다.
 
 ## 맥락
 
@@ -17,10 +17,10 @@ saturn은 4개 구성 요소로 이루어진다. 화면과 명령은 엔진과 U
 
 | 구성 요소 | 식별자 | 하는 일 | 기술 | 위치 |
 |---|---|---|---|---|
-| 엔진 | `engine` | 공급자 프로세스 실행, 입력 대기열, JSON-RPC 서버 | Rust, `tokio` | `crates/saturn-engine` |
-| 화면 | `tui` | 채팅 화면과 입력 | Rust, `ratatui` | `crates/saturn-tui` |
-| 명령 | `cli` | 엔진과 화면을 시작하는 바이너리 `saturn` | Rust, `clap` | `crates/saturn-cli` |
-| 기록 저장소 | `store` | 모든 입력과 응답의 저장 | SQLite | `~/.local/share/saturn/saturn.db` |
+| 엔진 | `engine` | 공급자 프로세스 실행, 입력 대기열, JSON-RPC 서버 | Rust, `tokio` | `crates/sample-app-engine` |
+| 화면 | `tui` | 채팅 화면과 입력 | Rust, `ratatui` | `crates/sample-app-tui` |
+| 명령 | `cli` | 엔진과 화면을 시작하는 바이너리 `sample-app` | Rust, `clap` | `crates/sample-app-cli` |
+| 기록 저장소 | `store` | 모든 입력과 응답의 저장 | SQLite | `~/.local/share/sample-app/sample-app.db` |
 
 ## 실행 흐름
 
@@ -47,8 +47,8 @@ saturn은 4개 구성 요소로 이루어진다. 화면과 명령은 엔진과 U
 
 | 프로세스 | 시작 주체 | 수명 |
 |---|---|---|
-| `saturn` 명령 프로세스 | 사용자 | 화면을 닫을 때까지 |
-| 엔진 프로세스 | `saturn` 명령 | 마지막 화면이 닫히고 작업이 없을 때까지 |
+| `sample-app` 명령 프로세스 | 사용자 | 화면을 닫을 때까지 |
+| 엔진 프로세스 | `sample-app` 명령 | 마지막 화면이 닫히고 작업이 없을 때까지 |
 | 공급자 프로세스 | 엔진 | 세션 중지까지 |
 
 ## 공통 규칙

@@ -1,4 +1,4 @@
-# saturn
+# sample-app
 
 여러 AI 코딩 도구의 세션을 한 화면에서 실행하고 기록하는 터미널 도구
 
@@ -6,9 +6,9 @@
 
 | 경로 | 내용 |
 |---|---|
-| `crates/saturn-engine` | 엔진 |
-| `crates/saturn-tui` | 화면 |
-| `crates/saturn-cli` | 명령 |
+| `crates/sample-app-engine` | 엔진 |
+| `crates/sample-app-tui` | 화면 |
+| `crates/sample-app-cli` | 명령 |
 | `docs/` | 설계 문서 |
 
 ## 명령
