@@ -5,6 +5,8 @@ import re
 import sys
 from pathlib import Path
 
+from install import source_skills
+
 NOUN_OK = ('흐름', '알림', '없음', '다음', '포함', '결함', '마음', '처음', '이름', '모음', '요금', '그림', '묶음', '느낌', '믿음', '물음', '걸음', '기본값', '보관함', '수신함')
 NAME_OK = ('안 함', '막힘')  # 상태 이름
 BAD_END = re.compile(r'(다|함|음|임|됨|봄|름|룸|듦|눔|힘|움|씀|셈|뺌|김|춤|침|줌|둠|꿈|옮|듬|숨|엶|앎|삶|짐|킴|림|핌|닮)$')
@@ -99,7 +101,11 @@ def main(argv: list[str]) -> int:
     parser.add_argument('--json', action='store_true')
     parser.add_argument('root', type=Path)
     args = parser.parse_args(argv)
-    paths = sorted(args.root.glob('*/SKILL.md')) if args.root.is_dir() else []
+    try:
+        paths = [skill / 'SKILL.md' for skill in source_skills(args.root)]
+    except (OSError, ValueError) as error:
+        print(f'검사 입력 오류: {error}', file=sys.stderr)
+        return 2
     if not paths:
         print('검사할 SKILL.md 없음', file=sys.stderr)
         return 2

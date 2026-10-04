@@ -13,10 +13,10 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import public_links  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 SHA = "1234567890abcdef1234567890abcdef12345678"
 BASE = "https://github.com/example/project/blob/"
-FILE = "git-issue/SKILL.md"
+FILE = "git/git-issue/SKILL.md"
 CASES = [
     ("`/usage`", "`/usage`", 0, 0),
     ("`/model`", "`/model`", 0, 0),
@@ -93,8 +93,8 @@ CASES = [
     ("`C:\\Users\\person\\note.md`", "`C:\\Users\\person\\note.md`", 1, 1),
     ("../outside/note.md", "../outside/note.md", 1, 1),
     (
-        "`git-issue/scripts/public_links.py`",
-        "`git-issue/scripts/public_links.py`",
+        "`git/git-issue/scripts/public_links.py`",
+        "`git/git-issue/scripts/public_links.py`",
         1,
         1,
     ),
