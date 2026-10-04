@@ -1,12 +1,13 @@
 ---
 name: code-style-css
-description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 구성, 속성 순서, 선택자 우선순위, 값과 단위, 다크 모드, 반응형, 접근성, Stylelint 설정과 검사 명령"
+description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자·배치·반응형·접근성 검사 포함."
 ---
 
 # Code Style: CSS
 
-- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
+- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
 - 기반: code-style, design-tokens 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 CSS 규칙(`.css`, `<style>`, 인라인 `style`, JavaScript 문자열 안 CSS). 그 밖에서 code-style과 다르면 code-style 우선
+- 필요할 때만 읽기: class·파일 이름의 금지 이름 확인 → folder-naming
 
 ## 이름
 
@@ -22,7 +23,7 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 | 사용자 정의 속성 | design-tokens 이름 규칙 | `--color-accent` |
 | 애니메이션 `@keyframes` | 동작 이름 kebab-case | `fade-in` |
 
-- `utils`, `common`, `misc`, `helpers`, `etc` 같은 이름의 class·파일 금지 (folder-naming 금지)
+- class·파일의 금지 이름: folder-naming 적용
 - 모양을 뜻하는 이름 금지(`.blue-text`, `.mt-8`). 역할 이름만. 저장소가 유틸리티 CSS 프레임워크를 쓰면 그 규칙 우선
 
 ## 선언 순서
@@ -38,8 +39,8 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 7. 상태 class
 8. `@media`·`@container` 덮어쓰기. 해당 구성 요소 덩어리 바로 뒤에 배치 허용
 
-- 구성 요소가 5개를 넘으면 구성 요소마다 파일 분리
-- JavaScript 템플릿 문자열 안 CSS: 같은 순서. 줄이 100을 넘으면 `.css` 파일로 분리해 빌드나 읽기로 넣기
+- 구성 요소 소유권·재사용·독립 로드 조건이 다르면 파일 분리 검토
+- JavaScript 템플릿 문자열 안 CSS: 같은 순서. 독립 변경·재사용·로드가 필요하면 `.css` 파일로 분리해 빌드나 읽기로 넣기
 
 규칙 안 속성:
 
@@ -60,9 +61,8 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 ## 선택자
 
 - class 선택자 기본. id 선택자 금지. 태그 선택자는 기본 요소 스타일에만
-- 우선순위 최대: class 셋(0,3,0). 넘으면 구조 재설계
-- 중첩 깊이 최대 3, 한 선택자의 복합 선택자 최대 3
-- `!important` 금지. 예외: `prefers-reduced-motion` 덮어쓰기, 외부 라이브러리 인라인 스타일 덮어쓰기. 예외마다 이유 주석
+- 선택자 우선순위·중첩: 다른 구성 요소의 내부 구조에 의존하거나 덮어쓰기 경쟁이 생기면 소유권과 선택자 구조 재검토
+- `!important` 금지. 예외: `prefers-reduced-motion` 덮어쓰기, 외부 라이브러리 인라인 스타일 덮어쓰기. 예외 위치에만 이유를 포함한 `stylelint-disable-next-line declaration-no-important -- {이유}` 적용
 - 전역 태그 선택자로 다른 구성 요소 스타일 변경 금지
 - 속성 선택자는 상태 표시용 `[aria-*]`, `[data-*]`에만
 
@@ -79,8 +79,8 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 - breakpoint, 다크 모드: (design-tokens 쓰는 방법, 정본과 생성물)
 - 움직임: 모든 `transition`·`animation`에 `@media (prefers-reduced-motion: reduce)` 대응 필수
 - 초점: `:focus-visible` 스타일 필수. `outline: none` 단독 사용 금지
-- 누를 수 있는 요소 크기: 최소 24×24 CSS px(WCAG 2.2 2.5.8)
-- 글자 대비: 본문 4.5:1, 큰 글자·아이콘 3:1 이상. 실제 화면 검증(테스트)
+- 누를 수 있는 요소: [WCAG 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)의 크기·간격·예외 조건으로 판정
+- 글자 대비: 본문 4.5:1, 큰 글자·아이콘 3:1 이상. 큰 글자는 WCAG 1.4.3의 크기·굵기 정의로 판정(18pt 이상 또는 굵은 14pt 이상). 실제 화면 검증(테스트)
 
 ## 공개 범위와 주석
 
@@ -90,7 +90,7 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 
 ## 테스트
 
-- 화면 확인: Playwright로 밝은 화면, 어두운 화면, 좁은 화면(390px), 넓은 화면(1440px) 스크린샷
+- 화면 확인: Playwright로 밝은·어두운 테마, 최소 지원 폭·각 breakpoint 전후·최대 검토 폭 스크린샷. 사용한 폭 기록
 - 실제 배경 면 위의 최종 합성 색·불투명도·전환 상태 확인. 정지 화면과 움직이는 중간 상태의 규칙 적용 범위 구분
 - `prefers-reduced-motion: reduce` 에뮬레이션에서 움직임 정지 확인
 - 넘침 확인: 버튼·탭 글자가 상자를 넘지 않는지 `scrollWidth <= clientWidth`
@@ -103,31 +103,21 @@ description: "CSS 작성, 리뷰, 리팩터링 시 사용. class 이름, 파일 
 ```json
 {
   "extends": ["stylelint-config-standard"],
-  "plugins": ["stylelint-declaration-strict-value"],
   "rules": {
     "selector-max-id": 0,
-    "selector-max-specificity": "0,3,0",
-    "max-nesting-depth": 3,
-    "selector-max-compound-selectors": 3,
     "declaration-no-important": true,
     "color-no-hex": true,
     "color-hex-length": "long",
     "function-disallowed-list": ["rgb", "rgba", "hsl", "hsla", "hwb", "lab", "lch", "oklab", "oklch", "color"],
     "color-named": "never",
     "declaration-block-no-duplicate-properties": true,
-    "declaration-block-no-shorthand-property-overrides": true,
-    "scale-unlimited/declaration-strict-value": [
-      ["/color$/", "background", "fill", "stroke", "/^font/", "line-height", "letter-spacing", "/^(margin|padding|gap|inset)/", "/^(min-|max-)?(width|height)$/", "border-radius", "border-width", "box-shadow", "opacity", "z-index", "/(duration|timing-function)$/"],
-      { "ignoreValues": ["0", "1", "auto", "none", "inherit", "initial", "unset", "currentcolor", "transparent", "100%", "50%", "100vh", "100vw"] }
-    ]
-  },
-  "overrides": [
-    { "files": ["**/tokens.css"], "rules": { "color-no-hex": null, "function-disallowed-list": null, "scale-unlimited/declaration-strict-value": null } }
-  ]
+    "declaration-block-no-shorthand-property-overrides": true
+  }
 }
 ```
 
-- 속성 순서 자동 검사가 필요하면 `stylelint-order`의 `order/properties-order`에 선언 순서 표 순서
+- 속성 순서를 의무화한 저장소에서는 `stylelint-order`의 `order/properties-order`에 선언 순서 표 순서
+- 토큰 허용 값·예외 검사: design-tokens의 check_tokens.py. 생성물 제외는 생성물 표시 또는 확인한 실제 생성 경로로만 설정(design-tokens 정본과 생성물)
 - Stylelint가 못 잡는 것은 직접 확인: class 이름 형식, 상태 class 짝, 파일 구성 순서, 접근성 항목
 
 ## 검사 명령
