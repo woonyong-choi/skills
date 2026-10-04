@@ -1,6 +1,6 @@
 ---
 name: code-style-kotlin
-description: "Kotlin(JVM 서버, CLI) 코드 작성, 리뷰, 리팩터링 시 사용. 이름 형식, 에러 처리, 로그(SLF4J), 공개 범위, KDoc, 파일·클래스 구성, 테스트, detekt·ktlint 설정과 검사 명령"
+description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·detekt 설정을 고칠 때 사용. Android 제외."
 ---
 
 # Code Style: Kotlin
