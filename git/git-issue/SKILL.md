@@ -231,7 +231,7 @@ python3 <이 스킬 폴더>/scripts/project_status.py check --fix
 - `check --fix`: 판에 없는 열린 이슈 등록 후 `대기`, 열린 이슈의 잘못된 `완료`는 `대기`, 판에 있는 닫힌 이슈는 `완료`로 변경. 그 밖의 상태와 판에 없는 닫힌 이슈는 유지, 같은 값 재쓰기 금지
 - 출력: 표준 출력. 종료 코드: 성공·수정 완료 0, 읽기 검사 불일치 1, 프로젝트·필드·선택지 누락 또는 조회·변경 실패 2
 - 여러 프로젝트 변경 중 API 실패: 앞서 성공한 변경은 유지, 원인 해결 후 같은 명령 재실행. 현재 상태가 같은 항목의 쓰기 생략
-- 단위 시험: `python3 -m pytest git-issue/tests/test_project_status.py`. pytest 필요, 가짜 `gh` 실행 함수 주입으로 GitHub 호출 없이 검증
+- 단위 시험: `python3 -m pytest <이 스킬 폴더>/tests/test_project_status.py`. pytest 필요, 가짜 `gh` 실행 함수 주입으로 GitHub 호출 없이 검증
 
 ## 범위 변경
 

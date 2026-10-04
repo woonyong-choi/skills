@@ -36,7 +36,7 @@
 | 공통 규칙은 공통 스킬 하나가 정본이고, 종류별이나 언어별 스킬은 맡긴 부분(템플릿, 그 종류에만 있는 규칙)만 정한다 | 같은 규칙이 두 곳에서 어긋나지 않기 위해서다 |
 | 같은 속성으로 비교하는 선택지는 표, 작업 순서는 목록으로 쓴다 | 토큰을 줄이고 판단 여지를 없애기 위해서다 |
 | 채울 사실이 없으면 저장하지 않고 빠진 칸을 보고한다 | 지어낸 내용을 막기 위해서다 |
-| 용어 선택은 [repo-docs의 용어 규칙](repo-docs/SKILL.md#용어)을 따른다 | 읽는 사람이 바로 알아듣게 하기 위해서다 |
+| 용어 선택은 [repo-docs의 용어 규칙](docs/repo-docs/SKILL.md#용어)을 따른다 | 읽는 사람이 바로 알아듣게 하기 위해서다 |
 | 커밋, 작성자, 문서 어디에도 AI 작성 흔적을 남기지 않는다. 작성자는 사용자 git 설정이다 | 공개 저장소의 기록을 사용자 것으로 두기 위해서다 |
 | 승인 전 스킬은 이름 끝에 `-demo`를 붙이고 기존 스킬을 대체하지 않는다 | 검토 전 규칙이 실제 작업에 섞이지 않기 위해서다 |
 | 스킬을 고치면 다른 스킬과 우선순위 문구, 용어, 서로 참조하는 규칙, 금지 항목을 교차 확인한다 | 스킬끼리 모순되지 않기 위해서다 |
@@ -70,7 +70,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 - 목록 항목, 표 칸: 명사구 끝. 동작은 동작 명사(추가, 삭제, 저장), 금지는 `금지`, 필수는 `필수`
 - 쓰지 않는 끝: `-다`, `-한다`, `-함`, `-음`(없음, 다음 같은 명사 제외), `-임`, `-됨`, `-ㅁ`형
 - 템플릿 코드 블록과 백틱 안 예시는 문서에 그대로 나올 글자라 문체 규칙 밖
-- 형식 검사: `python3 skill-sync/scripts/skill_check.py .`, 출력 `total 0`까지 수정
+- 형식 검사: `python3 tools/skill-sync/scripts/skill_check.py .`, 출력 `total 0`까지 수정
 - 실행 코드는 `scripts/`에 둔다. 본문에는 실행 명령과 사용 시 필요한 조건을 둔다. 실행에 필요한 런타임·버전·의존성은 해당 스킬의 실행 명령 옆에 명시한다. Python은 표준 라이브러리 우선이며 외부 도구는 공식 명령이나 패키지를 사용한다.
 - 스크립트 함수: code-style 비용 주석
 
@@ -84,55 +84,69 @@ H-flat은 27개 스킬의 이름과 짧게 줄인 description을 한 목록으�
 
 2차 실험은 128개 요청과 요청당 3회 반복에서 H-flat을 채택했다. tree와 hybrid는 채택 기준을 모두 통과하지 못해 보류했다. 보류를 열등함의 입증으로 해석하지 않는다. 이 저장소는 채택된 후보 설명을 사용하고, 본문 연결은 각 스킬 머리에 유지한다.
 
+## 분류 폴더
+
+원본은 맡는 일에 따라 분류하고, 설치본은 도구의 스킬 폴더 바로 아래에 기존 이름으로 둔다. 분류 폴더는 설치 이름이나 H-flat 카탈로그에 포함하지 않는다.
+
+| 폴더 | 스킬 수 | 분류 근거 |
+|---|---|---|
+| `git/` | 4 | 브랜치·커밋·이슈·PR을 다루는 Git과 GitHub 작업 |
+| `code/` | 8 | 언어별 코드 작성·리팩터링과 소스 폴더 구조 규칙 |
+| `docs/` | 13 | 저장소 문서와 HTML 보고서의 작성·검증 |
+| `design/` | 1 | 화면의 색·글꼴·간격을 정하는 디자인 토큰 |
+| `tools/` | 1 | 스킬 자체의 검사·설치·계정 배포 |
+
+`install.py`와 `skill_check.py`는 위 분류 폴더와 기존의 평평한 배치를 모두 읽는다. 같은 이름이 두 곳에 있으면 오류로 중단한다. 실험 원자료는 설치 대상에서 제외한다. 머리와 본문의 스킬 이름 참조는 설치 위치와 무관하게 유지하고, 파일 링크는 문서 위치를 기준으로 연결한다.
+
 ## 스킬 목록
 
 ### 저장소 문서
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| repo-docs | 원칙, 문서 목록(위치, 독자, 답할 질문, 만드는 조건, 맡는 스킬), 언어, 절 구성, 한국어와 영어 문체, 사람이 쓴 문서처럼 쓰는 규칙, 용어, 사실 상태, 자리표시, 문체 신호 기계 검사와 독자 검사 | 모든 문서의 공통 규칙을 한 곳에 두고, 형식보다 독자 질문을 기준으로 삼기 위해서다 |
-| repo-docs-readme | 영어 README와 한국어 번역본의 단계별 필수 절, 절 이름 목록, 번역 규칙 | 처음 온 사람이 무엇인지, 어떻게 쓰이는지, 지금 어떤 상태인지 바로 알게 하기 위해서다 |
-| repo-docs-design | 새 기능을 넣는 자리, `docs/README.md`, 아키텍처(코드 지도, 불변 조건), RFC형 기능 설계(미해결 질문 포함), 요구·검증 범위와 호환 사례, 용어 | 설계 단계에도 정한 것과 미정인 것을 구분해 기여자가 읽을 수 있게 하기 위해서다 |
-| repo-docs-spec | 프로토콜, 명령, 화면, 데이터, 설정, 오류 문서, 요구사항 검증 정본 참조 | 찾아보는 문서를 표 형식으로 고정하기 위해서다 |
-| repo-docs-decision | 공개 결정 기록 | 고른 이유와 버린 선택지를 공개로 남기기 위해서다 |
-| repo-docs-experiment | 사전 등록 설계, 데이터, 스크립트, 보고서, 범위·시간 추정 변경 정본 참조 | 설계 값의 근거를 논문 수준으로 남기기 위해서다 |
-| repo-docs-note | 짧은 개발 기록(insight, reference) | 알게 된 것을 흩어지지 않게 남기기 위해서다 |
-| repo-docs-figures | mutoscope·VHS 원본, 차이·행 기준·축 확대 차트 선택, Markdown 블록과 SVG 최신성 검사, GitHub Action 정본 참조, 대체 글, 도구 교체 검증 | 그림을 코드로 만들어 다시 만들 수 있게 하기 위해서다 |
-| repo-docs-root | AGENTS.md, CLAUDE.md 링크, CHANGELOG, CONTRIBUTING, SECURITY | 루트 파일의 위치와 형식을 고정하기 위해서다 |
-| repo-docs-llms | llms.txt, 선택으로 llms-full.txt | AI가 문서를 한 번에 찾게 하기 위해서다 |
-| repo-docs-journal | 비공개 판단 기록, 서사, 원칙 | 판단 흐름과 놓친 것을 블로그 재료로 남기기 위해서다 |
-| repo-docs-promo | 홍보 영상 촬영 준비물 | 사용자가 녹화할 때 합성 데이터 데모와 규격을 바로 쓰게 하기 위해서다 |
+| [repo-docs](docs/repo-docs/SKILL.md) | 원칙, 문서 목록(위치, 독자, 답할 질문, 만드는 조건, 맡는 스킬), 언어, 절 구성, 한국어와 영어 문체, 사람이 쓴 문서처럼 쓰는 규칙, 용어, 사실 상태, 자리표시, 문체 신호 기계 검사와 독자 검사 | 모든 문서의 공통 규칙을 한 곳에 두고, 형식보다 독자 질문을 기준으로 삼기 위해서다 |
+| [repo-docs-readme](docs/repo-docs-readme/SKILL.md) | 영어 README와 한국어 번역본의 단계별 필수 절, 절 이름 목록, 번역 규칙 | 처음 온 사람이 무엇인지, 어떻게 쓰이는지, 지금 어떤 상태인지 바로 알게 하기 위해서다 |
+| [repo-docs-design](docs/repo-docs-design/SKILL.md) | 새 기능을 넣는 자리, `docs/README.md`, 아키텍처(코드 지도, 불변 조건), RFC형 기능 설계(미해결 질문 포함), 요구·검증 범위와 호환 사례, 용어 | 설계 단계에도 정한 것과 미정인 것을 구분해 기여자가 읽을 수 있게 하기 위해서다 |
+| [repo-docs-spec](docs/repo-docs-spec/SKILL.md) | 프로토콜, 명령, 화면, 데이터, 설정, 오류 문서, 요구사항 검증 정본 참조 | 찾아보는 문서를 표 형식으로 고정하기 위해서다 |
+| [repo-docs-decision](docs/repo-docs-decision/SKILL.md) | 공개 결정 기록 | 고른 이유와 버린 선택지를 공개로 남기기 위해서다 |
+| [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md) | 사전 등록 설계, 데이터, 스크립트, 보고서, 범위·시간 추정 변경 정본 참조 | 설계 값의 근거를 논문 수준으로 남기기 위해서다 |
+| [repo-docs-note](docs/repo-docs-note/SKILL.md) | 짧은 개발 기록(insight, reference) | 알게 된 것을 흩어지지 않게 남기기 위해서다 |
+| [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | mutoscope·VHS 원본, 차이·행 기준·축 확대 차트 선택, Markdown 블록과 SVG 최신성 검사, GitHub Action 정본 참조, 대체 글, 도구 교체 검증 | 그림을 코드로 만들어 다시 만들 수 있게 하기 위해서다 |
+| [repo-docs-root](docs/repo-docs-root/SKILL.md) | AGENTS.md, CLAUDE.md 링크, CHANGELOG, CONTRIBUTING, SECURITY | 루트 파일의 위치와 형식을 고정하기 위해서다 |
+| [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | llms.txt, 선택으로 llms-full.txt | AI가 문서를 한 번에 찾게 하기 위해서다 |
+| [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 비공개 판단 기록, 서사, 원칙 | 판단 흐름과 놓친 것을 블로그 재료로 남기기 위해서다 |
+| [repo-docs-promo](docs/repo-docs-promo/SKILL.md) | 홍보 영상 촬영 준비물 | 사용자가 녹화할 때 합성 데이터 데모와 규격을 바로 쓰게 하기 위해서다 |
 
 ### Git과 GitHub
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| git-commit | 커밋 형식 `type(scope): 한글 설명`, 문체 정본 참조와 AI 흔적 금지 | 영어 부담 없이 일관된 기록을 남기기 위해서다 |
-| git-branch | 브랜치 이름과 이슈 단위 작업, 병렬 검사 소유권과 대상 HEAD 확인 | 브랜치와 이슈를 한 줄로 잇기 위해서다 |
-| git-issue | 이슈 종류와 템플릿, 상태 관리, 완료 범위 변경과 시간 추정, 문체 정본 참조와 AI 흔적 금지 | 설계, 구현, 버그, 실험 상태를 문서가 아니라 이슈로 관리하기 위해서다 |
-| git-pull-request | PR 종류, 본문, 테스트 변경 근거, 문서 동반, 사용자 결과별 크기, 최종 출력 수용표와 검토, 문체 정본 참조와 AI 흔적 금지 | 계약을 먼저 합의하고 구현을 믿을 수 있게 하기 위해서다 |
+| [git-commit](git/git-commit/SKILL.md) | 커밋 형식 `type(scope): 한글 설명`, 문체 정본 참조와 AI 흔적 금지 | 영어 부담 없이 일관된 기록을 남기기 위해서다 |
+| [git-branch](git/git-branch/SKILL.md) | 브랜치 이름과 이슈 단위 작업, 병렬 검사 소유권과 대상 HEAD 확인 | 브랜치와 이슈를 한 줄로 잇기 위해서다 |
+| [git-issue](git/git-issue/SKILL.md) | 이슈 종류와 템플릿, 상태 관리, 완료 범위 변경과 시간 추정, 문체 정본 참조와 AI 흔적 금지 | 설계, 구현, 버그, 실험 상태를 문서가 아니라 이슈로 관리하기 위해서다 |
+| [git-pull-request](git/git-pull-request/SKILL.md) | PR 종류, 본문, 테스트 변경 근거, 문서 동반, 사용자 결과별 크기, 최종 출력 수용표와 검토, 문체 정본 참조와 AI 흔적 금지 | 계약을 먼저 합의하고 구현을 믿을 수 있게 하기 위해서다 |
 
 ### 코드와 폴더
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| code-style | 언어 공통 원칙, 수치 기준, 이름, 조건식, 선언 순서, 에러와 로그, 주석, 비용 주석 갱신, 테스트 근거와 기대값 독립성 | 언어가 달라도 같은 기준으로 코드를 보기 위해서다 |
-| code-refactoring | 책임·의존·미사용 경로 확인, 공통 기하 계산, 문제 신호별 해결 기법, 『리팩터링 2판』 기법 목록 | 리팩터링 기법을 고를 때만 불러 평소 코드 작업의 토큰을 줄이기 위해서다 |
-| code-style-rust, code-style-kotlin, code-style-python, code-style-javascript, code-style-css | 언어별로 공통 스킬이 맡긴 부분, JavaScript 구문 검사 범위, CSS 합성 색·전환 상태 검증 | 언어 고유 규칙만 따로 두기 위해서다 |
-| design-tokens | 화면 값 토큰 정본, 이름, 세 층, 다크 모드, 하드코딩 금지, 생성·검사 스크립트, 기대값 근거 정본 참조 | 색과 크기를 코드마다 다르게 적어 화면 톤이 흩어지는 것을 막기 위해서다 |
-| folder-naming | 저장소 폴더 구조와 이름 | 폴더마다 구현 언어 경계가 드러나게 하기 위해서다 |
+| [code-style](code/code-style/SKILL.md) | 언어 공통 원칙, 수치 기준, 이름, 조건식, 선언 순서, 에러와 로그, 주석, 비용 주석 갱신, 테스트 근거와 기대값 독립성 | 언어가 달라도 같은 기준으로 코드를 보기 위해서다 |
+| [code-refactoring](code/code-refactoring/SKILL.md) | 책임·의존·미사용 경로 확인, 공통 기하 계산, 문제 신호별 해결 기법, 『리팩터링 2판』 기법 목록 | 리팩터링 기법을 고를 때만 불러 평소 코드 작업의 토큰을 줄이기 위해서다 |
+| [code-style-rust](code/code-style-rust/SKILL.md), [code-style-kotlin](code/code-style-kotlin/SKILL.md), [code-style-python](code/code-style-python/SKILL.md), [code-style-javascript](code/code-style-javascript/SKILL.md), [code-style-css](code/code-style-css/SKILL.md) | 언어별로 공통 스킬이 맡긴 부분, JavaScript 구문 검사 범위, CSS 합성 색·전환 상태 검증 | 언어 고유 규칙만 따로 두기 위해서다 |
+| [design-tokens](design/design-tokens/SKILL.md) | 화면 값 토큰 정본, 이름, 세 층, 다크 모드, 하드코딩 금지, 생성·검사 스크립트, 기대값 근거 정본 참조 | 색과 크기를 코드마다 다르게 적어 화면 톤이 흩어지는 것을 막기 위해서다 |
+| [folder-naming](code/folder-naming/SKILL.md) | 저장소 폴더 구조와 이름 | 폴더마다 구현 언어 경계가 드러나게 하기 위해서다 |
 
 ### 그림 보고서
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| html-report | 그림을 나란히 보여 주는 결정 보고서와 결과 보고서 HTML의 구성, 모형 표시, `build_report` 생성, 대상 버전·입력·캡처 시각, 실제 로드·움직임 확인 | 그림을 보고 선택지를 고르거나 결과를 확인하는 보고서의 형식과 모형 표시를 매번 같게 하기 위해서다 |
+| [html-report](docs/html-report/SKILL.md) | 그림을 나란히 보여 주는 결정 보고서와 결과 보고서 HTML의 구성, 모형 표시, `build_report` 생성, 대상 버전·입력·캡처 시각, 실제 로드·움직임 확인 | 그림을 보고 선택지를 고르거나 결과를 확인하는 보고서의 형식과 모형 표시를 매번 같게 하기 위해서다 |
 
 ### 스킬 관리
 
 | 스킬 | 맡는 것 | 만든 이유 |
 |---|---|---|
-| skill-sync | 형식 검사, 세 도구 설치, Claude 계정 zip | 스킬을 고칠 때마다 같은 검사와 설치를 한 번에 하기 위해서다 |
+| [skill-sync](tools/skill-sync/SKILL.md) | 형식 검사, 세 도구 설치, Claude 계정 zip | 스킬을 고칠 때마다 같은 검사와 설치를 한 번에 하기 위해서다 |
 
 ## 스킬 크기
 
@@ -144,18 +158,18 @@ H-flat은 27개 스킬의 이름과 짧게 줄인 description을 한 목록으�
 
 | 대상 | 규칙을 정한 스킬 |
 |---|---|
-| 문서 종류·언어·문체·사실 상태·비공개 전환 | [repo-docs](repo-docs/SKILL.md) |
-| README 배치·그림·측정 결과 | [repo-docs-readme](repo-docs-readme/SKILL.md) |
-| AGENTS·LICENSE·대외 파일 | [repo-docs-root](repo-docs-root/SKILL.md) |
-| 그림 도구·VHS·원본과 산출물 | [repo-docs-figures](repo-docs-figures/SKILL.md) |
-| 녹화 준비와 자동화 검증 조건 | [repo-docs-promo](repo-docs-promo/SKILL.md) |
-| 색인 생성·갱신 | [repo-docs-llms](repo-docs-llms/SKILL.md) |
-| 공개 결정 | [repo-docs-decision](repo-docs-decision/SKILL.md) |
-| 사전 등록·원자료·재현 | [repo-docs-experiment](repo-docs-experiment/SKILL.md) |
-| 리팩터링 기법 | [code-refactoring](code-refactoring/SKILL.md) |
-| 비용 주석 대상·오탐 처리 | [code-style](code-style/SKILL.md#비용-주석) |
-| 화면 값·생성물·하드코딩 검사 | [design-tokens](design-tokens/SKILL.md) |
-| 검사·설치·계정 배포 | [skill-sync](skill-sync/SKILL.md) |
+| 문서 종류·언어·문체·사실 상태·비공개 전환 | [repo-docs](docs/repo-docs/SKILL.md) |
+| README 배치·그림·측정 결과 | [repo-docs-readme](docs/repo-docs-readme/SKILL.md) |
+| AGENTS·LICENSE·대외 파일 | [repo-docs-root](docs/repo-docs-root/SKILL.md) |
+| 그림 도구·VHS·원본과 산출물 | [repo-docs-figures](docs/repo-docs-figures/SKILL.md) |
+| 녹화 준비와 자동화 검증 조건 | [repo-docs-promo](docs/repo-docs-promo/SKILL.md) |
+| 색인 생성·갱신 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) |
+| 공개 결정 | [repo-docs-decision](docs/repo-docs-decision/SKILL.md) |
+| 사전 등록·원자료·재현 | [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md) |
+| 리팩터링 기법 | [code-refactoring](code/code-refactoring/SKILL.md) |
+| 비용 주석 대상·오탐 처리 | [code-style](code/code-style/SKILL.md#비용-주석) |
+| 화면 값·생성물·하드코딩 검사 | [design-tokens](design/design-tokens/SKILL.md) |
+| 검사·설치·계정 배포 | [skill-sync](tools/skill-sync/SKILL.md) |
 
 스킬 원본은 프로젝트 저장소와 분리해 관리한다. 여러 프로젝트가 같은 원본을 사용하고 설치본은 배포 결과로 취급한다. 이름·description이 초기 카탈로그이므로 별도 카탈로그 스킬은 두지 않는다.
 
@@ -176,7 +190,7 @@ H-flat은 27개 스킬의 이름과 짧게 줄인 description을 한 목록으�
 
 ## 배포와 수정
 
-설치와 Claude 계정 배포 절차, 관리 범위: [skill-sync](skill-sync/SKILL.md).
+설치와 Claude 계정 배포 절차, 관리 범위: [skill-sync](tools/skill-sync/SKILL.md).
 
 ## 정리할 옛 스킬
 

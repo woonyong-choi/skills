@@ -14,9 +14,9 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "inline-mutoscope"
-BUILD = ROOT / "html-report" / "scripts" / "build_report.py"
+BUILD = ROOT / "docs" / "html-report" / "scripts" / "build_report.py"
 PLAYWRIGHT_ROOTS = (
     Path.home() / ".local" / "lib" / "node_modules",
     ROOT.parent.parent / "oss" / "mutoscope" / "node_modules",

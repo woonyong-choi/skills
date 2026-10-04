@@ -87,10 +87,14 @@ function resolveSource(explicit) {
   return found;
 }
 
+// cost: time O(f), heap O(f), stack O(1), io O(f)
+// vars: f = zip 폴더 항목 수, 스킬 탐색 위치는 여섯 곳으로 고정
+// basis: estimate
 function listZips(root) {
   const dir = join(root, "dist/claude");
+  const roots = [root, ...["git", "code", "docs", "design", "tools"].map((category) => join(root, category))];
   return readdirSync(dir)
-    .filter((file) => file.endsWith(".zip") && existsSync(join(root, basename(file, ".zip"), "SKILL.md")))
+    .filter((file) => file.endsWith(".zip") && roots.some((folder) => existsSync(join(folder, basename(file, ".zip"), "SKILL.md"))))
     .map((file) => ({ name: basename(file, ".zip"), path: join(dir, file) }));
 }
 

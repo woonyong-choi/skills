@@ -32,17 +32,18 @@ MANIFEST = ".repo-skills.json"
 POINTER = HOME / ".config" / "skills" / "source"
 TRASH = HOME / ".skill-trash"
 SKIP = {".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__"}
+CATEGORIES = ("git", "code", "docs", "design", "tools")
 
 
-# cost: time O(k), heap O(k), stack O(1), io k
+# cost: time O(k log k), heap O(k), stack O(1), io O(k)
 # vars: k = 원본 폴더 항목 수
 # basis: estimate
 def is_skill_source(folder: Path) -> bool:
-    return folder.is_dir() and any((path / "SKILL.md").is_file() for path in folder.iterdir())
+    return folder.is_dir() and bool(source_skills(folder))
 
 
-# cost: time O(k), heap O(1), stack O(1), io 4 + k
-# vars: k = 후보 폴더 항목 수
+# cost: time O(p + k log k), heap O(p + k), stack O(1), io O(p + k)
+# vars: p = 스크립트 상위 폴더 수, k = 후보 폴더 항목 수
 # basis: estimate
 def resolve_source(argument: str | None) -> Path:
     if argument is not None:
@@ -50,11 +51,14 @@ def resolve_source(argument: str | None) -> Path:
         if not is_skill_source(explicit):
             raise ValueError(f"invalid source: {explicit}")
         return explicit.resolve()
-    own_repository = Path(__file__).resolve().parents[2]
+    own_repository = next(
+        (parent for parent in Path(__file__).resolve().parents if (parent / ".git").exists()),
+        None,
+    )
     candidates = [
         Path(argument).expanduser() if argument else None,
         Path(os.environ["SKILLS_SOURCE"]).expanduser() if os.environ.get("SKILLS_SOURCE") else None,
-        own_repository if (own_repository / ".git").exists() else None,
+        own_repository,
         Path(POINTER.read_text().strip()).expanduser() if POINTER.is_file() else None,
     ]
     for candidate in candidates:
@@ -63,11 +67,19 @@ def resolve_source(argument: str | None) -> Path:
     raise SystemExit("스킬 원본 저장소를 찾지 못함: --source로 경로 지정")
 
 
-# cost: time O(k), heap O(k), stack O(1), io k
+# cost: time O(k log k), heap O(k), stack O(1), io O(k)
 # vars: k = 원본 폴더 항목 수
 # basis: estimate
 def source_skills(source: Path) -> list[Path]:
-    return sorted(path for path in source.iterdir() if (path / "SKILL.md").is_file())
+    roots = [source, *(source / category for category in CATEGORIES)]
+    skills = sorted(
+        (path.parent for root in roots for path in root.glob("*/SKILL.md")),
+        key=lambda path: path.name,
+    )
+    names = [skill.name for skill in skills]
+    if len(names) != len(set(names)):
+        raise ValueError("duplicate skill name")
+    return skills
 
 
 # cost: time O(b), heap O(f), stack O(d), io f
@@ -303,7 +315,7 @@ def main(argv: list[str]) -> int:
         source = resolve_source(args.source)
         skills = source_skills(source)
         for skill in skills:
-            _skill_path(source, skill.name)
+            _skill_path(skill.parent, skill.name)
             if any(path.is_symlink() for path in skill.rglob("*")):
                 raise ValueError(f"source symlink: {skill}")
         for root in roots:
