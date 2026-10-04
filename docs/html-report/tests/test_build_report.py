@@ -171,11 +171,12 @@ for (const [name, colorScheme, mode] of [['system-light', 'light', 'system'], ['
   const focusStyle = await normal.evaluate((element) => window.reportChipStyle(element));
   const activeStyle = await active.evaluate((element) => window.reportChipStyle(element));
   await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+  // scrollLeft는 정수지만 글꼴 레이아웃 경계는 소수라 같은 CSS 픽셀로 비교한다.
   await page.waitForFunction(() => {
     const nav = document.querySelector('nav');
     const active = nav.querySelector('a.is-active').getBoundingClientRect();
     const bounds = nav.getBoundingClientRect();
-    return nav.scrollLeft > 0 && active.left >= bounds.left && active.right <= bounds.right;
+    return nav.scrollLeft > 0 && Math.round(active.left) >= Math.round(bounds.left) && Math.round(active.right) <= Math.round(bounds.right);
   }, null, { timeout: 5000 }).catch(async (error) => {
     const state = await page.evaluate(() => {
       const nav = document.querySelector('nav');
@@ -190,7 +191,7 @@ for (const [name, colorScheme, mode] of [['system-light', 'light', 'system'], ['
     const activeRect = activeChip.getBoundingClientRect();
     const rows = [...new Set([...nav.querySelectorAll('a')].map((chip) => Math.round(chip.getBoundingClientRect().top)))];
     return {
-      activeVisible: activeRect.left >= navRect.left && activeRect.right <= navRect.right,
+      activeVisible: Math.round(activeRect.left) >= Math.round(navRect.left) && Math.round(activeRect.right) <= Math.round(navRect.right),
       horizontalOverflow: nav.scrollWidth > nav.clientWidth,
       rows,
       scrollHeight: nav.scrollHeight,
