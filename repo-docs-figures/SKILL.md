@@ -1,15 +1,16 @@
 ---
 name: repo-docs-figures
-description: "문서 그림·차트·데모 GIF를 만들거나 고칠 때 사용. mutoscope, SVG 변환·검사, 대체 글, VHS"
+description: "저장소 문서의 구조도·차트·대체 글·데모 GIF를 만들거나 고칠 때 사용."
 ---
 
 # Repo Docs Figures
 
-- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
+- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 그림 원본 형식, 변환, 검사, 대체 글. 그림을 넣는 자리는 종류별 스킬 담당
+- 필요할 때만 읽기: README 그림 배치 → repo-docs-readme; 실험 차트의 통계·신뢰구간 → repo-docs-experiment
 
 - 원본·입력 JSON·만든 그림 함께 커밋. 만든 그림의 손 수정 금지
-- 문서 기본: 움직이는 SVG. 움직임이 필요 없는 그림: `--static`으로 정지 SVG
+- 순서·전이·시간 변화가 전달할 정보이면 움직이는 SVG, 최종 구조·값만 전달하면 `--static` 정지 SVG
 
 ## 도구와 파일
 
@@ -40,15 +41,15 @@ node <mutoscope 경로>/src/cli.js render docs/assets/architecture.muto --strict
 node <mutoscope 경로>/src/cli.js render docs/assets/architecture.muto --strict --static
 ```
 
-- `--help`: 사용법 출력과 종료 코드 2가 현재 동작(2026-10-03 확인)
+- 실행 전 사용 버전의 도움말과 성공·실패 종료 계약 확인·기록
 - 같은 원본·같은 도구 커밋으로 재현. 확인한 커밋과 Node 버전 기록
-- 두 render 명령은 같은 SVG 경로 사용. 문서 목적에 맞는 한 가지 선택, 비교 검증만 `--out`으로 폴더 분리
+- 두 render 명령은 같은 SVG 경로 사용. 전달할 순서·전이·시간 정보 여부로 한 가지 선택, 비교 검증만 `--out`으로 폴더 분리
 
 ## Markdown과 CI
 
 - 문서 안 그림 관리: `mutoscope md`로 `muto` 코드 블록에서 SVG 생성과 이미지 줄 갱신. 블록·파일 이름·출력 위치·오래된 SVG 정리 규칙: [markdown](https://github.com/woonyong-choi/mutoscope/blob/main/docs/design/markdown.md). 문법·기본값 복제 금지
 - 원본 문서와 생성 SVG 함께 커밋. 생성 이미지 줄의 대체 글은 블록의 `title`에서 결정하므로 `title`도 대체 글 규칙 적용
-- 읽기 전용 최신성 검사: 아래 명령. 확인 원본: mutoscope의 `docs/design/markdown.md`, `main ed59d50`, Node `v26.9.0`(2026-10-03). 일반 검사 종료 코드 0, 정지 출력 검사는 저장된 움직이는 SVG와의 차이로 종료 코드 1, 두 검사 모두 파일 변경 없음
+- 읽기 전용 최신성 검사: 아래 명령. 사용 버전에서 성공·실패 코드와 파일 변경 여부 확인·기록
 
 ```sh
 node <mutoscope 경로>/src/cli.js md <문서 경로>.md --check --strict
@@ -57,7 +58,7 @@ node <mutoscope 경로>/src/cli.js md <문서 경로>.md --check --strict --stat
 
 - 생성 명령과 GitHub Action 연결 예: [README 사용법](https://github.com/woonyong-choi/mutoscope/blob/main/README.md#keep-figures-in-a-markdown-document). 위 검사와 생성에 같은 출력 옵션 사용
 - Action 정본: [action.yml](https://github.com/woonyong-choi/mutoscope/blob/main/action.yml). 추적 파일 대상으로 원본 검사와 Markdown 최신성 검사, 생성 모드는 파일 갱신만 수행하고 자동 커밋 없음. 입력 문법·기본값은 정본 참조
-- Action 검증 범위: 로컬 정본 대조. GitHub 실행 확인과 구분
+- Action 검증 결과에는 로컬 정본 대조와 실제 GitHub 실행 확인 여부를 구분해 기록
 
 ## 그림 작성
 
@@ -99,9 +100,10 @@ node <mutoscope 경로>/src/cli.js md <문서 경로>.md --check --strict --stat
 - 문서 이미지의 대체 글 필수. SVG `title`만으로 대체 금지. 문서 안 블록은 생성 이미지 줄의 대체 글까지 확인
 - 설계·합성 데이터·예시 데이터의 표시와 파일 이름: (repo-docs 자리표시). 별도 상태 규칙 추가 금지
 - `title`·`subtitle`·`step` 설명도 같은 사실 상태 유지. 예시 데이터 차트의 `subtitle`에 자리표시 표의 부제 접두사 적용
-- 합성 데이터 데모: 화면 안 표시와 대체 글 모두 자리표시 표 적용
 
 ## VHS
+
+아래 값은 실행 형식의 비규범 예시. 글꼴·색·크기는 저장소 디자인 기준, 길이·용량은 게시 환경 제한, 재생 속도는 실제 읽기 시간으로 결정
 
 ```text
 Output docs/assets/{이름}.gif
@@ -125,10 +127,9 @@ Enter
 Sleep {초}s
 ```
 
-- 20초 이내, 3MB 이하
 - 준비 명령(빌드, 합성 데이터 준비): `Hide`와 `Show` 사이
 - 사용자 이름, 홈 경로, 키, 실제 사용자 데이터의 화면 노출 금지
-- 합성 데이터를 쓰면 화면에 `합성 데이터` 글자 표시, 대체 글 앞에 `합성 데이터:` 추가
+- VHS 화면·대체 글에도 repo-docs 자리표시 적용
 - 실행 위치: 저장소 루트. `Output`은 저장소 루트 기준 경로
 
 ## 변환
@@ -153,7 +154,7 @@ python3 <이 스킬 폴더>/scripts/render_figures.py --mutoscope <mutoscope 경
 3. 원본 수와 SVG 수·문서 링크 대조. 같은 이름의 다른 원본을 한 `--out`에 쓰기 금지
 4. 같은 원본·입력 JSON·도구 커밋으로 두 번 변환 후 SVG 바이트 동일 확인. VHS 제외
 5. 실제 문서 삽입 환경에서 라이트·다크의 글자, 겹침, 잘림, 빈 영역과 움직임 확인. 시간차 두 장면과 정지 출력 대조, 정지 출력의 움직임 없음 확인
-6. 모든 그림의 대체 글·자리표시 확인. README 그림 수: 대표 그림, 측정 결과 차트, 구성 그림 하나씩까지(repo-docs-readme)
+6. 모든 그림의 대체 글·자리표시 확인. README 그림 배치·개수: repo-docs-readme 적용
 7. 변환 도구 교체: 실제 기존 문서 호출·실험 데이터 입력으로 확인. 움직이는 출력·정지 출력·실패 시 파일 쓰기 계약 함께 검증. 오류 원본의 check와 render 실패, 새 산출물 없음과 기존 산출물 보존 확인
 
 - `--strict`: 경고도 실패. 폐기 진단은 별도 `--no-deprecated`로 실패 처리(figure-syntax 호환 규칙). 출력이 남으면 진단 해결 후 재검사
