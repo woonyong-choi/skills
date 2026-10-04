@@ -44,11 +44,15 @@ def test_build_endings_pass(ending: str, monkeypatch: pytest.MonkeyPatch) -> Non
     assert issue_title.main(["--kind", "build", "-"]) == 0
 
 
-@pytest.mark.parametrize("length,expected", [(30, 0), (31, 1)])
-def test_length_includes_spaces(
-    length: int, expected: int, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.parametrize("length,expected", [(20, 0), (21, 1)])
+@pytest.mark.parametrize("character", ["가", "𐐀"])
+def test_length_counts_unicode_characters_and_spaces(
+    character: str,
+    length: int,
+    expected: int,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    title = "가" * (length - 3) + " 결정"
+    title = character * (length - 3) + " 결정"
     monkeypatch.setattr(sys, "stdin", io.StringIO(title + "\r\n"))
     assert issue_title.main(["--kind", "design"]) == expected
 

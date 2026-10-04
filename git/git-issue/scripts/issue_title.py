@@ -44,8 +44,8 @@ def _check(title: str, kind: str) -> list[str]:
     if not title.strip() or len(title.splitlines()) != 1:
         return ["title must be one non-empty line"]
     findings = []
-    if len(title) > 30:
-        findings.append(f"title exceeds 30 characters: {len(title)}")
+    if len(title) > 20:
+        findings.append(f"title exceeds 20 characters: {len(title)}")
     endings = _ENDINGS[kind]
     if not any(
         title.endswith(" " + ending) and title[: -len(ending) - 1].strip()
