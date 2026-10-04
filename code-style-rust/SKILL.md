@@ -1,6 +1,6 @@
 ---
 name: code-style-rust
-description: "Rust 코드 작성, 리뷰, 리팩터링 시 사용. 이름 형식, 에러 처리(thiserror, anyhow), 로그(tracing), 공개 범위, 문서 주석, 파일 구성, 테스트, clippy 설정과 검사 명령"
+description: "Rust 코드를 작성·검토·리팩터링하거나 rustfmt·Clippy 설정을 고칠 때 사용."
 ---
 
 # Code Style: Rust
