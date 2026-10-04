@@ -1,0 +1,4 @@
+interface:
+  display_name: "beta"
+  short_description: "입력 검사"
+  default_prompt: "$beta 입력 검사"

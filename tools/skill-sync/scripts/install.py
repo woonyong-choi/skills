@@ -6,6 +6,9 @@
   python3 install.py --remove 이름 [이름 ...]       도구 폴더에서 해당 스킬을 휴지통 폴더로 이동
 
 원본 저장소 찾는 순서: --source, 환경 변수 SKILLS_SOURCE, 이 스크립트가 든 git 저장소, 마지막으로 쓴 원본(~/.config/skills/source)
+
+인자: --source 원본, --dist zip 폴더, --dry-run, --remove 이름 목록
+출력: stdout 설치·zip 결과, stderr 충돌·실패, 종료 0 성공·1 실패
 """
 from __future__ import annotations
 

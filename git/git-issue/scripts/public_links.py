@@ -1,4 +1,7 @@
-"""GitHub에 게시할 글의 저장소 링크와 비공개 경로를 검사한다."""
+"""GitHub에 게시할 글의 저장소 링크와 비공개 경로를 검사한다.
+인자: --repo 저장소, --fix 선택, UTF-8 파일 또는 생략·-로 stdin
+출력: stdout 위반 또는 수정 본문, stderr 수정 후 위반·입력 오류, 종료 0 통과·1 위반·2 입력 오류
+"""
 
 from __future__ import annotations
 

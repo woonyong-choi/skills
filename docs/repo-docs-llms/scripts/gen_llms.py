@@ -1,6 +1,9 @@
 """README.md와 docs/README.md로 llms.txt(--full이면 llms-full.txt도) 생성.
 
 사용: python3 gen_llms.py [--full] (저장소 루트에서 실행)
+
+인자: --full 선택, 저장소 루트에서 실행
+출력: llms.txt, --full이면 llms-full.txt, stdout 생성 안내, 종료 0 성공·1 실패
 """
 import re
 import html
@@ -41,9 +44,10 @@ def read_rows() -> list[tuple[str, str, str]]:
 
 
 
-# cost: time O(n * d), heap O(n), stack O(1), io 0
+# cost: time O(n * d), heap O(n), stack O(1)
 # vars: n = 경로 길이, d = 중첩 URL 이스케이프 깊이
-# basis: estimate; URL 파싱과 디코딩은 메모리에서만 수행
+# basis: estimate
+# URL 파싱과 디코딩은 메모리에서만 수행
 def _private_path(value: str) -> bool:
     decoded = html.unescape(value)
     while True:

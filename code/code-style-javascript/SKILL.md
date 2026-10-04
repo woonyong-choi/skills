@@ -54,7 +54,7 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 - 함수 선언문은 끌어올려지므로 호출보다 뒤에 선언 허용. `const` 화살표 함수는 끌어올려지지 않아 사용 전 선언 필수
 - 모듈 최상위 함수는 함수 선언문. 화살표 함수는 콜백과 한 줄 식에만
 
-## 에러와 로그
+## 오류와 로그
 
 | 경우 | 처리 |
 |---|---|
@@ -64,9 +64,9 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 
 - 문자열·객체 throw 금지. 항상 `Error` 인스턴스
 - 원인 보존: `throw new ConfigError('failed to read config', { cause: error })`
-- 라이브러리 모듈의 에러 클래스: `class {대상}Error extends Error`, `this.name` 지정
+- 라이브러리 모듈의 오류 클래스: `class {대상}Error extends Error`, `this.name` 지정
 - Promise: 반환하거나 `await`. 떠 있는 Promise 금지. 최상위는 top-level `await`
-- 에러·로그 메시지는 소문자로 시작, 마침표 없음: `failed to read config`
+- 오류·로그 메시지는 소문자로 시작, 마침표 없음: `failed to read config`
 
 로그:
 
