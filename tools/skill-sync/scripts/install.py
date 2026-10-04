@@ -7,7 +7,7 @@
 
 원본 저장소 찾는 순서: --source, 환경 변수 SKILLS_SOURCE, 이 스크립트가 든 git 저장소, 마지막으로 쓴 원본(~/.config/skills/source)
 
-인자: --source 원본, --dist zip 폴더, --dry-run, --remove 이름 목록
+인자: --target-home 대상 홈, --source 원본, --dist zip 폴더, --dry-run, --remove 이름 목록
 출력: stdout 설치·zip 결과, stderr 충돌·실패, 종료 0 성공·1 실패
 """
 from __future__ import annotations
@@ -24,18 +24,31 @@ import time
 import zipfile
 from pathlib import Path
 
-HOME = Path.home()
+INSTALL_HOME = Path.home()
 TARGETS = {
-    "codex": HOME / ".codex" / "skills",
-    "antigravity": HOME / ".gemini" / "config" / "skills",
-    "claude-code": HOME / ".claude" / "skills",
+    "codex": INSTALL_HOME / ".codex" / "skills",
+    "antigravity": INSTALL_HOME / ".gemini" / "config" / "skills",
+    "claude-code": INSTALL_HOME / ".claude" / "skills",
 }
-TOOL_HOMES = {"codex": HOME / ".codex", "antigravity": HOME / ".gemini", "claude-code": HOME / ".claude"}
+TOOL_HOMES = {"codex": INSTALL_HOME / ".codex", "antigravity": INSTALL_HOME / ".gemini", "claude-code": INSTALL_HOME / ".claude"}
 MANIFEST = ".repo-skills.json"
-POINTER = HOME / ".config" / "skills" / "source"
-TRASH = HOME / ".skill-trash"
+POINTER = INSTALL_HOME / ".config" / "skills" / "source"
+TRASH = INSTALL_HOME / ".skill-trash"
 SKIP = {".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__"}
 CATEGORIES = ("git", "code", "docs", "design", "tools")
+
+
+def configure_target_home(target_home: Path) -> None:
+    global INSTALL_HOME, TARGETS, TOOL_HOMES, POINTER, TRASH
+    INSTALL_HOME = target_home.expanduser().resolve()
+    TARGETS = {
+        "codex": INSTALL_HOME / ".codex" / "skills",
+        "antigravity": INSTALL_HOME / ".gemini" / "config" / "skills",
+        "claude-code": INSTALL_HOME / ".claude" / "skills",
+    }
+    TOOL_HOMES = {tool: TARGETS[tool].parents[1] if tool == "antigravity" else TARGETS[tool].parent for tool in TARGETS}
+    POINTER = INSTALL_HOME / ".config" / "skills" / "source"
+    TRASH = INSTALL_HOME / ".skill-trash"
 
 
 # cost: time O(k log k), heap O(k), stack O(1), io O(k)
@@ -102,7 +115,7 @@ def tree_hash(folder: Path) -> str:
 def move_to_trash(path: Path) -> Path | None:
     if not path.exists():
         return
-    label = path.parent.relative_to(HOME).as_posix().replace("/", "_") if path.parent.is_relative_to(HOME) else "other"
+    label = path.parent.relative_to(INSTALL_HOME).as_posix().replace("/", "_") if path.parent.is_relative_to(INSTALL_HOME) else "other"
     destination = TRASH / time.strftime("%Y%m%d-%H%M%S") / label / path.name
     while destination.exists():
         destination = destination.with_name(destination.name + "_")
@@ -297,10 +310,13 @@ def build_claude_zips(source: Path, skills: list[Path], dry_run: bool, output: P
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source")
+    parser.add_argument("--target-home", type=Path, help="설치 대상 홈 (기본: 현재 사용자 홈)")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--dist", type=Path, help="Claude zip 출력 폴더")
     parser.add_argument("--remove", nargs="+", metavar="NAME")
     args = parser.parse_args(argv)
+    if args.target_home is not None:
+        configure_target_home(args.target_home)
     roots = [TARGETS[tool] for tool, home in TOOL_HOMES.items() if home.is_dir()]
     success = True
     try:

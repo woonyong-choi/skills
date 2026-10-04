@@ -1,0 +1,9 @@
+chart bar
+title "스킬 선택의 정밀도와 재현율"
+subtitle "gpt-5.6-luna · 128개 요청 × 3회 · 요청 군집 bootstrap 95% 구간"
+x "비율(%)"
+decimals 1
+
+data "../../experiments/skill-exposure/results/summary.json" at "/chart"
+series precision "정밀도" role=compare
+series recall "재현율" role=main

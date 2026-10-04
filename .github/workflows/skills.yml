@@ -35,3 +35,8 @@ jobs:
           npx playwright-core install --with-deps chromium
       - name: Run report tests
         run: python3 docs/html-report/tests/test_build_report.py --daphnis .runtime/daphnis
+      - name: Verify README figures
+        run: |
+          python3 experiments/skill-exposure/scripts/03-analyze.py
+          python3 scripts/render_readme.py .runtime/daphnis/src/cli.js
+          git diff --exit-code -- docs/assets experiments/skill-exposure/results

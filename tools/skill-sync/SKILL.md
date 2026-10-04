@@ -11,7 +11,7 @@ description: "스킬 원본의 형식·참조를 검사하거나 요청한 도�
 
 - 스킬 원본: 스킬 폴더(`{분류}/{이름}/SKILL.md` 또는 `{이름}/SKILL.md`)가 모인 git 저장소 하나. 도구 폴더의 설치본은 복사본
 - 분류 폴더: `git`, `code`, `docs`, `design`, `tools`. 설치 대상에서는 분류 없이 기존 스킬 이름 유지. 같은 이름의 원본이 둘 이상이면 오류
-- 작성 규약 위치: 대상 원본 저장소가 지정한 파일을 입력으로 확인. 이 저장소에서는 README 작성 형식 절 적용
+- 작성 규약 위치: 대상 원본 저장소가 지정한 파일을 입력으로 확인. 이 저장소에서는 [스킬 작성 형식](references/authoring.md) 적용
 
 ## 절차
 
@@ -45,9 +45,25 @@ python3 <이 스킬 폴더>/scripts/install.py
 - 관리 범위: 이 스크립트가 설치한 스킬만(도구 폴더의 `.repo-skills.json`). manifest에 없는 같은 이름 폴더는 충돌로 남기고 설치 제외. 원본에서 빠진 manifest 항목은 대상 폴더를 `~/.skill-trash/`로 이동, Claude 배포 zip과 manifest 항목 정리
 - 스킬 제거: `install.py --remove {이름}`. 설치 목록 파일 `.repo-skills.json`에 있는 단일 스킬 이름만 허용. 대상이 도구 설치 폴더 바로 아래에 있고 심볼릭 링크가 아닌지 확인한 뒤 휴지통 이동과 목록 갱신. 원본에 남아 있으면 다음 동기화 때 재설치
 - 바꿀 내용만 확인: `install.py --dry-run`
-- Claude 계정에 업로드할 zip 생성 폴더: `--dist {폴더}`. 기본은 원본 저장소의 `dist/claude`. 도구 설치 폴더의 홈 경로는 실행 환경의 `HOME` 사용
+- Claude 계정에 업로드할 zip 생성 폴더: `--dist {폴더}`. 기본은 원본 저장소의 `dist/claude`. 설치·원본 포인터·휴지통의 홈 경로는 `--target-home {폴더}`로 지정, 생략 시 현재 사용자 홈 사용
 - 검사 의존 스킬: code-style의 비용 주석 검사기 필수. 누락 시 입력 오류
-- skill_check: frontmatter·description 형식, 이름과 폴더 일치, 머리 참조·절 구조·용어·규칙 복제·스크립트 인자와 출력·비용 주석 검사. 판정 기준과 자동 검사 한계: [일관성 검사 기준](references/consistency.md). `agents/openai.yaml`의 필수 필드와 스킬 호출 이름도 검사. 목록·표의 끝말은 README 작성 형식 기준으로 검사. 종료 코드: 위반 1, 입력 오류 2, 전체 통과 0
+- skill_check: frontmatter·description 형식, 이름과 폴더 일치, 머리 참조·절 구조·용어·규칙 복제·스크립트 인자와 출력·비용 주석 검사. 판정 기준과 자동 검사 한계: [일관성 검사 기준](references/consistency.md). `agents/openai.yaml`의 필수 필드와 스킬 호출 이름도 검사. 목록·표의 끝말은 스킬 작성 형식 기준으로 검사. 종료 코드: 위반 1, 입력 오류 2, 전체 통과 0
+
+
+### Claude Code와 Codex 설치
+
+- 실행 조건: Python 3.9 이상, 표준 라이브러리, 원본 저장소 작업본. 실행 위치: 원본 저장소 루트
+- 기본 대상: 현재 사용자 홈. 별도 대상은 `SKILLS_TARGET_HOME`에 지정하여 아래 명령에 전달
+- 도구 홈 생성은 설치할 도구 선택. 아래 예시는 Claude Code와 Codex 모두 선택, Antigravity는 기존 도구 홈이 있을 때만 설치
+
+```sh
+skills_target="${SKILLS_TARGET_HOME:-$HOME}"
+mkdir -p "$skills_target/.claude" "$skills_target/.codex"
+python3 tools/skill-sync/scripts/install.py --source . --target-home "$skills_target"
+```
+
+- 확인: 종료 코드 0과 도구별 `설치 성공` 또는 `일치`, 마지막 zip 목록 확인
+- 같은 명령 재실행: 기존 manifest로 변경된 스킬만 동기화. 비관리 동명 폴더는 보존하고 충돌 보고
 
 ## Claude 계정 업로드 스크립트
 
