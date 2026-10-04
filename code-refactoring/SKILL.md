@@ -1,6 +1,6 @@
 ---
 name: code-refactoring
-description: "리팩터링, 코드 스멜, 구조 개선 기법 선택 시 사용. 문제 신호별 해결 기법, 『리팩터링 2판』 기법 목록"
+description: "코드 스멜의 원인을 찾고 동작을 유지할 리팩터링 기법을 고를 때 사용."
 ---
 
 # Code Refactoring
