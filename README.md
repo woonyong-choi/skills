@@ -32,7 +32,7 @@
 | 원칙 | 이유 |
 |---|---|
 | 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용 | 다른 프로젝트의 관례를 덮어쓰지 않고, 관례가 없을 때는 결과를 고정하기 위해서다 |
-| 스킬에 특정 프로젝트, 제품, 사람 이름을 넣지 않는다. mutoscope, GitHub, Rust 같은 도구 이름은 쓴다 | 다른 저장소에도 그대로 쓰기 위해서다 |
+| 스킬에 특정 프로젝트, 제품, 사람 이름을 넣지 않는다. daphnis, GitHub, Rust 같은 도구 이름은 쓴다 | 다른 저장소에도 그대로 쓰기 위해서다 |
 | 공통 규칙은 공통 스킬 하나가 정본이고, 종류별이나 언어별 스킬은 맡긴 부분(템플릿, 그 종류에만 있는 규칙)만 정한다 | 같은 규칙이 두 곳에서 어긋나지 않기 위해서다 |
 | 같은 속성으로 비교하는 선택지는 표, 작업 순서는 목록으로 쓴다 | 토큰을 줄이고 판단 여지를 없애기 위해서다 |
 | 채울 사실이 없으면 저장하지 않고 빠진 칸을 보고한다 | 지어낸 내용을 막기 위해서다 |
@@ -76,7 +76,37 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 
 ## 스킬 연결
 
-함께 읽을 스킬은 각 `SKILL.md` 머리의 `기반`과 `필요할 때만 읽기` 줄에서 확인한다. `기반`에 적힌 스킬은 항상 읽는다. `필요할 때만 읽기`에 적힌 스킬은 화살표 앞 조건에 해당할 때만 읽는다. 연결을 따라가다 이미 읽은 스킬을 만나면 다시 읽지 않는다. 별도 수동 연결 표는 유지하지 않는다.
+함께 읽을 스킬은 각 `SKILL.md` 머리의 `기반`과 `필요할 때만 읽기` 줄에서 확인한다. `기반`에 적힌 스킬은 항상 읽는다. `필요할 때만 읽기`에 적힌 스킬은 화살표 앞 조건에 해당할 때만 읽는다. 연결을 따라가다 이미 읽은 스킬을 만나면 다시 읽지 않는다. 아래 표는 현재 머리의 연결을 옮긴 색인이다. 스킬을 고칠 때 같은 입력에서 갱신하며, 각 연결의 읽는 조건은 해당 스킬 머리에서 확인한다.
+
+| 스킬 | 기반 | 필요할 때 읽는 스킬 |
+|---|---|---|
+| [code-refactoring](code/code-refactoring/SKILL.md) | [code-style](code/code-style/SKILL.md) | 없음 |
+| [code-style](code/code-style/SKILL.md) | 없음 | [code-refactoring](code/code-refactoring/SKILL.md) |
+| [code-style-css](code/code-style-css/SKILL.md) | [code-style](code/code-style/SKILL.md), [design-tokens](design/design-tokens/SKILL.md) | [folder-naming](code/folder-naming/SKILL.md) |
+| [code-style-javascript](code/code-style-javascript/SKILL.md) | [code-style](code/code-style/SKILL.md) | [design-tokens](design/design-tokens/SKILL.md), [folder-naming](code/folder-naming/SKILL.md) |
+| [code-style-kotlin](code/code-style-kotlin/SKILL.md) | [code-style](code/code-style/SKILL.md) | 없음 |
+| [code-style-python](code/code-style-python/SKILL.md) | [code-style](code/code-style/SKILL.md) | 없음 |
+| [code-style-rust](code/code-style-rust/SKILL.md) | [code-style](code/code-style/SKILL.md) | 없음 |
+| [folder-naming](code/folder-naming/SKILL.md) | 없음 | 없음 |
+| [design-tokens](design/design-tokens/SKILL.md) | 없음 | [code-style-css](code/code-style-css/SKILL.md), [code-style-javascript](code/code-style-javascript/SKILL.md), [repo-docs-figures](docs/repo-docs-figures/SKILL.md), [code-style](code/code-style/SKILL.md) |
+| [html-report](docs/html-report/SKILL.md) | 없음 | [repo-docs-figures](docs/repo-docs-figures/SKILL.md), [repo-docs](docs/repo-docs/SKILL.md) |
+| [repo-docs](docs/repo-docs/SKILL.md) | 없음 | [code-style](code/code-style/SKILL.md), [repo-docs-figures](docs/repo-docs-figures/SKILL.md) |
+| [repo-docs-decision](docs/repo-docs-decision/SKILL.md) | [repo-docs](docs/repo-docs/SKILL.md) | [repo-docs-journal](docs/repo-docs-journal/SKILL.md), [repo-docs-design](docs/repo-docs-design/SKILL.md) |
+| [repo-docs-design](docs/repo-docs-design/SKILL.md) | [repo-docs](docs/repo-docs/SKILL.md) | [repo-docs-spec](docs/repo-docs-spec/SKILL.md), [code-style](code/code-style/SKILL.md), [repo-docs-figures](docs/repo-docs-figures/SKILL.md), [repo-docs-decision](docs/repo-docs-decision/SKILL.md), [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md), [git-pull-request](git/git-pull-request/SKILL.md) |
+| [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md) | [repo-docs](docs/repo-docs/SKILL.md) | [repo-docs-figures](docs/repo-docs-figures/SKILL.md), [git-issue](git/git-issue/SKILL.md) |
+| [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | [repo-docs](docs/repo-docs/SKILL.md) | [repo-docs-readme](docs/repo-docs-readme/SKILL.md), [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md) |
+| [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | [repo-docs](docs/repo-docs/SKILL.md) | [repo-docs-decision](docs/repo-docs-decision/SKILL.md) |
+| [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | [repo-docs](docs/repo-docs/SKILL.md) | [git-pull-request](git/git-pull-request/SKILL.md) |
+| [repo-docs-note](docs/repo-docs-note/SKILL.md) | [repo-docs](docs/repo-docs/SKILL.md) | 없음 |
+| [repo-docs-promo](docs/repo-docs-promo/SKILL.md) | [repo-docs](docs/repo-docs/SKILL.md) | 없음 |
+| [repo-docs-readme](docs/repo-docs-readme/SKILL.md) | [repo-docs](docs/repo-docs/SKILL.md) | [repo-docs-figures](docs/repo-docs-figures/SKILL.md), [repo-docs-llms](docs/repo-docs-llms/SKILL.md) |
+| [repo-docs-root](docs/repo-docs-root/SKILL.md) | [repo-docs](docs/repo-docs/SKILL.md) | [repo-docs-readme](docs/repo-docs-readme/SKILL.md), [git-issue](git/git-issue/SKILL.md) |
+| [repo-docs-spec](docs/repo-docs-spec/SKILL.md) | [repo-docs](docs/repo-docs/SKILL.md) | [repo-docs-figures](docs/repo-docs-figures/SKILL.md), [repo-docs-design](docs/repo-docs-design/SKILL.md) |
+| [git-branch](git/git-branch/SKILL.md) | 없음 | [git-issue](git/git-issue/SKILL.md), [git-commit](git/git-commit/SKILL.md), [git-pull-request](git/git-pull-request/SKILL.md) |
+| [git-commit](git/git-commit/SKILL.md) | 없음 | [repo-docs](docs/repo-docs/SKILL.md) |
+| [git-issue](git/git-issue/SKILL.md) | 없음 | [repo-docs](docs/repo-docs/SKILL.md), [git-commit](git/git-commit/SKILL.md) |
+| [git-pull-request](git/git-pull-request/SKILL.md) | 없음 | [repo-docs](docs/repo-docs/SKILL.md), [code-style](code/code-style/SKILL.md), [repo-docs-figures](docs/repo-docs-figures/SKILL.md) |
+| [skill-sync](tools/skill-sync/SKILL.md) | 없음 | [git-commit](git/git-commit/SKILL.md) |
 
 ## H-flat 노출
 
@@ -111,7 +141,7 @@ H-flat은 27개 스킬의 이름과 짧게 줄인 description을 한 목록으�
 | [repo-docs-decision](docs/repo-docs-decision/SKILL.md) | 공개 결정 기록 | 고른 이유와 버린 선택지를 공개로 남기기 위해서다 |
 | [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md) | 사전 등록 설계, 데이터, 스크립트, 보고서, 범위·시간 추정 변경 정본 참조 | 설계 값의 근거를 논문 수준으로 남기기 위해서다 |
 | [repo-docs-note](docs/repo-docs-note/SKILL.md) | 짧은 개발 기록(insight, reference) | 알게 된 것을 흩어지지 않게 남기기 위해서다 |
-| [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | mutoscope·VHS 원본, 차이·행 기준·축 확대 차트 선택, Markdown 블록과 SVG 최신성 검사, GitHub Action 정본 참조, 대체 글, 도구 교체 검증 | 그림을 코드로 만들어 다시 만들 수 있게 하기 위해서다 |
+| [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | daphnis·VHS 원본, 차이·행 기준·축 확대 차트 선택, Markdown 블록과 SVG 최신성 검사, GitHub Action 정본 참조, 대체 글, 도구 교체 검증 | 그림을 코드로 만들어 다시 만들 수 있게 하기 위해서다 |
 | [repo-docs-root](docs/repo-docs-root/SKILL.md) | AGENTS.md, CLAUDE.md 링크, CHANGELOG, CONTRIBUTING, SECURITY | 루트 파일의 위치와 형식을 고정하기 위해서다 |
 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | llms.txt, 선택으로 llms-full.txt | AI가 문서를 한 번에 찾게 하기 위해서다 |
 | [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 비공개 판단 기록, 서사, 원칙 | 판단 흐름과 놓친 것을 블로그 재료로 남기기 위해서다 |
@@ -150,7 +180,39 @@ H-flat은 27개 스킬의 이름과 짧게 줄인 description을 한 목록으�
 
 ## 스킬 크기
 
-크기는 현재 파일에서 측정한다. 측정 커밋이 없는 수동 크기 표는 유지하지 않는다. 설명 길이만으로 호출 품질을 판정하지 않는다.
+2026-10-04 현재 worktree의 SKILL.md 27개를 측정했다. 줄 수는 frontmatter를 포함한 전체 줄, 바이트는 UTF-8 파일 크기, description은 따옴표를 제외한 글자 수다. 설명 길이만으로 호출 품질을 판정하지 않는다.
+
+측정 입력 SHA-256: `0ecc70f2b8ee5554f905ef19e78d7883d9292145a3bb51cb170f7167cc2dcc1c`. 분류·경로 순으로 정렬한 각 상대 경로와 파일 바이트를 NUL로 구분해 계산했다.
+
+| 스킬 | 본문 줄 수 | UTF-8 바이트 | description 글자 수 |
+|---|---:|---:|---:|
+| [code-refactoring](code/code-refactoring/SKILL.md) | 135 | 12228 | 39 |
+| [code-style](code/code-style/SKILL.md) | 282 | 19247 | 40 |
+| [code-style-css](code/code-style-css/SKILL.md) | 131 | 7404 | 50 |
+| [code-style-javascript](code/code-style-javascript/SKILL.md) | 153 | 7245 | 62 |
+| [code-style-kotlin](code/code-style-kotlin/SKILL.md) | 155 | 6476 | 69 |
+| [code-style-python](code/code-style-python/SKILL.md) | 131 | 5524 | 49 |
+| [code-style-rust](code/code-style-rust/SKILL.md) | 191 | 7583 | 50 |
+| [folder-naming](code/folder-naming/SKILL.md) | 72 | 3020 | 42 |
+| [design-tokens](design/design-tokens/SKILL.md) | 117 | 9000 | 47 |
+| [html-report](docs/html-report/SKILL.md) | 133 | 9197 | 47 |
+| [repo-docs](docs/repo-docs/SKILL.md) | 241 | 19536 | 48 |
+| [repo-docs-decision](docs/repo-docs-decision/SKILL.md) | 114 | 5448 | 52 |
+| [repo-docs-design](docs/repo-docs-design/SKILL.md) | 166 | 10344 | 37 |
+| [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md) | 339 | 12784 | 50 |
+| [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | 167 | 13093 | 41 |
+| [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 216 | 6244 | 38 |
+| [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 75 | 3253 | 52 |
+| [repo-docs-note](docs/repo-docs-note/SKILL.md) | 111 | 3141 | 56 |
+| [repo-docs-promo](docs/repo-docs-promo/SKILL.md) | 112 | 5001 | 50 |
+| [repo-docs-readme](docs/repo-docs-readme/SKILL.md) | 242 | 12111 | 47 |
+| [repo-docs-root](docs/repo-docs-root/SKILL.md) | 180 | 6883 | 76 |
+| [repo-docs-spec](docs/repo-docs-spec/SKILL.md) | 303 | 7724 | 64 |
+| [git-branch](git/git-branch/SKILL.md) | 122 | 6480 | 48 |
+| [git-commit](git/git-commit/SKILL.md) | 135 | 5388 | 62 |
+| [git-issue](git/git-issue/SKILL.md) | 296 | 14406 | 48 |
+| [git-pull-request](git/git-pull-request/SKILL.md) | 111 | 5805 | 45 |
+| [skill-sync](tools/skill-sync/SKILL.md) | 67 | 6279 | 53 |
 
 ## 주제별 규칙을 정한 스킬
 
@@ -182,7 +244,7 @@ H-flat은 27개 스킬의 이름과 짧게 줄인 description을 한 목록으�
 - 같은 가상 사실로 에이전트 둘이 각자 문서를 만들고 비교했다. 2026-09-29 검증에서 `docs/README.md`와 실험 목록은 같았고 README는 네 줄만 달랐다. 2026-09-30 검증에서 `docs/README.md`와 결정 목록은 같았고, 그림 식별자, AGENTS.md 규칙, 결정 문장처럼 달라진 곳은 규칙을 좁혀 고쳤다
 - 처음 보는 에이전트 하나가 스킬 사이 모순, 문체 위반, 스크립트 오류를 따로 검사했고 찾은 18건을 고쳤다
 - `check_doc`(repo-docs)는 Python 표준 라이브러리로 문체, 금지어, 서식, 비공개 경로를 검사한다. 합쇼 파일과 평서 파일을 경로로 나눠 검사한다
-- 2026-10-03 mutoscope 전환: 기존 문서 그림과 실험 JSON 차트의 움직이는·정지 SVG, 두 번 렌더한 바이트, 오류 입력의 쓰기 차단을 확인했다
+- 2026-10-03 daphnis 전환: 기존 문서 그림과 실험 JSON 차트의 움직이는·정지 SVG, 두 번 렌더한 바이트, 오류 입력의 쓰기 차단을 확인했다
 - 세 스크립트를 본문에서 `scripts/`로 옮길 때 옮기기 전과 같은 결과를 확인했다. `check_doc`은 Markdown 251개와 반례 20개, `gen_llms`는 정상 저장소 두 곳의 출력 바이트, `render_figures`는 D2와 Vega-Lite SVG 바이트로 비교했다. VHS 변환은 설치 환경이 없어 비교하지 못했다
 - `gen_llms`는 비공개 폴더 직접 링크, 심볼릭 링크, 상위 경로, 대소문자 변형, 코드 블록 안 행을 넣은 반례에서 두 파일을 쓰지 않고 중단한다
 - 2026-09-30 형식 통일 실험: 누락 대조 26건 중 소실 6건 포함 24건 수정, 기반 줄을 따른 스킬 선택 30/30, 에이전트 둘의 줄 차이 14.4%에서 5.8%로 감소. 가설, 기준, 원자료, 판정은 [실험 결과](experiments/skill-format-unification/report.md)
@@ -228,7 +290,8 @@ H-flat은 27개 스킬의 이름과 짧게 줄인 description을 한 목록으�
 | 2026-10-02 | report-compare-demo를 승인해 visual-report로 이름 변경. 결과 보고서(`kind: result`, 확인할 점) 추가, 그림 칸 회색 바탕과 카드·표 선 대비 강화 |
 | 2026-10-02 | visual-report를 html-report로 이름 변경(채팅에서 `/html-report`), description에 사용 낱말, 사용 조건을 쓸 때와 쓰지 않을 때 표로 추가 |
 | 2026-10-02 | html-report에 라이트·다크 PNG, 긴 캡처 분할, 캡처 정리 규칙과 금지 절 추가, 스크립트 입력 검증과 비용 주석 추가, 본문 압축 |
-| 2026-10-03 | 문서 그림 도구를 mutoscope로 변경. 관련 스킬의 그림 규칙을 repo-docs-figures 참조로 통합 |
+| 2026-10-04 | 그림 도구를 daphnis로 이름 변경, 한 판 CLI 호환과 색·글꼴·아이콘 규칙 적용 |
+| 2026-10-03 | 문서 그림 도구를 daphnis로 변경. 관련 스킬의 그림 규칙을 repo-docs-figures 참조로 통합 |
 
 ## 라이선스
 

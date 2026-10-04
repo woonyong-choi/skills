@@ -1,6 +1,7 @@
-"""추적 그림 원본을 mutoscope SVG와 VHS GIF로 변환."""
+"""추적 그림 원본을 daphnis SVG와 VHS GIF로 변환."""
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -13,25 +14,47 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sources", nargs="*")
     parser.add_argument(
-        "--mutoscope", help="path to src/cli.js; default: mutoscope on PATH"
+        "--daphnis",
+        help="checkout or src/cli.js; default: DAPHNIS_PATH or daphnis on PATH",
     )
+    parser.add_argument("--mutoscope", help="deprecated alias for --daphnis")
     parser.add_argument("--static", action="store_true")
     parser.add_argument("--require-data", action="store_true")
     parser.add_argument("--require-ci", action="store_true")
     args = parser.parse_args(argv)
+    if args.mutoscope is not None:
+        print(
+            "deprecated: --mutoscope will be removed after this release; use --daphnis",
+            file=sys.stderr,
+        )
+    if "MUTOSCOPE_PATH" in os.environ:
+        print(
+            "deprecated: MUTOSCOPE_PATH will be removed after this release; use DAPHNIS_PATH",
+            file=sys.stderr,
+        )
     try:
         sources = args.sources or _tracked_sources()
-        invalid = [p for p in sources if not p.endswith((".muto", ".tape"))]
+        invalid = [p for p in sources if not p.endswith((".dap", ".tape"))]
         if invalid:
             for source in invalid:
-                print(f"{source}: migrate to .muto before rendering", file=sys.stderr)
+                print(f"{source}: migrate to .dap before rendering", file=sys.stderr)
             return 1
-        figures = [p for p in sources if p.endswith(".muto")]
+        figures = [p for p in sources if p.endswith(".dap")]
         tapes = [p for p in sources if p.endswith(".tape")]
         if tapes and (args.static or args.require_data or args.require_ci):
             print("figure options cannot be applied to .tape files", file=sys.stderr)
             return 1
-        command = ["node", args.mutoscope] if args.mutoscope else ["mutoscope"]
+        configured = (
+            args.daphnis
+            or args.mutoscope
+            or os.environ.get("DAPHNIS_PATH")
+            or os.environ.get("MUTOSCOPE_PATH")
+        )
+        command = ["daphnis"]
+        if configured:
+            path = Path(configured).expanduser()
+            cli = path / "src" / "cli.js" if path.is_dir() else path
+            command = ["node", str(cli)]
         flags = ["--strict"]
         if args.require_data:
             flags.append("--require-data")
@@ -56,7 +79,7 @@ def main(argv: list[str]) -> int:
 # basis: estimate
 def _tracked_sources() -> list[str]:
     result = subprocess.run(
-        ["git", "ls-files", "-z", "--", "*.muto", "*.tape", "*.d2", "*.vl.json"],
+        ["git", "ls-files", "-z", "--", "*.dap", "*.tape", "*.d2", "*.vl.json"],
         capture_output=True,
         check=True,
     )

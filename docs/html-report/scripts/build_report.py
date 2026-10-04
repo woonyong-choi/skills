@@ -1,6 +1,6 @@
 """질문 목록 JSON에서 그림 보고서(결정, 결과) index.html 한 장을 만든다.
 
-사용: python3 build_report.py <입력.json> [출력.html] [--mutoscope 경로] [--static]
+사용: python3 build_report.py <입력.json> [출력.html] [--daphnis 경로] [--static]
 출력 기본값은 입력 파일 옆의 index.html. 그림 경로는 입력 파일 폴더 기준.
 """
 
@@ -12,6 +12,7 @@ import html
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -24,7 +25,7 @@ CSS = """
 h1{font-size:26px;margin:0 0 8px}h2{margin:0 0 8px;font-size:21px;border-bottom:2px solid var(--report-active);padding-bottom:6px}h3{font-size:16px;margin:18px 0 6px}h4{margin:0 0 6px;font-size:15px;line-height:1.4}section{scroll-margin-top:var(--nav-offset);margin:36px 0}
 .theme{display:flex;align-items:center;gap:6px;margin:0 0 12px}.theme strong{font-size:13px}.theme button{font:inherit;color:var(--report-ink);background:var(--report-pane);border:var(--border-thin,1px) solid var(--report-line);border-radius:var(--radius-full,999px);padding:3px 9px;cursor:pointer}.theme button[aria-pressed="true"]{color:var(--report-active-ink);background:var(--report-active-fill);border-color:var(--report-active)}.theme button:focus-visible,nav a:focus-visible{outline:var(--border-strong,2px) solid var(--report-active);outline-offset:2px}
 .cols{display:grid;gap:16px;align-items:start;margin:10px 0}.c1{grid-template-columns:1fr}.c2{grid-template-columns:repeat(2,minmax(0,1fr))}.c3{grid-template-columns:repeat(3,minmax(0,1fr))}.c4{grid-template-columns:repeat(4,minmax(0,1fr))}.col{padding:0;min-width:0}.col.mock{border:4px dashed var(--color-data-compare,GrayText);padding:9px}
-.frame{display:flex;align-items:center;justify-content:center;background:var(--report-pane);padding:4px}.frame img{display:block;width:100%;height:auto;max-height:var(--max-h,360px);object-fit:contain}.frame.muto-frame{padding:0;align-items:stretch;overflow:hidden}.frame.muto-frame iframe{display:block;width:100%;min-height:320px;height:var(--max-h,560px);border:0;background:transparent}
+.frame{display:flex;align-items:center;justify-content:center;background:var(--report-pane);padding:4px}.frame img{display:block;width:100%;height:auto;max-height:var(--max-h,360px);object-fit:contain}.frame.dap-frame{padding:0;align-items:stretch;overflow:hidden}.frame.dap-frame iframe{display:block;width:100%;min-height:320px;height:var(--max-h,560px);border:0;background:transparent}
 figure{margin:0 0 10px}figure:last-child{margin-bottom:0}figcaption{font-size:12px;color:var(--report-sub);margin-top:4px}pre.msg{white-space:pre-wrap;word-break:break-all;background:var(--report-pane);padding:8px;border-radius:var(--report-radius);font-size:12px;margin:8px 0 0}figure+pre.msg{margin-top:0}
 table{border-collapse:collapse;width:100%;table-layout:fixed}th,td{border:var(--border-thin,1px) solid var(--report-line);padding:6px 10px;vertical-align:middle;font-size:14px;text-align:left;overflow-wrap:anywhere}thead th{background:var(--report-pane)}.al-center{text-align:center}.al-right{text-align:right;font-variant-numeric:tabular-nums}.effect{margin-top:12px}.effect th:first-child,.effect td:first-child{width:64px;text-align:center}.effect td{vertical-align:top}.rec{background:var(--report-active-fill);border-left:4px solid var(--report-active);padding:8px 12px;margin:12px 0 0}.check{margin:12px 0 0}.check ul{margin:4px 0 0;padding-left:20px}.note{font-size:13px;color:var(--report-sub);margin:8px 0}.what{margin:6px 0}code{font-family:var(--font-mono,ui-monospace,monospace);font-size:12px;white-space:normal}
 nav{position:sticky;top:0;z-index:1;display:flex;flex-wrap:nowrap;gap:6px;margin:8px 0;padding:8px 0;overflow-x:auto;overflow-y:hidden;background:var(--report-page);border-bottom:var(--border-thin,1px) solid var(--report-line)}nav a{display:inline-flex;flex:0 0 auto;align-items:center;gap:6px;min-height:24px;max-width:calc(16 * 21px);padding:4px 8px;color:var(--report-chip-ink);text-decoration:none;white-space:nowrap;background:var(--report-chip-fill);border:var(--border-thin,1px) solid var(--report-chip-border);border-radius:var(--report-radius)}nav a:hover{background:var(--report-chip-hover-fill)}nav a.is-active{color:var(--report-chip-active-ink);background:var(--report-chip-active-fill);border-color:var(--report-chip-active-border)}nav a:focus-visible{outline:var(--border-strong,2px) solid var(--report-chip-focus);outline-offset:2px}.nav-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -32,7 +33,7 @@ nav{position:sticky;top:0;z-index:1;display:flex;flex-wrap:nowrap;gap:6px;margin
 """
 
 THEME_SCRIPT = """
-const THEME_KEY = 'mutoscope-theme';
+const THEME_KEY = 'daphnis-theme';
 function applyTheme(mode) {
   const root = document.documentElement;
   if (mode === 'light' || mode === 'dark') {
@@ -42,7 +43,7 @@ function applyTheme(mode) {
     root.removeAttribute('data-theme');
     root.style.colorScheme = 'light dark';
   }
-  for (const frame of document.querySelectorAll('iframe[data-mutoscope]')) frame.contentWindow?.postMessage({ theme: mode }, '*');
+  for (const frame of document.querySelectorAll('iframe[data-daphnis]')) frame.contentWindow?.postMessage({ theme: mode }, '*');
   for (const button of document.querySelectorAll('.theme button')) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
 }
 function savedTheme() {
@@ -60,7 +61,7 @@ addEventListener('DOMContentLoaded', () => {
 });
 addEventListener('message', (event) => {
   if (!event.data) return;
-  const frame = [...document.querySelectorAll('iframe[data-mutoscope]')].find((item) => item.contentWindow === event.source);
+  const frame = [...document.querySelectorAll('iframe[data-daphnis]')].find((item) => item.contentWindow === event.source);
   if (event.data.themeRequest && frame) event.source.postMessage({ theme: savedTheme() }, '*');
   if (event.data.figureHeight && frame) frame.style.height = `${Math.ceil(event.data.figureHeight)}px`;
 });
@@ -95,7 +96,7 @@ class ReportError(Exception):
 
 
 @dataclass(frozen=True)
-class Mutoscope:
+class Daphnis:
     """렌더 CLI와 토큰 CSS의 확인된 위치."""
 
     cli: Path
@@ -104,26 +105,26 @@ class Mutoscope:
 
 @dataclass
 class FigureRenderer:
-    """Mutoscope 입력을 페이지 안 독립 문서로 바꾼다."""
+    """Daphnis 입력을 페이지 안 독립 문서로 바꾼다."""
 
     base: Path
-    mutoscope: Mutoscope | None
+    daphnis: Daphnis | None
     static: bool
     rendered: dict[Path, str] = field(default_factory=dict)
 
     # cost: time O(render), heap O(output), stack O(1), io 3
-    # vars: render = mutoscope 원본 하나의 렌더 비용, output = HTML 결과 크기
+    # vars: render = daphnis 원본 하나의 렌더 비용, output = HTML 결과 크기
     # basis: estimate
-    def render_muto(self, source: Path) -> str:
-        if self.mutoscope is None:
-            raise ReportError("muto figure needs --mutoscope or MUTOSCOPE_PATH")
+    def render_dap(self, source: Path) -> str:
+        if self.daphnis is None:
+            raise ReportError("dap figure needs --daphnis or DAPHNIS_PATH")
         if source in self.rendered:
             return self.rendered[source]
         digest = hashlib.sha256(str(source).encode()).hexdigest()[:16]
-        output_dir = self.base / ".muto-rendered" / digest
+        output_dir = self.base / ".dap-rendered" / digest
         command = [
             "node",
-            str(self.mutoscope.cli),
+            str(self.daphnis.cli),
             "render",
             str(source),
             "--out",
@@ -137,10 +138,10 @@ class FigureRenderer:
         result = subprocess.run(command, capture_output=True, text=True, check=False)
         if result.returncode:
             detail = (result.stderr or result.stdout).strip()
-            raise ReportError(f"mutoscope render failed: {source}: {detail}")
+            raise ReportError(f"daphnis render failed: {source}: {detail}")
         output = output_dir / f"{source.stem}.{'svg' if self.static else 'html'}"
         if not output.is_file():
-            raise ReportError(f"mutoscope did not create inline figure: {output}")
+            raise ReportError(f"daphnis did not create inline figure: {output}")
         document = output.read_text(encoding="utf-8")
         if self.static:
             document = _svg_document(document)
@@ -192,12 +193,12 @@ def _check_options(options: list[dict[str, Any]], where: str) -> None:
         _need(option, "label", at, str)
         for figure_number, figure in enumerate(option.get("images", [])):
             figure_at = f"{at}.images[{figure_number}]"
-            sources = [key for key in ("src", "muto", "inline") if key in figure]
+            sources = [key for key in ("src", "dap", "inline") if key in figure]
             if len(sources) != 1:
-                raise ReportError(f"{figure_at} needs exactly one of src, muto, inline")
+                raise ReportError(f"{figure_at} needs exactly one of src, dap, inline")
             _need(figure, sources[0], figure_at, str)
-            if sources[0] == "muto" and not figure["muto"].endswith(".muto"):
-                raise ReportError(f"{figure_at}.muto must end with .muto")
+            if sources[0] == "dap" and not figure["dap"].endswith(".dap"):
+                raise ReportError(f"{figure_at}.dap must end with .dap")
             if sources[0] == "inline" and Path(figure["inline"]).suffix not in (
                 ".svg",
                 ".html",
@@ -275,12 +276,12 @@ def _svg_document(svg: str) -> str:
 # vars: n = rendered document bytes
 # basis: estimate
 def _inline_frame(document: str, alt: str, style: str) -> str:
-    title = html.escape(alt, quote=True) or "mutoscope figure"
+    title = html.escape(alt, quote=True) or "daphnis figure"
     source = html.escape(document, quote=True)
     caption = f"<figcaption>{html.escape(alt)}</figcaption>" if alt else ""
     return (
-        f'<figure><div class="frame muto-frame"{style}>'
-        f'<iframe data-mutoscope sandbox="allow-scripts" title="{title}" srcdoc="{source}"></iframe></div>{caption}</figure>'
+        f'<figure><div class="frame dap-frame"{style}>'
+        f'<iframe data-daphnis sandbox="allow-scripts" title="{title}" srcdoc="{source}"></iframe></div>{caption}</figure>'
     )
 
 
@@ -306,9 +307,9 @@ def _picture(image: dict[str, Any], renderer: FigureRenderer) -> str:
             f'<figure><div class="frame"{style}><img src="{html.escape(image["src"])}" alt="{escaped_alt}"></div>'
             f"{caption}</figure>"
         )
-    if "muto" in image:
-        source = _existing_file(renderer.base, image["muto"], "muto figure")
-        return _inline_frame(renderer.render_muto(source), alt, style)
+    if "dap" in image:
+        source = _existing_file(renderer.base, image["dap"], "dap figure")
+        return _inline_frame(renderer.render_dap(source), alt, style)
     source = _existing_file(renderer.base, image["inline"], "inline figure")
     if source.suffix == ".svg":
         return _inline_frame(
@@ -435,18 +436,29 @@ def build(spec: dict[str, Any], renderer: FigureRenderer, tokens_css: str) -> st
     )
 
 
-# cost: time O(1), heap O(1), stack O(1), io 2
+# cost: time O(p), heap O(p), stack O(1), io O(p)
+# vars: p = PATH의 탐색 항목 수와 경로 길이
 # basis: estimate
-def _mutoscope(value: str | None) -> Mutoscope | None:
-    configured = value or os.environ.get("MUTOSCOPE_PATH")
+def _daphnis(value: str | None) -> Daphnis | None:
+    if "MUTOSCOPE_PATH" in os.environ:
+        print(
+            "deprecated: MUTOSCOPE_PATH will be removed after this release; use DAPHNIS_PATH",
+            file=sys.stderr,
+        )
+    configured = (
+        value
+        or os.environ.get("DAPHNIS_PATH")
+        or os.environ.get("MUTOSCOPE_PATH")
+        or shutil.which("daphnis")
+    )
     if not configured:
         return None
     path = Path(configured).expanduser().resolve()
     cli = path / "src" / "cli.js" if path.is_dir() else path
     tokens_css = cli.parent / "tokens.css"
     if not cli.is_file() or not tokens_css.is_file():
-        raise ReportError(f"invalid mutoscope path: {path}")
-    return Mutoscope(cli=cli, tokens_css=tokens_css)
+        raise ReportError(f"invalid daphnis path: {path}")
+    return Daphnis(cli=cli, tokens_css=tokens_css)
 
 
 # cost: time O(1), heap O(1), stack O(1)
@@ -454,18 +466,28 @@ def _mutoscope(value: str | None) -> Mutoscope | None:
 def _arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path)
-    parser.add_argument("output", type=Path, nargs="?", help="output HTML in the same folder as input")
-    parser.add_argument("--mutoscope", help="mutoscope checkout or src/cli.js path")
+    parser.add_argument(
+        "output", type=Path, nargs="?", help="output HTML in the same folder as input"
+    )
+    parser.add_argument("--daphnis", help="daphnis checkout or src/cli.js path")
+    parser.add_argument("--mutoscope", help="deprecated alias for --daphnis")
     parser.add_argument(
         "--static",
         action="store_true",
         help="embed a static SVG in the report iframe",
     )
-    return parser.parse_args()
+    arguments = parser.parse_args()
+    if arguments.mutoscope is not None:
+        print(
+            "deprecated: --mutoscope will be removed after this release; use --daphnis",
+            file=sys.stderr,
+        )
+    arguments.daphnis = arguments.daphnis or arguments.mutoscope
+    return arguments
 
 
 # cost: time O(size of input + render), heap O(size of output), stack O(1), io 3+
-# vars: render = muto input count times mutoscope render cost
+# vars: render = dap input count times daphnis render cost
 # basis: estimate
 def main() -> None:
     arguments = _arguments()
@@ -477,13 +499,11 @@ def main() -> None:
         if output.parent != source.parent:
             raise ReportError("output must be in the same folder as the input")
         spec = json.loads(source.read_text(encoding="utf-8"))
-        mutoscope = _mutoscope(arguments.mutoscope)
+        daphnis = _daphnis(arguments.daphnis)
         renderer = FigureRenderer(
-            base=source.parent, mutoscope=mutoscope, static=arguments.static
+            base=source.parent, daphnis=daphnis, static=arguments.static
         )
-        tokens_css = (
-            mutoscope.tokens_css.read_text(encoding="utf-8") if mutoscope else ""
-        )
+        tokens_css = daphnis.tokens_css.read_text(encoding="utf-8") if daphnis else ""
         output.write_text(build(spec, renderer, tokens_css), encoding="utf-8")
     except (OSError, ValueError, ReportError) as error:
         sys.exit(f"build_report.py: {error}")

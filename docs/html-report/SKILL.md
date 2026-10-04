@@ -46,12 +46,13 @@ description: "스크린샷·그림·코드·실행 결과를 시각적으로 비
 ## 그림
 
 - 그림 색 변경 금지
-- 구조도, 순서도, 상태도, 데이터 관계도, 차트: mutoscope 원본 `.muto` 우선. 생성 스크립트가 `node <mutoscope 경로>/src/cli.js render ... --strict --html`로 만든 HTML 재생기를 보고서의 `iframe srcdoc`에 넣기. 외부 파일 참조와 `<img>` 사용 금지
-- `inline`: 미리 만든 mutoscope SVG 또는 HTML 조각 경로. 같은 `iframe srcdoc`에 넣기. 그림마다 독립 문서라 SVG id·`<style>`·재생기 스크립트 충돌 없음
-- `muto`: `<mutoscope 경로>`는 `--mutoscope` 인자 또는 `MUTOSCOPE_PATH` 환경 변수. 렌더 실패는 보고서 생성 실패. `--static`은 움직임 없는 SVG를 같은 방식으로 넣기
-- `src`: mutoscope로 그릴 수 없는 스크린샷, 실행 화면 캡처만. 검증 대상 테마를 고정해 캡처하고 테마명 표시
-- 보고서 틀은 mutoscope `src/tokens.css`를 읽어 역할 토큰만 사용. 토큰 색 값 복사 금지
-- 보고서 기본 테마: 시스템. 맨 위 `시스템 / 라이트 / 다크` 선택. 선택값은 `mutoscope-theme` localStorage에 기억하고, 루트 `data-theme`·`color-scheme`과 모든 인라인 재생기에 함께 적용
+- 구조도, 순서도, 상태도, 데이터 관계도, 차트: daphnis 원본 `.dap` 우선. 생성 스크립트가 `node <daphnis 경로>/src/cli.js render ... --strict --html`로 만든 HTML 재생기를 보고서의 `iframe srcdoc`에 넣기. 외부 파일 참조와 `<img>` 사용 금지
+- `inline`: 미리 만든 daphnis SVG 또는 HTML 조각 경로. 같은 `iframe srcdoc`에 넣기. 그림마다 독립 문서라 SVG id·`<style>`·재생기 스크립트 충돌 없음
+- `dap`: `<daphnis 경로>`는 `--daphnis` 인자 또는 `DAPHNIS_PATH` 환경 변수. 렌더 실패는 보고서 생성 실패. `--static`은 움직임 없는 SVG를 같은 방식으로 넣기
+- `src`: daphnis로 그릴 수 없는 스크린샷, 실행 화면 캡처만. 검증 대상 테마를 고정해 캡처하고 테마명 표시
+- 색·글꼴·아이콘과 대비 기준: (repo-docs-figures 도구와 파일)
+- 보고서 틀은 daphnis `src/tokens.css`를 읽어 역할 토큰만 사용. 토큰 색 값 복사 금지
+- 보고서 기본 테마: 시스템. 맨 위 `시스템 / 라이트 / 다크` 선택. 선택값은 `daphnis-theme` localStorage에 기억하고, 루트 `data-theme`·`color-scheme`과 모든 인라인 재생기에 함께 적용
 
 ## 모형 표시
 
@@ -64,7 +65,7 @@ description: "스크린샷·그림·코드·실행 결과를 시각적으로 비
 
 프로젝트가 없는 보고서: 워크스페이스 규칙의 작업 기록 폴더. 없으면 사용자에게 확인. 임시 폴더 금지
 
-`index.html`(결과), `choices.json`(입력), `index.png`(테마를 명시한 전체 캡처), `muto/`(원본), `.muto-rendered/`(생성 중간 산출물), `sources/`(그림을 만든 시험 코드와 원본 입력)
+`index.html`(결과), `choices.json`(입력), `index.png`(테마를 명시한 전체 캡처), `dap/`(원본), `.dap-rendered/`(생성 중간 산출물), `sources/`(그림을 만든 시험 코드와 원본 입력)
 
 그림 경로: 입력 JSON 폴더 기준 상대 경로
 
@@ -76,12 +77,13 @@ description: "스크린샷·그림·코드·실행 결과를 시각적으로 비
 ## 생성
 
 ```sh
-python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html] --mutoscope <mutoscope 경로>
+python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html] --daphnis <daphnis 경로>
 ```
 
 - 출력 기본값: 입력 파일 옆 `index.html`. 출력 파일은 입력 JSON과 같은 폴더만 허용
-- `--mutoscope`: 작업본 루트 또는 `src/cli.js` 경로. `MUTOSCOPE_PATH` 환경 변수로 대체 가능. `.muto`가 없으면 생략 가능하나 보고서 틀은 시스템 색으로만 표시
-- `--static`: `.muto`를 멈춘 SVG로 렌더. 기본은 상호작용 가능한 HTML 재생기
+- `--daphnis`: 작업본 루트 또는 `src/cli.js` 경로. `DAPHNIS_PATH` 환경 변수로 대체 가능, 둘 다 없으면 PATH의 `daphnis` 탐색. 도구가 없고 `.dap`도 없으면 시스템 색으로 보고서 생성
+- 옛 `--mutoscope`·`MUTOSCOPE_PATH`: 이번 판까지 별칭 허용, 지정 시 stderr에 폐기·대체 이름 안내. 우선순위: 새 옵션 → 옛 옵션 → 새 환경 변수 → 옛 환경 변수 → PATH
+- `--static`: `.dap`를 멈춘 SVG로 렌더. 기본은 상호작용 가능한 HTML 재생기
 - 결과 보고서의 `effect`는 `[["후", "좋은 점", "남은 문제"]]`, `rec`는 `["수용 조건에 따른 판단", "이유"]`
 - `intro`·`what`: 보고 대상 버전(HEAD·미커밋 변경), 입력, 캡처 시각 명시. 움직임 과제는 라이브 URL 함께 제공
 
@@ -109,14 +111,14 @@ python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html] 
 | 최상위 | `title`, `intro`, `questions` 필수. `kind`는 `decision` 또는 `result`, 생략 시 decision |
 | 질문 | `title`, `what`, `options`, `effect`, `rec` 필수 |
 | 선택지 | `label` 필수. `images`, `table`, `text`, `mock`은 해당 자료가 있을 때 |
-| 그림 | `muto`, `inline`, `src` 중 하나와 `alt`. 경로는 입력 폴더 기준. `max_height`의 의미는 구성 절의 이미지 항목 참조 |
+| 그림 | `dap`, `inline`, `src` 중 하나와 `alt`. 경로는 입력 폴더 기준. `max_height`의 의미는 구성 절의 이미지 항목 참조 |
 | 표 | `head`, `rows` 필수. `align`, `widths` 선택 |
 | 보충 | `check`, `note`, `extra` 선택. extra 항목은 `title`과 실제 options 필요, 빈 예시 삽입 금지 |
 
 ## 확인 절차
 
 1. 생성 스크립트 오류 없이 종료
-2. 브라우저로 열어 예상 그림 수와 실제 수 일치·0개 아님 확인. 스크린샷 `img`만 `naturalWidth` > 0, mutoscope iframe마다 내부 SVG 또는 재생기 로드 확인
+2. 브라우저로 열어 예상 그림 수와 실제 수 일치·0개 아님 확인. 스크린샷 `img`만 `naturalWidth` > 0, daphnis iframe마다 내부 SVG 또는 재생기 로드 확인
 3. `시스템 / 라이트 / 다크`를 각각 눌러 보고서 틀과 모든 인라인 그림이 함께 바뀌는지 확인. SVG·HTML 그림이 여러 개면 id·스타일·재생 상태가 서로 섞이지 않는지 확인
 4. 검증 대상 테마에서 화면 캡처: 표 칸 정렬, 그림 위 여백, 모형 테두리 굵기 확인. 캡처 높이와 문서 높이를 대조해 잘리면 구간 캡처, 환경과 실제 제한 기록
 5. 질문마다 구성 칸·모형 표시 확인. 움직임 과제는 탭·일시정지·시간 변화를 직접 관찰하고 판정 기록
