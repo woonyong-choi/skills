@@ -1,0 +1,4 @@
+interface:
+  display_name: "alpha"
+  short_description: "입력 검사"
+  default_prompt: "$alpha 입력 검사"

@@ -1,0 +1,37 @@
+name: Skills
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test dependencies
+        run: python3 -m pip install pytest==8.4.2
+      - name: Check skills
+        run: python3 tools/skill-sync/scripts/skill_check.py .
+      - name: Run Python tests
+        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/scripts/test_check_doc.py docs/html-report/tests/test_daphnis_cli.py
+      - name: Load figure renderer
+        uses: actions/checkout@v4
+        with:
+          repository: woonyong-choi/daphnis
+          ref: a899e9ec40fc69b581226460b70f13b8f45a03df
+          path: .runtime/daphnis
+      - name: Install figure renderer and browser
+        working-directory: .runtime/daphnis
+        run: |
+          npm ci
+          npx playwright-core install --with-deps chromium
+      - name: Run report tests
+        run: python3 docs/html-report/tests/test_build_report.py --daphnis .runtime/daphnis

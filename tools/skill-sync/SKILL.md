@@ -46,7 +46,8 @@ python3 <이 스킬 폴더>/scripts/install.py
 - 스킬 제거: `install.py --remove {이름}`. 설치 목록 파일 `.repo-skills.json`에 있는 단일 스킬 이름만 허용. 대상이 도구 설치 폴더 바로 아래에 있고 심볼릭 링크가 아닌지 확인한 뒤 휴지통 이동과 목록 갱신. 원본에 남아 있으면 다음 동기화 때 재설치
 - 바꿀 내용만 확인: `install.py --dry-run`
 - Claude 계정에 업로드할 zip 생성 폴더: `--dist {폴더}`. 기본은 원본 저장소의 `dist/claude`. 도구 설치 폴더의 홈 경로는 실행 환경의 `HOME` 사용
-- skill_check: frontmatter 형식, 이름과 폴더 일치, 머리에서 연결한 스킬의 존재 여부 검사. `agents/openai.yaml`의 필수 필드와 스킬 호출 이름도 검사. 목록·표의 끝말은 README 작성 형식 기준으로 검사. 종료 코드: 위반 1, 입력 오류 2, 전체 통과 0
+- 검사 의존 스킬: code-style의 비용 주석 검사기 필수. 누락 시 입력 오류
+- skill_check: frontmatter·description 형식, 이름과 폴더 일치, 머리 참조·절 구조·용어·규칙 복제·스크립트 인자와 출력·비용 주석 검사. 판정 기준과 자동 검사 한계: [일관성 검사 기준](references/consistency.md). `agents/openai.yaml`의 필수 필드와 스킬 호출 이름도 검사. 목록·표의 끝말은 README 작성 형식 기준으로 검사. 종료 코드: 위반 1, 입력 오류 2, 전체 통과 0
 
 ## Claude 계정 업로드 스크립트
 

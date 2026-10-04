@@ -5,6 +5,9 @@
 정본 형식: DTCG(Design Tokens Community Group) 2025.10. 토큰은 `$value`가 있는 객체이고,
 묶음의 `$type`은 안쪽 토큰에 이어진다. 참조 `{color.blue.600}`는 CSS에서 `var(--color-blue-600)`로 남겨
 테마를 바꾸면 따라 바뀌게 한다.
+
+인자: tokens.json, --out 출력 폴더
+출력: tokens.css·tokens.js 생성, stdout 생성 경로, 종료 0 성공·1 입력 오류
 """
 
 from __future__ import annotations

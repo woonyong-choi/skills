@@ -3,6 +3,9 @@
 사용: python3 cleanup_merged.py <PR 번호 또는 브랜치> [--apply] (저장소 안에서 실행)
 기본은 미리보기. --apply면 실제로 정리한다. PR의 마지막 head SHA와 로컬 및 존재하는 원격 브랜치 head가 같고,
 연결된 worktree에 커밋 안 된 변경이 없을 때만 정리한다. 미리보기는 fetch 없이 조회하며, 삭제는 예상 SHA 조건으로 수행한다.
+
+인자: PR 번호 또는 브랜치, --apply 실제 정리
+출력: stdout 정리 예정·결과·skip 이유, 종료 0 성공·1 실패
 """
 from __future__ import annotations
 

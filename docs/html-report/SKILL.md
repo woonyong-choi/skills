@@ -82,7 +82,7 @@ python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html] 
 
 - 출력 기본값: 입력 파일 옆 `index.html`. 출력 파일은 입력 JSON과 같은 폴더만 허용
 - `--daphnis`: 작업본 루트 또는 `src/cli.js` 경로. `DAPHNIS_PATH` 환경 변수로 대체 가능, 둘 다 없으면 PATH의 `daphnis` 탐색. 도구가 없고 `.dap`도 없으면 시스템 색으로 보고서 생성
-- 옛 `--mutoscope`·`MUTOSCOPE_PATH`: 이번 판까지 별칭 허용, 지정 시 stderr에 폐기·대체 이름 안내. 우선순위: 새 옵션 → 옛 옵션 → 새 환경 변수 → 옛 환경 변수 → PATH
+- 옛 옵션·환경 변수의 호환과 우선순위: (repo-docs-figures 변환)
 - `--static`: `.dap`를 멈춘 SVG로 렌더. 기본은 상호작용 가능한 HTML 재생기
 - 결과 보고서의 `effect`는 `[["후", "좋은 점", "남은 문제"]]`, `rec`는 `["수용 조건에 따른 판단", "이유"]`
 - `intro`·`what`: 보고 대상 버전(HEAD·미커밋 변경), 입력, 캡처 시각 명시. 움직임 과제는 라이브 URL 함께 제공

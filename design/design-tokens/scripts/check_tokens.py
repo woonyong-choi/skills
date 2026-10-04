@@ -8,6 +8,8 @@
 - JavaScript 계열: 모든 문자열의 색, CSS·마크업으로 보이는 문자열과 값 하나뿐인 문자열(`'12px'`)의 나머지 규칙,
   코드의 기본 토큰 경로(`tokens.color.blue['600']`)와 스타일 객체 숫자(`{ fontWeight: 600 }`)
 - 모든 계열: 색·그림자 기본 토큰 직접 참조(`var(--color-blue-600)`), 토큰 파일 밖 테마 분기(`prefers-color-scheme`, `[data-theme`)
+
+인자: 폴더나 파일 하나 이상, --tokens 토큰 정본
 """
 
 from __future__ import annotations

@@ -1,4 +1,7 @@
-"""저장소에 연결된 Projects v2의 이슈 등록과 Status를 관리한다."""
+"""저장소에 연결된 Projects v2의 이슈 등록과 Status를 관리한다.
+인자: --repo owner/name, set 번호 상태 | setup | check [--fix]
+출력: stdout 프로젝트·상태·불일치·오류, 종료 0 성공·1 불일치·2 실패
+"""
 
 from __future__ import annotations
 
@@ -35,7 +38,9 @@ class ProjectStatus:
             raise ProjectError(f"invalid repository: {self.repo}; expected owner/name")
         self.repository = {"owner": parts[0], "name": parts[1]}
 
-    # cost: io O(p + c + v); vars: p = 전체 조회 페이지, c = 변경 항목, v = 보드 뷰; basis: estimate
+    # cost: time O(n + c + v), heap O(n + c + v), stack O(1), io O(p + c + v)
+    # vars: n = 전체 응답 항목 수, p = 전체 조회 페이지, c = 변경 항목, v = 보드 뷰
+    # basis: estimate
     def run(self, args: argparse.Namespace) -> int:
         projects = self._pages(
             "query($owner:String!,$name:String!,$cursor:String){"
@@ -102,7 +107,9 @@ class ProjectStatus:
             raise ProjectError("graphql returned no data")
         return response["data"]
 
-    # cost: io O(p) API 호출, heap O(n); vars: p = 페이지 수, n = 항목 수; basis: estimate
+    # cost: time O(n), heap O(n), stack O(1), io O(p)
+    # vars: p = 페이지 수, n = 항목 수
+    # basis: estimate
     def _pages(
         self, query: str, variables: dict[str, Any], parent: str, field: str
     ) -> list[dict[str, Any]]:
@@ -183,7 +190,9 @@ class ProjectStatus:
             == self.repo.casefold()
         }
 
-    # cost: time O(n), heap O(n), io O(n) 표준 출력; vars: n = 이슈 수; basis: estimate
+    # cost: time O(n), heap O(n), stack O(1), io O(n)
+    # vars: n = 이슈 수
+    # basis: estimate
     def _mismatches(
         self,
         project: dict[str, Any],
@@ -209,7 +218,9 @@ class ProjectStatus:
                 changes.append((issue, target))
         return changes
 
-    # cost: io 최대 2회 API 변경과 1회 표준 출력; basis: estimate
+    # cost: time O(n), heap O(n), stack O(1), io 3
+    # vars: n = Status 선택지 수
+    # basis: estimate
     def _set(
         self,
         project: dict[str, Any],
@@ -241,7 +252,9 @@ class ProjectStatus:
         )
         print(f"#{issue['number']}: {status} 변경")
 
-    # cost: io O(p + v) API·표준 출력; vars: p = 뷰 조회 페이지, v = 보드 뷰; basis: estimate
+    # cost: time O(n + v), heap O(n + v), stack O(1), io O(p + v)
+    # vars: n = Status 선택지 수, p = 뷰 조회 페이지, v = 보드 뷰
+    # basis: estimate
     def _setup(self, project: dict[str, Any], field: dict[str, Any]) -> None:
         options = field["options"]
         missing = [
@@ -309,7 +322,9 @@ class ProjectStatus:
         )
 
 
-# cost: io 1 gh 프로세스·네트워크 요청; heap O(b); vars: b = 응답 크기; basis: estimate
+# cost: time O(b), heap O(b), stack O(1), io 1
+# vars: b = 응답 크기
+# basis: estimate
 def run_gh(args: list[str], payload: str | None = None) -> dict[str, Any]:
     result = subprocess.run(
         ["gh", *args], input=payload, text=True, capture_output=True, check=False
@@ -321,7 +336,9 @@ def run_gh(args: list[str], payload: str | None = None) -> dict[str, Any]:
     return json.loads(result.stdout)
 
 
-# cost: io O(r) gh·표준 출력; vars: r = 선택한 명령의 조회·변경·출력 횟수; basis: estimate
+# cost: time O(n + r), heap O(n), stack O(1), io O(r)
+# vars: n = 조회·변경 항목 수, r = 선택한 명령의 조회·변경·출력 횟수
+# basis: estimate
 def main(argv: list[str] | None = None, gh: Gh = run_gh) -> int:
     parser = StdoutArgumentParser(description=__doc__)
     parser.add_argument("--repo", help="owner/name (기본: 현재 디렉터리 저장소)")

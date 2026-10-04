@@ -73,6 +73,7 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 - 형식 검사: `python3 tools/skill-sync/scripts/skill_check.py .`, 출력 `total 0`까지 수정
 - 실행 코드는 `scripts/`에 둔다. 본문에는 실행 명령과 사용 시 필요한 조건을 둔다. 실행에 필요한 런타임·버전·의존성은 해당 스킬의 실행 명령 옆에 명시한다. Python은 표준 라이브러리 우선이며 외부 도구는 공식 명령이나 패키지를 사용한다.
 - 스크립트 함수: code-style 비용 주석
+- CLI 인자·출력 설명과 일관성 검사 범위: [일관성 검사 기준](tools/skill-sync/references/consistency.md)
 
 ## 스킬 연결
 

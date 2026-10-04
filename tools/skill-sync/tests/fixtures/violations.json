@@ -1,0 +1,100 @@
+[
+  {
+    "id": "term",
+    "file": "alpha/SKILL.md",
+    "before": "저장소 설정 확인",
+    "after": "레포 설정 확인",
+    "kind": "용어 불일치"
+  },
+  {
+    "id": "duplicate",
+    "file": "beta/SKILL.md",
+    "before": "입력 경로 확인",
+    "after": "사용자가 지정한 원본 경로를 확인한 뒤에만 파일 저장",
+    "kind": "규칙 복제"
+  },
+  {
+    "id": "description",
+    "file": "alpha/SKILL.md",
+    "before": "입력 파일을 검사할 때 사용.",
+    "after": "입력 파일 검사 도구",
+    "kind": "description 사용 조건 형식"
+  },
+  {
+    "id": "section",
+    "file": "alpha/SKILL.md",
+    "before": "## 검사",
+    "after": "### 검사",
+    "kind": "절 구조"
+  },
+  {
+    "id": "arguments",
+    "file": "alpha/scripts/inspect.py",
+    "before": "인자: 파일 하나",
+    "after": "파일 하나",
+    "kind": "스크립트 인자 형식"
+  },
+  {
+    "id": "output",
+    "file": "alpha/scripts/inspect.py",
+    "before": "출력: stdout 파일 내용, 종료 0",
+    "after": "파일 내용",
+    "kind": "스크립트 출력 형식"
+  },
+  {
+    "id": "cost",
+    "file": "alpha/scripts/inspect.py",
+    "before": "time O(n), heap O(n), stack O(1)",
+    "after": "heap O(n), time O(n)",
+    "kind": "비용 주석 형식"
+  },
+  {
+    "id": "basis",
+    "file": "alpha/scripts/inspect.py",
+    "before": "# basis: estimate",
+    "after": "# basis: guessed",
+    "kind": "비용 주석 형식"
+  },
+  {
+    "id": "vars",
+    "file": "alpha/scripts/inspect.py",
+    "before": "# vars: n = 파일 크기",
+    "after": "# 변수 없음",
+    "kind": "비용 주석 형식"
+  },
+  {
+    "id": "missing-cost",
+    "file": "alpha/scripts/inspect.py",
+    "before": "# cost:",
+    "after": "# 비용:",
+    "kind": "비용 주석"
+  },
+  {
+    "id": "zero-cost",
+    "file": "alpha/scripts/inspect.py",
+    "before": "io 2",
+    "after": "io 0",
+    "kind": "비용 주석 형식"
+  },
+  {
+    "id": "cost-extra-field",
+    "file": "alpha/scripts/inspect.py",
+    "before": "time O(n), heap",
+    "after": "time O(n), wrong O(n), heap",
+    "kind": "비용 주석 형식"
+  },
+  {
+    "id": "empty-arguments",
+    "file": "alpha/scripts/inspect.py",
+    "before": "인자: 파일 하나",
+    "after": "인자:",
+    "kind": "스크립트 인자 형식"
+  },
+  {
+    "id": "empty-output",
+    "file": "alpha/scripts/inspect.py",
+    "before": "출력: stdout 파일 내용, 종료 0",
+    "after": "출력:\n설명은 다음 줄",
+    "kind": "스크립트 출력 형식"
+  }
+]

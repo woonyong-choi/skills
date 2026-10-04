@@ -1,0 +1,4 @@
+interface:
+  display_name: "repo-docs"
+  short_description: "입력 검사"
+  default_prompt: "$repo-docs 입력 검사"

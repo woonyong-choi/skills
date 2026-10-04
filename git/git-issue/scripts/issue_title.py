@@ -1,4 +1,7 @@
-"""git-issue 종류 절의 제목 길이와 종류별 끝말을 게시 전에 검사한다."""
+"""git-issue 종류 절의 제목 길이와 종류별 끝말을 게시 전에 검사한다.
+인자: --kind 이슈 종류, UTF-8 파일 또는 생략·-로 stdin
+출력: stdout 줄별 위반, stderr 입력 오류, 종료 0 통과·1 위반·2 입력 오류
+"""
 
 from __future__ import annotations
 

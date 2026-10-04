@@ -5,7 +5,7 @@ description: "Rust 코드를 작성·검토·리팩터링하거나 rustfmt·Clip
 
 # Code Style: Rust
 
-- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
+- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 Rust 규칙. 그 밖에서 code-style과 다르면 code-style 우선
 
 ## 이름
@@ -37,7 +37,7 @@ description: "Rust 코드를 작성·검토·리팩터링하거나 rustfmt·Clip
 - struct 필드: 공개 → 비공개 순서만 (Rust 필드는 불변·가변 구분 없음)
 - rustfmt: `use` 그룹 안 정렬만. 그룹 나누기와 항목 순서는 직접
 
-## 에러와 로그
+## 오류와 로그
 
 | 경우 | 처리 |
 |---|---|
@@ -46,18 +46,18 @@ description: "Rust 코드를 작성·검토·리팩터링하거나 rustfmt·Clip
 | 테스트 | `unwrap`·`expect`·`panic!` 허용 |
 
 - 테스트 밖에서 `unwrap`, `panic!`, `todo!`, `unimplemented!` 금지
-- 초안 PR의 미완성 자리표시 예외: code-style 에러와 로그 절
+- 초안 PR의 미완성 자리표시 예외: code-style 오류와 로그 절
 - `expect` 메시지는 성립해야 하는 이유를 `should`로: `expect("config should be loaded before start")`
-- 에러·로그 메시지는 소문자로 시작, 마침표 없음: `invalid digit found in string`
-- 무시하는 에러는 이유를 주석으로: `let _ = tx.send(event); // 받는 쪽이 이미 종료됨`
+- 오류·로그 메시지는 소문자로 시작, 마침표 없음: `invalid digit found in string`
+- 무시하는 오류는 이유를 주석으로: `let _ = tx.send(event); // 받는 쪽이 이미 종료됨`
 - `println!`·`eprintln!`은 프로그램 결과 출력에만. 진단은 `tracing`
 
 라이브러리. 저장소에 이미 정한 다른 라이브러리가 있으면 그것 우선
 
 | crate | 쓰는 곳 | 역할 |
 |---|---|---|
-| `thiserror` | 라이브러리 crate | 에러 enum 정의 |
-| `anyhow` | 실행 파일 crate | 여러 에러를 한 타입으로 받고 문맥 추가 |
+| `thiserror` | 라이브러리 crate | 오류 enum 정의 |
+| `anyhow` | 실행 파일 crate | 여러 오류를 한 타입으로 받고 문맥 추가 |
 | `tracing` | 모든 crate | 로그 기록 |
 | `tracing-subscriber` (`env-filter` 기능) | 실행 파일 crate | 로그 출력 설정 |
 
@@ -76,11 +76,11 @@ pub enum ConfigError {
 }
 ```
 
-- 공개 에러 enum은 모듈마다 하나, 이름은 `<대상>Error`. 공개 함수는 `Result<T, <대상>Error>` 반환
+- 공개 오류 enum은 모듈마다 하나, 이름은 `<대상>Error`. 공개 함수는 `Result<T, <대상>Error>` 반환
 - variant 이름은 실패한 내용: `NotFound`, `Parse`. `Error` 접미사 금지
-- 하위 에러는 `#[from]`이나 `#[source]`로 원인에 보존. 메시지에 하위 에러 내용 재기재 금지
-- 같은 하위 에러가 여러 상황에서 생기면 `#[from]` 대신 `map_err`로 상황별 variant 사용
-- crate 밖에 배포하는 라이브러리의 공개 에러 enum은 `#[non_exhaustive]`
+- 하위 오류는 `#[from]`이나 `#[source]`로 원인에 보존. 메시지에 하위 오류 내용 재기재 금지
+- 같은 하위 오류가 여러 상황에서 생기면 `#[from]` 대신 `map_err`로 상황별 variant 사용
+- crate 밖에 배포하는 라이브러리의 공개 오류 enum은 `#[non_exhaustive]`
 
 `anyhow`:
 
@@ -97,7 +97,7 @@ fn main() -> anyhow::Result<()> {
 
 - 실행 파일 crate의 함수는 `anyhow::Result<T>` 반환. `main`도 `anyhow::Result<()>` 반환
 - 문맥은 고정 문자열이면 `.context("...")`, 값이 들어가면 `.with_context(|| format!(...))`
-- 새 에러는 `anyhow::bail!("...")`, 조건 검사는 `anyhow::ensure!(조건, "...")`
+- 새 오류는 `anyhow::bail!("...")`, 조건 검사는 `anyhow::ensure!(조건, "...")`
 
 `tracing`:
 
