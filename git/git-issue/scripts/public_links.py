@@ -19,11 +19,13 @@ _LINK = re.compile(
 )
 _CODE = re.compile(r"(?<!`)(?P<ticks>`{1,2})(?!`)(?P<path>[^`\n]+)(?P=ticks)(?!`)")
 _URL = re.compile(r'https?://[^\s<>`"\'\])]+')
+_CLOSING_TAG = re.compile(r"</[A-Za-z][\w:-]*\s*>")
 _LOCAL = re.compile(
-    r"(?<![\w/:])(?:file://[^\s<>`]+|(?:~|\$HOME|\$\{HOME\})[/\\][^\s<>`]*"
-    r"|[A-Za-z]:[\\/][^\s<>`]+|\\\\[^\s<>`]+|(?<!<)/[^\s<>`]+)"
-    r"|(?<![\w])(?:[\w.-]+/)*\.local(?:/[^\s<>`]*)?(?![\w-])"
-    r"|(?<![\w/])(?:\.\./)+[^\s<>`]+",
+    r"(?<![^\s(\[{'\"`<])(?:"
+    r"file://[^\s<>`]+|(?:~|\$HOME|\$\{HOME\})[/\\][^\s<>`]*"
+    r"|[A-Za-z]:[\\/][^\s<>`]+|\\\\[^\s<>`]+|/[^\s<>`]+"
+    r"|(?:[^\s/<>`\"'()\[\]{}]+/)*\.local(?:/[^\s<>`]*)?(?![\w.-])"
+    r"|(?:\.\./)+[^\s<>`]+)",
 )
 _LINES = re.compile(r"(?::|#L)(\d+)(?:-(?:L)?(\d+))?$")
 
@@ -120,7 +122,7 @@ def _is_local(value: str) -> bool:
 def _check_url(value: str, context: _Context) -> str | None:
     parsed = urlsplit(value)
     if ".local" in unquote(parsed.path).split("/"):
-        return "private path: summarize without its location"
+        return "private path: do not publish; summarize without its location"
     if parsed.hostname not in {
         "github.com",
         "www.github.com",
@@ -135,7 +137,7 @@ def _check_url(value: str, context: _Context) -> str | None:
         repository.visibility != "PUBLIC"
         and repository.name.lower() != context.target.name.lower()
     ):
-        return "private repository: summarize without its address"
+        return "private repository: do not publish; summarize without its address"
     if (
         len(parts) >= 4
         and parts[2] == "blob"
@@ -151,7 +153,7 @@ def _check_path(
 ) -> tuple[str | None, str | None]:
     value = unquote(value)
     if _is_local(value):
-        return "private path: summarize without its location", None
+        return "private path: do not publish; summarize without its location", None
     suffix = _LINES.search(value)
     path = value[: suffix.start()] if suffix else value.split("#", 1)[0]
     fragment = ""
@@ -161,11 +163,17 @@ def _check_path(
         fragment = "#" + value.split("#", 1)[1]
     resolved = (context.root / path).resolve()
     if not resolved.is_relative_to(context.root):
-        return "path outside repository: summarize without its location", None
+        return (
+            "path outside repository: do not publish; summarize without its location",
+            None,
+        )
     relative = resolved.relative_to(context.root).as_posix()
     if relative not in context.files:
         if resolved.is_file():
-            return "unpublished file: summarize without its location", None
+            return (
+                "unpublished file: do not publish; summarize without its location",
+                None,
+            )
         return (
             ("relative link has no published file", None) if is_link else (None, None)
         )
@@ -174,7 +182,11 @@ def _check_path(
         raise ValueError("default branch is unavailable")
     url = f"https://github.com/{context.target.name}/blob/{quote(ref, safe='/')}/{quote(relative)}{fragment}"
     return (
-        "relative repository link" if is_link else "repository path in code text",
+        (
+            "relative repository link: replace with a public web link"
+            if is_link
+            else "repository path in code text: replace with a public web link"
+        ),
         url,
     )
 
@@ -192,7 +204,11 @@ def _check_target(
 def _scan(text: str, context: _Context) -> list[_Finding]:
     findings: list[_Finding] = []
     covered: list[tuple[int, int]] = []
-    ignored_local_spans = [match.span() for match in _URL.finditer(text)]
+    ignored_local_spans = [
+        match.span()
+        for pattern in (_URL, _CLOSING_TAG)
+        for match in pattern.finditer(text)
+    ]
     for pattern in (_LINK, _CODE, _URL):
         for match in pattern.finditer(text):
             if any(
@@ -233,7 +249,7 @@ def _scan(text: str, context: _Context) -> list[_Finding]:
             _Finding(
                 match.start(),
                 match.end(),
-                "private path: summarize without its location",
+                "private path: do not publish; summarize without its location",
             )
         )
     return sorted(findings, key=lambda finding: finding.start)
