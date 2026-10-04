@@ -1,13 +1,13 @@
 ---
 name: code-style-javascript
-description: "JavaScript(Node.js, 브라우저) 코드 작성, 리뷰, 리팩터링 시 사용. 이름 형식, 모듈, 에러 처리, 로그, 공개 범위, JSDoc, 테스트(node:test), ESLint·Prettier 설정과 검사 명령"
+description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·node:test 설정을 고칠 때 사용."
 ---
 
 # Code Style: JavaScript
 
-- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
+- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
 - 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 JavaScript 규칙. 그 밖에서 code-style과 다르면 code-style 우선
-- 필요할 때만 읽기: CSS 문자열, 인라인 style, SVG 속성 값 작성 → design-tokens
+- 필요할 때만 읽기: CSS 문자열, 인라인 style, SVG 속성 값 작성 → design-tokens; 파일 이름 결정 → folder-naming
 
 ## 이름
 
@@ -30,7 +30,7 @@ description: "JavaScript(Node.js, 브라우저) 코드 작성, 리뷰, 리팩터
 모듈:
 
 - ES 모듈(`import`·`export`)만. `package.json`에 `"type": "module"`. CommonJS `require` 금지(외부 도구 설정 파일 제외)
-- named export만. `export default` 금지
+- 일반 모듈은 named export. 도구가 default export를 요구하는 설정 파일은 해당 계약 적용
 - import 순서: `node:` 내장 → 외부 패키지 → 상대 경로, 그룹 사이 빈 줄. 내장 모듈은 `node:` 접두사 필수
 - 와일드카드 `import *` 금지(외부 패키지가 그 방식만 제공할 때 제외)
 - 순환 import 금지
@@ -78,14 +78,14 @@ description: "JavaScript(Node.js, 브라우저) 코드 작성, 리뷰, 리팩터
 ## 공개 범위와 주석
 
 - 문서 주석: JSDoc `/** */`. 실패 조건은 `@throws`
-- 타입은 JSDoc `@param`·`@returns`로. 타입 검사가 필요하면 `// @ts-check`와 `tsc --noEmit --checkJs`
+- 타입은 JSDoc `@param`·`@returns`로. 저장소가 checkJs를 사용하거나 공개 JSDoc 타입을 변경하면 `// @ts-check`와 `tsc --noEmit --checkJs`
 
 ## 테스트
 
 - `node:test`와 `node:assert/strict`. 저장소에 정한 테스트 도구가 있으면 그것 우선
 - 위치: `test/` 폴더, 파일은 `{모듈}.test.js`
 - 이름: code-style 형식, 대상은 함수 이름 그대로: `parseFlow_empty_input_throws`
-- 외부 명령·브라우저가 필요한 테스트: 없을 때 `{ skip: '<이유>' }`로 건너뛰기
+- 외부 명령·브라우저가 없으면 `{ skip: '<이유>' }`와 미검증 범위 보고. 변경 요구사항의 필수 검증이면 완료 판정 보류
 - 브라우저 동작: Playwright(`playwright-core`)로 실제 페이지를 열어 확인
 
 ## 린트 설정
@@ -97,8 +97,9 @@ import js from '@eslint/js';
 import globals from 'globals';
 import sonarjs from 'eslint-plugin-sonarjs';
 
+const defaultExportConfigs = ['eslint.config.js'];
+
 export default [
-  { ignores: ['**/tokens.js'] },
   js.configs.recommended,
   {
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
@@ -111,7 +112,7 @@ export default [
       'sonarjs/cognitive-complexity': ['warn', 15],
       'no-throw-literal': 'error',
       'prefer-promise-reject-errors': 'error',
-      'no-console': ['warn', { allow: ['error'] }],
+      'no-console': 'error',
       yoda: 'error',
       eqeqeq: 'error',
       'no-negated-condition': 'warn',
@@ -121,18 +122,22 @@ export default [
       'no-restricted-syntax': ['error', 'ExportDefaultDeclaration'],
     },
   },
+  { files: ['src/cli/**'], rules: { 'no-console': ['error', { allow: ['log', 'error'] }] } },
+  { files: ['src/browser/**'], rules: { 'no-console': ['error', { allow: ['warn', 'error'] }] } },
   { files: ['test/**'], rules: { 'max-lines-per-function': 'off' } },
-  { files: ['eslint.config.js'], rules: { 'no-restricted-syntax': 'off' } },
+  { files: defaultExportConfigs, rules: { 'no-restricted-syntax': 'off' } },
 ];
 ```
 
-- CLI 진입점 파일은 `no-console`을 파일 단위로 끔
+- `defaultExportConfigs`: 도구가 default export를 요구하는 것으로 확인한 실제 설정 파일 경로를 모두 기입
+- CLI·브라우저 override 경로는 실제 진입점과 브라우저 코드 경로로 교체. 라이브러리는 console 금지 유지
+- 생성물 제외는 생성물 표시 또는 확인한 실제 생성 경로로 설정, 파일 이름 패턴만으로 제외 금지
 - ESLint가 못 잡는 것은 직접 확인: 이름, 비교 순서, `&&`·`||` 개수와 섞기, 선언 순서, bool 매개변수 수
 
-`.prettierrc.json`:
+`.prettierrc.json` 예. 폭은 저장소의 포매터 설정 사용:
 
 ```json
-{ "singleQuote": true, "printWidth": 140 }
+{ "singleQuote": true }
 ```
 
 ## 검사 명령
