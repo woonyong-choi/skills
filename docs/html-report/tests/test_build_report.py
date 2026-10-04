@@ -171,7 +171,13 @@ for (const [name, colorScheme, mode] of [['system-light', 'light', 'system'], ['
   const focusStyle = await normal.evaluate((element) => window.reportChipStyle(element));
   const activeStyle = await active.evaluate((element) => window.reportChipStyle(element));
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  await page.waitForTimeout(50);
+  await page.waitForFunction(() => {
+    const nav = document.querySelector('nav');
+    const active = nav.querySelector('a.is-active').getBoundingClientRect();
+    const bounds = nav.getBoundingClientRect();
+    const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1;
+    return atBottom && nav.scrollLeft > 0 && active.left >= bounds.left && active.right <= bounds.right;
+  }, null, { timeout: 5000 });
   const navigation = await page.evaluate(() => {
     const nav = document.querySelector('nav');
     const activeChip = nav.querySelector('a.is-active');
