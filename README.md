@@ -180,9 +180,9 @@ H-flat은 27개 스킬의 이름과 짧게 줄인 description을 한 목록으�
 
 ## 스킬 크기
 
-2026-10-04 현재 worktree의 SKILL.md 27개를 측정했다. 줄 수는 frontmatter를 포함한 전체 줄, 바이트는 UTF-8 파일 크기, description은 따옴표를 제외한 글자 수다. 설명 길이만으로 호출 품질을 판정하지 않는다.
+2026-10-05 현재 worktree의 SKILL.md 27개를 측정했다. 줄 수는 frontmatter를 포함한 전체 줄, 바이트는 UTF-8 파일 크기, description은 따옴표를 제외한 글자 수다. 설명 길이만으로 호출 품질을 판정하지 않는다.
 
-측정 입력 SHA-256: `0ecc70f2b8ee5554f905ef19e78d7883d9292145a3bb51cb170f7167cc2dcc1c`. 분류·경로 순으로 정렬한 각 상대 경로와 파일 바이트를 NUL로 구분해 계산했다.
+측정 입력 SHA-256: `135e5610498e73d50cca2b76e572a85013caabd4fc0b93301e4040ece6aaec56`. 분류·경로 순으로 정렬한 각 상대 경로와 파일 바이트를 NUL로 구분해 계산했다.
 
 | 스킬 | 본문 줄 수 | UTF-8 바이트 | description 글자 수 |
 |---|---:|---:|---:|
@@ -210,7 +210,7 @@ H-flat은 27개 스킬의 이름과 짧게 줄인 description을 한 목록으�
 | [repo-docs-spec](docs/repo-docs-spec/SKILL.md) | 303 | 7724 | 64 |
 | [git-branch](git/git-branch/SKILL.md) | 122 | 6480 | 48 |
 | [git-commit](git/git-commit/SKILL.md) | 135 | 5388 | 62 |
-| [git-issue](git/git-issue/SKILL.md) | 296 | 14406 | 48 |
+| [git-issue](git/git-issue/SKILL.md) | 299 | 15402 | 48 |
 | [git-pull-request](git/git-pull-request/SKILL.md) | 111 | 5805 | 45 |
 | [skill-sync](tools/skill-sync/SKILL.md) | 67 | 6279 | 53 |
 
