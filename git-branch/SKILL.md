@@ -1,6 +1,6 @@
 ---
 name: git-branch
-description: "Git 브랜치 생성·이름 짓기, PR 생성·머지, main 반영, 병렬 에이전트 작업 분배, 릴리스 시 사용. main + 짧은 작업 브랜치, 이슈 작업, PR 연결, squash merge"
+description: "Git 작업 브랜치를 만들거나 PR 생성·머지·릴리스·머지 후 정리를 수행할 때 사용."
 ---
 
 # Git Branch
