@@ -19,12 +19,11 @@
 |---|---|---|
 | 오픈소스 사용자와 기여자 | README, docs, CONTRIBUTING | 설치와 사용이 첫 화면에 있고 사실만 있다 |
 | 채용 담당 CTO | README, 설계 문서, 실험, 결정 기록 | 판단의 근거와 깊이가 보인다 |
-| 랜딩 페이지, 링크드인, 블로그 독자 | 데모 GIF, 홍보 영상, 비공개 기록에서 다시 쓴 글 | 가짜 없이 정갈하다 |
+| 랜딩 페이지, 링크드인, 블로그 독자 | 데모 GIF, 홍보 영상, 비공개 기록에서 다시 쓴 글 | 허위 화면·수치와 출처 누락이 없다 |
 | AI 에이전트 | AGENTS.md, llms.txt, docs | 기계가 읽기 쉬운 고정 형식이다 |
 | 작성자 본인 | 비공개 판단 기록 | 문제, 생각, 설계, 검증, 변경의 흐름과 놓친 것이 남는다 |
 
-- 공개 문서는 한국어로 먼저 쓰고 영어 번역은 나중에 한다
-- 오픈소스 라이선스는 MIT다. 판매는 클라우드 서비스와 학습한 모델 API를 분리해서 한다
+- 언어·라이선스·배포 방식은 대상 저장소의 확정값을 사용한다.
 
 ## 공통 원칙
 
@@ -32,12 +31,12 @@
 
 | 원칙 | 이유 |
 |---|---|
-| 작업 중인 저장소 안에 같은 역할의 규칙이 있으면 그것을 따르고, 없으면 스킬이 다른 규칙보다 우선한다 | 다른 프로젝트의 관례를 덮어쓰지 않고, 관례가 없을 때는 결과를 고정하기 위해서다 |
+| 상위 지시를 따른 뒤, 같은 대상·조건의 저장소 규칙을 우선 적용한다. 없으면 공통 정본과 전용 규칙의 위임 범위를 적용한다 | 다른 프로젝트의 관례를 덮어쓰지 않고, 관례가 없을 때는 결과를 고정하기 위해서다 |
 | 스킬에 특정 프로젝트, 제품, 사람 이름을 넣지 않는다. mutoscope, GitHub, Rust 같은 도구 이름은 쓴다 | 다른 저장소에도 그대로 쓰기 위해서다 |
 | 공통 규칙은 공통 스킬 하나가 정본이고, 종류별이나 언어별 스킬은 맡긴 부분(템플릿, 그 종류에만 있는 규칙)만 정한다 | 같은 규칙이 두 곳에서 어긋나지 않기 위해서다 |
-| 긴 설명 대신 AI가 골라 쓰는 표와 목록으로 쓴다 | 토큰을 줄이고 판단 여지를 없애기 위해서다 |
+| 같은 속성으로 비교하는 선택지는 표, 작업 순서는 목록으로 쓴다 | 토큰을 줄이고 판단 여지를 없애기 위해서다 |
 | 채울 사실이 없으면 저장하지 않고 빠진 칸을 보고한다 | 지어낸 내용을 막기 위해서다 |
-| 개발자가 실제로 쓰는 말을 쓴다. 책 번역어를 쓰지 않는다 | 읽는 사람이 바로 알아듣게 하기 위해서다 |
+| 용어 선택은 [repo-docs](repo-docs/SKILL.md#용어) 정본을 따른다 | 읽는 사람이 바로 알아듣게 하기 위해서다 |
 | 커밋, 작성자, 문서 어디에도 AI 작성 흔적을 남기지 않는다. 작성자는 사용자 git 설정이다 | 공개 저장소의 기록을 사용자 것으로 두기 위해서다 |
 | 승인 전 스킬은 이름 끝에 `-demo`를 붙이고 기존 스킬을 대체하지 않는다 | 검토 전 규칙이 실제 작업에 섞이지 않기 위해서다 |
 | 스킬을 고치면 다른 스킬과 우선순위 문구, 용어, 서로 참조하는 규칙, 금지 항목을 교차 확인한다 | 스킬끼리 모순되지 않기 위해서다 |
@@ -54,13 +53,13 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 ---
 ```
 
-- description: 사용자가 쓸 법한 낱말(README, 커밋, PR, 리팩터링 등) 포함, o200k 60토큰 이내. 다른 스킬 이름과 `함께 적용` 금지
+- description: 사용 조건과 경계를 보존해 축약한다. H-flat 실험에서 채택한 설명을 사용한다. 다른 스킬 이름과 `함께 적용` 금지
 - description은 항상 올라가는 카탈로그라 짧게, 본문은 쓸 때만 올라가므로 규칙을 빠짐없이
 
 `# 제목` 바로 아래 머리 목록(이 순서, 이 글자):
 
 ```text
-- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
+- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
 - 기반: {기반 스킬} 먼저 적용. 이 스킬 범위: {맡는 것}
 - 필요할 때만 읽기: {조건} → {스킬}; {조건} → {스킬}
 ```
@@ -72,40 +71,18 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 - 쓰지 않는 끝: `-다`, `-한다`, `-함`, `-음`(없음, 다음 같은 명사 제외), `-임`, `-됨`, `-ㅁ`형
 - 템플릿 코드 블록과 백틱 안 예시는 문서에 그대로 나올 글자라 문체 규칙 밖
 - 형식 검사: `python3 skill-sync/scripts/skill_check.py .`, 출력 `total 0`까지 수정
-- 실행 코드: 본문 대신 `scripts/*.py`. 본문에는 실행 한 줄 `python3 <이 스킬 폴더>/scripts/{이름}.py`와 쓰는 순간 필요한 규칙만. Python 3.9 이상 표준 라이브러리 우선, 외부 도구는 그 도구의 명령이나 공식 패키지
+- 실행 코드는 `scripts/`에 둔다. 본문에는 실행 명령과 사용 시 필요한 조건을 둔다. 런타임·버전·의존성은 해당 스크립트 실행 계약에 명시한다. Python은 표준 라이브러리 우선이며 외부 도구는 공식 명령이나 패키지를 사용한다.
 - 스크립트 함수: code-style 비용 주석
 
 ## 스킬 연결
 
-스킬은 기반 줄로만 항상 함께 올라가고, 나머지는 조건이 참일 때만 올라간다.
+연결 정본은 각 `SKILL.md` 머리의 기반과 조건부 읽기 줄이다. 기반은 해당 스킬을 사용할 때 읽고, 조건부 연결은 작업 조건이 맞을 때만 읽는다. 이미 읽은 정본을 순환 링크 때문에 다시 읽지 않는다. 별도 수동 연결 표는 유지하지 않는다.
 
-| 스킬 | 기반 | 필요할 때만 읽기 |
-|---|---|---|
-| repo-docs | 없음 | 코드 주석 → code-style; 커밋, PR, 이슈, 브랜치 → git-* 스킬; 그림 파일, 대체 글 → repo-docs-figures |
-| repo-docs-readme | repo-docs | 대표 그림, 흐름 그림, 측정 결과 차트, 데모 GIF 제작 → repo-docs-figures; README 갱신 뒤 `llms.txt` 재생성 → repo-docs-llms |
-| repo-docs-design | repo-docs | 코드에 들어간 인터페이스 문서 → repo-docs-spec; 타입 밖 실패 조건·제약을 코드 주석으로 이동 → code-style; 맥락, 구성 요소, 순서, 상태 그림 → repo-docs-figures |
-| repo-docs-spec | repo-docs | 데이터 그림 → repo-docs-figures; 요구·검증 범위, 생성표 의미, 호환성 확인 → repo-docs-design |
-| repo-docs-decision | repo-docs | 비공개 판단 기록에서 옮길 때 → repo-docs-journal |
-| repo-docs-experiment | repo-docs | 결과 차트 → repo-docs-figures; 완료 조건의 범위·시간 추정 변경 → git-issue; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit |
-| repo-docs-note | repo-docs | 없음 |
-| repo-docs-figures | repo-docs | 없음 |
-| repo-docs-root | repo-docs | 단계 판정, 필요한 도구 문장 → repo-docs-readme; CONTRIBUTING 커밋과 PR 절 → git-branch, git-commit, git-pull-request |
-| repo-docs-llms | repo-docs | 없음 |
-| repo-docs-journal | repo-docs | 판단이 공개 설계를 정했을 때 → repo-docs-decision |
-| repo-docs-promo | repo-docs | 없음 |
-| git-commit | 없음 | 커밋 메시지 작성·검토 → repo-docs |
-| git-branch | 없음 | 작업 선택, 시작 전 이슈 우선순위와 막힘 확인 → git-issue; 커밋 메시지, PR 제목, squash 메시지 → git-commit; PR 본문 → git-pull-request |
-| git-issue | 없음 | 제목·본문·댓글 작성·검토 → repo-docs; build, docs 제목의 끝말이나 영역 라벨의 scope 단어 → git-commit |
-| git-pull-request | 없음 | 제목·본문·댓글 작성·검토 → repo-docs; 테스트 변경 근거 확인 → code-style; 그림 원본·입력·산출물 변경 → repo-docs-figures |
-| code-style | 없음 | 리팩터링 기법 선택 → code-refactoring |
-| code-refactoring | code-style | 없음 |
-| code-style-rust, code-style-kotlin, code-style-python | code-style | 없음 |
-| code-style-javascript | code-style | CSS 문자열, 인라인 style, SVG 속성 값 작성 → design-tokens |
-| code-style-css | code-style, design-tokens | 없음 |
-| design-tokens | 없음 | CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색·글꼴·크기 → repo-docs-figures; 기대값 근거 확인 → code-style |
-| folder-naming | 없음 | 없음 |
-| skill-sync | 없음 | 원본 저장소 커밋 → git-commit |
-| html-report | 없음 | 없음 |
+## H-flat 노출
+
+27개 스킬을 같은 단계에 두고 이름과 description을 먼저 노출한다. 본문은 선택한 뒤 읽는다. H-flat은 설명을 줄이는 방식이며, 스킬 본문을 합치거나 상위 router를 추가하는 구조가 아니다.
+
+2차 실험은 128개 요청과 요청당 3회 반복에서 H-flat을 채택했다. tree와 hybrid는 채택 기준을 모두 통과하지 못해 보류했다. 보류를 열등함의 입증으로 해석하지 않는다. 이 저장소는 채택된 후보 설명을 사용하고, 본문 연결은 각 스킬 머리에 유지한다.
 
 ## 스킬 목록
 
@@ -159,74 +136,34 @@ description: "{언제} 사용. {담긴 것 명사구, 쉼표로}"
 
 ## 스킬 크기
 
-2026-10-03 기준 `SKILL.md` 본문과 frontmatter를 포함한 줄 수와 UTF-8 바이트 수다. 스크립트는 제외한다.
+크기는 현재 파일에서 측정한다. 측정 커밋이 없는 수동 크기 표는 유지하지 않는다. 설명 길이만으로 호출 품질을 판정하지 않는다.
 
-| 스킬 | 줄 | 바이트 |
-|---|---|---|
-| code-refactoring | 135 | 12,271 |
-| code-style | 282 | 19,339 |
-| code-style-css | 141 | 7,185 |
-| code-style-javascript | 148 | 6,362 |
-| code-style-kotlin | 155 | 6,573 |
-| code-style-python | 131 | 5,643 |
-| code-style-rust | 191 | 7,691 |
-| design-tokens | 117 | 8,134 |
-| folder-naming | 72 | 3,093 |
-| git-branch | 121 | 6,375 |
-| git-commit | 135 | 5,372 |
-| git-issue | 219 | 7,326 |
-| git-pull-request | 108 | 5,393 |
-| html-report | 115 | 5,844 |
-| repo-docs | 241 | 19,233 |
-| repo-docs-decision | 117 | 5,376 |
-| repo-docs-design | 166 | 9,560 |
-| repo-docs-experiment | 339 | 12,202 |
-| repo-docs-figures | 139 | 9,022 |
-| repo-docs-journal | 217 | 6,162 |
-| repo-docs-llms | 72 | 2,993 |
-| repo-docs-note | 111 | 2,809 |
-| repo-docs-promo | 107 | 4,024 |
-| repo-docs-readme | 243 | 12,270 |
-| repo-docs-root | 184 | 6,710 |
-| repo-docs-spec | 297 | 7,063 |
-| skill-sync | 60 | 4,249 |
+## 규칙 소유권
 
-## 주요 결정
+다른 스킬의 규칙을 이 README에 복제하지 않는다. 현행 조건과 예외는 아래 소유 스킬에서 확인한다.
 
-| 결정 | 이유 | 버린 선택지 |
-|---|---|---|
-| 스킬 원본은 프로젝트 저장소와 분리한 별도 저장소에 둔다 | 여러 프로젝트가 같은 스킬을 쓰고, 프로젝트의 비공개 폴더와 섞이지 않는다 | 프로젝트 `.local/skills` 복사본 |
-| `AGENTS.md` 명령 절은 CI나 검사 스크립트의 명령만 쓰고, 없으면 절을 뺀다 | 설계 단계에는 README 개발 절이 없어 명령을 가져올 곳이 없다. 없는 명령을 지어내지 않는다 | 설계 단계에도 README 개발 절 추가 |
-| `LICENSE`는 라이선스를 정한 저장소에만 만든다 | 미정이거나 비공개 배포인 저장소에서 AI가 라이선스를 임의로 고르거나 문서를 못 만드는 교착을 막는다 | 모든 저장소에 필수 |
-| 스킬 이름은 `repo-docs-*`, `git-*` | GitHub에 배포되는 문서라는 목적이 이름에 드러나고, 저장소 밖 마크다운에서 켜지지 않는다 | `markdown-*`: 형식 이름이라 켜지는 범위가 넓고 마크다운이 아닌 산출물(`.muto`, JSON, `.tape`, llms.txt)과 맞지 않는다 |
-| 문서 형식, 기능 설계, 사실 상태 | [repo-docs](repo-docs/SKILL.md), [repo-docs-design](repo-docs-design/SKILL.md), [repo-docs-readme](repo-docs-readme/SKILL.md)의 종류별 정본 | README에 규칙 복제 |
-| 문체는 위치로 정한다. README와 루트 대외 문서는 합쇼, docs와 기록은 평서, 제목·목록·표는 명사형, 요청은 `-세요` | 번역된 주요 오픈소스 문서 7곳이 모두 합쇼였고, 국내 기술 문서(K8s 개념 문서, NHN)는 평어였다. 한 파일 안 혼용이 가장 큰 문제였다 | 모든 문서 평서, 해요체(토스, 당근), `-십시오` |
-| 가짜 대신 표시가 붙은 자리표시 | 공개 문서와 포트폴리오에 가짜 수치나 화면이 있으면 신뢰를 잃는다 | 가짜 화면 이미지, 예상 수치 |
-| 문서 그림과 차트는 mutoscope | 원본·색 역할·글꼴·움직임을 한 도구에서 정한다. 사용 규칙은 [repo-docs-figures](repo-docs-figures/SKILL.md)가 맡는다 | 도구별 템플릿과 스킬 색표 |
-| README와 docs 데모 GIF는 VHS | 스크립트로 같은 영상을 다시 만들고 CI에서도 돌릴 수 있다 | 화면 녹화 앱 |
-| 홍보 영상은 사용자가 화면 녹화 앱(Recordly)으로 직접 찍는다 | AI가 조작해 보니 녹화 앱 조작 창이 AI 화면 캡처에 잡히지 않고, 커서 기반 자동 확대가 키보드 화면에서 거의 일어나지 않았으며, 매번 같은 영상이 나오지 않았다 | AI가 녹화 앱 조작 |
-| 변환 스크립트는 스킬 폴더 안에 둔다 | 저장소마다 변환 스크립트가 흩어지고 달라지는 것을 막는다 | 저장소별 스크립트 |
-| 실행 코드는 SKILL.md 본문 대신 `scripts/` 파일로 둔다 | AI가 코드 본문을 읽지 않고 실행만 해서 문서 작업마다 토큰이 준다. Codex, Claude, Antigravity 모두 스킬 폴더의 `scripts/`를 지원한다 | 본문 코드 블록(읽을 때마다 토큰 소비), 저장소 안 스크립트 |
-| README 그림은 대표 그림, 결과 차트, 구성 그림 하나씩까지 | 첫 화면을 짧게 두고 나머지는 docs로 보낸다 | 그림 여러 장 |
-| README 수치는 실험 보고서 링크와 함께만 | 근거 없는 성능 주장을 막는다 | 링크 없는 수치 |
-| README 서식 | [repo-docs](repo-docs/SKILL.md)와 [repo-docs-readme](repo-docs-readme/SKILL.md)의 정본 | README에 서식 규칙 복제 |
-| AGENTS.md가 원본, CLAUDE.md는 심볼릭 링크 | 여러 에이전트가 한 지침을 읽는다. 조사한 오픈소스 18곳 중 15곳이 AGENTS.md를 둔다 | 에이전트별 지침 파일 |
-| llms.txt를 둔다 | AI가 문서 목록과 원문을 한 번에 찾는다. 손으로 쓰지 않고 스크립트로 만든다 | 없음 |
-| CONTRIBUTING, SECURITY는 `.github/`, CHANGELOG는 루트 | GitHub는 커뮤니티 파일을 `.github`, 루트, `docs` 순서로 찾는다. CHANGELOG는 그 대상이 아니다 | 모두 루트 |
-| 공개 결정 기록은 비공개 기록을 다시 쓴다 | 비공개 기록의 가정, 추정, 놓친 것은 공개하지 않고 확인된 사실만 옮긴다 | 비공개 기록 복사, 링크 |
-| 공개 문서에서 `.local` 링크 금지 | 비공개 폴더는 git에서 제외되어 링크가 깨지고 내용이 새어 나간다 | 없음 |
-| 실험은 사전 등록과 원자료 보존 | 결과를 본 뒤 가설을 바꾸는 것을 막고 재현을 보장한다 | 결과만 남기는 보고서 |
-| 스킬끼리는 기반 줄과 조건부 줄로만 부른다 | description의 `함께 적용`은 필요 없는 스킬까지 항상 불러왔다. 조건부 로드로 요청 14개의 로드 합이 13.8% 줄었다 | description에 다른 스킬 이름, 본문 곳곳의 읽기 지시 |
-| 스킬 카탈로그 문서를 따로 두지 않는다 | 이름과 description이 이미 모든 대화에 올라가는 카탈로그다(o200k 1248). 문서 종류 라우팅은 repo-docs 문서 목록 표가, 관리용 목록은 이 문서가 맡아 실행 중 추가 토큰이 없다 | 카탈로그 스킬(요청마다 추가 로드, 두 곳 관리) |
-| 문서 목록 표는 repo-docs에 둔다 | 인터페이스 문서를 쓸 때 repo-docs-design을 함께 부를 필요가 없어 명령 문서 작성 로드가 46.1% 줄었다 | repo-docs-design 안 문서 목록 |
-| 리팩터링 기법은 code-refactoring으로 분리 | 기법 목록이 code-style의 절반 가까이를 차지했고 리팩터링 기법을 고를 때만 필요하다 | code-style 한 파일 |
-| 디자인 토큰은 CSS 스킬과 나눈 별도 스킬이고 CSS 스킬의 기반이다 | 토큰은 CSS뿐 아니라 JavaScript가 만드는 SVG, 인라인 style에도 걸린다. CSS를 쓸 때는 항상 필요해 기반 줄로 함께 올린다 | code-style-css 안의 절 |
-| 하드코딩 금지는 검사 스크립트로 강제한다 | 규칙 문장만으로는 AI가 한 번만 쓰는 값을 직접 적는다. hex 색, 단위 붙은 길이와 시간, 글꼴 이름, breakpoint 밖 `@media` 숫자, 색·그림자 기본 토큰 직접 참조, 토큰 파일 밖 테마 분기, 스타일 객체 숫자를 `check_tokens`가 찾아 `total 0`까지 고치게 한다 | 리뷰에서 눈으로 확인 |
-| 색·그림자만 의미 토큰을 강제하고 그 밖 분류는 기본 토큰을 허용한다 | 테마에 따라 바뀌는 값은 색과 그림자다. 간격마다 의미 토큰을 만들면 토큰 수가 늘고 같은 값이 여러 이름을 갖는다 | 모든 분류에 의미 토큰 강제 |
-| 비용 주석 누락은 `check_cost_comments`로 검사하고 허용 표시는 두지 않는다 | 모든 언어 작업에 걸리는 규칙이라 사람이 확인하면 빠진다. 반복, 재귀, I/O가 보이는 함수만 보고, 잘못 잡히면 거짓 표시 대신 실제 비용(`time O(1)`)을 적는다 | 함수마다 눈으로 확인, `cost-allow` 표시 |
-| 스킬 문체는 명사구 끝 | 끝말은 토큰 차이가 거의 없고, 설명 문장을 `{대상}: {값}` 명사구로 줄일 때 토큰이 줄었다. 끝이 하나면 검사할 수 있다 | `-다` 문장, `-함`, `-음` 혼용 |
+| 대상 | 정본 |
+|---|---|
+| 문서 종류·언어·문체·사실 상태·비공개 전환 | [repo-docs](repo-docs/SKILL.md) |
+| README 배치·그림·측정 결과 | [repo-docs-readme](repo-docs-readme/SKILL.md) |
+| AGENTS·LICENSE·대외 파일 | [repo-docs-root](repo-docs-root/SKILL.md) |
+| 그림 도구·VHS·원본과 산출물 | [repo-docs-figures](repo-docs-figures/SKILL.md) |
+| 녹화 준비와 자동화 검증 조건 | [repo-docs-promo](repo-docs-promo/SKILL.md) |
+| 색인 생성·갱신 | [repo-docs-llms](repo-docs-llms/SKILL.md) |
+| 공개 결정 | [repo-docs-decision](repo-docs-decision/SKILL.md) |
+| 사전 등록·원자료·재현 | [repo-docs-experiment](repo-docs-experiment/SKILL.md) |
+| 리팩터링 기법 | [code-refactoring](code-refactoring/SKILL.md) |
+| 비용 주석 대상·오탐 처리 | [code-style](code-style/SKILL.md#비용-주석) |
+| 화면 값·생성물·하드코딩 검사 | [design-tokens](design-tokens/SKILL.md) |
+| 검사·설치·계정 배포 | [skill-sync](skill-sync/SKILL.md) |
 
-## 검증
+스킬 원본은 프로젝트 저장소와 분리해 관리한다. 여러 프로젝트가 같은 원본을 사용하고 설치본은 배포 결과로 취급한다. 이름·description이 초기 카탈로그이므로 별도 카탈로그 스킬은 두지 않는다.
+
+기존 도구 관찰과 토큰 절감 수치는 당시 검증 이력이며 보편 규칙의 근거로 확대하지 않는다. 문체 검증의 최신 결과는 144개 중 채택 0개, 잠정 강등 13개다. 이번 정리에서는 새 문체 규칙을 추가하지 않는다.
+
+## 검증 이력
+
+아래는 각 시점의 관찰이며 현재 모든 경계의 검증 통과를 뜻하지 않는다. 현행 검사 범위는 소유 스킬의 실행 계약을 따른다.
 
 - 같은 가상 사실로 에이전트 둘이 각자 문서를 만들고 비교했다. 2026-09-29 검증에서 `docs/README.md`와 실험 목록은 같았고 README는 네 줄만 달랐다. 2026-09-30 검증에서 `docs/README.md`와 결정 목록은 같았고, 그림 식별자, AGENTS.md 규칙, 결정 문장처럼 달라진 곳은 규칙을 좁혀 고쳤다
 - 처음 보는 에이전트 하나가 스킬 사이 모순, 문체 위반, 스크립트 오류를 따로 검사했고 찾은 18건을 고쳤다
