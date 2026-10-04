@@ -1,15 +1,15 @@
 ---
 name: repo-docs-spec
-description: "docs 인터페이스 문서(protocol, cli, ui, data, configuration, errors)를 만들거나 고칠 때 사용. 문서별 고정 템플릿, 항목별 표 형식"
+description: "구현된 protocol·CLI·UI·data·configuration·errors의 형식과 값을 문서화할 때 사용."
 ---
 
 # Repo Docs Spec
 
-- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
+- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 인터페이스 문서 템플릿과 항목 규칙
 - 필요할 때만 읽기: 데이터 그림을 만들거나 바꿀 때 → repo-docs-figures; 요구·검증 범위, 생성표 의미, 호환성 확인 → repo-docs-design
-- 문서 생성 여부: 만드는 조건(repo-docs 문서 목록). 인터페이스가 `main` 코드에 들어간 뒤에만. 그 전에는 `docs/design/{주제}.md` 상세 설계(repo-docs-design)
-- 인터페이스 문서: 찾아보는 문서. 설명과 이유 없이 항목만. 이유: 설계 문서에
+- 문서 생성 여부: 만드는 조건(repo-docs 문서 목록). 검증된 구현과 같은 PR에서 최초 작성, main 반영 여부는 사실 상태로 구분. 구현 전에는 `docs/design/{주제}.md` 상세 설계(repo-docs-design)
+- 인터페이스 문서: 찾아보는 문서. 형식 이해에 필요한 설명과 항목 포함. 선택 이유는 설계 문서에
 - 코드에서 만들 수 있는 내용(명령 도움말, 스키마, 기본값): 코드와 같은 글자. 코드가 바뀌면 같은 PR에서 수정
 - 항목 순서: 문서마다 정한 순서. 정하지 않은 곳은 알파벳순
 
@@ -18,6 +18,8 @@ description: "docs 인터페이스 문서(protocol, cli, ui, data, configuration
 - 요구·검증 범위, 생성표 의미, 기능 생략 시 호환 사례: (repo-docs-design 요구사항)
 
 ## protocol.md
+
+아래는 JSON 요청·응답 프로토콜의 예. 인코딩·메시지 유형·순서·예시는 실제 구현 계약으로 대체
 
 ````text
 # 프로토콜
@@ -31,7 +33,7 @@ description: "docs 인터페이스 문서(protocol, cli, ui, data, configuration
 | 방식 | {stdio, Unix 소켓 등} |
 | 형식 | {JSON-RPC 2.0 등} |
 | 메시지 구분 | {줄 단위, 길이 헤더 등} |
-| 인코딩 | UTF-8 |
+| 인코딩 | {실제 인코딩 또는 바이너리 형식} |
 
 ## 연결 수명
 
@@ -183,6 +185,8 @@ description: "docs 인터페이스 문서(protocol, cli, ui, data, configuration
 
 ## data.md
 
+아래는 관계형 저장소 템플릿. 다른 저장 형식은 실제 스키마·관계·불변 조건·보존 정책으로 구성
+
 ````text
 # 데이터
 
@@ -245,6 +249,8 @@ description: "docs 인터페이스 문서(protocol, cli, ui, data, configuration
 
 ## configuration.md
 
+아래는 TOML 설정 예. 실제 형식과 코드의 설정 우선순위로 교체
+
 ````text
 # 설정
 
@@ -271,7 +277,7 @@ description: "docs 인터페이스 문서(protocol, cli, ui, data, configuration
 ```
 ````
 
-- 우선순위에서 해당하지 않는 단계: 삭제 후 번호 재부여
+- 우선순위: 실제 코드의 적용 순서 대조. 해당하지 않는 단계 삭제, 순서 수정 후 번호 재부여
 - 표 이름 순서: 설정 파일에 나오는 순서. 키: 알파벳순
 - 환경 변수가 없으면 `없음`
 - 전체 예: 기본값과 같은 값만
