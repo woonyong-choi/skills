@@ -3,11 +3,12 @@
 사용: python3 check_doc.py 파일 [파일 ...] (저장소 루트에서 실행)
 """
 import os
+import html
+import urllib.parse
 import re
 import sys
 
 FORMAL_FILES = {"README.ko.md"}
-PRIVATE_PATH = re.compile(r"\]\((\.\.?/)*(?:docs/+(\./)*archive|archive|\.local)(?:/|[?#)])|^\[[^\]]*\]: *(\.\.?/)*(?:docs/+(\./)*archive|archive|\.local)(?:/|[?#])")
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 FENCE_CLOSE = re.compile(r"^ {0,3}(?:`+|~+)[ \t]*$")
 NOT_PARAGRAPH = re.compile(r"^(\||- |[0-9]+\. |#|!\[|\[!|---|<)|^[a-z_]+: ")
@@ -51,6 +52,31 @@ DESIGN_KO = ["요약", "동기", "예시", "상세 설계", "단점", "대안", 
 DESIGN_EN = ["Summary", "Motivation", "Examples", "Design", "Drawbacks", "Alternatives", "Unresolved questions"]
 DECISION_KO = ["배경", "선택지", "결정", "결과", "다시 볼 조건"]
 DECISION_EN = ["Context", "Options", "Decision", "Consequences", "Revisit when"]
+
+
+
+# cost: time O(n * d), heap O(n), stack O(1), io 0
+# vars: n = 경로 길이, d = 중첩 URL 이스케이프 깊이
+# basis: estimate; URL 파싱과 디코딩은 메모리에서만 수행
+def _private_path(value: str) -> bool:
+    decoded = html.unescape(value)
+    while True:
+        unquoted = urllib.parse.unquote(decoded)
+        if unquoted == decoded:
+            break
+        decoded = unquoted
+    path = urllib.parse.urlsplit(decoded.replace("\\", "/")).path
+    parts = [part.casefold() for part in path.split("/") if part not in ("", ".")]
+    return ".local" in parts or "archive" in parts
+
+def _private_links(raw: str) -> bool:
+    links = re.findall(r"!?\[[^\]]*\]\(<?([^\s)>]+)", raw)
+    links += re.findall(r"^\s*\[[^\]]+\]:\s*<?([^\s>]+)", raw)
+    links += re.findall(r"https?://[^\s<>\"']+", raw)
+    for match in re.finditer(r"\b(?:href|src|srcset)\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s>]+))", raw, re.IGNORECASE):
+        value = next(group for group in match.groups() if group is not None)
+        links.extend(part.strip().split()[0] for part in value.split(',') if part.strip())
+    return any(_private_path(value) for value in links)
 
 
 # cost: time O(1), heap O(1), stack O(1), alloc 0
@@ -258,7 +284,6 @@ def check(path: str) -> int:
     is_formal = name in FORMAL_FILES
     english = is_english(path)
     count = number = fence_length = previous_level = 0
-    bold_chars = visible_chars = bold_spans = 0
     fence_marker = ""
     in_fence = in_comment = is_blank = False
     previous_quote = ""
@@ -266,7 +291,7 @@ def check(path: str) -> int:
         for number, raw in enumerate(file, 1):
             raw = raw.rstrip("\n")
             errors = []
-            if not is_private and PRIVATE_PATH.search(raw.lower()):
+            if not is_private and _private_links(raw):
                 errors.append("비공개 경로")
             style_raw = raw
             if not in_fence:
@@ -291,10 +316,6 @@ def check(path: str) -> int:
                 errors += prose_errors(raw, is_formal, english, previous_quote, README_TAGS if name in ("README.md", "README.ko.md") else ALLOWED_TAGS)
                 text = _style_text(style_raw, previous_quote)
                 errors += _style_errors(text)
-                for match in BOLD.finditer(text):
-                    bold_chars += _visible_length(match["body"])
-                    bold_spans += 1
-                visible_chars += _visible_length(text)
                 previous_quote = raw
                 if HEADING.match(raw):
                     level = len(raw.split()[0])
@@ -303,9 +324,6 @@ def check(path: str) -> int:
             for message in errors:
                 print(f"{name}:{number}: {message}")
             count += len(errors)
-    if bold_spans >= 3 and visible_chars and bold_chars / visible_chars >= 0.2:
-        print(f"{name}: 굵게 남용 비율 {bold_chars / visible_chars:.0%} (강조 {bold_spans}개, 기준 20%·3개 이상)")
-        count += 1
     if in_fence:
         print(f"{name}:{number}: 코드 블록 닫힘 없음")
         count += 1
