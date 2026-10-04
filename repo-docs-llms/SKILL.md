@@ -5,7 +5,7 @@ description: "README와 문서 목록에서 llms.txt·llms-full.txt를 생성·�
 
 # Repo Docs Llms
 
-- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
+- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 루트 `llms.txt`, `llms-full.txt`의 형식과 생성
 - 필요할 때만 읽기: 생성물 동반 PR 확인 → git-pull-request
 
@@ -61,7 +61,9 @@ python3 <이 스킬 폴더>/scripts/gen_llms.py
 - `llms-full.txt`도 만들 때: `--full`
 
 - `<이 스킬 폴더>`: 이 SKILL.md가 있는 폴더. 스크립트 본문은 읽지 않고 실행만. Windows에서 `python3`가 없으면 `py -3`
-- 입력 검사: `README.md`, `docs/README.md`, 표의 모든 문서가 저장소 안 `.md`이고 git 제외 대상이 아닐 때만 생성. 심볼릭 링크는 실제 경로로 판정, 대소문자·URL 인코딩을 정규화해 비공개 경로를 직접 차단하고 git 제외 판정도 적용. 하나라도 어긋나면 파일을 쓰지 않고 중단
+- 입력 위치: `README.md`, `docs/README.md`, 표의 모든 문서는 저장소 안 `.md` 파일만 허용. 심볼릭 링크는 실제로 가리키는 경로로 판정
+- 공개 여부: 경로의 대소문자 차이와 URL 인코딩을 풀어 `.local`·`archive` 폴더 경로 차단. git 제외 대상도 차단
+- 입력 검사에 하나라도 실패하면 파일을 쓰지 않고 중단
 - 코드 블록 안 표 행: 목록에서 제외
 
 - 실행 뒤 확인: `llms.txt` 링크 수와 `docs/README.md` 표 행 수 일치(`CHANGELOG.md` 행 제외)

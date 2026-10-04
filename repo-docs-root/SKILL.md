@@ -5,7 +5,7 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 
 # Repo Docs Root
 
-- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
+- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 루트와 `.github/`의 문서 파일. README와 `llms.txt`는 제외(repo-docs-readme, repo-docs-llms)
 - 필요할 때만 읽기: 단계 판정(단계 표), 필요한 도구 문장(설치 절) → repo-docs-readme; CONTRIBUTING 커밋과 PR 절 → git-branch, git-commit, git-pull-request; 이슈 필요 여부와 연결 → git-issue
 
@@ -13,7 +13,7 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 
 ## 파일
 
-| 파일 | 위치 | 언어·문체 정본 | 설계 | 개발 중 | 실행 가능 | 배포 |
+| 파일 | 위치 | 언어·문체 규칙을 정한 스킬 | 설계 | 개발 중 | 실행 가능 | 배포 |
 |---|---|---|---|---|---|---|
 | `LICENSE` | 루트 | 해당 없음 | 조건부 | 조건부 | 조건부 | 조건부 |
 | `AGENTS.md` | 루트 | repo-docs | 필수 | 필수 | 필수 | 필수 |
@@ -71,7 +71,7 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 | 설계 문서 문장 | `docs/README.md`가 있을 때만. 없으면 규칙 셋째 항목도 삭제 |
 | 규칙 | 앞 세 항목 고정(첫째, 셋째는 위 조건). `{저장소 규칙}`은 `docs/architecture.md` 불변 조건 절의 항목마다 조건 문장을 명사구로 줄여 옮기기: `설정 파일은 서버만 고친다` → `설정 파일은 서버만 수정`. 없으면 그 줄 제외 |
 
-- 필요한 명령·경로·규칙을 보존하고 중복은 소유 문서 링크로 대체
+- 필요한 명령·경로·규칙을 보존하고, 다른 문서가 정의한 내용을 반복한 부분은 그 문서의 해당 절 링크로 대체
 - 도구별 설정(모델, 권한, 훅) 금지
 - 에이전트 이름, 도구 이름으로 규칙 분리 금지
 

@@ -5,7 +5,7 @@ description: "저장소 문서의 구조도·차트·대체 글·데모 GIF를 �
 
 # Repo Docs Figures
 
-- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
+- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 그림 원본 형식, 변환, 검사, 대체 글. 그림을 넣는 자리는 종류별 스킬 담당
 - 필요할 때만 읽기: README 그림 배치 → repo-docs-readme; 실험 차트의 통계·신뢰구간 → repo-docs-experiment
 
@@ -41,7 +41,7 @@ node <mutoscope 경로>/src/cli.js render docs/assets/architecture.muto --strict
 node <mutoscope 경로>/src/cli.js render docs/assets/architecture.muto --strict --static
 ```
 
-- 실행 전 사용 버전의 도움말과 성공·실패 종료 계약 확인·기록
+- 실행 전 사용할 버전의 도움말에서 명령 형식과 성공·실패 시 종료 코드를 확인·기록
 - 같은 원본·같은 도구 커밋으로 재현. 확인한 커밋과 Node 버전 기록
 - 두 render 명령은 같은 SVG 경로 사용. 전달할 순서·전이·시간 정보 여부로 한 가지 선택, 비교 검증만 `--out`으로 폴더 분리
 
@@ -58,7 +58,7 @@ node <mutoscope 경로>/src/cli.js md <문서 경로>.md --check --strict --stat
 
 - 생성 명령과 GitHub Action 연결 예: [README 사용법](https://github.com/woonyong-choi/mutoscope/blob/main/README.md#keep-figures-in-a-markdown-document). 위 검사와 생성에 같은 출력 옵션 사용
 - Action 정본: [action.yml](https://github.com/woonyong-choi/mutoscope/blob/main/action.yml). 추적 파일 대상으로 원본 검사와 Markdown 최신성 검사, 생성 모드는 파일 갱신만 수행하고 자동 커밋 없음. 입력 문법·기본값은 정본 참조
-- Action 검증 결과에는 로컬 정본 대조와 실제 GitHub 실행 확인 여부를 구분해 기록
+- Action 검증 결과에는 로컬 파일을 `action.yml`과 대조했는지, GitHub에서 실제 실행 결과를 확인했는지 각각 기록
 
 ## 그림 작성
 
@@ -103,7 +103,7 @@ node <mutoscope 경로>/src/cli.js md <문서 경로>.md --check --strict --stat
 
 ## VHS
 
-아래 값은 실행 형식의 비규범 예시. 글꼴·색·크기는 저장소 디자인 기준, 길이·용량은 게시 환경 제한, 재생 속도는 실제 읽기 시간으로 결정
+아래 값은 실행 형식을 보여 주는 예시이며 그대로 사용할 의무 없음. 글꼴·색·크기는 저장소 디자인 기준으로 결정. 길이·용량은 게시 환경 제한을 확인해 결정. 재생 속도는 실제로 재생하며 글을 다 읽을 수 있는지 확인해 결정
 
 ```text
 Output docs/assets/{이름}.gif

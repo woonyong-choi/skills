@@ -5,7 +5,7 @@ description: "구현된 protocol·CLI·UI·data·configuration·errors의 형식
 
 # Repo Docs Spec
 
-- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
+- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 인터페이스 문서 템플릿과 항목 규칙
 - 필요할 때만 읽기: 데이터 그림을 만들거나 바꿀 때 → repo-docs-figures; 요구·검증 범위, 생성표 의미, 호환성 확인 → repo-docs-design
 - 문서 생성 여부: 만드는 조건(repo-docs 문서 목록). 검증된 구현과 같은 PR에서 최초 작성, main 반영 여부는 사실 상태로 구분. 구현 전에는 `docs/design/{주제}.md` 상세 설계(repo-docs-design)

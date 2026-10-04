@@ -5,7 +5,7 @@ description: "설계 값이나 도구 동작을 비교·측정할 실험의 사�
 
 # Repo Docs Experiment
 
-- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
+- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 실험 대상, 폴더, 흐름, 템플릿, 통계 규칙, 검사
 - 필요할 때만 읽기: 결과 차트를 만들거나 바꿀 때 → repo-docs-figures; 완료 조건의 범위·시간 추정 변경 → git-issue; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit
 
@@ -53,7 +53,7 @@ docs/experiments/
 | `scripts/` | 번호 = 실행 순서. 입력은 앞 단계 파일만 |
 | `results/summary.json` | 보고서의 모든 수치. 보고서 수치는 이 파일에서만 |
 | 결과 차트 | 원본·산출물 위치, JSON 입력과 변환·검사(repo-docs-figures 실험 차트) |
-| `run.sh` | `collect`, `process`, `analyze`, `verify`, `all` 다섯 명령. `analyze`는 raw에서 process와 analyze 단계를 순서대로 재실행해 결과 재생성 |
+| `run.sh` | `collect`, `process`, `analyze`, `verify`, `all` 다섯 명령. `./run.sh analyze`는 `raw/`를 입력으로 전처리를 다시 실행한 뒤 분석을 실행해 결과 재생성 |
 | `env.json` | 실행 환경: 운영체제, CPU, 메모리, 도구와 버전, 모델 이름, 실행 날짜, 커밋 |
 | 파일 크기 | 저장소의 파일 크기 정책 적용. 외부 저장 시 접근 경로·SHA-256·재현 방법 기록 |
 
