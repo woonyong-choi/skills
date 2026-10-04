@@ -1,4 +1,7 @@
-"""추적 그림 원본을 daphnis SVG와 VHS GIF로 변환."""
+"""추적 그림 원본을 daphnis SVG와 VHS GIF로 변환.
+인자: 선택 원본 경로, --daphnis 경로, --out 폴더, --static, --require-data, --require-ci
+출력: SVG·GIF와 도구 출력, 종료 0 성공·비영 종료 실패
+"""
 
 import argparse
 import os

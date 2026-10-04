@@ -1,3 +1,5 @@
+// 인자: --source 원본, --upload·--delete·--replace 이름 목록, --probe·--click 탐색
+// 출력: stdout 계정 목록·변경 확인, stderr 오류, 실패 시 진단 PNG, 종료 0 성공·1 실패
 // claude.ai 계정의 스킬을 원본 저장소의 dist/claude zip과 맞춘다.
 // 사용: node claude_upload.mjs [--source <원본>] [--upload <이름,...>] [--delete <이름,...>] [--replace <이름,...>] [--probe [--click <글자|btn:이름>]...]
 // 계정 목록과 원본 zip을 비교해 없는 것을 보고하고, --delete 이름은 삭제, --upload 이름은 업로드한다.
@@ -67,6 +69,9 @@ function parseArgs(argv) {
   return out;
 }
 
+// cost: time O(b), heap O(b), stack O(1), io 2
+// vars: b = npm 출력과 로드하는 모듈 크기
+// basis: estimate
 async function loadPlaywright() {
   let root;
   try {
@@ -79,6 +84,9 @@ async function loadPlaywright() {
   return (await import(pathToFileURL(entry).href)).default;
 }
 
+// cost: time O(b), heap O(b), stack O(1), io 5
+// vars: b = 원본 경로 글자 수
+// basis: estimate
 function resolveSource(explicit) {
   const candidates = [explicit, process.env.SKILLS_SOURCE];
   if (existsSync(POINTER)) candidates.push(readFileSync(POINTER, "utf8").trim());
@@ -173,6 +181,9 @@ async function deleteSkill(page, name) {
   await fail(page, `'${name}' 삭제 뒤에도 목록에 남아 있음`);
 }
 
+// cost: time O(b + n), heap O(b + n), stack O(1), io O(q)
+// vars: b = zip 크기, n = 계정 목록 크기, q = 업로드 완료까지 UI 조회 횟수
+// basis: estimate
 async function uploadSkill(page, zip) {
   await clickOrFail(page, page.getByRole("button", { name: "스킬 추가", exact: true }), "'스킬 추가' 버튼");
   await page.waitForTimeout(1000);
@@ -213,6 +224,9 @@ async function shot(page, label) {
   return path;
 }
 
+// cost: time O(b), heap O(b), stack O(1), io 4
+// vars: b = 페이지 글자와 스크린샷 크기
+// basis: estimate
 async function dumpPage(page, label) {
   const path = await shot(page, label);
   const text = await page.evaluate(() => document.body.innerText);
@@ -229,6 +243,9 @@ async function fail(page, what) {
   throw new UiError(`${what}. 스크린샷: ${path}`);
 }
 
+// cost: time O(n² + n·b), heap O(n + b), stack O(1), io O(n·q)
+// vars: n = 대상·계정 스킬 수, b = 가장 큰 zip 크기, q = 항목당 UI 조회 횟수
+// basis: estimate
 async function syncSkills(page, zips) {
   const known = new Set(zips.map((zip) => zip.name));
   for (const name of [...args.upload, ...args.replace]) {

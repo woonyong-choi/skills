@@ -5,7 +5,7 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 
 # Code Style: Python
 
-- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
+- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 Python 규칙. 그 밖에서 code-style과 다르면 code-style 우선
 
 ## 이름
@@ -48,7 +48,7 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 - `dataclass` 필드는 기본값 없는 필드 → 기본값 있는 필드 (문법 제약). 같은 안에서 공개 → 비공개
 - 불변 필드는 `@dataclass(frozen=True)`나 `Final`로 표시
 
-## 에러와 로그
+## 오류와 로그
 
 | 경우 | 처리 |
 |---|---|
@@ -62,8 +62,8 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 - 원인 보존: `raise ConfigError("failed to read config") from err`
 - `except Exception:`·`except:`는 실행 스크립트 최상위 처리기에서만. `except ...: pass` 금지
 - 실행 스크립트의 `main()`에서 기준 예외를 한 번 잡아 로그 기록 후 종료 코드 1로 종료
-- 에러·로그 메시지는 소문자로 시작, 마침표 없음: `invalid literal for int()`
-- 무시하는 예외는 이유를 주석으로
+- 오류·로그 메시지는 소문자로 시작, 마침표 없음: `invalid literal for int()`
+- 예외 무시 시 처리: (code-style 오류와 로그)
 
 로그:
 

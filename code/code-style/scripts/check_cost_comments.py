@@ -6,6 +6,8 @@
 code-style은 비용이 드러나지 않는 알고리즘, 병목, 외부 호출 경계에만 비용 주석을 요구한다.
 스크립트는 정적으로 식별 가능한 파일·네트워크·프로세스·모델 호출 경계만 검사한다.
 대상: Python(`def`), JavaScript·TypeScript(`function`, 블록 본문 화살표 함수), Rust(`fn`), Kotlin(`fun`).
+
+인자: 폴더나 파일 하나 이상
 """
 
 from __future__ import annotations

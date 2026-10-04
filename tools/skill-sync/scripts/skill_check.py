@@ -1,3 +1,8 @@
+"""스킬의 형식과 일관성을 검사한다.
+
+인자: root 원본 저장소, --json 집계 JSON 출력
+출력: 스킬별 위반과 total N 또는 JSON, 종료 0 통과·1 위반·2 입력 오류
+"""
 import argparse
 import json
 import os
@@ -6,6 +11,7 @@ import sys
 from pathlib import Path
 
 from install import source_skills
+from consistency import PRIORITY, check_consistency
 
 NOUN_OK = ('흐름', '알림', '없음', '다음', '포함', '결함', '마음', '처음', '이름', '모음', '요금', '그림', '묶음', '느낌', '믿음', '물음', '걸음', '기본값', '보관함', '수신함')
 NAME_OK = ('안 함', '막힘')  # 상태 이름
@@ -24,6 +30,8 @@ def check(path, names):
         errs.append('description 형식')
     else:
         d = m.group(1)
+        if not re.search(r"때 [^.]*?(?:사용|적용)\.", d):
+            errs.append("description 사용 조건 형식")
         for n in names:
             if n != me and re.search(r'(?<![\w-])' + re.escape(n) + r'(?![a-z-])', d):
                 errs.append('description에 다른 스킬 이름: ' + n)
@@ -42,7 +50,7 @@ def check(path, names):
     if not body[0].startswith('# '):
         errs.append('제목 없음')
     head = [l for l in body[1:6] if l.startswith('- ')]
-    if not head or head[0] not in ('- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선', '- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용'):
+    if not head or head[0] != PRIORITY:
         errs.append('머리 1줄')
     if len(head) < 2 or not (head[1].startswith('- 기반: ') or head[1].startswith('- 범위: ')):
         errs.append('머리 2줄')
@@ -112,15 +120,16 @@ def main(argv: list[str]) -> int:
     names = [path.parent.name for path in paths]
     total, kinds = 0, {}
     try:
+        consistency = check_consistency(paths)
         for path in paths:
-            errors = check(str(path), names)
+            errors = check(str(path), names) + consistency[path]
             total += len(errors)
             for error in errors:
                 kind = '끝말' if '끝말' in error else error.split(':')[0]
                 kinds[kind] = kinds.get(kind, 0) + 1
             if errors and not args.json:
                 print(path.parent.name, len(errors), errors)
-    except (OSError, UnicodeError, ValueError) as error:
+    except (OSError, UnicodeError, ValueError, SyntaxError) as error:
         print(f'검사 입력 오류: {error}', file=sys.stderr)
         return 2
     if args.json:

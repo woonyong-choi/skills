@@ -5,7 +5,7 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 
 # Code Style: Kotlin
 
-- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
+- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 Kotlin(JVM 서버, CLI) 규칙. Android 제외. 그 밖에서 code-style과 다르면 code-style 우선
 
 ## 이름
@@ -43,7 +43,7 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 3. 메서드. code-style 타입 순서의 6~10 (프로퍼티·접근자 → 생명주기 → 공개 → 비공개 헬퍼 → 검증)
 4. companion object. 상수와 팩토리 포함, 클래스 맨 끝
 
-## 에러와 로그
+## 오류와 로그
 
 | 경우 | 처리 |
 |---|---|
@@ -58,8 +58,8 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 - 원인 보존: `throw ConfigException("Failed to read config", cause = e)`
 - `catch (e: Exception)`은 실행 앱 최상위 처리기에서만
 - suspend 함수 안에서 `runCatching` 금지. `CancellationException`은 잡으면 재전파
-- 에러·로그 메시지는 대문자로 시작, 마침표 없음: `Failed to read config file`
-- 무시하는 예외는 이유를 주석으로
+- 오류·로그 메시지는 대문자로 시작, 마침표 없음: `Failed to read config file`
+- 예외 무시 시 처리: (code-style 오류와 로그)
 
 로그:
 

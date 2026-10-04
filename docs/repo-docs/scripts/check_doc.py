@@ -1,6 +1,9 @@
 """repo-docs 규칙으로 저장소 Markdown 파일 검사.
 
 사용: python3 check_doc.py 파일 [파일 ...] (저장소 루트에서 실행)
+
+인자: Markdown 파일 하나 이상, 저장소 루트에서 실행
+출력: stdout 경로·줄별 위반, 종료 0 통과·1 위반
 """
 import os
 import html
@@ -55,9 +58,10 @@ DECISION_EN = ["Context", "Options", "Decision", "Consequences", "Revisit when"]
 
 
 
-# cost: time O(n * d), heap O(n), stack O(1), io 0
+# cost: time O(n * d), heap O(n), stack O(1)
 # vars: n = 경로 길이, d = 중첩 URL 이스케이프 깊이
-# basis: estimate; URL 파싱과 디코딩은 메모리에서만 수행
+# basis: estimate
+# URL 파싱과 디코딩은 메모리에서만 수행
 def _private_path(value: str) -> bool:
     decoded = html.unescape(value)
     while True:
@@ -79,7 +83,7 @@ def _private_links(raw: str) -> bool:
     return any(_private_path(value) for value in links)
 
 
-# cost: time O(1), heap O(1), stack O(1), alloc 0
+# cost: time O(1), heap O(1), stack O(1)
 # basis: estimate
 def section_lists(name: str) -> list[list[str]]:
     if name in ("README.md", "README.ko.md"):
@@ -148,7 +152,7 @@ def is_english(path: str) -> bool:
     return letters > 0 and len(HANGUL.findall(text)) / letters < 0.2
 
 
-# cost: time O(k), heap O(1), stack O(1), alloc 0
+# cost: time O(k), heap O(1), stack O(1)
 # vars: k = 칸 글자 수
 # basis: estimate
 def has_bad_cell_ending(cell: str) -> bool:
@@ -216,7 +220,8 @@ def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str, 
 
 # cost: time O(w²), heap O(w), stack O(1), alloc O(w)
 # vars: w = 줄 글자 수
-# basis: estimate, 닫히지 않은 코드·링크 정규식의 재탐색 상한
+# basis: estimate
+# 닫히지 않은 코드·링크 정규식의 재탐색 상한
 def _style_text(raw: str, previous_quote: str) -> str:
     if raw.lstrip().startswith(">") and not QUOTE_ALERT.match(previous_quote):
         return ""
@@ -231,7 +236,8 @@ def _style_text(raw: str, previous_quote: str) -> str:
 
 # cost: time O(w²), heap O(w), stack O(1), alloc O(w)
 # vars: w = 줄 글자 수
-# basis: estimate, 닫히지 않은 강조 정규식의 재탐색 상한
+# basis: estimate
+# 닫히지 않은 강조 정규식의 재탐색 상한
 def _style_errors(text: str) -> list[str]:
     errors = []
     for cell in text.split("|"):
@@ -277,7 +283,8 @@ def _without_comments(raw: str, in_comment: bool) -> tuple[str, bool]:
 
 # cost: time O(Σw²), heap O(c), stack O(1), io O(1) + e
 # vars: c = 파일 글자 수, w = 줄별 글자 수, e = 오류 수
-# basis: estimate, 줄마다 Markdown 표식 정규식 재탐색 가능
+# basis: estimate
+# 줄마다 Markdown 표식 정규식 재탐색 가능
 def check(path: str) -> int:
     name = re.sub(r"^\./", "", path)
     is_private = name.lower().startswith((".local/", "docs/archive/"))
@@ -335,7 +342,8 @@ def check(path: str) -> int:
 
 # cost: time O(Σw²), heap O(c), stack O(1), io O(f + e)
 # vars: c = 가장 큰 파일 글자 수, w = 줄별 글자 수, f = 파일 수, e = 오류 수
-# basis: estimate, 파일마다 줄 검사와 문서 구조 검사
+# basis: estimate
+# 파일마다 줄 검사와 문서 구조 검사
 def main(paths: list[str]) -> int:
     if not paths:
         print("usage: check_doc.py FILE [FILE ...]", file=sys.stderr)
