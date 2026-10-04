@@ -1,6 +1,6 @@
 ---
 name: code-style-python
-description: "Python 코드 작성, 리뷰, 리팩터링 시 사용. 이름 형식, 예외 처리, 로그(logging), 공개 범위, docstring, 모듈·클래스 구성, 테스트(pytest), ruff·mypy 설정과 검사 명령"
+description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정을 고칠 때 사용."
 ---
 
 # Code Style: Python
