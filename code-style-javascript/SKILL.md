@@ -5,7 +5,7 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 
 # Code Style: JavaScript
 
-- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
+- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 JavaScript 규칙. 그 밖에서 code-style과 다르면 code-style 우선
 - 필요할 때만 읽기: CSS 문자열, 인라인 style, SVG 속성 값 작성 → design-tokens; 파일 이름 결정 → folder-naming
 
@@ -30,7 +30,7 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 모듈:
 
 - ES 모듈(`import`·`export`)만. `package.json`에 `"type": "module"`. CommonJS `require` 금지(외부 도구 설정 파일 제외)
-- 일반 모듈은 named export. 도구가 default export를 요구하는 설정 파일은 해당 계약 적용
+- 일반 모듈은 named export. 도구가 설정 파일에 default export를 요구하면 그 파일에서 default export 사용
 - import 순서: `node:` 내장 → 외부 패키지 → 상대 경로, 그룹 사이 빈 줄. 내장 모듈은 `node:` 접두사 필수
 - 와일드카드 `import *` 금지(외부 패키지가 그 방식만 제공할 때 제외)
 - 순환 import 금지

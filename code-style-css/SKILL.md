@@ -5,7 +5,7 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 
 # Code Style: CSS
 
-- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
+- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 기반: code-style, design-tokens 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 CSS 규칙(`.css`, `<style>`, 인라인 `style`, JavaScript 문자열 안 CSS). 그 밖에서 code-style과 다르면 code-style 우선
 - 필요할 때만 읽기: class·파일 이름의 금지 이름 확인 → folder-naming
 
@@ -39,8 +39,8 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 7. 상태 class
 8. `@media`·`@container` 덮어쓰기. 해당 구성 요소 덩어리 바로 뒤에 배치 허용
 
-- 구성 요소 소유권·재사용·독립 로드 조건이 다르면 파일 분리 검토
-- JavaScript 템플릿 문자열 안 CSS: 같은 순서. 독립 변경·재사용·로드가 필요하면 `.css` 파일로 분리해 빌드나 읽기로 넣기
+- 스타일을 적용하는 구성 요소, 다른 곳에서의 재사용 여부, 별도 로드 필요 여부가 다르면 파일 분리 검토
+- JavaScript 템플릿 문자열 안 CSS: 위 파일 구성 순서 적용. JavaScript와 별도로 변경하거나 다른 곳에서 재사용하거나 따로 로드해야 하면 `.css` 파일로 분리. 분리한 파일은 빌드에 포함하거나 실행 시 읽기
 
 규칙 안 속성:
 
@@ -61,7 +61,7 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 ## 선택자
 
 - class 선택자 기본. id 선택자 금지. 태그 선택자는 기본 요소 스타일에만
-- 선택자 우선순위·중첩: 다른 구성 요소의 내부 구조에 의존하거나 덮어쓰기 경쟁이 생기면 소유권과 선택자 구조 재검토
+- 선택자 우선순위·중첩: 다른 구성 요소 내부의 태그·class에 의존하거나 같은 속성을 덮으려고 우선순위를 계속 높이면, 각 스타일을 어느 구성 요소에 둘지와 선택자 구조 재검토
 - `!important` 금지. 예외: `prefers-reduced-motion` 덮어쓰기, 외부 라이브러리 인라인 스타일 덮어쓰기. 예외 위치에만 이유를 포함한 `stylelint-disable-next-line declaration-no-important -- {이유}` 적용
 - 전역 태그 선택자로 다른 구성 요소 스타일 변경 금지
 - 속성 선택자는 상태 표시용 `[aria-*]`, `[data-*]`에만
@@ -116,8 +116,8 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 }
 ```
 
-- 속성 순서를 의무화한 저장소에서는 `stylelint-order`의 `order/properties-order`에 선언 순서 표 순서
-- 토큰 허용 값·예외 검사: design-tokens의 check_tokens.py. 생성물 제외는 생성물 표시 또는 확인한 실제 생성 경로로만 설정(design-tokens 정본과 생성물)
+- 속성 순서를 의무화한 저장소에서는 `stylelint-order`의 `order/properties-order`에 이 스킬의 선언 순서 표대로 속성 목록 설정
+- 토큰 허용 값·예외 검사: design-tokens의 check_tokens.py. 생성물 제외는 생성물 표시 또는 확인한 실제 생성 경로로만 설정(design-tokens의 정본과 생성물 절에 있는 파일 표)
 - Stylelint가 못 잡는 것은 직접 확인: class 이름 형식, 상태 class 짝, 파일 구성 순서, 접근성 항목
 
 ## 검사 명령

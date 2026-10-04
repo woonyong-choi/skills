@@ -5,7 +5,7 @@ description: "개발 중 직접 확인한 insight나 조사한 reference를 짧�
 
 # Repo Docs Note
 
-- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
+- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 짧은 개발 기록. 정한 설계(repo-docs-design), 고른 이유(repo-docs-decision), 판단 과정(repo-docs-journal), 측정(repo-docs-experiment)은 범위 밖
 
 - 한 기록 = 종류 하나, 주제 하나. 섞이면 분리
