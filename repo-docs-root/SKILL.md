@@ -1,29 +1,29 @@
 ---
 name: repo-docs-root
-description: "저장소 루트와 .github 문서 파일(AGENTS.md, CLAUDE.md 링크, CHANGELOG, CONTRIBUTING, SECURITY, LICENSE)을 만들거나 갱신할 때 사용. 파일 위치, 단계별 파일, 고정 템플릿"
+description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LICENSE를 작성·갱신할 때 사용."
 ---
 
 # Repo Docs Root
 
-- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
+- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 루트와 `.github/`의 문서 파일. README와 `llms.txt`는 제외(repo-docs-readme, repo-docs-llms)
-- 필요할 때만 읽기: 단계 판정(단계 표), 필요한 도구 문장(설치 절) → repo-docs-readme; CONTRIBUTING 커밋과 PR 절 → git-branch, git-commit, git-pull-request
+- 필요할 때만 읽기: 단계 판정(단계 표), 필요한 도구 문장(설치 절) → repo-docs-readme; CONTRIBUTING 커밋과 PR 절 → git-branch, git-commit, git-pull-request; 이슈 필요 여부와 연결 → git-issue
 
 - 모든 칸: 저장소의 사실로. 명령은 CI나 검사 스크립트에 있는 것만
 
 ## 파일
 
-| 파일 | 위치 | 문체 | 설계 | 개발 중 | 실행 가능 | 배포 |
+| 파일 | 위치 | 언어·문체 정본 | 설계 | 개발 중 | 실행 가능 | 배포 |
 |---|---|---|---|---|---|---|
 | `LICENSE` | 루트 | 해당 없음 | 조건부 | 조건부 | 조건부 | 조건부 |
-| `AGENTS.md` | 루트 | 평서 | 필수 | 필수 | 필수 | 필수 |
+| `AGENTS.md` | 루트 | repo-docs | 필수 | 필수 | 필수 | 필수 |
 | `CLAUDE.md` | 루트 | 해당 없음 | 필수 | 필수 | 필수 | 필수 |
-| `CONTRIBUTING.md` | `.github/` | 합쇼 | 없음 | 필수 | 필수 | 필수 |
-| `SECURITY.md` | `.github/` | 합쇼 | 없음 | 없음 | 필수 | 필수 |
-| `CHANGELOG.md` | 루트 | 합쇼 | 없음 | 없음 | 없음 | 필수 |
+| `CONTRIBUTING.md` | `.github/` | repo-docs | 없음 | 필수 | 필수 | 필수 |
+| `SECURITY.md` | `.github/` | repo-docs | 없음 | 없음 | 필수 | 필수 |
+| `CHANGELOG.md` | 루트 | repo-docs | 없음 | 없음 | 없음 | 필수 |
 
 - `LICENSE`: 라이선스를 정했을 때만. 근거는 패키지 선언(`Cargo.toml`, `package.json`, `pyproject.toml`의 `license`)의 SPDX 식별자나 사용자가 정한 라이선스. `UNLICENSED`, `proprietary`, 선언 없음이면 생성 금지, 임의 선택 금지
-- `LICENSE` 내용: SPDX 식별자의 공식 원문 그대로, 연도와 저작권자(사용자 git 설정의 이름)만 기입
+- `LICENSE` 내용: SPDX 식별자의 공식 원문 그대로, 연도와 저작권자(기존 저작권 고지 또는 사용자가 지정한 권리자, git 이름으로 자동 추정 금지)만 기입
 - `.github/`에 둔 파일의 루트 중복 금지
 
 ## CLAUDE.md
@@ -71,56 +71,53 @@ description: "저장소 루트와 .github 문서 파일(AGENTS.md, CLAUDE.md 링
 | 설계 문서 문장 | `docs/README.md`가 있을 때만. 없으면 규칙 셋째 항목도 삭제 |
 | 규칙 | 앞 세 항목 고정(첫째, 셋째는 위 조건). `{저장소 규칙}`은 `docs/architecture.md` 불변 조건 절의 항목마다 조건 문장을 명사구로 줄여 옮기기: `설정 파일은 서버만 고친다` → `설정 파일은 서버만 수정`. 없으면 그 줄 제외 |
 
-- 60줄 이내
+- 필요한 명령·경로·규칙을 보존하고 중복은 소유 문서 링크로 대체
 - 도구별 설정(모델, 권한, 훅) 금지
 - 에이전트 이름, 도구 이름으로 규칙 분리 금지
 
 ## .github/CONTRIBUTING.md
 
 ````text
-# 기여 안내
+# Contributing
 
-{이름}에 기여하는 방법을 설명합니다.
+{How to contribute to the project}
 
-## 시작 전에
+## Before you start
 
-작업 전에 이슈를 먼저 만들어 주세요. 이슈 종류와 형식은 [이슈 템플릿](ISSUE_TEMPLATE)을 따릅니다.
+{Issue creation conditions from the repository's issue policy}
 
-## 개발 환경
+## Development environment
 
-{필요한 도구 문장}
-
-```sh
-{저장소를 받는 명령}
-{빌드 명령}
-```
-
-## 확인
-
-PR 전에 아래 명령이 모두 통과해야 합니다.
+{Required tools}
 
 ```sh
-{테스트 명령}
-{린트 명령}
-{포맷 검사 명령}
+{Checkout command}
+{Build command}
 ```
 
-## 커밋과 PR
+## Checks
 
-| 항목 | 형식 | 예 |
-|---|---|---|
-| 브랜치 | `{type}/{이슈 번호}-{scope}-{설명}` | `{예}` |
-| 커밋 | `{type}({scope}): {한글 설명}` | `{예}` |
-| PR | 이슈 하나에 PR 하나. 본문에 `Closes: #{번호}` | 해당 없음 |
+All of the following checks must pass before opening a pull request.
 
-## 문서
+```sh
+{Test command}
+{Lint command}
+{Format check command}
+```
 
-동작, 계약, 설정을 바꾸면 같은 PR에서 [설계 문서](../docs/README.md)를 고쳐 주세요.
+## Commits and pull requests
+
+{Branch and commit formats from the repository policy}
+{Issue links and closing conditions from the issue policy}
+
+## Documentation
+
+{Documentation changes required for behavior, contract, and configuration changes}
 ````
 
 | 절 | 규칙 |
 |---|---|
-| 시작 전에 | 이슈 템플릿 문장은 `.github/ISSUE_TEMPLATE/`가 있을 때만 |
+| 시작 전에 | 이슈 생성·연결은 git-issue 기준. 이슈 템플릿 링크는 실제 디렉터리가 있을 때만 |
 | 개발 환경 | 필요한 도구 문장은 README 설치 절 규칙과 동일 |
 | 커밋과 PR | 저장소가 쓰는 git 규칙(git-branch, git-commit, git-pull-request)의 형식과 예 복사 |
 | 문서 | `docs/README.md`가 있을 때만 |
@@ -128,39 +125,38 @@ PR 전에 아래 명령이 모두 통과해야 합니다.
 ## .github/SECURITY.md
 
 ````text
-# 보안 정책
+# Security policy
 
-## 지원 버전
+## Supported versions
 
-| 버전 | 보안 수정 |
+| Version | Security updates |
 |---|---|
-| {버전 범위} | {지원, 지원 안 함} |
+| {Confirmed version range} | {Supported or unsupported} |
 
-## 취약점 신고
+## Reporting a vulnerability
 
-공개 이슈에 취약점을 올리지 마세요. [비공개 신고](https://github.com/{소유자}/{저장소}/security/advisories/new)로 알려 주세요.
+Do not disclose vulnerabilities in public issues. Use {verified private reporting channel}.
+Include the affected version, reproduction steps, and expected impact.
 
-신고에는 영향받는 버전, 재현 방법, 예상 영향을 적어 주세요.
+## Response process
 
-## 처리
-
-| 단계 | 기한 |
+| Step | Deadline |
 |---|---|
-| 접수 확인 | {일수}일 이내 |
-| 판정 결과 안내 | {일수}일 이내 |
-| 수정 배포 | 판정 뒤 {일수}일 이내 |
+| Acknowledgment | {Confirmed deadline} |
+| Assessment | {Confirmed deadline} |
+| Fix release | {Confirmed deadline} |
 ````
 
-- 지원 버전: 실행 가능 단계면 `main` 한 행, 배포 단계면 최신 부 버전과 그 이전
+- 지원 버전: 실제 유지보수 정책에서 확인한 범위만 기입
 - 기한: 사용자가 정한 값만, 미정이면 저장 없이 보고
-- 이메일 주소 금지. GitHub 비공개 신고만 안내
+- 비공개 신고: 실제 운영되는 경로 확인 후 안내. 임의 경로·주소 생성 금지
 
 ## CHANGELOG.md
 
 ````text
-# 변경 기록
+# Changelog
 
-주요 변경을 버전별로 기록합니다. 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를, 버전은 [유의적 버전](https://semver.org/lang/ko/)을 따릅니다.
+Notable changes by version. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/).
 
 ## {버전} - {YYYY-MM-DD}
 
@@ -179,6 +175,6 @@ PR 전에 아래 명령이 모두 통과해야 합니다.
 | 보안 수정 | 보안 |
 
 - 분류 순서: 위 표 순서. 항목이 없는 분류는 제목까지 제외
-- 릴리스 PR에서 지난 태그 뒤 머지된 PR마다 항목 하나. 글자는 PR 제목의 설명 부분. `refactor`, `test`, `docs`, `style`, `build`, `ci`, `chore` 제외
+- 릴리스 PR에서 지난 태그 뒤 머지된 PR마다 항목 하나. 글자는 PR 제목의 설명 부분. 사용자 동작·호환·보안 영향이 없는 내부 변경만 제외, 커밋 type만으로 제외 금지
 - 호환이 깨지는 변경: 항목 앞에 `호환 깨짐:`
 - 버전: 최신이 위
