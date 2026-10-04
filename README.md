@@ -229,3 +229,7 @@ H-flat은 27개 스킬의 이름과 짧게 줄인 description을 한 목록으�
 | 2026-10-02 | visual-report를 html-report로 이름 변경(채팅에서 `/html-report`), description에 사용 낱말, 사용 조건을 쓸 때와 쓰지 않을 때 표로 추가 |
 | 2026-10-02 | html-report에 라이트·다크 PNG, 긴 캡처 분할, 캡처 정리 규칙과 금지 절 추가, 스크립트 입력 검증과 비용 주석 추가, 본문 압축 |
 | 2026-10-03 | 문서 그림 도구를 mutoscope로 변경. 관련 스킬의 그림 규칙을 repo-docs-figures 참조로 통합 |
+
+## 라이선스
+
+[MIT](LICENSE).
