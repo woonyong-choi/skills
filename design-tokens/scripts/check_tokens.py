@@ -22,8 +22,7 @@ from collections.abc import Iterator
 CSS_EXTS = {".css", ".scss"}
 MARKUP_EXTS = {".html", ".svg", ".vue", ".svelte"}
 SCRIPT_EXTS = {".js", ".mjs", ".cjs", ".ts", ".jsx", ".tsx"}
-# docs/는 repo-docs-figures 그림(mutoscope 산출물) 자리라 이 검사 대상이 아니다.
-SKIP_DIRS = {"node_modules", "dist", "build", "coverage", ".git", "docs"}
+SKIP_DIRS = {"node_modules", "dist", "build", "coverage", ".git"}
 TOKEN_FILES = {"tokens.json", "tokens.dark.json"}
 GENERATED_MARK = "생성물, 손으로 고치지 않음"
 ALLOW_MARK = "tokens-allow:"
@@ -196,6 +195,11 @@ def is_inside(position: int, spans: list[tuple[int, int]]) -> bool:
     return any(start <= position < end for start, end in spans)
 
 
+def has_allow_reason(line: str) -> bool:
+    match = re.search(r"(?:/\*|//|<!--)[^\n]*tokens-allow:\s*(.*?)\s*(?:\*/|-->|$)", line)
+    return bool(match and match.group(1).strip())
+
+
 # cost: time O(n + f log l), heap O(n), stack O(1), io 1
 # vars: n = 파일 글자 수, f = 찾은 수, l = 줄 수
 # basis: estimate
@@ -215,10 +219,12 @@ def check_file(path: str, info: TokenInfo) -> list[Finding]:
     found = [(offset + pos, rule, snippet) for offset, segment, is_styled in find_segments(text, ext) for pos, rule, snippet in find_hardcoded(segment, info, is_styled)]
     if ext in SCRIPT_EXTS:
         found += find_script_values(text, info)
-    results = []
+    results = [(path, number, "empty tokens-allow reason", ALLOW_MARK)
+               for number, line in enumerate(lines, 1)
+               if re.search(r"(?:/\*|//|<!--)[^\n]*tokens-allow:", line) and not has_allow_reason(line)]
     for pos, rule, snippet in found:
         line_number = find_line_number(line_starts, pos)
-        if ALLOW_MARK not in lines[line_number - 1]:
+        if not has_allow_reason(lines[line_number - 1]):
             results.append((path, line_number, rule, snippet[:80]))
     return results
 

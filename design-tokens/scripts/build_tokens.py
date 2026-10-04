@@ -117,8 +117,8 @@ def resolve_token(path: Path, table: dict[Path, tuple[Any, str | None]], seen: t
     return resolve_token(target, table, seen + (path,))
 
 
-# cost: time O(t·c), heap O(t), stack O(c)
-# vars: t = 토큰 수, c = 참조 사슬 길이
+# cost: time O(n·c), heap O(t + c*c), stack O(c + d)
+# vars: n = 값 노드와 문자열 크기 합, t = 토큰 수, c = 참조 사슬 길이(최소 1), d = 합성 값 중첩 깊이
 # basis: estimate
 def check_references(tokens: list[Token], table: dict[Path, tuple[Any, str | None]], source: str) -> None:
     """모든 토큰의 참조가 정본 안에 있는지 확인한다.
@@ -126,13 +126,30 @@ def check_references(tokens: list[Token], table: dict[Path, tuple[Any, str | Non
     Raises:
         ValueError: 없는 토큰 참조, 도는 참조, 정본에 없는 다크 토큰
     """
-    for path, value, _ in tokens:
-        if path not in table:
-            raise ValueError(f"{source} has a token missing from tokens.json: {'.'.join(path)}")
+    done: set[Path] = set()
+
+    def visit_value(value: Any, chain: tuple[Path, ...]) -> None:
         target = parse_reference(value)
-        if target and target not in table:
-            raise ValueError(f"unknown token reference in {source}: {'.'.join(path)} -> {'.'.join(target)}")
-        resolve_token(path, table)
+        if target:
+            visit_token(target, chain)
+        elif isinstance(value, dict):
+            for child in value.values():
+                visit_value(child, chain)
+        elif isinstance(value, list):
+            for child in value:
+                visit_value(child, chain)
+
+    def visit_token(path: Path, chain: tuple[Path, ...]) -> None:
+        if path not in table:
+            raise ValueError(f"unknown token reference in {source}: {'.'.join(path)}")
+        if path in chain:
+            raise ValueError(f"circular token reference in {source}: {'.'.join(path)}")
+        if path not in done:
+            visit_value(table[path][0], chain + (path,))
+            done.add(path)
+
+    for path, _, _ in tokens:
+        visit_token(path, ())
 
 
 # cost: time O(t), heap O(t), stack O(1)
