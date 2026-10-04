@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: "Git 커밋 생성, 커밋 메시지 작성·검토, 커밋 분리 시 사용. 형식 type(scope): 한글 설명"
+description: "Git 커밋 메시지를 작성·검토하거나 변경을 나눠 커밋할 때 사용. 메시지는 type(scope): 한글 설명."
 ---
 
 # Git Commit
