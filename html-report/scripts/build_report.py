@@ -454,12 +454,12 @@ def _mutoscope(value: str | None) -> Mutoscope | None:
 def _arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path)
-    parser.add_argument("output", type=Path, nargs="?")
+    parser.add_argument("output", type=Path, nargs="?", help="output HTML in the same folder as input")
     parser.add_argument("--mutoscope", help="mutoscope checkout or src/cli.js path")
     parser.add_argument(
         "--static",
         action="store_true",
-        help="write a static SVG beside the inline player",
+        help="embed a static SVG in the report iframe",
     )
     return parser.parse_args()
 
