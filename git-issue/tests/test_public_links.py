@@ -18,6 +18,30 @@ SHA = "1234567890abcdef1234567890abcdef12345678"
 BASE = "https://github.com/example/project/blob/"
 FILE = "git-issue/SKILL.md"
 CASES = [
+    ("`/usage`", "`/usage`", 0, 0),
+    ("`/model`", "`/model`", 0, 0),
+    ("`/prune`", "`/prune`", 0, 0),
+    ("`` /help ``", "`` /help ``", 0, 0),
+    ("`/custom-command`", "`/custom-command`", 0, 0),
+    ("[명령](/usage)", "[명령](/usage)", 1, 1),
+    (
+        "`/usage` 다음 `/home/person/note.md`",
+        "`/usage` 다음 `/home/person/note.md`",
+        1,
+        1,
+    ),
+    *[
+        (body, body, 1, 1)
+        for path in (
+            "/Users/person/note.md",
+            "/home/person/note.md",
+            "/private/var/log/app.log",
+            "/tmp/result.md",
+            "/opt/project",
+            "/usage/details",
+        )
+        for body in (path, f"`{path}`", f"`cat {path}`")
+    ],
     (
         "`curl https://github.com/example/private`",
         "`curl https://github.com/example/private`",

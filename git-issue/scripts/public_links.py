@@ -192,6 +192,7 @@ def _check_target(
 def _scan(text: str, context: _Context) -> list[_Finding]:
     findings: list[_Finding] = []
     covered: list[tuple[int, int]] = []
+    ignored_local_spans = [match.span() for match in _URL.finditer(text)]
     for pattern in (_LINK, _CODE, _URL):
         for match in pattern.finditer(text):
             if any(
@@ -211,6 +212,9 @@ def _scan(text: str, context: _Context) -> list[_Finding]:
                 value = match[group].strip("<>")
             elif pattern is _CODE:
                 value = match["path"].strip()
+                if re.fullmatch(r"/[\w-]+", value):
+                    ignored_local_spans.append((start, end))
+                    continue
             reason, replacement = _check_target(
                 value, context, is_link=pattern is _LINK
             )
@@ -220,9 +224,8 @@ def _scan(text: str, context: _Context) -> list[_Finding]:
                 findings.append(_Finding(start, end, reason, replacement))
             elif pattern is _CODE and not value.startswith(("https://", "http://")):
                 covered.pop()
-    web_spans = [match.span() for match in _URL.finditer(text)]
     for match in _LOCAL.finditer(text):
-        if any(start <= match.start() < end for start, end in web_spans):
+        if any(start <= match.start() < end for start, end in ignored_local_spans):
             continue
         if any(finding.start <= match.start() < finding.end for finding in findings):
             continue
