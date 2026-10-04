@@ -1,12 +1,13 @@
 ---
 name: repo-docs-llms
-description: "저장소 루트 llms.txt(선택으로 llms-full.txt)를 만들거나 갱신할 때 사용. llmstxt.org 형식, README와 docs/README.md에서 내용을 옮기는 규칙, gen_llms 스크립트"
+description: "README와 문서 목록에서 llms.txt·llms-full.txt를 생성·갱신할 때 사용."
 ---
 
 # Repo Docs Llms
 
-- 저장소 안에 같은 역할의 규칙이 있으면 그것 우선. 없으면 이 스킬이 다른 규칙보다 우선
+- 상위 지시 우선. 같은 대상·조건의 저장소 규칙이 있으면 적용, 없으면 공통 정본과 전용 규칙의 위임 범위 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 루트 `llms.txt`, `llms-full.txt`의 형식과 생성
+- 필요할 때만 읽기: 생성물 동반 PR 확인 → git-pull-request
 
 - 파일은 `gen_llms` 스크립트로만 생성, 손 작성 금지
 - 원본: 루트 `README.md`와 `docs/README.md`. 원본에 없는 글자 추가 금지
@@ -60,7 +61,7 @@ python3 <이 스킬 폴더>/scripts/gen_llms.py
 - `llms-full.txt`도 만들 때: `--full`
 
 - `<이 스킬 폴더>`: 이 SKILL.md가 있는 폴더. 스크립트 본문은 읽지 않고 실행만. Windows에서 `python3`가 없으면 `py -3`
-- 입력 검사: `README.md`, `docs/README.md`, 표의 모든 문서가 저장소 안 `.md`이고 git 제외 대상이 아닐 때만 생성. 심볼릭 링크는 실제 경로로 판정, 대소문자만 바꾼 경로도 git 제외 판정으로 차단. 하나라도 어긋나면 파일을 쓰지 않고 중단
+- 입력 검사: `README.md`, `docs/README.md`, 표의 모든 문서가 저장소 안 `.md`이고 git 제외 대상이 아닐 때만 생성. 심볼릭 링크는 실제 경로로 판정, 대소문자·URL 인코딩을 정규화해 비공개 경로를 직접 차단하고 git 제외 판정도 적용. 하나라도 어긋나면 파일을 쓰지 않고 중단
 - 코드 블록 안 표 행: 목록에서 제외
 
 - 실행 뒤 확인: `llms.txt` 링크 수와 `docs/README.md` 표 행 수 일치(`CHANGELOG.md` 행 제외)

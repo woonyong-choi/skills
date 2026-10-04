@@ -3,6 +3,8 @@
 사용: python3 gen_llms.py [--full] (저장소 루트에서 실행)
 """
 import re
+import html
+import urllib.parse
 import subprocess
 import sys
 from pathlib import Path
@@ -38,14 +40,33 @@ def read_rows() -> list[tuple[str, str, str]]:
     return rows
 
 
+
+# cost: time O(n * d), heap O(n), stack O(1), io 0
+# vars: n = 경로 길이, d = 중첩 URL 이스케이프 깊이
+# basis: estimate; URL 파싱과 디코딩은 메모리에서만 수행
+def _private_path(value: str) -> bool:
+    decoded = html.unescape(value)
+    while True:
+        unquoted = urllib.parse.unquote(decoded)
+        if unquoted == decoded:
+            break
+        decoded = unquoted
+    path = urllib.parse.urlsplit(decoded.replace("\\", "/")).path
+    parts = [part.casefold() for part in path.split("/") if part not in ("", ".")]
+    return ".local" in parts or "archive" in parts
+
 # cost: time O(p), heap O(p), stack O(1), io 2
 # vars: p = 경로 길이
 # basis: estimate
 def is_public(root: Path, relative: str) -> bool:
+    if _private_path(relative):
+        return False
     real = (root / relative).resolve()
     if Path(relative).is_absolute() or ".." in Path(relative).parts or real.suffix != ".md" or not real.is_relative_to(root):
         return False
     real_relative = real.relative_to(root).as_posix()
+    if _private_path(real_relative) or not real.is_file():
+        return False
     return all(subprocess.run(["git", "check-ignore", "-q", "--", path]).returncode == 1 for path in (relative, real_relative))
 
 
@@ -56,7 +77,10 @@ def main(full: bool) -> int:
     raw = raw_base_url()
     rows = read_rows()
     root = Path.cwd().resolve()
-    for relative in ["README.md", "docs/README.md"] + ["docs/" + target for _, target, _ in rows]:
+    inputs = ["README.md", "docs/README.md"] + ["docs/" + target for _, target, _ in rows]
+    if Path("CHANGELOG.md").exists() or Path("CHANGELOG.md").is_symlink():
+        inputs.append("CHANGELOG.md")
+    for relative in inputs:
         if not is_public(root, relative):
             raise SystemExit("공개 문서 경로 아님: " + relative)
     readme = open("README.md", encoding="utf-8").read()
