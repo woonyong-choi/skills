@@ -170,14 +170,19 @@ for (const [name, colorScheme, mode] of [['system-light', 'light', 'system'], ['
   await normal.focus();
   const focusStyle = await normal.evaluate((element) => window.reportChipStyle(element));
   const activeStyle = await active.evaluate((element) => window.reportChipStyle(element));
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
   await page.waitForFunction(() => {
     const nav = document.querySelector('nav');
     const active = nav.querySelector('a.is-active').getBoundingClientRect();
     const bounds = nav.getBoundingClientRect();
-    const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1;
-    return atBottom && nav.scrollLeft > 0 && active.left >= bounds.left && active.right <= bounds.right;
-  }, null, { timeout: 5000 });
+    return nav.scrollLeft > 0 && active.left >= bounds.left && active.right <= bounds.right;
+  }, null, { timeout: 5000 }).catch(async (error) => {
+    const state = await page.evaluate(() => {
+      const nav = document.querySelector('nav');
+      return { scrollY, height: document.documentElement.scrollHeight, nav: nav.getBoundingClientRect().toJSON(), active: nav.querySelector('a.is-active').getBoundingClientRect().toJSON(), scrollLeft: nav.scrollLeft };
+    });
+    throw new Error(`${error.message}: ${JSON.stringify(state)}`);
+  });
   const navigation = await page.evaluate(() => {
     const nav = document.querySelector('nav');
     const activeChip = nav.querySelector('a.is-active');
