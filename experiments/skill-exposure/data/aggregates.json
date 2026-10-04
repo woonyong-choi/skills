@@ -1,0 +1,1434 @@
+{
+  "analysis_parameters": {
+    "confidence": 0.95,
+    "simultaneous_confidence": 0.9833333333333333,
+    "bootstrap_iterations": 10000,
+    "bootstrap_seed": 20261005
+  },
+  "planned_trials": 1728,
+  "actual_trials": 1728,
+  "status_counts": {
+    "ok": 1680,
+    "depth_exhausted": 26,
+    "unknown or duplicate selection": 19,
+    "no_completed_response": 2,
+    "collection stopped": 1
+  },
+  "adoption_gates": {
+    "flat": {
+      "gates": {
+        "precision": true,
+        "recall": true,
+        "exact": true,
+        "consistency": true,
+        "overcall": true,
+        "link_miss": true,
+        "catalog": true,
+        "all_bytes": true,
+        "roundtrips": true,
+        "latency": true,
+        "control_quality": true,
+        "implementation": true,
+        "astra_confirmation": true,
+        "complete": true,
+        "integrity": true,
+        "labels_complete": true
+      },
+      "pass": true,
+      "decision": "채택 후보"
+    },
+    "tree": {
+      "gates": {
+        "precision": true,
+        "recall": false,
+        "exact": false,
+        "consistency": false,
+        "overcall": true,
+        "link_miss": false,
+        "catalog": true,
+        "all_bytes": true,
+        "roundtrips": true,
+        "latency": true,
+        "control_quality": false,
+        "implementation": true,
+        "astra_confirmation": true,
+        "complete": true,
+        "integrity": true,
+        "labels_complete": true
+      },
+      "pass": false,
+      "decision": "보류"
+    },
+    "hybrid": {
+      "gates": {
+        "precision": true,
+        "recall": true,
+        "exact": true,
+        "consistency": false,
+        "overcall": true,
+        "link_miss": false,
+        "catalog": false,
+        "all_bytes": true,
+        "roundtrips": true,
+        "latency": true,
+        "control_quality": false,
+        "implementation": true,
+        "astra_confirmation": true,
+        "link_improvement": false,
+        "astra_link_direction": true,
+        "complete": true,
+        "integrity": true,
+        "labels_complete": true
+      },
+      "pass": false,
+      "decision": "보류"
+    }
+  },
+  "adopted": "flat",
+  "adjusted_power": {
+    "flat-control/consistency": {
+      "decision_alpha_one_sided": 0.008333333333333333,
+      "z": 2.39397979981851,
+      "required_n_80_percent": 569,
+      "power_at_128": 0.19516412598978483
+    },
+    "flat-control/link_miss_rate": {
+      "decision_alpha_one_sided": 0.008333333333333333,
+      "z": 2.39397979981851,
+      "required_n_80_percent": 39,
+      "power_at_128": 0.9997484697786179
+    },
+    "tree-flat/consistency": {
+      "decision_alpha_one_sided": 0.008333333333333333,
+      "z": 2.39397979981851,
+      "required_n_80_percent": 775,
+      "power_at_128": 0.14044952868357458
+    },
+    "tree-flat/link_miss_rate": {
+      "decision_alpha_one_sided": 0.008333333333333333,
+      "z": 2.39397979981851,
+      "required_n_80_percent": 170,
+      "power_at_128": 0.660982692790687
+    }
+  },
+  "provenance": {
+    "source_summary_sha256": "f9759f8e1a9e3e5adb8a0163dd14ea18ca8e3f45f84d69185437d5cda5dada70",
+    "design_sha256": "1ef7892262c0e85434a61373177c9765d086ac43b2f760b6feaa008fb5c3904d",
+    "source_verified": true,
+    "source_reanalysis_identical": true,
+    "scope": "aggregate export; prompts, responses and local exposure logs excluded"
+  },
+  "environment": {
+    "models": [
+      "gpt-5.6-luna",
+      "gpt-6-astra"
+    ],
+    "reasoning": "low",
+    "seed": 20261004,
+    "bootstrap_seed": 20261005,
+    "sealed_at": "2026-10-03T23:53:33.353576+00:00"
+  },
+  "labels": {
+    "candidates": 160,
+    "agree": 135,
+    "disagree": 25,
+    "selected": 128,
+    "selected_strata": {
+      "boundary": 57,
+      "compound": 35,
+      "positive": 25,
+      "none": 11
+    },
+    "agreement_rate": 0.84375,
+    "agreement_ci95_wilson": [
+      0.7795120043428893,
+      0.8918687362283698
+    ]
+  },
+  "conditions": {
+    "gpt-5.6-luna/control": {
+      "requests": 128,
+      "trials": 384,
+      "counts": {
+        "tp": 727,
+        "fp": 51,
+        "fn": 11,
+        "n": 384,
+        "nonempty": 300,
+        "empty": 84,
+        "overcall": 41,
+        "miss": 11,
+        "exact": 316,
+        "link_count": 303,
+        "link_fn": 11
+      },
+      "metrics": {
+        "precision": {
+          "value": 0.9344473007712082,
+          "ci95_cluster": [
+            0.9035196581546074,
+            0.9612729219649311
+          ]
+        },
+        "recall": {
+          "value": 0.9850948509485095,
+          "ci95_cluster": [
+            0.9711769955191007,
+            0.99609375
+          ]
+        },
+        "overcall_rate": {
+          "value": 0.10677083333333333,
+          "ci95_cluster": [
+            0.06510416666666667,
+            0.15104166666666666
+          ]
+        },
+        "exact_rate": {
+          "value": 0.8229166666666666,
+          "ci95_cluster": [
+            0.7708333333333334,
+            0.8723958333333334
+          ]
+        },
+        "link_miss_rate": {
+          "value": 0.036303630363036306,
+          "ci95_cluster": [
+            0.009615384615384616,
+            0.06970057720057715
+          ]
+        },
+        "catalog_bytes_mean": {
+          "value": 5547.0,
+          "ci95_cluster": [
+            5547.0,
+            5547.0
+          ]
+        },
+        "skill_bytes_mean": {
+          "value": 29511.338541666668,
+          "ci95_cluster": [
+            26692.2544921875,
+            32339.2123046875
+          ]
+        },
+        "calls_mean": {
+          "value": 2.1614583333333335,
+          "ci95_cluster": [
+            2.0364583333333335,
+            2.2838541666666665
+          ]
+        },
+        "latency_mean": {
+          "value": 6.255266980999984,
+          "ci95_cluster": [
+            5.761178071957023,
+            6.751083292915538
+          ]
+        },
+        "consistent": {
+          "value": 0.8125,
+          "ci95_cluster": [
+            0.7421875,
+            0.875
+          ]
+        }
+      }
+    },
+    "gpt-5.6-luna/flat": {
+      "requests": 128,
+      "trials": 384,
+      "counts": {
+        "tp": 729,
+        "fp": 46,
+        "fn": 9,
+        "n": 384,
+        "nonempty": 300,
+        "empty": 84,
+        "overcall": 35,
+        "miss": 9,
+        "exact": 330,
+        "link_count": 303,
+        "link_fn": 8
+      },
+      "metrics": {
+        "precision": {
+          "value": 0.9406451612903226,
+          "ci95_cluster": [
+            0.9060912026965326,
+            0.9690326420890937
+          ]
+        },
+        "recall": {
+          "value": 0.9878048780487805,
+          "ci95_cluster": [
+            0.9743589743589743,
+            0.9975682134167535
+          ]
+        },
+        "overcall_rate": {
+          "value": 0.09114583333333333,
+          "ci95_cluster": [
+            0.052083333333333336,
+            0.13802083333333334
+          ]
+        },
+        "exact_rate": {
+          "value": 0.859375,
+          "ci95_cluster": [
+            0.8046875,
+            0.90625
+          ]
+        },
+        "link_miss_rate": {
+          "value": 0.026402640264026403,
+          "ci95_cluster": [
+            0.003236245954692557,
+            0.05737940456001504
+          ]
+        },
+        "catalog_bytes_mean": {
+          "value": 3336.0,
+          "ci95_cluster": [
+            3336.0,
+            3336.0
+          ]
+        },
+        "skill_bytes_mean": {
+          "value": 27275.973958333332,
+          "ci95_cluster": [
+            24475.02174479167,
+            30132.626302083336
+          ]
+        },
+        "calls_mean": {
+          "value": 2.3151041666666665,
+          "ci95_cluster": [
+            2.1770833333333335,
+            2.4479166666666665
+          ]
+        },
+        "latency_mean": {
+          "value": 6.669690446374983,
+          "ci95_cluster": [
+            6.094932857901693,
+            7.277777038958382
+          ]
+        },
+        "consistent": {
+          "value": 0.859375,
+          "ci95_cluster": [
+            0.796875,
+            0.9140625
+          ]
+        }
+      }
+    },
+    "gpt-5.6-luna/tree": {
+      "requests": 128,
+      "trials": 384,
+      "counts": {
+        "tp": 706,
+        "fp": 27,
+        "fn": 32,
+        "n": 384,
+        "nonempty": 300,
+        "empty": 84,
+        "overcall": 24,
+        "miss": 30,
+        "exact": 327,
+        "link_count": 303,
+        "link_fn": 28
+      },
+      "metrics": {
+        "precision": {
+          "value": 0.9631650750341064,
+          "ci95_cluster": [
+            0.9427238774449969,
+            0.9810497106246326
+          ]
+        },
+        "recall": {
+          "value": 0.9566395663956639,
+          "ci95_cluster": [
+            0.9333333333333333,
+            0.9775280898876404
+          ]
+        },
+        "overcall_rate": {
+          "value": 0.0625,
+          "ci95_cluster": [
+            0.03125,
+            0.09895833333333333
+          ]
+        },
+        "exact_rate": {
+          "value": 0.8515625,
+          "ci95_cluster": [
+            0.7994791666666666,
+            0.9010416666666666
+          ]
+        },
+        "link_miss_rate": {
+          "value": 0.0924092409240924,
+          "ci95_cluster": [
+            0.04854368932038835,
+            0.14074233716475093
+          ]
+        },
+        "catalog_bytes_mean": {
+          "value": 1360.2552083333333,
+          "ci95_cluster": [
+            1262.423828125,
+            1462.38125
+          ]
+        },
+        "skill_bytes_mean": {
+          "value": 23822.6484375,
+          "ci95_cluster": [
+            20915.462760416667,
+            26761.842057291666
+          ]
+        },
+        "calls_mean": {
+          "value": 2.984375,
+          "ci95_cluster": [
+            2.8020833333333335,
+            3.1614583333333335
+          ]
+        },
+        "latency_mean": {
+          "value": 8.414692352268224,
+          "ci95_cluster": [
+            7.745650576889511,
+            9.095008054637036
+          ]
+        },
+        "consistent": {
+          "value": 0.8203125,
+          "ci95_cluster": [
+            0.75,
+            0.8828125
+          ]
+        }
+      }
+    },
+    "gpt-5.6-luna/hybrid": {
+      "requests": 128,
+      "trials": 384,
+      "counts": {
+        "tp": 717,
+        "fp": 22,
+        "fn": 21,
+        "n": 384,
+        "nonempty": 300,
+        "empty": 84,
+        "overcall": 22,
+        "miss": 21,
+        "exact": 342,
+        "link_count": 303,
+        "link_fn": 16
+      },
+      "metrics": {
+        "precision": {
+          "value": 0.9702300405953992,
+          "ci95_cluster": [
+            0.9521118768094062,
+            0.9862268413404777
+          ]
+        },
+        "recall": {
+          "value": 0.9715447154471545,
+          "ci95_cluster": [
+            0.9539748953974896,
+            0.9868421052631579
+          ]
+        },
+        "overcall_rate": {
+          "value": 0.057291666666666664,
+          "ci95_cluster": [
+            0.026041666666666668,
+            0.09375
+          ]
+        },
+        "exact_rate": {
+          "value": 0.890625,
+          "ci95_cluster": [
+            0.8411458333333334,
+            0.9348958333333334
+          ]
+        },
+        "link_miss_rate": {
+          "value": 0.052805280528052806,
+          "ci95_cluster": [
+            0.02127659574468085,
+            0.09062224183583396
+          ]
+        },
+        "catalog_bytes_mean": {
+          "value": 3414.8307291666665,
+          "ci95_cluster": [
+            3061.272005208333,
+            3775.721614583333
+          ]
+        },
+        "skill_bytes_mean": {
+          "value": 26177.2265625,
+          "ci95_cluster": [
+            23036.411914062497,
+            29348.651627604166
+          ]
+        },
+        "calls_mean": {
+          "value": 3.046875,
+          "ci95_cluster": [
+            2.8619791666666665,
+            3.2239583333333335
+          ]
+        },
+        "latency_mean": {
+          "value": 8.521429247710943,
+          "ci95_cluster": [
+            7.863474238558206,
+            9.173948376098647
+          ]
+        },
+        "consistent": {
+          "value": 0.8671875,
+          "ci95_cluster": [
+            0.8046875,
+            0.921875
+          ]
+        }
+      }
+    },
+    "gpt-6-astra/control": {
+      "requests": 16,
+      "trials": 48,
+      "counts": {
+        "tp": 60,
+        "fp": 12,
+        "fn": 0,
+        "n": 48,
+        "nonempty": 27,
+        "empty": 21,
+        "overcall": 6,
+        "miss": 0,
+        "exact": 42,
+        "link_count": 21,
+        "link_fn": 0
+      },
+      "metrics": {
+        "precision": {
+          "value": 0.8333333333333334,
+          "ci95_cluster": [
+            0.6,
+            1.0
+          ]
+        },
+        "recall": {
+          "value": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "overcall_rate": {
+          "value": 0.125,
+          "ci95_cluster": [
+            0.0,
+            0.3125
+          ]
+        },
+        "exact_rate": {
+          "value": 0.875,
+          "ci95_cluster": [
+            0.6875,
+            1.0
+          ]
+        },
+        "link_miss_rate": {
+          "value": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "catalog_bytes_mean": {
+          "value": 5547.0,
+          "ci95_cluster": [
+            5547.0,
+            5547.0
+          ]
+        },
+        "skill_bytes_mean": {
+          "value": 24466.5625,
+          "ci95_cluster": [
+            15369.875,
+            33835.290625
+          ]
+        },
+        "calls_mean": {
+          "value": 1.625,
+          "ci95_cluster": [
+            1.375,
+            1.9375
+          ]
+        },
+        "latency_mean": {
+          "value": 4.650392134541676,
+          "ci95_cluster": [
+            3.580866499618731,
+            5.794641089716173
+          ]
+        },
+        "consistent": {
+          "value": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "gpt-6-astra/flat": {
+      "requests": 16,
+      "trials": 48,
+      "counts": {
+        "tp": 60,
+        "fp": 12,
+        "fn": 0,
+        "n": 48,
+        "nonempty": 27,
+        "empty": 21,
+        "overcall": 6,
+        "miss": 0,
+        "exact": 42,
+        "link_count": 21,
+        "link_fn": 0
+      },
+      "metrics": {
+        "precision": {
+          "value": 0.8333333333333334,
+          "ci95_cluster": [
+            0.6,
+            1.0
+          ]
+        },
+        "recall": {
+          "value": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "overcall_rate": {
+          "value": 0.125,
+          "ci95_cluster": [
+            0.0,
+            0.3125
+          ]
+        },
+        "exact_rate": {
+          "value": 0.875,
+          "ci95_cluster": [
+            0.6875,
+            1.0
+          ]
+        },
+        "link_miss_rate": {
+          "value": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "catalog_bytes_mean": {
+          "value": 3336.0,
+          "ci95_cluster": [
+            3336.0,
+            3336.0
+          ]
+        },
+        "skill_bytes_mean": {
+          "value": 22255.5625,
+          "ci95_cluster": [
+            13158.875,
+            31624.290624999998
+          ]
+        },
+        "calls_mean": {
+          "value": 1.625,
+          "ci95_cluster": [
+            1.375,
+            1.9375
+          ]
+        },
+        "latency_mean": {
+          "value": 4.97627652529168,
+          "ci95_cluster": [
+            3.8389088873088757,
+            6.2150291092041545
+          ]
+        },
+        "consistent": {
+          "value": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "gpt-6-astra/tree": {
+      "requests": 16,
+      "trials": 48,
+      "counts": {
+        "tp": 60,
+        "fp": 3,
+        "fn": 0,
+        "n": 48,
+        "nonempty": 27,
+        "empty": 21,
+        "overcall": 3,
+        "miss": 0,
+        "exact": 45,
+        "link_count": 21,
+        "link_fn": 0
+      },
+      "metrics": {
+        "precision": {
+          "value": 0.9523809523809523,
+          "ci95_cluster": [
+            0.8461538461538461,
+            1.0
+          ]
+        },
+        "recall": {
+          "value": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "overcall_rate": {
+          "value": 0.0625,
+          "ci95_cluster": [
+            0.0,
+            0.1875
+          ]
+        },
+        "exact_rate": {
+          "value": 0.9375,
+          "ci95_cluster": [
+            0.8125,
+            1.0
+          ]
+        },
+        "link_miss_rate": {
+          "value": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "catalog_bytes_mean": {
+          "value": 1110.5625,
+          "ci95_cluster": [
+            805.8125,
+            1439.19375
+          ]
+        },
+        "skill_bytes_mean": {
+          "value": 17864.0,
+          "ci95_cluster": [
+            9130.9,
+            27296.303124999995
+          ]
+        },
+        "calls_mean": {
+          "value": 2.1875,
+          "ci95_cluster": [
+            1.6875,
+            2.6875
+          ]
+        },
+        "latency_mean": {
+          "value": 6.498717478249954,
+          "ci95_cluster": [
+            5.133000594249467,
+            7.884372410520771
+          ]
+        },
+        "consistent": {
+          "value": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "gpt-6-astra/hybrid": {
+      "requests": 16,
+      "trials": 48,
+      "counts": {
+        "tp": 60,
+        "fp": 4,
+        "fn": 0,
+        "n": 48,
+        "nonempty": 27,
+        "empty": 21,
+        "overcall": 4,
+        "miss": 0,
+        "exact": 44,
+        "link_count": 21,
+        "link_fn": 0
+      },
+      "metrics": {
+        "precision": {
+          "value": 0.9375,
+          "ci95_cluster": [
+            0.8333333333333334,
+            1.0
+          ]
+        },
+        "recall": {
+          "value": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "overcall_rate": {
+          "value": 0.08333333333333333,
+          "ci95_cluster": [
+            0.0,
+            0.22916666666666666
+          ]
+        },
+        "exact_rate": {
+          "value": 0.9166666666666666,
+          "ci95_cluster": [
+            0.7708333333333334,
+            1.0
+          ]
+        },
+        "link_miss_rate": {
+          "value": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "catalog_bytes_mean": {
+          "value": 2402.2708333333335,
+          "ci95_cluster": [
+            1474.1187499999999,
+            3380.584375
+          ]
+        },
+        "skill_bytes_mean": {
+          "value": 19308.333333333332,
+          "ci95_cluster": [
+            9946.596354166666,
+            29378.623437499995
+          ]
+        },
+        "calls_mean": {
+          "value": 2.1875,
+          "ci95_cluster": [
+            1.6875,
+            2.6875
+          ]
+        },
+        "latency_mean": {
+          "value": 6.298988001645803,
+          "ci95_cluster": [
+            4.749700677528077,
+            7.843897720939024
+          ]
+        },
+        "consistent": {
+          "value": 0.9375,
+          "ci95_cluster": [
+            0.8125,
+            1.0
+          ]
+        }
+      }
+    }
+  },
+  "paired": {
+    "gpt-5.6-luna/flat-control": {
+      "requests": 128,
+      "comparisons": {
+        "precision": {
+          "difference": 0.006197860519114418,
+          "difference_ci_simultaneous": [
+            -0.013422534387909024,
+            0.026130292458344775
+          ]
+        },
+        "recall": {
+          "difference": 0.0027100271002710175,
+          "difference_ci_simultaneous": [
+            -0.005618196645746939,
+            0.012669057130480882
+          ]
+        },
+        "overcall_rate": {
+          "difference": -0.015625,
+          "difference_ci_simultaneous": [
+            -0.05729166666666666,
+            0.0234375
+          ]
+        },
+        "exact_rate": {
+          "difference": 0.03645833333333337,
+          "difference_ci_simultaneous": [
+            -0.015625,
+            0.0885416666666667
+          ]
+        },
+        "link_miss_rate": {
+          "difference": -0.009900990099009903,
+          "difference_ci_simultaneous": [
+            -0.03401360544217687,
+            0.007326007326007323
+          ]
+        },
+        "catalog_bytes_mean": {
+          "difference": -2211.0,
+          "difference_ci_simultaneous": [
+            -2211.0,
+            -2211.0
+          ],
+          "ratio": 0.601406165494862,
+          "ratio_ci_simultaneous": [
+            0.601406165494862,
+            0.601406165494862
+          ]
+        },
+        "skill_bytes_mean": {
+          "difference": -2235.3645833333358,
+          "difference_ci_simultaneous": [
+            -2696.511979166668,
+            -1777.3306640624999
+          ],
+          "ratio": 0.9242540428934711,
+          "ratio_ci_simultaneous": [
+            0.9060954577861096,
+            0.9410239477399551
+          ]
+        },
+        "calls_mean": {
+          "difference": 0.15364583333333304,
+          "difference_ci_simultaneous": [
+            0.078125,
+            0.234375
+          ],
+          "ratio": 1.0710843373493975,
+          "ratio_ci_simultaneous": [
+            1.03625,
+            1.1096275177658421
+          ]
+        },
+        "latency_mean": {
+          "difference": 0.4144234653749992,
+          "difference_ci_simultaneous": [
+            -0.030671282259502674,
+            0.9472677055265709
+          ],
+          "ratio": 1.0662519228409892,
+          "ratio_ci_simultaneous": [
+            0.9951222679565312,
+            1.1522890181169216
+          ]
+        },
+        "consistency": {
+          "difference": 0.046875,
+          "difference_ci_simultaneous": [
+            -0.028710937499999978,
+            0.125
+          ]
+        }
+      }
+    },
+    "gpt-5.6-luna/tree-flat": {
+      "requests": 128,
+      "comparisons": {
+        "precision": {
+          "difference": 0.022519913743783815,
+          "difference_ci_simultaneous": [
+            -0.0026495342396901126,
+            0.05958824096054982
+          ]
+        },
+        "recall": {
+          "difference": -0.031165311653116534,
+          "difference_ci_simultaneous": [
+            -0.058442370942371,
+            -0.008586087636240344
+          ]
+        },
+        "overcall_rate": {
+          "difference": -0.02864583333333333,
+          "difference_ci_simultaneous": [
+            -0.0703125,
+            0.0078125
+          ]
+        },
+        "exact_rate": {
+          "difference": -0.0078125,
+          "difference_ci_simultaneous": [
+            -0.07467447916666663,
+            0.05729166666666674
+          ]
+        },
+        "link_miss_rate": {
+          "difference": 0.066006600660066,
+          "difference_ci_simultaneous": [
+            0.02,
+            0.12042289137877382
+          ]
+        },
+        "catalog_bytes_mean": {
+          "difference": -1975.7447916666667,
+          "difference_ci_simultaneous": [
+            -2100.0146484375,
+            -1849.492578125
+          ],
+          "ratio": 0.4077503622102318,
+          "ratio_ci_simultaneous": [
+            0.3704992061038669,
+            0.44559574996253
+          ]
+        },
+        "skill_bytes_mean": {
+          "difference": -3453.325520833332,
+          "difference_ci_simultaneous": [
+            -4622.539518229165,
+            -2450.3717447916556
+          ],
+          "ratio": 0.8733931361678003,
+          "ratio_ci_simultaneous": [
+            0.8280012848116107,
+            0.9117329325344968
+          ]
+        },
+        "calls_mean": {
+          "difference": 0.6692708333333335,
+          "difference_ci_simultaneous": [
+            0.578125,
+            0.7604166666666665
+          ],
+          "ratio": 1.2890888638920135,
+          "ratio_ci_simultaneous": [
+            1.254249850221286,
+            1.3254153554239172
+          ]
+        },
+        "latency_mean": {
+          "difference": 1.7450019058932407,
+          "difference_ci_simultaneous": [
+            1.2016916990512359,
+            2.2743051166991193
+          ],
+          "ratio": 1.261631618427158,
+          "ratio_ci_simultaneous": [
+            1.1718284603151587,
+            1.3499250169830117
+          ]
+        },
+        "consistency": {
+          "difference": -0.0390625,
+          "difference_ci_simultaneous": [
+            -0.1328125,
+            0.0546875
+          ]
+        }
+      }
+    },
+    "gpt-5.6-luna/hybrid-tree": {
+      "requests": 128,
+      "comparisons": {
+        "precision": {
+          "difference": 0.007064965561292769,
+          "difference_ci_simultaneous": [
+            -0.010560370376581352,
+            0.027413179603022923
+          ]
+        },
+        "recall": {
+          "difference": 0.01490514905149054,
+          "difference_ci_simultaneous": [
+            -0.003812077322729568,
+            0.034498232963463056
+          ]
+        },
+        "overcall_rate": {
+          "difference": -0.005208333333333336,
+          "difference_ci_simultaneous": [
+            -0.03645833333333333,
+            0.0234375
+          ]
+        },
+        "exact_rate": {
+          "difference": 0.0390625,
+          "difference_ci_simultaneous": [
+            -0.0026041666666666297,
+            0.08333333333333337
+          ]
+        },
+        "link_miss_rate": {
+          "difference": -0.0396039603960396,
+          "difference_ci_simultaneous": [
+            -0.08699558933933933,
+            0.0035339678984696215
+          ]
+        },
+        "catalog_bytes_mean": {
+          "difference": 2054.575520833333,
+          "difference_ci_simultaneous": [
+            1729.7985677083334,
+            2384.319205729168
+          ],
+          "ratio": 2.510433857004468,
+          "ratio_ci_simultaneous": [
+            2.358014274730221,
+            2.6575308327124607
+          ]
+        },
+        "skill_bytes_mean": {
+          "difference": 2354.578125,
+          "difference_ci_simultaneous": [
+            1445.6569010416667,
+            3259.116406250003
+          ],
+          "ratio": 1.0988377984579407,
+          "ratio_ci_simultaneous": [
+            1.0609125226545726,
+            1.1373916743489882
+          ]
+        },
+        "calls_mean": {
+          "difference": 0.0625,
+          "difference_ci_simultaneous": [
+            -0.0026041666666665186,
+            0.12760416666666696
+          ],
+          "ratio": 1.0209424083769634,
+          "ratio_ci_simultaneous": [
+            0.9991529645524898,
+            1.0431990449127302
+          ]
+        },
+        "latency_mean": {
+          "difference": 0.1067368954427188,
+          "difference_ci_simultaneous": [
+            -0.4359064526029824,
+            0.6094616446085297
+          ],
+          "ratio": 1.0126845867887193,
+          "ratio_ci_simultaneous": [
+            0.9504269050986294,
+            1.074691060873155
+          ]
+        },
+        "consistency": {
+          "difference": 0.046875,
+          "difference_ci_simultaneous": [
+            -0.046875,
+            0.140625
+          ]
+        }
+      }
+    },
+    "gpt-5.6-luna/hybrid-flat": {
+      "requests": 128,
+      "comparisons": {
+        "precision": {
+          "difference": 0.029584879305076583,
+          "difference_ci_simultaneous": [
+            -0.003717606044759114,
+            0.07217726248775183
+          ]
+        },
+        "recall": {
+          "difference": -0.016260162601625994,
+          "difference_ci_simultaneous": [
+            -0.0382204071025372,
+            0.0027100271002709815
+          ]
+        },
+        "overcall_rate": {
+          "difference": -0.033854166666666664,
+          "difference_ci_simultaneous": [
+            -0.0859375,
+            0.015625
+          ]
+        },
+        "exact_rate": {
+          "difference": 0.03125,
+          "difference_ci_simultaneous": [
+            -0.035611979166666634,
+            0.09895833333333337
+          ]
+        },
+        "link_miss_rate": {
+          "difference": 0.026402640264026403,
+          "difference_ci_simultaneous": [
+            -0.01242356063228337,
+            0.07232704402515723
+          ]
+        },
+        "catalog_bytes_mean": {
+          "difference": 78.83072916666652,
+          "difference_ci_simultaneous": [
+            -358.4224609375001,
+            515.0623697916668
+          ],
+          "ratio": 1.0236303144984011,
+          "ratio_ci_simultaneous": [
+            0.8925592143472721,
+            1.1543951947816746
+          ]
+        },
+        "skill_bytes_mean": {
+          "difference": -1098.7473958333321,
+          "difference_ci_simultaneous": [
+            -2297.1779296875,
+            -32.702018229167486
+          ],
+          "ratio": 0.9597173909349022,
+          "ratio_ci_simultaneous": [
+            0.912267228545298,
+            0.9988648723393958
+          ]
+        },
+        "calls_mean": {
+          "difference": 0.7317708333333335,
+          "difference_ci_simultaneous": [
+            0.6354166666666665,
+            0.828125
+          ],
+          "ratio": 1.3160854893138358,
+          "ratio_ci_simultaneous": [
+            1.278471379846731,
+            1.3562117608384576
+          ]
+        },
+        "latency_mean": {
+          "difference": 1.8517388013359595,
+          "difference_ci_simultaneous": [
+            1.2464167186355029,
+            2.403365214578277
+          ],
+          "ratio": 1.2776348941864897,
+          "ratio_ci_simultaneous": [
+            1.1769878665547728,
+            1.371144492738655
+          ]
+        },
+        "consistency": {
+          "difference": 0.0078125,
+          "difference_ci_simultaneous": [
+            -0.09375,
+            0.109375
+          ]
+        }
+      }
+    },
+    "gpt-5.6-luna/tree-control": {
+      "requests": 128,
+      "comparisons": {
+        "precision": {
+          "difference": 0.028717774262898232,
+          "difference_ci_simultaneous": [
+            0.001694516867176091,
+            0.061222761248598795
+          ]
+        },
+        "recall": {
+          "difference": -0.028455284552845517,
+          "difference_ci_simultaneous": [
+            -0.056506168403401634,
+            -0.004531571369806697
+          ]
+        },
+        "overcall_rate": {
+          "difference": -0.04427083333333333,
+          "difference_ci_simultaneous": [
+            -0.09114583333333331,
+            0.0
+          ]
+        },
+        "exact_rate": {
+          "difference": 0.02864583333333337,
+          "difference_ci_simultaneous": [
+            -0.03645833333333337,
+            0.09375
+          ]
+        },
+        "link_miss_rate": {
+          "difference": 0.0561056105610561,
+          "difference_ci_simultaneous": [
+            0.006734006734006731,
+            0.11422994422994441
+          ]
+        },
+        "catalog_bytes_mean": {
+          "difference": -4186.744791666667,
+          "difference_ci_simultaneous": [
+            -4311.0146484375,
+            -4060.492578125
+          ],
+          "ratio": 0.24522358181599663,
+          "ratio_ci_simultaneous": [
+            0.22282050686181717,
+            0.2679840313457725
+          ]
+        },
+        "skill_bytes_mean": {
+          "difference": -5688.690104166668,
+          "difference_ci_simultaneous": [
+            -6843.176171874999,
+            -4655.811783854165
+          ],
+          "ratio": 0.8072371371384974,
+          "ratio_ci_simultaneous": [
+            0.7610667119174501,
+            0.8464429309176886
+          ]
+        },
+        "calls_mean": {
+          "difference": 0.8229166666666665,
+          "difference_ci_simultaneous": [
+            0.703125,
+            0.9479166666666669
+          ],
+          "ratio": 1.380722891566265,
+          "ratio_ci_simultaneous": [
+            1.3272799890076536,
+            1.4390243902439024
+          ]
+        },
+        "latency_mean": {
+          "difference": 2.15942537126824,
+          "difference_ci_simultaneous": [
+            1.6436186647692799,
+            2.7402119860304035
+          ],
+          "ratio": 1.3452171390649466,
+          "ratio_ci_simultaneous": [
+            1.2596405932156012,
+            1.4448384196762742
+          ]
+        },
+        "consistency": {
+          "difference": 0.0078125,
+          "difference_ci_simultaneous": [
+            -0.09375,
+            0.109375
+          ]
+        }
+      }
+    },
+    "gpt-5.6-luna/hybrid-control": {
+      "requests": 128,
+      "comparisons": {
+        "precision": {
+          "difference": 0.035782739824191,
+          "difference_ci_simultaneous": [
+            0.0014513876778913172,
+            0.07597003077340138
+          ]
+        },
+        "recall": {
+          "difference": -0.013550135501354976,
+          "difference_ci_simultaneous": [
+            -0.035440594991526964,
+            0.005472411186696992
+          ]
+        },
+        "overcall_rate": {
+          "difference": -0.049479166666666664,
+          "difference_ci_simultaneous": [
+            -0.10416666666666666,
+            0.0026041666666666713
+          ]
+        },
+        "exact_rate": {
+          "difference": 0.06770833333333337,
+          "difference_ci_simultaneous": [
+            0.0026041666666667407,
+            0.1328125
+          ]
+        },
+        "link_miss_rate": {
+          "difference": 0.0165016501650165,
+          "difference_ci_simultaneous": [
+            -0.02318840579710145,
+            0.06382978723404256
+          ]
+        },
+        "catalog_bytes_mean": {
+          "difference": -2132.1692708333335,
+          "difference_ci_simultaneous": [
+            -2569.4224609375,
+            -1695.937630208333
+          ],
+          "ratio": 0.6156175823267832,
+          "ratio_ci_simultaneous": [
+            0.5367906145776996,
+            0.6942603875593414
+          ]
+        },
+        "skill_bytes_mean": {
+          "difference": -3334.111979166668,
+          "difference_ci_simultaneous": [
+            -4529.613736979166,
+            -2233.337369791664
+          ],
+          "ratio": 0.8870226786067572,
+          "ratio_ci_simultaneous": [
+            0.8403530615470877,
+            0.9272965502817969
+          ]
+        },
+        "calls_mean": {
+          "difference": 0.8854166666666665,
+          "difference_ci_simultaneous": [
+            0.7604166666666667,
+            1.0130208333333335
+          ],
+          "ratio": 1.4096385542168675,
+          "ratio_ci_simultaneous": [
+            1.3554418696695019,
+            1.4714402881444195
+          ]
+        },
+        "latency_mean": {
+          "difference": 2.2661622667109587,
+          "difference_ci_simultaneous": [
+            1.7203713225067265,
+            2.840494889591889
+          ],
+          "ratio": 1.3622806626150885,
+          "ratio_ci_simultaneous": [
+            1.2702745560149449,
+            1.4655550871186669
+          ]
+        },
+        "consistency": {
+          "difference": 0.0546875,
+          "difference_ci_simultaneous": [
+            -0.046875,
+            0.15625
+          ]
+        }
+      }
+    }
+  }
+}

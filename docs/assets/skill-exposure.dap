@@ -1,0 +1,10 @@
+flow right
+title "분류별 원본과 평평한 스킬 목록"
+subtitle "원본의 폴더 분류는 설치되는 스킬 이름을 바꾸지 않는다"
+
+box source "분류별 원본" "git · code · docs · design · tools"
+box catalog "평평한 설치 목록" "각 스킬의 이름과 description"
+box body "선택한 스킬 본문" "기반 스킬과 조건부 참조"
+
+source -> catalog "install.py"
+catalog -> body "요청에 맞는 스킬 선택"
