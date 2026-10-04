@@ -168,6 +168,138 @@ def test_cli_public_links_check_fix_recheck(
     assert public_links.main(["--repo", str(ROOT)]) == after
 
 
+# #11: 상대 경로 낱말 중간의 구두점은 비공개 경로 시작이 아니다.
+@pytest.mark.parametrize("wrapper", ["{}", "`{}`"])
+@pytest.mark.parametrize(
+    "path",
+    [
+        "a--/readme.md",
+        "a%2D-/readme.md",
+        "x--y/readme.md",
+        "a./b.md",
+        "docs/a--b.md",
+        "a..local/readme.md",
+        ".local.md/readme.md",
+        "a.../readme.md",
+        "a--~/readme.md",
+        "a--$HOME/readme.md",
+        "a--${HOME}/readme.md",
+        r"a--C:\a",
+        r"a--\\server\a",
+        "a--file:///a",
+    ],
+)
+def test_cli_relative_path_punctuation_is_not_private(
+    path: str,
+    wrapper: str,
+    repository: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    body = wrapper.format(path)
+    for args in ([], ["--fix"]):
+        monkeypatch.setattr(sys, "stdin", io.StringIO(body))
+
+        assert public_links.main(["--repo", str(ROOT), *args]) == 0
+
+        output = capsys.readouterr()
+        assert output.out == (body if args else "")
+        assert output.err == ""
+
+
+# #11: 토큰 시작의 비공개 위치는 구분 문자와 관계없이 게시 금지다.
+@pytest.mark.parametrize(
+    "wrapper",
+    [
+        "{}",
+        "서문\n{}",
+        "위치 {}",
+        "({})",
+        "[{}]",
+        "{{{}}}",
+        "'{}'",
+        '"{}"',
+        "`{}`",
+        "<{}>",
+    ],
+)
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/Users/me/a.md",
+        "/home/me/a",
+        "/tmp/a",
+        "~/a",
+        "$HOME/a",
+        "${HOME}/a",
+        r"C:\a",
+        r"\\server\a",
+        "file:///a",
+        ".local/a",
+        "x/.local/a",
+        "x%2D-/.local/a",
+        "x!/.local/a",
+        "../a",
+    ],
+)
+def test_cli_private_path_at_token_start_stays_blocked(
+    path: str,
+    wrapper: str,
+    repository: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    body = wrapper.format(path)
+    monkeypatch.setattr(sys, "stdin", io.StringIO(body))
+
+    assert public_links.main(["--repo", str(ROOT), "--fix"]) == 1
+
+    output = capsys.readouterr()
+    assert output.out == body
+    assert "do not publish; summarize without its location" in output.err
+    assert "replace with a public web link" not in output.err
+
+
+# #11: 저장소 파일의 링크 교정과 비공개 위치의 게시 금지는 별도 진단이다.
+@pytest.mark.parametrize(
+    ("body", "reason"),
+    [
+        (f"`{FILE}`", "repository path in code text: replace with a public web link"),
+        (f"[규칙]({FILE})", "relative repository link: replace with a public web link"),
+        (
+            "`/Users/me/a.md`",
+            "private path: do not publish; summarize without its location",
+        ),
+        (
+            "`../a`",
+            "path outside repository: do not publish; summarize without its location",
+        ),
+        (
+            "`git/git-issue/scripts/public_links.py`",
+            "unpublished file: do not publish; summarize without its location",
+        ),
+        (
+            "https://github.com/example/project/blob/main/.local/a",
+            "private path: do not publish; summarize without its location",
+        ),
+    ],
+)
+def test_cli_repository_link_and_private_location_have_distinct_diagnostics(
+    body: str,
+    reason: str,
+    repository: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(sys, "stdin", io.StringIO(body))
+
+    assert public_links.main(["--repo", str(ROOT)]) == 1
+
+    output = capsys.readouterr()
+    assert output.out == f"1: {reason}\n"
+    assert output.err == ""
+
+
 @pytest.mark.parametrize("target_visibility", ["PUBLIC", "PRIVATE", "INTERNAL"])
 def test_cli_private_links_only_allow_same_posting_repository(
     target_visibility: str,
@@ -183,7 +315,10 @@ def test_cli_private_links_only_allow_same_posting_repository(
 
     output = capsys.readouterr()
     assert output.out == body
-    assert output.err == "2: private repository: summarize without its address\n"
+    assert (
+        output.err
+        == "2: private repository: do not publish; summarize without its address\n"
+    )
 
 
 def test_cli_private_repository_path_fix_stays_in_posting_repository(
