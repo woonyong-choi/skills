@@ -1,6 +1,6 @@
 ---
 name: git-issue
-description: "GitHub 이슈를 만들거나 정리·닫을 때 사용. 종류·영역·우선순위 라벨, 제목, 본문 틀, 막힘 관계, PR 연결, 결정 댓글, 닫는 규칙"
+description: "GitHub 이슈의 제목·본문·라벨·완료 조건을 작성하거나 이슈를 정리·닫을 때 사용."
 ---
 
 # Git Issue
