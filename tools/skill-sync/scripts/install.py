@@ -35,7 +35,7 @@ TOOL_HOMES = {"codex": INSTALL_HOME / ".codex", "antigravity": INSTALL_HOME / ".
 MANIFEST = ".repo-skills.json"
 POINTER = INSTALL_HOME / ".config" / "skills" / "source"
 TRASH = INSTALL_HOME / ".skill-trash"
-SKIP = {".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__"}
+SKIP = {"tests", ".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__"}
 CATEGORIES = ("git", "code", "docs", "design", "tools")
 
 
@@ -105,7 +105,7 @@ def source_skills(source: Path) -> list[Path]:
 def tree_hash(folder: Path) -> str:
     digest = hashlib.sha256()
     for path in sorted(folder.rglob("*")):
-        if path.is_file() and not SKIP.intersection(path.parts):
+        if path.is_file() and not SKIP.intersection(path.relative_to(folder).parts):
             digest.update(path.relative_to(folder).as_posix().encode() + b"\0" + path.read_bytes())
     return digest.hexdigest()
 
@@ -232,8 +232,9 @@ def sync(root: Path, skills: list[Path], dry_run: bool) -> bool:
     success = True
     for skill in skills:
         target = _skill_path(root, skill.name)
-        if installed.get(skill.name) == current[skill.name] and target.is_dir() and tree_hash(target) == current[skill.name]:
-            print(f"{target}: 일치")
+        if installed.get(skill.name) == current[skill.name] and target.is_dir() and tree_hash(target) == current[skill.name] and not any(target.rglob("tests")):
+            if not dry_run:
+                print(f"{target}: 일치")
             continue
         if skill.name not in installed and target.exists():
             print(f"{target}: 충돌, 비관리 대상 보존", file=sys.stderr)
@@ -295,7 +296,7 @@ def build_claude_zips(source: Path, skills: list[Path], dry_run: bool, output: P
         files = {
             f"{skill.name}/{path.relative_to(skill).as_posix()}": path
             for path in sorted(skill.rglob("*"))
-            if path.is_file() and not SKIP.intersection(path.parts) and not nested_skills.intersection(path.parents)
+            if path.is_file() and not SKIP.intersection(path.relative_to(skill).parts) and not nested_skills.intersection(path.parents)
         }
         if record.get(skill.name) == digest and archive.is_file() and is_valid_archive(archive, skill.name, files):
             continue
