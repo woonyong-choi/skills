@@ -41,7 +41,19 @@ class ReportParser(HTMLParser):
 class InlineDaphnisReportTest(unittest.TestCase):
     """두 Daphnis 재생기가 독립 iframe 문서로 생성되는지 확인한다."""
 
-    daphnis: Path
+    daphnis: Path | None = None
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        if cls.daphnis is not None:
+            return
+        daphnis = os.environ.get("DAPHNIS_PATH")
+        if not daphnis:
+            raise unittest.SkipTest(
+                "daphnis path is not configured; set DAPHNIS_PATH to the checkout root "
+                "or run this script with --daphnis <path>"
+            )
+        cls.daphnis = Path(daphnis).resolve()
 
     def _build_navigation_report(self) -> str:
         module_spec = importlib.util.spec_from_file_location("build_report", BUILD)

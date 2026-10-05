@@ -194,6 +194,13 @@ python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/s
 
 시험에는 pytest가 필요하다. 그림 원본, 밝은·어두운 SVG와 재생성 명령은 [그림 재현 안내](docs/assets/README.md)에 있다.
 
+저장소 전체 시험은 `python3 -m pytest -q`로 실행한다. `DAPHNIS_PATH`가 없거나 빈 값이면 HTML 보고서 시험 3개는 경로 설정 안내와 함께 건너뛴다. 보고서 시험을 실행하려면 의존성이 설치된 그림 도구 작업본 루트를 지정한다. 브라우저 시험에는 Node.js, `playwright-core`와 Chromium이 필요하다.
+
+```sh
+DAPHNIS_PATH="<그림 도구 작업본 루트>" python3 -m pytest -q docs/html-report/tests/test_build_report.py
+python3 docs/html-report/tests/test_build_report.py --daphnis "<그림 도구 작업본 루트>"
+```
+
 ## 라이선스
 
 [MIT](LICENSE).
