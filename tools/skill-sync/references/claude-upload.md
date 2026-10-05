@@ -5,6 +5,7 @@
 - 지원 환경: macOS의 시스템 Chrome(`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`), 한국어 계정 UI. 다른 환경은 이 스크립트의 검증 대상 밖
 - 요구 조건: Node, 전역 `playwright-core`(`npm install -g playwright-core`, 스킬 폴더에 `node_modules` 금지), 시스템 Chrome
 - 인자: `--upload {이름,...}` 업로드, `--delete {이름,...}` 삭제, 없으면 계정에 없는 zip 목록만 보고. 업로드와 삭제 뒤 스킬 목록을 다시 읽어 확인. `--source {원본}`
+- 배포 전: `--probe`의 계정 description과 원본 frontmatter 대조. 인자 없는 실행은 이름 누락만 확인하므로 같은 이름의 구버전 판정 불가. 설명이 같아도 본문·보조 파일 변경이 있으면 해당 스킬 교체 후 재조회
 - 같은 이름 스킬 교체: `--replace {이름,...}`. 계정에 있으면 삭제(확인 대화상자까지) 뒤 업로드. zip이 없으면 삭제 전에 중단, 업로드 확인 실패 시 목록 재확인 경고와 복구용 zip 경로 출력
 - 프로필: `~/.config/skills/browser-profile`(권한 700). 로그인 쿠키가 남음. 다른 Chrome 프로필 복사 금지. 비밀번호 저장 없음
 - 흐름: 현재 스크립트는 화면 밖 Chrome 창 사용. 로그인·보안 확인 화면이 나타나면 진단 화면 저장 뒤 자동화 중단, 보안 확인 우회 금지

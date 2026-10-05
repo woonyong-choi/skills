@@ -30,7 +30,8 @@ def test_install_target_home_repeated_sync_preserves_hashes() -> None:
         second = subprocess.run(command, capture_output=True, text=True)
         assert second.returncode == 0, second.stderr
         assert '설치 성공' not in second.stdout
-        assert 'Claude 계정에 올릴 zip: 없음' in second.stdout
+        assert 'Claude 계정 zip 재생성: 없음' in second.stdout
+        assert 'Claude 계정 배포 상태: 미확인' in second.stdout
         assert (target_home / '.config/skills/source').read_text().strip() == str(SOURCE.resolve())
         for skill in ('alpha', 'beta', 'repo-docs'):
             expected = hashlib.sha256((SOURCE / skill / 'SKILL.md').read_bytes()).digest()
@@ -112,6 +113,45 @@ def test_install_invalid_existing_zip_rebuilt(install_home: Path, invalid_entry:
     assert result.returncode == 0, result.stderr
     assert '설치 성공' not in result.stdout
     with zipfile.ZipFile(archive_path) as archive:
+        assert {name: archive.read(name) for name in archive.namelist()} == expected
+
+
+# #31: 원본 manifest가 같아도 zip의 실제 파일과 내용이 다르면 복구.
+@pytest.mark.parametrize('damage', ['stale', 'missing-helper', 'extra', 'duplicate', 'truncated'])
+def test_install_changed_zip_payload_rebuilt(install_home: Path, damage: str) -> None:
+    command = [sys.executable, str(INSTALL), '--source', str(SOURCE), '--target-home', str(install_home), '--dist', str(install_home / 'dist')]
+    first = subprocess.run(command, capture_output=True, text=True)
+    assert first.returncode == 0, first.stderr
+    archive_path = install_home / 'dist/alpha.zip'
+    with zipfile.ZipFile(archive_path) as archive:
+        expected = {name: archive.read(name) for name in archive.namelist()}
+    entries = dict(expected)
+    if damage == 'stale':
+        entries['alpha/SKILL.md'] = b'old description'
+    elif damage == 'missing-helper':
+        entries.pop('alpha/references/storage.md')
+    elif damage == 'extra':
+        entries['alpha/obsolete.txt'] = b'old helper'
+    with zipfile.ZipFile(archive_path, 'w') as archive:
+        for name, content in entries.items():
+            archive.writestr(name, content)
+        if damage == 'duplicate':
+            with pytest.warns(UserWarning, match='Duplicate name'):
+                archive.writestr('alpha/references/storage.md', b'duplicate')
+    if damage == 'truncated':
+        archive_path.write_bytes(b'PK incomplete')
+    damaged = archive_path.read_bytes()
+
+    preview = subprocess.run([*command, '--dry-run'], capture_output=True, text=True)
+    assert preview.returncode == 0, preview.stderr
+    assert str(archive_path) in preview.stdout
+    assert archive_path.read_bytes() == damaged
+    result = subprocess.run(command, capture_output=True, text=True)
+
+    assert result.returncode == 0, result.stderr
+    assert '설치 성공' not in result.stdout
+    with zipfile.ZipFile(archive_path) as archive:
+        assert len(archive.namelist()) == len(expected)
         assert {name: archive.read(name) for name in archive.namelist()} == expected
 
 
