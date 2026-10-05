@@ -260,6 +260,93 @@ def test_cli_private_path_at_token_start_stays_blocked(
     assert "replace with a public web link" not in output.err
 
 
+# #15: worktree 경로는 표기 방식과 관계없이 위치를 공개하거나 자동 변환하지 않는다.
+@pytest.mark.parametrize(
+    "wrapper",
+    [
+        "{}",
+        "위치 {}",
+        "({})",
+        "[{}]",
+        "{{{}}}",
+        "'{}'",
+        '"{}"',
+        "`{}`",
+        "`cat {}`",
+        "<{}>",
+        "[경로]({})",
+        '[경로](<{}> "제목")',
+        "[경로][ref]\n[ref]: {}",
+        '<a href="{}">경로</a>',
+    ],
+)
+@pytest.mark.parametrize(
+    "path",
+    [
+        "daphnis.wt/fix-1/a.md",
+        "saturn.wt/docs-1-readme",
+        "x.wt/",
+        "docs/x.wt/a.md",
+        "docs/x.wt",
+        "docs/a--b.wt/a.md",
+        "./docs/x.wt/a.md",
+    ],
+)
+def test_cli_worktree_path_is_private(
+    path: str,
+    wrapper: str,
+    repository: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    body = wrapper.format(path)
+    line = 2 if wrapper.startswith("[경로][ref]") else 1
+    diagnostic = (
+        f"{line}: private path: do not publish; summarize without its location\n"
+    )
+    for args in ([], ["--fix"]):
+        monkeypatch.setattr(sys, "stdin", io.StringIO(body))
+
+        assert public_links.main(["--repo", str(ROOT), *args]) == 1
+
+        output = capsys.readouterr()
+        assert output.out == (body if args else diagnostic)
+        assert output.err == (diagnostic if args else "")
+
+
+# #15: .wt 뒤에 이름이 이어지면 worktree 경로 마디가 아니다.
+@pytest.mark.parametrize("wrapper", ["{}", "`{}`"])
+@pytest.mark.parametrize(
+    "path",
+    [
+        "a.wt.md",
+        "a.wt.md/a",
+        "docs/x.wtf/a.md",
+        "foo.wtx/a",
+        "docs/x.wt-backup/a",
+        "docs/x.wt_1/a",
+        "docs/x.wt!/a",
+        ".wt/a",
+    ],
+)
+def test_cli_worktree_lookalike_is_not_private(
+    path: str,
+    wrapper: str,
+    repository: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    body = wrapper.format(path)
+    for args in ([], ["--fix"]):
+        monkeypatch.setattr(sys, "stdin", io.StringIO(body))
+
+        assert public_links.main(["--repo", str(ROOT), *args]) == 0
+
+        output = capsys.readouterr()
+        assert output.out == (body if args else "")
+        assert output.err == ""
+
+
 # #11: 저장소 파일의 링크 교정과 비공개 위치의 게시 금지는 별도 진단이다.
 @pytest.mark.parametrize(
     ("body", "reason"),
