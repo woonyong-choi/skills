@@ -1,72 +1,138 @@
-// 인자: --source 원본, --upload·--delete·--replace 이름 목록, --probe·--click 탐색
-// 출력: stdout 계정 목록·변경 확인, stderr 오류, 실패 시 진단 PNG, 종료 0 성공·1 실패
-// claude.ai 계정의 스킬을 원본 저장소의 dist/claude zip과 맞춘다.
-// 사용: node claude_upload.mjs [--source <원본>] [--upload <이름,...>] [--delete <이름,...>] [--replace <이름,...>] [--probe [--click <글자|btn:이름>]...]
-// 계정 목록과 원본 zip을 비교해 없는 것을 보고하고, --delete 이름은 삭제, --upload 이름은 업로드한다.
-// --replace 이름은 계정에 있으면 삭제(확인까지)한 뒤 업로드한다.
+// 개인 계정 배포 어댑터
+// 인자: --login, 기본 stdin JSON(skills, dryRun)
+// 출력: 변경·대조, 종료 0 성공·1 실패
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, chmodSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, chmodSync, readFileSync, writeFileSync, renameSync, unlinkSync, lstatSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, basename } from "node:path";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const PROFILE_DIR = join(homedir(), ".config/skills/browser-profile");
 const LOG_DIR = join(homedir(), ".config/skills/browser-logs");
-const POINTER = join(homedir(), ".config/skills/source");
+const RECEIPT = join(homedir(), ".config/skills/claude-account.json");
 const SKILLS_URL = "https://claude.ai/customize/skills";
-const UPLOAD_WAIT_MS = 60 * 1000;
 const MY_SKILLS_URL = "https://claude.ai/customize/skills/yours";
+const UPLOAD_WAIT_MS = 60 * 1000;
 
 class UiError extends Error {}
 
-const args = parseArgs(process.argv.slice(2));
-const playwright = await loadPlaywright();
-const source = resolveSource(args.source);
-const zips = listZips(source);
-
-mkdirSync(PROFILE_DIR, { recursive: true, mode: 0o700 });
-chmodSync(PROFILE_DIR, 0o700);
-mkdirSync(LOG_DIR, { recursive: true, mode: 0o700 });
-
-const context = await openContext();
-try {
-  const page = context.pages()[0] ?? (await context.newPage());
-  if (!(await isLoggedIn(page))) {
-    await fail(page, "로그인이 없거나 보안 확인에 막혀 업로드 중단");
-  }
-  await openMySkills(page);
-  if (args.probe) {
-    for (const text of args.click) {
-      const target = text.startsWith("btn:")
-        ? page.getByRole("button", { name: text.slice(4), exact: true })
-        : page.getByText(text, { exact: true });
-      await target.first().click();
-      await page.waitForTimeout(2500);
-    }
-    await dumpPage(page, "probe");
-  } else {
-    await syncSkills(page, zips);
-  }
-} catch (error) {
-  console.error(`실패: ${error.message}`);
-  process.exitCode = 1;
-} finally {
-  await context.close();
+export function planAccount(skills, present, receipt) {
+  if (new Set(present.map((item) => item.name)).size !== present.length) throw new UiError("duplicate account skill names");
+  return skills.flatMap((skill) => {
+    const found = present.find((item) => item.name === skill.name);
+    const saved = receipt.skills[skill.name];
+    const reasons = [];
+    if (!found) reasons.push("계정 없음");
+    if (!saved) reasons.push("영수증 없음");
+    else if (saved.sourceHash !== skill.sourceHash || saved.skillHash !== skill.skillHash) reasons.push("해시 다름");
+    if (found && found.description !== skill.description) reasons.push("description 다름");
+    if (found && saved && saved.accountUpdatedAt !== found.updatedAt) reasons.push("계정 변경");
+    return reasons.length ? [{ ...skill, action: found ? "교체" : "업로드", reason: reasons.join(", ") }] : [];
+  });
 }
 
-function parseArgs(argv) {
-  const out = { source: null, upload: [], delete: [], replace: [], probe: false, click: [] };
-  for (let i = 0; i < argv.length; i += 1) {
-    if (argv[i] === "--source") out.source = argv[++i];
-    else if (argv[i] === "--upload") out.upload = argv[++i].split(",");
-    else if (argv[i] === "--delete") out.delete = argv[++i].split(",");
-    else if (argv[i] === "--replace") out.replace = argv[++i].split(",");
-    else if (argv[i] === "--probe") out.probe = true;
-    else if (argv[i] === "--click") out.click.push(argv[++i]);
-    else throw new Error(`알 수 없는 인자: ${argv[i]}`);
+// cost: time O(n² + n·b), heap O(n·b), stack O(1), io O(n·q)
+// vars: n = 스킬 수, b = 항목 크기, q = 스킬당 계정 조회·업로드 호출 수
+// basis: estimate
+export async function syncAccount(skills, account, receipt, save, dryRun) {
+  let present = await account.list();
+  const plan = planAccount(skills, present, receipt);
+  for (const item of plan) console.log(`계정 ${item.action}: ${item.name} (${item.reason})`);
+  const names = new Set(skills.map((skill) => skill.name));
+  console.log(`계정 원본 밖 보존: ${present.filter((item) => !names.has(item.name)).map((item) => item.name).join(", ") || "없음"}`);
+  if (dryRun) return plan;
+  for (const item of plan) {
+    delete receipt.skills[item.name];
+    save(receipt);
+    await account.upload(item);
+    present = await account.list();
+    const found = present.find((skill) => skill.name === item.name);
+    if (!found || found.description !== item.description) throw new UiError(`account verification failed: ${item.name}`);
+    receipt.skills[item.name] = { sourceHash: item.sourceHash, skillHash: item.skillHash,
+      description: item.description, accountUpdatedAt: found.updatedAt, verifiedAt: new Date().toISOString() };
+    save(receipt);
+    console.log(`계정 확인: ${item.name}`);
   }
-  return out;
+  present = await account.list();
+  const failed = planAccount(skills, present, receipt);
+  if (failed.length) throw new UiError(`final account verification failed: ${failed.map((item) => item.name).join(", ")}`);
+  console.log(`계정 대조: 원본 ${skills.length}개 이름·description·영수증 일치`);
+  return plan;
+}
+
+// cost: time O(b), heap O(b), stack O(1), io 2
+// vars: b = 영수증 바이트 수
+// basis: estimate
+export function readReceipt(path = RECEIPT) {
+  if (!existsSync(path)) return { version: 1, skills: {} };
+  if (lstatSync(path).isSymbolicLink()) throw new UiError("symlink receipt");
+  const receipt = JSON.parse(readFileSync(path, "utf8"));
+  if (receipt.version !== 1 || !receipt.skills || typeof receipt.skills !== "object" || Array.isArray(receipt.skills)) throw new UiError("invalid account receipt");
+  return receipt;
+}
+
+// cost: time O(b), heap O(b), stack O(1), io 4
+// vars: b = 영수증 바이트 수
+// basis: estimate
+export function saveReceipt(receipt, path = RECEIPT) {
+  const stage = `${path}.${process.pid}`;
+  try {
+    writeFileSync(stage, JSON.stringify(receipt, null, 2) + "\n", { mode: 0o600, flag: "wx" });
+    renameSync(stage, path);
+  } finally {
+    if (existsSync(stage)) unlinkSync(stage);
+  }
+}
+
+// cost: time O(n), heap O(n), stack O(1), io O(q)
+// vars: n = 계정 목록 글자 수, q = 로딩 대기 UI 조회 수
+// basis: estimate
+async function listAccount(page) {
+  await openMySkills(page);
+  const items = await page.locator('[data-testid="skills-tabbed-list-row"]').evaluateAll((rows) => rows.map((row) => {
+    const button = row.querySelector('button[aria-label$=" 보기"]');
+    const detail = row.querySelector('span.text-secondary.text-footnote');
+    const description = detail ? [...detail.childNodes].filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent).join("").trim() : null;
+    return { name: button?.getAttribute("aria-label")?.slice(0, -3), description, updatedAt: row.querySelector('time')?.getAttribute('datetime') };
+  }));
+  if (!items.length || items.some((item) => !item.name || !item.description || !item.updatedAt)) await fail(page, "계정 목록의 이름·description·시각 확인 실패");
+  return items;
+}
+
+// cost: time O(b + n²), heap O(b + n), stack O(1), io O(n·q)
+// vars: b = 입력과 영수증 바이트 수, n = 스킬 수, q = 스킬당 UI 호출 수
+// basis: estimate
+async function main() {
+  const login = process.argv.includes("--login");
+  if (process.argv.slice(2).some((arg) => arg !== "--login")) throw new UiError("unknown argument");
+  const request = login ? null : JSON.parse(readFileSync(0, "utf8"));
+  const receipt = login ? null : readReceipt();
+  mkdirSync(PROFILE_DIR, { recursive: true, mode: 0o700 });
+  chmodSync(PROFILE_DIR, 0o700);
+  mkdirSync(LOG_DIR, { recursive: true, mode: 0o700 });
+  const context = await openContext(await loadPlaywright(), login);
+  try {
+    const page = context.pages()[0] ?? await context.newPage();
+    if (login) {
+      await page.goto(SKILLS_URL, { waitUntil: "domcontentloaded" });
+      console.log("이 창에서 로그인·보안 확인을 마친 뒤 창을 닫으세요. 이후 배포 명령을 다시 실행하세요.");
+      await new Promise((resolve) => context.once("close", resolve));
+      return;
+    }
+    if (!(await isLoggedIn(page))) await fail(page, "로그인 만료 또는 보안 확인으로 중단");
+    const account = { list: () => listAccount(page), upload: async (item) => {
+      if (!existsSync(item.path)) throw new UiError(`missing zip: ${item.name}`);
+      if (item.action === "교체") await deleteSkill(page, item.name);
+      await uploadSkill(page, item);
+    } };
+    await syncAccount(request.skills, account, receipt, saveReceipt, request.dryRun);
+  } catch (error) {
+    if (!(error instanceof UiError)) await fail(context.pages()[0], "계정 UI 처리 실패");
+    throw error;
+  } finally {
+    await context.close();
+  }
 }
 
 // cost: time O(b), heap O(b), stack O(1), io 2
@@ -84,36 +150,14 @@ async function loadPlaywright() {
   return (await import(pathToFileURL(entry).href)).default;
 }
 
-// cost: time O(b), heap O(b), stack O(1), io 5
-// vars: b = 원본 경로 글자 수
-// basis: estimate
-function resolveSource(explicit) {
-  const candidates = [explicit, process.env.SKILLS_SOURCE];
-  if (existsSync(POINTER)) candidates.push(readFileSync(POINTER, "utf8").trim());
-  const found = candidates.find((path) => path && existsSync(join(path, "dist/claude")));
-  if (!found) throw new Error("원본 저장소를 찾지 못함. --source 지정 필요");
-  return found;
-}
-
-// cost: time O(f), heap O(f), stack O(1), io O(f)
-// vars: f = zip 폴더 항목 수, 스킬 탐색 위치는 여섯 곳으로 고정
-// basis: estimate
-function listZips(root) {
-  const dir = join(root, "dist/claude");
-  const roots = [root, ...["git", "code", "docs", "design", "tools"].map((category) => join(root, category))];
-  return readdirSync(dir)
-    .filter((file) => file.endsWith(".zip") && roots.some((folder) => existsSync(join(folder, basename(file, ".zip"), "SKILL.md"))))
-    .map((file) => ({ name: basename(file, ".zip"), path: join(dir, file) }));
-}
-
 // headless는 Cloudflare에 막히므로 창을 화면 밖에 둔 일반 창으로 실행
-function openContext() {
+function openContext(playwright, login) {
   const hidden = ["--window-position=-32000,-32000", "--window-size=960,720"];
   return playwright.chromium.launchPersistentContext(PROFILE_DIR, {
     executablePath: CHROME,
     headless: false,
     viewport: { width: 1280, height: 900 },
-    args: ["--disable-blink-features=AutomationControlled", ...hidden],
+    args: [...(login ? [] : hidden)],
   });
 }
 
@@ -132,7 +176,7 @@ async function isLoggedIn(page) {
     await page.waitForTimeout(3000);
     const state = await pageState(page);
     if (state === "app") return true;
-    if (state === "login") return false;
+    if (state === "login" || state === "challenge") return false;
   }
   return false;
 }
@@ -146,16 +190,6 @@ async function openMySkills(page) {
 async function accountSkills(page) {
   const labels = await page.locator("button[aria-label$=' 보기']").evaluateAll((els) => els.map((el) => el.getAttribute("aria-label")));
   return labels.map((label) => label.slice(0, -" 보기".length));
-}
-
-async function accountSkillUpdatedAt(page, name) {
-  return page
-    .getByRole("button", { name: `${name} 보기`, exact: true })
-    .evaluate((button, skillName) => {
-      const updatedAt = /지금|방금|\d+분 전|\d+시간 전|\d+일 전|\d+주 전|\d+개월 전|\d+년 전/;
-      const text = button.parentElement?.innerText?.trim() ?? "";
-      return text.includes(skillName) ? updatedAt.exec(text)?.[0] ?? "" : "";
-    }, name);
 }
 
 async function clickOrFail(page, locator, what) {
@@ -199,9 +233,7 @@ async function uploadSkill(page, zip) {
   // 업로드가 끝나면 상세 화면으로 이동하므로 다음 작업 전에 목록 복귀와 저장 확인이 필요하다.
   await openMySkills(page);
   if (!(await accountSkills(page)).includes(zip.name)) await fail(page, `'${zip.name}' 업로드 뒤 목록에 없음`);
-  const updatedAt = await accountSkillUpdatedAt(page, zip.name);
-  if (updatedAt !== "지금" && updatedAt !== "방금") await fail(page, `'${zip.name}'의 업로드 직후 갱신 시각이 지금이 아님: ${updatedAt}`);
-  console.log(`업로드 직후 확인: ${zip.name} 갱신 시각 ${updatedAt}`);
+
 }
 
 async function waitForUpload(page, name) {
@@ -224,76 +256,18 @@ async function shot(page, label) {
   return path;
 }
 
-// cost: time O(b), heap O(b), stack O(1), io 4
-// vars: b = 페이지 글자와 스크린샷 크기
-// basis: estimate
-async function dumpPage(page, label) {
-  const path = await shot(page, label);
-  const text = await page.evaluate(() => document.body.innerText);
-  const buttons = await page.evaluate(() =>
-    [...document.querySelectorAll("button,a,[role=tab],[role=menuitem],input")].map(
-      (el) => `${el.tagName} ${el.getAttribute("aria-label") ?? ""} ${el.getAttribute("data-testid") ?? ""} ${(el.innerText || el.value || "").slice(0, 60).replace(/\n/g, " ")}`,
-    ),
-  );
-  console.log(`url: ${page.url()}\n스크린샷: ${path}\n--- text\n${text}\n--- controls\n${buttons.join("\n")}`);
-}
-
 async function fail(page, what) {
+  const state = await pageState(page);
+  const recovery = state === "login" || state === "challenge"
+    ? " 로그인·보안 확인 필요: python3 tools/skill-sync/scripts/deploy.py --login" : "";
   const path = await shot(page, "fail");
-  throw new UiError(`${what}. 스크린샷: ${path}`);
+  throw new UiError(`${what}.${recovery} 스크린샷: ${path}`);
 }
 
-// cost: time O(n² + n·b), heap O(n + b), stack O(1), io O(n·q)
-// vars: n = 대상·계정 스킬 수, b = 가장 큰 zip 크기, q = 항목당 UI 조회 횟수
-// basis: estimate
-async function syncSkills(page, zips) {
-  const known = new Set(zips.map((zip) => zip.name));
-  for (const name of [...args.upload, ...args.replace]) {
-    if (!known.has(name)) throw new UiError(`dist/claude에 ${name}.zip 없음`);
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  try { await main(); } catch (error) {
+    console.error(`실패: ${error.message}`);
+    process.exitCode = 1;
   }
-  let present = await accountSkills(page);
-  for (const name of args.delete) {
-    if (present.includes(name)) {
-      await deleteSkill(page, name);
-      console.log(`삭제됨: ${name}`);
-    } else {
-      console.log(`삭제 불필요(계정에 없음): ${name}`);
-    }
-  }
-  for (const name of args.upload) {
-    await uploadSkill(page, zips.find((zip) => zip.name === name));
-    console.log(`업로드: ${name}`);
-  }
-  for (const name of args.replace) {
-    const zip = zips.find((item) => item.name === name);
-    if (present.includes(name)) {
-      await deleteSkill(page, name);
-      console.log(`삭제됨: ${name}`);
-      present = present.filter((item) => item !== name);
-    }
-    try {
-      await openMySkills(page);
-      await uploadSkill(page, zip);
-    } catch (error) {
-      console.error(`\n!!! 경고: '${name}' 교체 완료를 확인하지 못함. 계정 목록 재확인 필요 !!!`);
-      console.error(`!!! 수동 업로드: claude.ai 사용자 지정 > 스킬 > 추가 > 스킬 업로드에서 ${zip.path} 선택 !!!\n`);
-      throw error;
-    }
-    console.log(`교체 업로드: ${name}`);
-  }
-  await openMySkills(page);
-  present = await accountSkills(page);
-  const problems = [
-    ...args.delete.filter((name) => present.includes(name)).map((name) => `${name} 아직 있음`),
-    ...[...args.upload, ...args.replace].filter((name) => !present.includes(name)).map((name) => `${name} 아직 없음`),
-  ];
-  if (problems.length) await fail(page, `확인 실패: ${problems.join(", ")}`);
-  for (const name of [...args.upload, ...args.replace]) {
-    const updatedAt = await accountSkillUpdatedAt(page, name);
-    if (!updatedAt) await fail(page, `'${name}'의 갱신 시각을 목록에서 찾지 못함`);
-    console.log(`확인: ${name} 갱신 시각 ${updatedAt}`);
-  }
-  const missing = zips.map((zip) => zip.name).filter((name) => !present.includes(name));
-  console.log(`확인 완료. 계정 스킬 ${present.length}개`);
-  console.log(`계정에 없는 zip: ${missing.length ? missing.join(", ") : "없음"}`);
 }
