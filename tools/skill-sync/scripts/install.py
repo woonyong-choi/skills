@@ -254,15 +254,19 @@ def sync(root: Path, skills: list[Path], dry_run: bool) -> bool:
     return success
 
 
-# cost: time O(f), heap O(1), stack O(1), io f
+# cost: time O(f), heap O(f), stack O(1), io 1
 # vars: f = zip 안 파일 수
 # basis: estimate
-def archive_has_cache(archive: Path) -> bool:
+def is_valid_archive(archive: Path, skill_name: str) -> bool:
     with zipfile.ZipFile(archive) as bundle:
-        return any(SKIP.intersection(Path(item.filename).parts) for item in bundle.infolist())
+        entries = bundle.infolist()
+        skill_files = [item.filename for item in entries if Path(item.filename).name == "SKILL.md"]
+        return skill_files == [f"{skill_name}/SKILL.md"] and not any(
+            SKIP.intersection(Path(item.filename).parts) for item in entries
+        )
 
 
-# cost: time O(s·b), heap O(s), stack O(d), io s·f
+# cost: time O(s·b + s·f log f + s·f·d), heap O(s + f + b), stack O(d), io O(s·f)
 # vars: s = 스킬 수, b = 스킬 폴더 바이트 수, f = 스킬별 파일 수, d = 폴더 깊이
 # basis: estimate
 def build_claude_zips(source: Path, skills: list[Path], dry_run: bool, output: Path | None = None) -> list[Path]:
@@ -283,20 +287,28 @@ def build_claude_zips(source: Path, skills: list[Path], dry_run: bool, output: P
         archive = output / f"{skill.name}.zip"
         if archive.is_symlink():
             raise ValueError(f"symlink archive: {archive}")
-        if record.get(skill.name) == digest and archive.is_file() and not archive_has_cache(archive):
+        if record.get(skill.name) == digest and archive.is_file() and is_valid_archive(archive, skill.name):
             continue
         changed.append(archive)
         if dry_run:
             continue
         output.mkdir(parents=True, exist_ok=True)
         staged_archive = output / f".{skill.name}.{uuid.uuid4().hex}.zip"
-        with zipfile.ZipFile(staged_archive, "w", zipfile.ZIP_DEFLATED) as bundle:
-            for path in sorted(skill.rglob("*")):
-                if path.is_file() and not SKIP.intersection(path.parts):
+        nested_skills = {path.parent for path in skill.rglob("SKILL.md") if path.is_file() and path.parent != skill}
+        try:
+            with zipfile.ZipFile(staged_archive, "w", zipfile.ZIP_DEFLATED) as bundle:
+                for path in sorted(skill.rglob("*")):
+                    if not path.is_file() or SKIP.intersection(path.parts) or nested_skills.intersection(path.parents):
+                        continue
                     info = zipfile.ZipInfo(f"{skill.name}/{path.relative_to(skill).as_posix()}", date_time=(2020, 1, 1, 0, 0, 0))
                     info.external_attr = 0o644 << 16
                     bundle.writestr(info, path.read_bytes(), zipfile.ZIP_DEFLATED)
-        os.replace(staged_archive, archive)
+            if not is_valid_archive(staged_archive, skill.name):
+                raise ValueError(f"invalid archive: {archive}: expected exactly one {skill.name}/SKILL.md and no cache files")
+            os.replace(staged_archive, archive)
+        finally:
+            if staged_archive.exists():
+                staged_archive.unlink()
         record[skill.name] = digest
         record_changed = True
     if not dry_run and record_changed:
@@ -304,8 +316,8 @@ def build_claude_zips(source: Path, skills: list[Path], dry_run: bool, output: P
     return changed
 
 
-# cost: time O(t·s·b), heap O(s), stack O(d), io t·s·f
-# vars: t = 도구 수, s = 스킬 수, b = 스킬 폴더 바이트 수, f = 스킬별 파일 수, d = 폴더 깊이
+# cost: time O(t·s·b + s·f log f + s·f·d), heap O(s + f + b), stack O(d), io O(t·s·f)
+# vars: t = 도구 수 + 1, s = 스킬 수, b = 스킬 폴더 바이트 수, f = 스킬별 파일 수, d = 폴더 깊이
 # basis: estimate
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
