@@ -28,6 +28,8 @@ _LOCAL = re.compile(
     r"file://[^\s<>`]+|(?:~|\$HOME|\$\{HOME\})[/\\][^\s<>`]*"
     r"|[A-Za-z]:[\\/][^\s<>`]+|\\\\[^\s<>`]+|/[^\s<>`]+"
     r"|(?:[^\s/<>`\"'()\[\]{}]+/)*\.local(?:/[^\s<>`]*)?(?![\w.-])"
+    r"|(?:[^\s/\\<>`\"'()\[\]{}]+[/\\])*[^\s/\\<>`\"'()\[\]{}]+\.wt"
+    r"(?=[/\\\s<>`\"'()\[\]{}]|$)(?:[/\\][^\s<>`]*)?"
     r"|(?:\.\./)+[^\s<>`]+)",
 )
 _LINES = re.compile(r"(?::|#L)(\d+)(?:-(?:L)?(\d+))?$")
@@ -119,6 +121,10 @@ def _is_local(value: str) -> bool:
         value.startswith(("/", "~", "$HOME", "${HOME}", "file:", "\\\\"))
         or re.match(r"^[A-Za-z]:[\\/]", value) is not None
         or ".local" in value.replace("\\", "/").split("/")
+        or any(
+            part.endswith(".wt") and part != ".wt"
+            for part in value.replace("\\", "/").split("/")
+        )
     )
 
 
