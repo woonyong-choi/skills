@@ -10,9 +10,34 @@ description: "저장소 문서의 구조도·차트·대체 글·데모 GIF를 �
 - 필요할 때만 읽기: README 그림 배치 → repo-docs-readme; 실험 차트의 통계·신뢰구간 → repo-docs-experiment
 
 - 원본·입력 JSON·만든 그림 함께 커밋. 만든 그림의 손 수정 금지
-- 순서·전이·시간 변화가 전달할 정보이면 움직이는 SVG, 최종 구조·값만 전달하면 `--static` 정지 SVG
+- 순서·전이·시간 변화가 전달할 정보이면 움직이는 SVG, 최종 구조·값만 전달하면 정지 SVG
 
 ## 도구와 파일
+
+- 렌더러: 저장소의 그림 도구와 원본 형식 우선. 원본·입력·변환 명령·도구 버전을 보존하고 같은 입력으로 재현
+- 원본과 산출물: `docs/assets/{이름}.{원본 확장자}`, `docs/assets/{이름}.svg`. 이름은 영어 소문자 kebab-case
+- 실험 차트: 분석 결과에서 생성한 입력 사용. 원자료·추출 경로·생성 명령 보존, 수치 재입력 금지
+- 색·글꼴·크기·아이콘: 대상 저장소 디자인 정본에서 결정. 정본 값 복사 금지, 사용자 아이콘 세트는 경로 참조
+- 면 위계: 판과 그룹은 무채색, 중첩 깊이별 밝기 단계. 그룹 테두리 없음, 도형 외곽선 유지, 강조 그룹도 무채색
+- 의미별 색 역할: 핵심 흐름·현재 상태·주 계열·아이콘은 주 강조색, 오류·정상·주의·비교 계열은 각각 정본 역할 토큰 사용. 드문 강조와 주 강조 구별
+- 글꼴 역할: 본문·숫자·코드는 정본 글꼴, 차트 숫자는 `tabular-nums`. 자간도 정본 참조
+- 대비: 라이트·다크 모두 글자 4.5 이상, 도형 외곽선과 의미 있는 그래픽 3 이상. 꾸밈 요소만 정본의 명시적 예외 적용
+- 문서 표시: SVG와 대체 글, 문서 안 원본을 쓰는 도구는 원본 블록도 보존. HTML 재생기는 검증용
+- 기계 검사: 원본·입력 수와 산출물·문서 링크 대조, 같은 입력·도구 버전으로 재생성한 바이트 비교. 녹화물의 프레임 바이트 비교는 제외
+- 실제 삽입 환경: 라이트·다크의 글자·겹침·잘림·빈 영역 확인. 움직임은 시간차 장면과 정지 출력 대조
+- 도구 교체: 기존 문서 호출·실험 입력·움직임·정지 출력·실패 시 쓰기 계약 검증. 실패한 원본의 새 산출물 없음과 기존 산출물 보존 확인
+
+## 대체 글
+
+- 결론 한 문장, 마침표 없음. 문체는 해당 문서 기준. 그림 이름·종류만 적기 금지
+- 문서 이미지 대체 글 필수. SVG 내부 제목만으로 대체 금지, 생성 이미지 줄까지 확인
+- 데이터 출처·구현 여부 표시와 파일 이름: (repo-docs 자리표시). 그림 제목·부제·단계 설명에도 같은 사실 상태 적용. 예시 차트 부제의 접두사도 정본 기준
+
+## 선택 어댑터
+
+이 절은 기존 변환 스크립트의 지원 형식과 의존성을 설명한다. 다른 렌더러를 쓰는 저장소는 위 공통 조건을 충족하는 대응 명령을 사용한다. 스크립트 자체는 아래 도구에 의존
+
+### 도구와 파일
 
 | 그림 | 도구 | 원본 | 산출물 |
 |---|---|---|---|
@@ -23,15 +48,10 @@ description: "저장소 문서의 구조도·차트·대체 글·데모 GIF를 �
 - `.dap` 하나에 그림 하나. 이름: 영어 소문자 kebab-case
 - 실험 차트도 같은 위치. 입력은 `03-analyze`가 만든 `docs/experiments/{실험}/results/summary.json` 또는 그 파일에서 생성한 차트용 JSON. 원자료·추출 경로·생성 명령 보존
 - 그림 문법 정본: [figure-syntax](https://github.com/woonyong-choi/daphnis/blob/main/docs/design/figure-syntax.md)의 문법 표와 호환 규칙. 문법·기본값 복제 금지
-- 색·글꼴·크기: daphnis 토큰에서 결정. 색 역할·대비 정본: [docs-integration](https://github.com/woonyong-choi/daphnis/blob/main/docs/design/docs-integration.md). 스킬·원본·변환 스크립트에 값 복사 금지
-- 면 위계: 판과 그룹은 무채색, 그룹 중첩 깊이별 밝기 단계로 구분. 일반 그룹 테두리 없음, 도형 외곽선 유지. 강조 그룹도 무채색 면 유지
-- 색 역할: 핵심 흐름·현재 상태·차트 주 계열·구성도 아이콘은 NHN 브랜드 파랑. 보라는 드문 강조, 빨강은 오류, 초록은 정상. 주황은 차트 비교 계열과 주의 상태에만 사용. 원색과 테마별 단계는 docs-integration 정본 참조
-- 글꼴: 본문·숫자 Pretendard, 차트 숫자 `tabular-nums`, 코드는 JetBrains Mono. 자간은 daphnis 토큰 참조
-- 대비: 라이트·다크 모두 글자 4.5 이상, 도형 외곽선과 의미 있는 그래픽 3 이상. 꾸밈 요소만 정본에 명시한 예외 적용
-- 아이콘: 재생·이동 등 조작 아이콘은 Lucide. 구성도는 Carbon 범용·Simple Icons 브랜드 아이콘, 사용자 세트는 경로 참조만 허용. NHN 아이콘 세트 복제 금지
-- 문서 그림 표시: SVG. 문서 안 원본 관리 시 `dap` 블록도 보존, HTML 재생기는 검증용. Markdown 표는 기존 문서 규칙 유지
+- 어댑터 토큰: daphnis `src/tokens.css`. 색 역할·대비와 지원 테마는 [docs-integration](https://github.com/woonyong-choi/daphnis/blob/main/docs/design/docs-integration.md) 참조. 대상 저장소의 디자인 정본과 맞지 않으면 공통 규칙을 만족하는 다른 어댑터 선택
+- 문서 안 원본: `dap` 블록과 생성 이미지 줄 보존, Markdown 표는 기존 문서 규칙 적용
 
-## 설치와 실행
+### 설치와 실행
 
 - 실행 환경: Node.js 20 이상. 설치·배포 정본: [README](https://github.com/woonyong-choi/daphnis/blob/main/README.md#installation). 패키지 버전만으로 npm 배포 여부 판단 금지
 - `<daphnis 경로>`: 의존성이 설치된 기존 작업본의 절대 경로. 아래 명령은 문서 저장소 루트에서 실행
@@ -50,7 +70,7 @@ node <daphnis 경로>/src/cli.js render docs/assets/architecture.dap --strict --
 - 같은 원본·같은 도구 커밋으로 재현. 확인한 커밋과 Node 버전 기록
 - 두 render 명령은 같은 SVG 경로 사용. 전달할 순서·전이·시간 정보 여부로 한 가지 선택, 비교 검증만 `--out`으로 폴더 분리
 
-## Markdown과 CI
+### Markdown과 CI
 
 - 문서 안 그림 관리: `daphnis md`로 `dap` 코드 블록에서 SVG 생성과 이미지 줄 갱신. 블록·파일 이름·출력 위치·오래된 SVG 정리 규칙: [markdown](https://github.com/woonyong-choi/daphnis/blob/main/docs/design/markdown.md). 문법·기본값 복제 금지
 - 원본 문서와 생성 SVG 함께 커밋. 생성 이미지 줄의 대체 글은 블록의 `title`에서 결정하므로 `title`도 대체 글 규칙 적용
@@ -65,7 +85,7 @@ node <daphnis 경로>/src/cli.js md <문서 경로>.md --check --strict --static
 - Action 정본: [action.yml](https://github.com/woonyong-choi/daphnis/blob/main/action.yml). 추적 파일 대상으로 원본 검사와 Markdown 최신성 검사, 생성 모드는 파일 갱신만 수행하고 자동 커밋 없음. 입력 문법·기본값은 정본 참조
 - Action 검증 결과에는 로컬 파일을 `action.yml`과 대조했는지, GitHub에서 실제 실행 결과를 확인했는지 각각 기록
 
-## 그림 작성
+### 그림 작성
 
 | 보여 줄 것 | 종류·선언 | 정본 |
 |---|---|---|
@@ -90,7 +110,7 @@ node <daphnis 경로>/src/cli.js md <문서 경로>.md --check --strict --static
 - 배치·글꼴 내장: [layout](https://github.com/woonyong-choi/daphnis/blob/main/docs/design/layout.md). 움직임·정지 출력 의미: [playback](https://github.com/woonyong-choi/daphnis/blob/main/docs/design/playback.md)
 - 정지 SVG: 모든 선과 차트 계열 표시, 빈 카드. 특정 단계 캡처로 간주 금지
 
-## 실험 차트
+### 실험 차트
 
 - 값 손 기재 금지. `data "../experiments/{실험}/results/summary.json" at "/배열"`로 원본 기준 상대 경로와 JSON Pointer 지정(charts 값 출처)
 - JSON 배열 형식이 다르면 `03-analyze`에서 차트용 JSON 생성. 수치 재입력 금지
@@ -99,14 +119,7 @@ node <daphnis 경로>/src/cli.js md <문서 경로>.md --check --strict --static
 - `title`: 측정 대상 명사구. 문서 안 블록은 대체 글 규칙 적용. `subtitle`: 표본 수와 기준선 설명. 값 축 제목: 괄호 안 단위
 - 통계·신뢰구간 필요 여부: 실험 설계와 통계 규칙(repo-docs-experiment 통계 규칙). 계열 역할·색: docs-integration 정본
 
-## 대체 글
-
-- 결론 한 문장, 마침표 없음. 문체는 해당 문서 기준. 그림 이름·종류만 적기 금지
-- 문서 이미지의 대체 글 필수. SVG `title`만으로 대체 금지. 문서 안 블록은 생성 이미지 줄의 대체 글까지 확인
-- 설계·합성 데이터·예시 데이터의 표시와 파일 이름: (repo-docs 자리표시). 별도 상태 규칙 추가 금지
-- `title`·`subtitle`·`step` 설명도 같은 사실 상태 유지. 예시 데이터 차트의 `subtitle`에 자리표시 표의 부제 접두사 적용
-
-## VHS
+### VHS
 
 아래 값은 실행 형식을 보여 주는 예시이며 그대로 사용할 의무 없음. 글꼴·색·크기는 저장소 디자인 기준으로 결정. 길이·용량은 게시 환경 제한을 확인해 결정. 재생 속도는 실제로 재생하며 글을 다 읽을 수 있는지 확인해 결정
 
@@ -137,7 +150,7 @@ Sleep {초}s
 - VHS 화면·대체 글에도 repo-docs 자리표시 적용
 - 실행 위치: 저장소 루트. `Output`은 저장소 루트 기준 경로
 
-## 변환
+### 변환
 
 - 저장소 루트에서 실행. 기존 호출 경로 유지, `.dap`는 daphnis, `.tape`는 VHS 호출
 
@@ -146,14 +159,14 @@ python3 <이 스킬 폴더>/scripts/render_figures.py --daphnis <daphnis 경로>
 ```
 
 - `--daphnis`: 작업본 루트 또는 `src/cli.js` 경로. 생략 시 `DAPHNIS_PATH`, 없으면 PATH의 `daphnis` 실행. `--static`, `--require-data`, `--require-ci`는 daphnis에 전달
-- 옛 `--mutoscope`·`MUTOSCOPE_PATH`: 이번 판까지 별칭 허용, 지정 시 stderr에 폐기·대체 이름 안내. 우선순위: 새 옵션 → 옛 옵션 → 새 환경 변수 → 옛 환경 변수 → PATH
+- 옛 `--mutoscope`·`MUTOSCOPE_PATH`: 제거 시점 미정인 호환 별칭, 지정 시 stderr에 폐기·대체 이름 안내. 우선순위: 새 옵션 → 옛 옵션 → 새 환경 변수 → 옛 환경 변수 → PATH
 - 원본 인자 생략 시 git 추적 원본 탐색. 공백 포함 경로 지원. 새 원본은 경로 지정 또는 git 추가 후 실행
 - 옛 형식 원본 발견 시 목록 출력 후 변환 전 실패. `.dap`로 내용 이전 필요, 확장자만 변경 금지
 - 모든 `.dap`의 strict 검사 뒤 렌더. 검사 실패 시 이 호출의 렌더 시작 금지. 렌더 중 I/O 실패의 전체 파일 원자성 보장 없음
 - `.tape`와 그림 전용 옵션 동시 사용 금지. VHS 실행 위치와 결과 계약: VHS 절
 - 실패 시 원본 수정 후 재실행. 실패 전부터 있던 SVG를 새 성공 결과로 간주 금지
 
-## 검사
+### 검사
 
 1. `daphnis check --strict`: 출력 없음과 종료 코드 0 확인. 소스 설치에서는 설치와 실행 절의 `node` 접두사 사용
 2. 실험 차트: `--require-data` 추가. 신뢰구간이 필요한 막대·덤벨·선·차이 차트: `--require-ci`도 추가. 같은 옵션으로 render 실행, 문서 안 블록은 md에 같은 검사 옵션 적용

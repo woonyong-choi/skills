@@ -7,7 +7,7 @@ description: "UI의 색·글꼴·간격·시간 값을 토큰으로 정의·사�
 
 - 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
 - 범위: 화면에 보이는 모든 값의 정의, 이름, 사용 방법, 하드코딩 검사
-- 필요할 때만 읽기: CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림(daphnis) 색·글꼴·크기 → repo-docs-figures; 기대값 근거 확인 → code-style
+- 필요할 때만 읽기: CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색·글꼴·크기 → repo-docs-figures; 기대값 근거 확인 → code-style
 
 ## 원칙
 

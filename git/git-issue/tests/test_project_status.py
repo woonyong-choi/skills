@@ -403,3 +403,50 @@ def test_set_invalid_status_reports_to_stdout_without_writes(
     assert output.err == ""
     assert gh.calls == []
     assert gh.writes == []
+
+
+# #24: 기본 역할을 저장소의 기존 상태 이름·ID에 매핑, 지정 프로젝트만 변경.
+def test_set_repository_status_map_uses_existing_ids_and_selected_project(gh: FakeGh) -> None:
+    gh.projects.append({"id": "Q", "number": 20, "title": "Second"})
+    gh.options[1]["name"] = "In progress"
+    assert project_status.main(["--project", "20", "--status-map", "작업 중=In progress", "set", "1", "작업 중"], gh) == 0
+    changes = [value for name, value in gh.writes if name == "updateProjectV2ItemFieldValue"]
+    assert [(value["projectId"], value["value"]["singleSelectOptionId"]) for value in changes] == [("Q", "1")]
+
+
+# #24: check --fix도 역할 매핑을 사용하며 기존 상태는 유지.
+def test_check_repository_status_map_repairs_closed_issue(gh: FakeGh) -> None:
+    gh.options[0]["name"] = "Todo"
+    gh.options[5]["name"] = "Done"
+    gh.add_item(1, "Todo")
+    gh.add_item(2, "작업 중")
+    assert project_status.main(["--status-map", "대기=Todo", "--status-map", "완료=Done", "check", "--fix"], gh) == 0
+    assert gh.items[1]["fieldValueByName"]["name"] == "Done"
+
+
+# #24: 잘못된 매핑은 외부 조회·쓰기에 앞서 실패.
+@pytest.mark.parametrize("mapping", ["unknown=Todo", "대기=", "완료=대기"])
+def test_set_invalid_mapping_has_no_calls(gh: FakeGh, mapping: str) -> None:
+    assert project_status.main(["--status-map", mapping, "set", "1", "대기"], gh) == 2
+    assert gh.calls == []
+    assert gh.writes == []
+
+
+# #24: setup의 완료 제외 필터는 매핑된 공백 포함 이름을 인용하고 재실행 시 쓰기 생략.
+def test_setup_status_map_preserves_ids_and_quotes_filter(gh: FakeGh) -> None:
+    gh.options[5]["name"] = "All done"
+    original = copy.deepcopy(gh.options)
+    args = ["--status-map", "완료=All done", "setup"]
+    assert project_status.main(args, gh) == 0
+    assert gh.options == original
+    assert gh.views[0]["filter"] == 'assignee:@me -status:"All done"'
+    gh.writes.clear()
+    assert project_status.main(args, gh) == 0
+    assert gh.writes == []
+
+
+# #24: 지정 프로젝트·매핑 선택지 부재 시 임의 생성이나 부분 쓰기 금지.
+@pytest.mark.parametrize("options", [["--project", "999"], ["--status-map", "작업 중=missing"]])
+def test_set_missing_policy_target_has_no_writes(gh: FakeGh, options: list[str]) -> None:
+    assert project_status.main([*options, "set", "1", "작업 중"], gh) == 2
+    assert gh.writes == []

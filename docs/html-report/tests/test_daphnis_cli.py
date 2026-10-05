@@ -1,4 +1,4 @@
-"""이슈 #9의 CLI 이름과 한 판 호환 계약 검증."""
+"""이슈 #9·#24의 CLI 이름·호환 별칭·폐기 시점 계약 검증."""
 
 import contextlib
 import importlib.util
@@ -116,7 +116,7 @@ class DaphnisCliTest(unittest.TestCase):
                     self.assertEqual(diagnostics.count("deprecated:"), len(warnings))
                     for warning in warnings:
                         self.assertIn(warning, diagnostics)
-                        self.assertIn("after this release", diagnostics)
+                        self.assertIn("removal date undecided", diagnostics)
 
     # 이슈 #9: PATH의 새 명령과 git 추적 .dap 탐색 유지.
     def test_tracked_dap_sources_use_daphnis_on_path(self) -> None:
