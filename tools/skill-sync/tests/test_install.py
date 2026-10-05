@@ -73,10 +73,20 @@ def test_install_nested_skills_excluded_only_from_zip(install_home: Path) -> Non
     for tool in ('.claude/skills', '.codex/skills', '.gemini/config/skills'):
         installed = install_home / tool / 'skill-sync'
         assert {path.relative_to(installed).as_posix(): path.read_bytes() for path in installed.rglob('*') if path.is_file()} == files
+        # #25: 평탄한 설치본의 검사기가 하위 문서·앵커·용어 정본을 조회.
+        checked = subprocess.run([sys.executable, str(installed / 'scripts/skill_check.py'), str(installed.parent)], capture_output=True, text=True)
+        assert (checked.returncode, checked.stdout) == (0, 'total 0\n'), checked.stderr + checked.stdout
     with zipfile.ZipFile(install_home / 'dist/skill-sync.zip') as archive:
         assert [name for name in archive.namelist() if Path(name).name == 'SKILL.md'] == ['skill-sync/SKILL.md']
         expected = {f'skill-sync/{name}': content for name, content in files.items() if not name.startswith('tests/fixtures/valid/')}
         assert {name: archive.read(name) for name in archive.namelist()} == expected
+    # #25: 모든 스킬 zip에 하위 문서 원문과 SKILL.md 하나 보존.
+    for archive_path in (install_home / 'dist').glob('*.zip'):
+        with zipfile.ZipFile(archive_path) as archive:
+            assert [name for name in archive.namelist() if Path(name).name == 'SKILL.md'] == [f'{archive_path.stem}/SKILL.md']
+            installed = install_home / '.codex/skills' / archive_path.stem
+            for reference in (installed / 'references').rglob('*.md'):
+                assert archive.read(f'{archive_path.stem}/{reference.relative_to(installed)}') == reference.read_bytes()
 
 
 # 이슈 #21: 원본 해시가 같은 기존 zip도 잘못된 내용이면 재생성.

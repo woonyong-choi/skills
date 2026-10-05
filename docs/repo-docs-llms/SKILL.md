@@ -5,7 +5,7 @@ description: "README와 문서 목록에서 llms.txt·llms-full.txt를 생성·�
 
 # Repo Docs Llms
 
-- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
+- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 루트 `llms.txt`, `llms-full.txt`의 형식과 생성
 - 필요할 때만 읽기: 생성물 동반 PR 확인 → git-pull-request
 
@@ -21,34 +21,7 @@ description: "README와 문서 목록에서 llms.txt·llms-full.txt를 생성·�
 
 ## llms.txt 형식
 
-llmstxt.org 형식(2026-09-30 확인)
-
-```text
-# {이름}
-
-> {한 줄 소개}
-
-{소개 문단}
-
-## Docs
-
-- [{문서 제목}]({URL}): {내용}
-
-## Optional
-
-- [{문서 제목}]({URL}): {내용}
-```
-
-| 자리 | 원본 |
-|---|---|
-| 이름 | README `#` 제목 |
-| 한 줄 소개 | README 제목 다음 첫 문단. 언어 전환 줄 제외 |
-| 소개 문단 | 한 줄 소개 다음 문단 |
-| 문서 | `docs/README.md` 표의 행 중 `experiments/`, `decisions/`가 아닌 행. 같은 순서 |
-| Optional | `docs/README.md` 표의 `experiments/`, `decisions/` 행과 `CHANGELOG.md`(링크 글자는 그 파일의 `#` 제목, 설명 없음) |
-| URL | `https://raw.githubusercontent.com/{소유자}/{저장소}/{기본 브랜치}/docs/{파일}`. 원문 마크다운 주소. 다른 호스트는 저장소 원문 URL 정책 적용 |
-
-- `## Docs`, `## Optional`: 영어 제목 고정. `Optional`은 형식이 정한 이름으로 건너뛰어도 되는 문서라는 뜻
+색인 생성물의 구조·원본 대응을 검토할 때 [output-format.md](references/output-format.md) 필수 확인
 
 ## 만들기
 
@@ -60,7 +33,7 @@ python3 <이 스킬 폴더>/scripts/gen_llms.py
 
 - `llms-full.txt`도 만들 때: `--full`
 
-- `<이 스킬 폴더>`: 이 SKILL.md가 있는 폴더. 스크립트 본문은 읽지 않고 실행만. Windows에서 `python3`가 없으면 `py -3`
+- 스크립트 실행 전 skill-sync `references/execution.md` 필수 확인
 - 원격: `--remote` 기본 origin, 기본 브랜치는 원격 HEAD 조회. 조회할 수 없으면 `--branch`로 확인한 값 지정. main 고정 대체 금지
 - 자동 URL 구성은 github.com 전용. 다른 호스트는 `--raw-base-url`로 원문 루트 URL 지정
 - 입력 위치: `README.md`, `docs/README.md`, 표의 모든 문서는 저장소 안 `.md` 파일만 허용. 심볼릭 링크는 실제로 가리키는 경로로 판정

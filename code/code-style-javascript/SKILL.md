@@ -5,7 +5,7 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 
 # Code Style: JavaScript
 
-- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
+- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 JavaScript 규칙. 그 밖에서 code-style과 다르면 code-style 우선
 - 필요할 때만 읽기: CSS 문자열, 인라인 style, SVG 속성 값 작성 → design-tokens; 파일 이름 결정 → folder-naming
 
@@ -90,55 +90,9 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 
 ## 린트 설정
 
-`eslint.config.js`:
+ESLint·Prettier 설정 생성·변경·감사 전 [lint.md](references/lint.md) 필수 확인
 
-```js
-import js from '@eslint/js';
-import globals from 'globals';
-import sonarjs from 'eslint-plugin-sonarjs';
-
-const defaultExportConfigs = ['eslint.config.js'];
-
-export default [
-  js.configs.recommended,
-  {
-    languageOptions: { globals: { ...globals.node, ...globals.browser } },
-    plugins: { sonarjs },
-    rules: {
-      'max-lines': ['warn', { max: 750, skipBlankLines: true, skipComments: true }],
-      'max-lines-per-function': ['warn', { max: 100, skipBlankLines: true, skipComments: true }],
-      'max-params': ['warn', 7],
-      'max-depth': ['warn', 3],
-      'sonarjs/cognitive-complexity': ['warn', 15],
-      'no-throw-literal': 'error',
-      'prefer-promise-reject-errors': 'error',
-      'no-console': 'error',
-      yoda: 'error',
-      eqeqeq: 'error',
-      'no-negated-condition': 'warn',
-      'no-nested-ternary': 'warn',
-      'prefer-const': 'error',
-      'no-var': 'error',
-      'no-restricted-syntax': ['error', 'ExportDefaultDeclaration'],
-    },
-  },
-  { files: ['src/cli/**'], rules: { 'no-console': ['error', { allow: ['log', 'error'] }] } },
-  { files: ['src/browser/**'], rules: { 'no-console': ['error', { allow: ['warn', 'error'] }] } },
-  { files: ['test/**'], rules: { 'max-lines-per-function': 'off' } },
-  { files: defaultExportConfigs, rules: { 'no-restricted-syntax': 'off' } },
-];
-```
-
-- `defaultExportConfigs`: 도구가 default export를 요구하는 것으로 확인한 실제 설정 파일 경로를 모두 기입
-- CLI·브라우저 override 경로는 실제 진입점과 브라우저 코드 경로로 교체. 라이브러리는 console 금지 유지
-- 생성물 제외는 생성물 표시 또는 확인한 실제 생성 경로로 설정, 파일 이름 패턴만으로 제외 금지
 - ESLint가 못 잡는 것은 직접 확인: 이름, 비교 순서, `&&`·`||` 개수와 섞기, 선언 순서, bool 매개변수 수
-
-`.prettierrc.json` 예. 폭은 저장소의 포매터 설정 사용:
-
-```json
-{ "singleQuote": true }
-```
 
 ## 검사 명령
 

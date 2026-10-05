@@ -5,7 +5,7 @@ description: "스크린샷·그림·코드·실행 결과를 시각적으로 비
 
 # HTML Report
 
-- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
+- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 범위: 사용자가 그림으로 결정하거나 결과를 확인하는 보고서 HTML 한 장의 구성, 모형 표시, 생성 스크립트, 확인 절차
 - 필요할 때만 읽기: 그림 제작·형식 → repo-docs-figures; 저장·사실 상태·자리표시 → repo-docs
 
@@ -97,38 +97,12 @@ python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html] 
 
 - 출력 기본값: 입력 파일 옆 `index.html`. 출력 파일은 입력 JSON과 같은 폴더만 허용
 - `--daphnis`: 작업본 루트 또는 `src/cli.js` 경로. `DAPHNIS_PATH` 환경 변수로 대체 가능, 둘 다 없으면 PATH의 `daphnis` 탐색. 도구가 없고 `.dap`도 없으면 시스템 색으로 보고서 생성
-- 옛 옵션·환경 변수의 호환과 우선순위: (repo-docs-figures 변환)
+- 옛 옵션·환경 변수의 호환과 우선순위: (repo-docs-figures references/conversion.md 변환)
 - `--static`: `.dap`를 멈춘 SVG로 렌더. 기본은 상호작용 가능한 HTML 재생기
 - 결과 보고서의 `effect`는 `[["후", "좋은 점", "남은 문제"]]`, `rec`는 `["수용 조건에 따른 판단", "이유"]`
 - `intro`·`what`: 보고 대상 버전(HEAD·미커밋 변경), 입력, 캡처 시각 명시. 움직임 과제는 라이브 URL 함께 제공
 
-입력 JSON 예(외부 파일 없이 생성 가능):
-
-```json
-{
-  "kind": "decision",
-  "title": "배치 비교",
-  "intro": "아래는 배치 모형이며 실제 제품 화면이 아님",
-  "questions": [{
-    "title": "목록 위치", "what": "목록과 상세의 읽는 순서 비교",
-    "options": [
-      {"label": "A", "mock": true, "text": "모형: 목록 다음 상세"},
-      {"label": "B", "mock": true, "text": "모형: 목록과 상세 병렬"}
-    ],
-    "effect": [["A", "읽는 순서 유지", "상세까지 이동 필요"], ["B", "동시 비교 가능", "표시 폭 필요"]],
-    "rec": ["A", "순차 읽기가 수용 조건인 경우"]
-  }]
-}
-```
-
-| 입력 | 필수·형식 |
-|---|---|
-| 최상위 | `title`, `intro`, `questions` 필수. `kind`는 `decision` 또는 `result`, 생략 시 decision |
-| 질문 | `title`, `what`, `options`, `effect`, `rec` 필수 |
-| 선택지 | `label` 필수. `images`, `table`, `text`, `mock`은 해당 자료가 있을 때 |
-| 그림 | `dap`, `inline`, `src` 중 하나와 `alt`. 경로는 입력 폴더 기준. `max_height`의 의미는 구성 절의 이미지 항목 참조 |
-| 표 | `head`, `rows` 필수. `align`, `widths` 선택 |
-| 보충 | `check`, `note`, `extra` 선택. extra 항목은 `title`과 실제 options 필요, 빈 예시 삽입 금지 |
+입력 JSON 작성·검증 전 [입력 형식](references/input-format.md) 필수 확인
 
 ## 확인 절차
 
