@@ -3,8 +3,8 @@
 사용: python3 build_report.py <입력.json> [출력.html] [--daphnis 경로] [--static]
 출력 기본값은 입력 파일 옆의 index.html. 그림 경로는 입력 파일 폴더 기준.
 
-인자: 입력 JSON, 선택 출력 HTML, --daphnis 경로, --static
-출력: 입력 옆 index.html 또는 지정 HTML, stdout 출력 경로, 종료 0 성공·1 실패
+인자: 입력 JSON, 입력과 같은 폴더의 선택 출력 HTML, --daphnis 경로(--mutoscope 호환 별칭), --static
+출력: 입력 옆 index.html 또는 지정 HTML, stdout 출력 경로, stderr 실패·폐기 안내, 종료 0 성공·1 실패·2 인자 오류
 """
 
 from __future__ import annotations

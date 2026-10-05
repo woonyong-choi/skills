@@ -100,7 +100,8 @@ python3 <이 스킬 폴더>/scripts/cleanup_merged.py <PR 번호 또는 브랜�
 
 - `<이 스킬 폴더>`: 이 SKILL.md가 있는 폴더. 스크립트 본문은 읽지 않고 실행만. Windows에서 `python3`가 없으면 `py -3`
 - 대상: 지정한 GitHub 머지 PR의 로컬 브랜치 worktree, 로컬 브랜치, 원격 브랜치
-- PR 마지막 head SHA가 로컬·원격 브랜치 head와 모두 같을 때만 정리. 하나라도 다르거나 없으면 `skip:` 이유 출력
+- PR 마지막 head SHA와 로컬 브랜치 head 일치 필수. 로컬 브랜치가 없거나 SHA가 다르면 `skip:` 이유 출력
+- 원격 브랜치가 있으면 같은 SHA인지 확인 후 정리. SHA가 다르면 `skip:` 이유 출력. 원격 브랜치가 이미 없으면 로컬만 정리
 - 커밋 안 된 변경이 있는 worktree는 남기고 `skip:` 이유 출력
 - 병렬 작업을 모두 머지한 뒤 확인: `git worktree list`에 `main` 하나, `git branch`에 `main`과 열린 PR 브랜치만
 - 브랜치 생성 후 7일 넘게 머지 안 되면 사용자에게 보고
