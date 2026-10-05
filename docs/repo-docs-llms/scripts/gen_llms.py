@@ -3,7 +3,7 @@
 사용: python3 gen_llms.py [--full] (저장소 루트에서 실행)
 
 인자: --full 선택, 저장소 루트에서 실행
-출력: llms.txt, --full이면 llms-full.txt, stdout 생성 안내, 종료 0 성공·1 실패
+출력: llms.txt, --full이면 llms-full.txt, stdout 없음, stderr 실패 이유, 종료 0 성공·1 실패
 """
 import re
 import html
