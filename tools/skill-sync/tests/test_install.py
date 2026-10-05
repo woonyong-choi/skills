@@ -58,8 +58,8 @@ def install_home(request: pytest.FixtureRequest) -> Iterator[Path]:
         shutil.rmtree(target_home)
 
 
-# 이슈 #21: 계정 zip에서 하위 스킬 폴더만 제외하고 세 도구 설치본 보존.
-def test_install_nested_skills_excluded_only_from_zip(install_home: Path) -> None:
+# #32: 세 도구 설치본과 zip에서 tests 제외, 원본 관리 스킬 수 보존.
+def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
     command = [sys.executable, str(INSTALL), '--source', str(ROOT), '--target-home', str(install_home), '--dist', str(install_home / 'dist')]
 
     result = subprocess.run(command, capture_output=True, text=True)
@@ -69,11 +69,13 @@ def test_install_nested_skills_excluded_only_from_zip(install_home: Path) -> Non
     files = {
         path.relative_to(source).as_posix(): path.read_bytes()
         for path in source.rglob('*')
-        if path.is_file() and not {'__pycache__', '.pytest_cache', '.mypy_cache', '.ruff_cache', '.DS_Store'}.intersection(path.parts)
+        if path.is_file() and not {'tests', '__pycache__', '.pytest_cache', '.mypy_cache', '.ruff_cache', '.DS_Store'}.intersection(path.parts)
     }
     for tool in ('.claude/skills', '.codex/skills', '.gemini/config/skills'):
         installed = install_home / tool / 'skill-sync'
         assert {path.relative_to(installed).as_posix(): path.read_bytes() for path in installed.rglob('*') if path.is_file()} == files
+        assert len(list(installed.parent.glob('*/SKILL.md'))) == 27
+        assert not list(installed.parent.glob('*/tests'))
         # #25: 평탄한 설치본의 검사기가 하위 문서·앵커·용어 정본을 조회.
         checked = subprocess.run([sys.executable, str(installed / 'scripts/skill_check.py'), str(installed.parent)], capture_output=True, text=True)
         assert (checked.returncode, checked.stdout) == (0, 'total 0\n'), checked.stderr + checked.stdout
