@@ -446,3 +446,19 @@ def test_cli_visibility_failure_returns_error_without_fixed_body(
     output = capsys.readouterr()
     assert output.out == ""
     assert "public links check failed" in output.err
+
+
+# #24: 공개 링크 검사에서 원격 이름 입력, GitHub 조회·링크 계약 유지.
+def test_cli_selected_remote_preserves_public_link_contract(repository: dict[str, str], monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    original = public_links.subprocess.run
+    remotes = []
+    def run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        if command[3:5] == ["remote", "get-url"]:
+            remotes.append(command[-1])
+            command = [*command[:-1], "origin"]
+        return original(command, **kwargs)
+    monkeypatch.setattr(public_links.subprocess, "run", run)
+    monkeypatch.setattr(sys, "stdin", io.StringIO(f"[규칙]({FILE})"))
+    assert public_links.main(["--remote", "upstream", "--fix"]) == 0
+    assert remotes == ["upstream"]
+    assert f"{BASE}develop/{FILE}" in capsys.readouterr().out

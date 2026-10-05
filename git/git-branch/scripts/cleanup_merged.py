@@ -4,8 +4,9 @@
 기본은 미리보기. --apply면 실제로 정리한다. PR의 마지막 head SHA와 로컬 및 존재하는 원격 브랜치 head가 같고,
 연결된 worktree에 커밋 안 된 변경이 없을 때만 정리한다. 미리보기는 fetch 없이 조회하며, 삭제는 예상 SHA 조건으로 수행한다.
 
-인자: PR 번호 또는 브랜치, --apply 실제 정리
-출력: stdout 정리 예정·결과·skip 이유, 종료 0 성공·1 실패
+인자: PR 번호 또는 브랜치, --apply 실제 정리, --remote(기본 origin), --default-branch(기본 원격 HEAD 조회), --protect 추가 보호 브랜치 반복
+실행 조건: Python 3.9 이상, Git, 인증된 GitHub CLI. 지정 원격과 현재 gh 저장소가 같은 대상이어야 함
+출력: stdout 정리 예정·결과·skip 이유, 종료 0 성공·1 실행 실패·2 인자 오류
 """
 from __future__ import annotations
 
@@ -68,9 +69,9 @@ def resolve_pr(target: str) -> dict[str, object] | None:
 
 # cost: time O(1), heap O(1), stack O(1), io 2
 # basis: estimate
-def branch_heads_match(branch: str, expected_sha: str) -> bool:
+def branch_heads_match(branch: str, expected_sha: str, remote_name: str = "origin") -> bool:
     local = run(["git", "rev-parse", "--verify", f"refs/heads/{branch}"], check=False)
-    remote = remote_head(branch)
+    remote = remote_head(branch, remote_name)
     if not local or local != expected_sha or (remote and remote != expected_sha):
         print(f"skip: {branch}: PR head {expected_sha}, local {local}, remote {remote or '없음'}")
         return False
@@ -80,8 +81,8 @@ def branch_heads_match(branch: str, expected_sha: str) -> bool:
 # cost: time O(1), heap O(o), stack O(1), io 1
 # vars: o = 원격 ref 조회 출력 크기
 # basis: estimate
-def remote_head(branch: str) -> str:
-    output = run(["git", "ls-remote", "--heads", "origin", f"refs/heads/{branch}"])
+def remote_head(branch: str, remote_name: str = "origin") -> str:
+    output = run(["git", "ls-remote", "--heads", remote_name, f"refs/heads/{branch}"])
     rows = [line.split() for line in output.splitlines() if line.strip()]
     matches = [row[0] for row in rows if len(row) == 2 and row[1] == f"refs/heads/{branch}"]
     if len(matches) > 1:
@@ -89,13 +90,25 @@ def remote_head(branch: str) -> str:
     return matches[0] if matches else ""
 
 
-# cost: time O(1), heap O(1), stack O(1), io 4
+# cost: time O(n), heap O(n), stack O(1), io O(w)
+# vars: n = 전체 조회 출력 크기, w = worktree 재검사와 정리 명령 수
 # basis: estimate
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("target", help="머지된 PR 번호 또는 브랜치")
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--remote", default="origin")
+    parser.add_argument("--default-branch")
+    parser.add_argument("--protect", action="append", default=[])
     args = parser.parse_args(argv)
+    default_branch = args.default_branch
+    if not default_branch:
+        output = run(["git", "ls-remote", "--symref", args.remote, "HEAD"])
+        heads = [line.split()[1].removeprefix("refs/heads/") for line in output.splitlines() if line.startswith("ref: refs/heads/") and line.split()[-1] == "HEAD"]
+        if len(heads) != 1:
+            raise SystemExit("cannot determine default branch; use --default-branch")
+        default_branch = heads[0]
+    protected = PROTECTED | {default_branch, *args.protect}
     pr = resolve_pr(args.target)
     if pr is None:
         return 1
@@ -103,12 +116,12 @@ def main(argv: list[str]) -> int:
         print(f"skip: PR #{pr['number']}: 머지되지 않음 ({pr['state']})")
         return 0
     branch = str(pr["headRefName"])
-    if branch in PROTECTED:
+    if branch in protected:
         print(f"skip: {branch}: 보호 브랜치")
         return 0
     run(["git", "check-ref-format", f"refs/heads/{branch}"])
     expected_sha = str(pr["headRefOid"])
-    if not branch_heads_match(branch, expected_sha):
+    if not branch_heads_match(branch, expected_sha, args.remote):
         return 0
     path = worktrees().get(branch)
     if path and not is_clean(path):
@@ -118,11 +131,11 @@ def main(argv: list[str]) -> int:
     if path:
         actions.append(["git", "worktree", "remove", str(path)])
     actions.append(["git", "update-ref", "-d", f"refs/heads/{branch}", expected_sha])
-    remote = remote_head(branch)
+    remote = remote_head(branch, args.remote)
     if remote and remote != expected_sha:
         raise SystemExit(f"remote changed before cleanup: {branch}")
     if remote:
-        actions.append(["git", "push", "origin", f"--force-with-lease=refs/heads/{branch}:{expected_sha}", f":refs/heads/{branch}"])
+        actions.append(["git", "push", args.remote, f"--force-with-lease=refs/heads/{branch}:{expected_sha}", f":refs/heads/{branch}"])
     for action in actions:
         print(("run: " if args.apply else "plan: ") + " ".join(action))
         if args.apply:

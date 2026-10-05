@@ -23,7 +23,7 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 | 약어 | 두 글자는 모두 대문자, 세 글자 이상은 첫 글자만 | `IOStream`, `HttpClient` |
 | 단위 | `kotlin.time.Duration` 우선 | `timeout: Duration` |
 
-- 계산이 싸고 예외가 없고 상태가 같으면 같은 값을 주는 것은 함수 대신 프로퍼티
+- I/O·잠금·외부 호출·입력 크기 비례 순회·예외·상태 변경이 없고 같은 상태에서 같은 값을 주는 계산은 함수 대신 프로퍼티
 
 ## 선언 순서
 
@@ -74,7 +74,7 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 - 값은 문자열 연결 대신 자리표시자로: `logger.info("Session started: {}", sessionId)`. 문자열 템플릿(`"$x"`) 금지
 - 구조화 값은 `logger.atInfo().addKeyValue("sessionId", id).log("Session started")`
 - 세션·요청 단위 문맥은 MDC. 코루틴에서는 `kotlinx-coroutines-slf4j`의 `MDCContext()`
-- CLI 도구: logback 출력 대상 stderr. stdout은 프로그램 결과에만
+- CLI logback 출력 대상은 stderr. 결과·진단 경계: (code-style 오류와 로그)
 
 ## 공개 범위와 주석
 
@@ -86,18 +86,20 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 
 ## 테스트
 
-- JUnit 5와 `kotlin.test` 단언
+- 테스트 프레임워크: 기존 빌드의 호환 버전 우선. 새 설정의 기본 선택은 JUnit과 `kotlin.test` 단언
 - 위치: `src/test/kotlin`, 대상과 같은 패키지. 클래스 이름은 `<대상>Test`
 - 이름: `parse_emptyInput_throwsException` (테스트 코드에서만 밑줄 허용)
 
 ## 린트 설정
 
+기존 빌드·버전 카탈로그의 호환 버전을 사용한다. 새 설정은 Gradle·Kotlin·JDK 조합을 확인하고 선택 버전·확인일을 기록한다. 아래 버전 자리는 확인한 값으로 교체
+
 `build.gradle.kts`:
 
 ```kotlin
 plugins {
-    id("io.gitlab.arturbosch.detekt") version "1.23.8"
-    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
+    id("io.gitlab.arturbosch.detekt") version "{호환 detekt 버전}"
+    id("org.jlleitschuh.gradle.ktlint") version "{호환 ktlint 플러그인 버전}"
 }
 
 kotlin {

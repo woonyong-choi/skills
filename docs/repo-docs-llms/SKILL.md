@@ -46,7 +46,7 @@ llmstxt.org 형식(2026-09-30 확인)
 | 소개 문단 | 한 줄 소개 다음 문단 |
 | 문서 | `docs/README.md` 표의 행 중 `experiments/`, `decisions/`가 아닌 행. 같은 순서 |
 | Optional | `docs/README.md` 표의 `experiments/`, `decisions/` 행과 `CHANGELOG.md`(링크 글자는 그 파일의 `#` 제목, 설명 없음) |
-| URL | `https://raw.githubusercontent.com/{소유자}/{저장소}/main/docs/{파일}`. 원문 마크다운 주소 |
+| URL | `https://raw.githubusercontent.com/{소유자}/{저장소}/{기본 브랜치}/docs/{파일}`. 원문 마크다운 주소. 다른 호스트는 저장소 원문 URL 정책 적용 |
 
 - `## Docs`, `## Optional`: 영어 제목 고정. `Optional`은 형식이 정한 이름으로 건너뛰어도 되는 문서라는 뜻
 
@@ -61,8 +61,10 @@ python3 <이 스킬 폴더>/scripts/gen_llms.py
 - `llms-full.txt`도 만들 때: `--full`
 
 - `<이 스킬 폴더>`: 이 SKILL.md가 있는 폴더. 스크립트 본문은 읽지 않고 실행만. Windows에서 `python3`가 없으면 `py -3`
+- 원격: `--remote` 기본 origin, 기본 브랜치는 원격 HEAD 조회. 조회할 수 없으면 `--branch`로 확인한 값 지정. main 고정 대체 금지
+- 자동 URL 구성은 github.com 전용. 다른 호스트는 `--raw-base-url`로 원문 루트 URL 지정
 - 입력 위치: `README.md`, `docs/README.md`, 표의 모든 문서는 저장소 안 `.md` 파일만 허용. 심볼릭 링크는 실제로 가리키는 경로로 판정
-- 공개 여부: 경로의 대소문자 차이와 URL 인코딩을 풀어 `.local`·`archive` 폴더 경로 차단. git 제외 대상도 차단
+- 공개 여부: 저장소 비공개 경로 정책 적용. `--private-dir` 반복으로 차단 폴더 이름 지정, 생략 시 `.local`·`archive`. 대소문자·중첩 URL 인코딩·심볼릭 링크의 실제 경로·git 제외 검사 유지
 - 입력 검사에 하나라도 실패하면 파일을 쓰지 않고 중단
 - 코드 블록 안 표 행: 목록에서 제외
 

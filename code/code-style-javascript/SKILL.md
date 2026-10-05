@@ -71,7 +71,7 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 로그:
 
 - 라이브러리 모듈: `console` 금지. 오류는 throw로 전달
-- CLI 진입점: 진단은 `console.error`(stderr), 결과만 `console.log`(stdout)
+- CLI 진입점 메서드: 진단 `console.error`, 결과 `console.log`. 출력 경계: (code-style 오류와 로그)
 - 브라우저 코드: 배포 코드에 `console.log` 금지
 - 저장소에 정한 로그 라이브러리가 있으면 그것 우선
 

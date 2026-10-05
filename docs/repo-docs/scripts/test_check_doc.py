@@ -9,9 +9,10 @@ import check_doc
 
 
 class DocumentStyleTest(unittest.TestCase):
-    # cost: time O(Σw²), heap O(c), stack O(1), io 0
+    # cost: time O(Σw²), heap O(c), stack O(1)
     # vars: c = 표본 글자 수, w = 표본의 줄별 글자 수
-    # basis: estimate, 파일 대신 메모리 표본으로 공개 CLI 진입점 실행
+    # basis: estimate
+    # 파일 대신 메모리 표본으로 공개 CLI 진입점 실행
     def test_main_style_signals_and_preserved_sources(self) -> None:
         cases = [
             ("입력을 저장한다 — 재시작하면 복구한다.\n", {"줄표 문장 연결"}),

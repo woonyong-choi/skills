@@ -61,7 +61,7 @@ description: "Rust 코드를 작성·검토·리팩터링하거나 rustfmt·Clip
 | `tracing` | 모든 crate | 로그 기록 |
 | `tracing-subscriber` (`env-filter` 기능) | 실행 파일 crate | 로그 출력 설정 |
 
-- 버전: 작업 공간 `Cargo.toml`의 `[workspace.dependencies]`에 한 번만. 각 crate는 `thiserror.workspace = true`처럼 참조
+- 버전: 작업 공간 `Cargo.toml`의 `[workspace.dependencies]`에 한 번만. 각 crate는 `thiserror.workspace = true`처럼 참조. 단일 패키지는 해당 `Cargo.toml`의 `[dependencies]`에 지정
 - 라이브러리 crate에 `anyhow`·`tracing-subscriber` 의존성 금지
 
 `thiserror`:
@@ -126,7 +126,7 @@ tracing_subscriber::fmt()
 ```
 
 - 실행 파일 `main` 시작에서 한 번만 설정. 레벨은 `RUST_LOG` 환경 변수로
-- 로그는 stderr. stdout은 프로그램 결과에만
+- 로그·결과 스트림 구분: (code-style 오류와 로그). tracing writer는 위 설정 참조
 
 ## 공개 범위와 주석
 
@@ -142,7 +142,9 @@ tracing_subscriber::fmt()
 
 ## 린트 설정
 
-모든 crate의 `Cargo.toml`에 `[lints] workspace = true`. 작업 공간 `Cargo.toml`:
+workspace는 각 crate의 `Cargo.toml`에 `[lints] workspace = true`를 두고 루트에서 아래 설정을 관리한다. 단일 패키지는 해당 `Cargo.toml`의 `[lints.rust]`, `[lints.clippy]`에 같은 규칙 적용
+
+작업 공간 `Cargo.toml`:
 
 ```toml
 [workspace.lints.rust]

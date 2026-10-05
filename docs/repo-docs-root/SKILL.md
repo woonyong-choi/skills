@@ -16,8 +16,8 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 | 파일 | 위치 | 언어·문체 규칙을 정한 스킬 | 설계 | 개발 중 | 실행 가능 | 배포 |
 |---|---|---|---|---|---|---|
 | `LICENSE` | 루트 | 해당 없음 | 조건부 | 조건부 | 조건부 | 조건부 |
-| `AGENTS.md` | 루트 | repo-docs | 필수 | 필수 | 필수 | 필수 |
-| `CLAUDE.md` | 루트 | 해당 없음 | 필수 | 필수 | 필수 | 필수 |
+| `AGENTS.md` | 루트 | repo-docs | 조건부 | 조건부 | 조건부 | 조건부 |
+| `CLAUDE.md` | 루트 | 해당 없음 | 조건부 | 조건부 | 조건부 | 조건부 |
 | `CONTRIBUTING.md` | `.github/` | repo-docs | 없음 | 필수 | 필수 | 필수 |
 | `SECURITY.md` | `.github/` | repo-docs | 없음 | 없음 | 필수 | 필수 |
 | `CHANGELOG.md` | 루트 | repo-docs | 없음 | 없음 | 없음 | 필수 |
@@ -26,9 +26,11 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 - `LICENSE` 내용: SPDX 식별자의 공식 원문 그대로, 연도와 저작권자(기존 저작권 고지 또는 사용자가 지정한 권리자, git 이름으로 자동 추정 금지)만 기입
 - `.github/`에 둔 파일의 루트 중복 금지
 
+도구 지침 파일은 저장소에서 사용하는 도구의 진입 파일만 생성한다. 이름·링크 방식은 저장소 정책 우선
+
 ## CLAUDE.md
 
-- `AGENTS.md`를 가리키는 심볼릭 링크 하나: `ln -s AGENTS.md CLAUDE.md`
+- 이 진입 파일을 사용하는 경우 `AGENTS.md`를 가리키는 심볼릭 링크 하나: `ln -s AGENTS.md CLAUDE.md`
 - 별도 내용 금지. 에이전트 지침의 원본은 `AGENTS.md` 하나
 
 ## AGENTS.md
@@ -65,12 +67,13 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 
 | 절 | 규칙 |
 |---|---|
-| 한 줄 소개 | `AGENTS.md` 언어의 README 한 줄 소개와 같은 글자(한국어면 `README.ko.md`) |
-| 구성 | `docs/architecture.md` 코드 지도 표의 `위치`와 `하는 일` 칸을 같은 순서로 복사, 마지막에 경로 `docs/`, 내용 `설계 문서` 행 추가. 저장소 밖 경로(`~/`, 절대 경로) 행 제외 |
+| 한 줄 소개 | `AGENTS.md` 언어의 README 한 줄 소개를 작업 언어로 요약 |
+| 구성 | 진입에 필요한 모듈 경계만 요약하고 상세 코드 지도 절 링크. 저장소 밖 경로(`~/`, 절대 경로) 행 제외 |
 | 명령 | CI나 저장소 검사 스크립트에 실제로 있는 명령만, 빌드, 테스트, 린트, 포맷 검사 순서. README 개발 절이 있으면 같은 명령, 같은 순서. 명령이 하나도 없으면(설계 단계 포함) 명령 절과 규칙 첫째 항목 삭제 |
 | 설계 문서 문장 | `docs/README.md`가 있을 때만. 없으면 규칙 셋째 항목도 삭제 |
-| 규칙 | 앞 세 항목 고정(첫째, 셋째는 위 조건). `{저장소 규칙}`은 `docs/architecture.md` 불변 조건 절의 항목마다 조건 문장을 명사구로 줄여 옮기기: `설정 파일은 서버만 고친다` → `설정 파일은 서버만 수정`. 없으면 그 줄 제외 |
+| 규칙 | 앞 세 항목 고정(첫째, 셋째는 위 조건). `{저장소 규칙}`은 진입 시 지켜야 할 핵심 경계만 요약하고 상세 불변 조건 절 링크. 없으면 그 줄 제외 |
 
+- 정본의 경계·명령이 바뀌는 PR에서 진입 요약도 동기화, 상세 규칙 복사 금지
 - 필요한 명령·경로·규칙을 보존하고, 다른 문서가 정의한 내용을 반복한 부분은 그 문서의 해당 절 링크로 대체
 - 도구별 설정(모델, 권한, 훅) 금지
 - 에이전트 이름, 도구 이름으로 규칙 분리 금지

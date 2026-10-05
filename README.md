@@ -79,7 +79,7 @@ $git-pull-request 현재 diff와 테스트 결과로 PR 본문을 작성해 줘.
 | [repo-docs-decision](docs/repo-docs-decision/SKILL.md) | 공개 결정 기록 |
 | [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md) | 실험 설계, 수집, 분석, 결과 보고 |
 | [repo-docs-note](docs/repo-docs-note/SKILL.md) | 개발 중 확인한 사실과 참고 자료 |
-| [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | daphnis 그림, 차트, 대체 글, 데모 GIF |
+| [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | 그림, 차트, 대체 글, 데모 GIF |
 | [repo-docs-root](docs/repo-docs-root/SKILL.md) | AGENTS.md와 저장소 루트 문서 |
 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 문서 색인 생성 |
 | [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 비공개 판단 기록 |
