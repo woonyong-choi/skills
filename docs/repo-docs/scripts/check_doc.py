@@ -3,7 +3,7 @@
 사용: python3 check_doc.py 파일 [파일 ...] (저장소 루트에서 실행)
 
 인자: Markdown 파일 하나 이상, 저장소 루트에서 실행
-출력: stdout 경로·줄별 위반, 종료 0 통과·1 위반
+출력: stdout 경로·줄별 위반, 인자 누락 시 stderr 사용법, 종료 0 통과·1 위반·2 인자 누락
 """
 import os
 import html
