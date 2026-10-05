@@ -1,5 +1,5 @@
 """저장소에 연결된 Projects v2의 이슈·PR 등록과 Status를 관리한다.
-인자: --repo owner/name, set 번호 상태 | setup | check [--fix]
+인자: --repo owner/name, --project 번호 반복(기본 연결 프로젝트 전부), --status-map 역할=이름 반복(기본 한국어 여섯 상태), set 번호 상태 | setup | check [--fix]
 출력: stdout 프로젝트·상태·불일치·오류, 종료 0 성공·1 불일치·2 실패
 """
 
@@ -27,7 +27,8 @@ class StdoutArgumentParser(argparse.ArgumentParser):
 
 
 class ProjectStatus:
-    def __init__(self, repo: str | None, gh: Gh) -> None:
+    def __init__(self, repo: str | None, gh: Gh, states: dict[str, str] | None = None) -> None:
+        self.states = states or dict(zip(STATES, STATES))
         self.gh = gh
         self.repo = (
             repo
@@ -50,6 +51,11 @@ class ProjectStatus:
             "repository",
             "projectsV2",
         )
+        if args.project:
+            missing = set(args.project) - {project["number"] for project in projects}
+            if missing:
+                raise ProjectError(f"연결되지 않은 프로젝트: {sorted(missing)}")
+            projects = [project for project in projects if project["number"] in args.project]
         if not projects:
             raise ProjectError(
                 f"{self.repo}: 연결된 프로젝트 없음; 생성은 사용자 요청 필요"
@@ -66,7 +72,7 @@ class ProjectStatus:
                 continue
             items = self._items(project)
             changes = (
-                [(content, args.status)]
+                [(content, self.states[args.status])]
                 if content
                 else self._mismatches(project, issues, items)
             )
@@ -209,12 +215,12 @@ class ProjectStatus:
             item = items.get(issue["id"])
             status = self._status(item)
             reason = None
-            target = "대기"
+            target = self.states["대기"]
             if issue["state"] == "OPEN" and item is None:
                 reason = "열린 이슈가 판에 없음"
-            elif issue["state"] == "CLOSED" and item is not None and status != "완료":
-                reason, target = "닫힌 이슈인데 완료가 아님", "완료"
-            elif issue["state"] == "OPEN" and status == "완료":
+            elif issue["state"] == "CLOSED" and item is not None and status != self.states["완료"]:
+                reason, target = "닫힌 이슈인데 완료가 아님", self.states["완료"]
+            elif issue["state"] == "OPEN" and status == self.states["완료"]:
                 reason = "열린 이슈인데 완료"
             if reason:
                 print(
@@ -264,7 +270,7 @@ class ProjectStatus:
         options = field["options"]
         missing = [
             name
-            for name in STATES
+            for name in self.states.values()
             if name not in {option["name"] for option in options}
         ]
         if missing:
@@ -280,16 +286,18 @@ class ProjectStatus:
             print(f"Status 선택지 추가: {', '.join(missing)}")
         views = self._project_pages(project, "views", "id name layout filter")
         boards = [view for view in views if view["layout"] == "BOARD_LAYOUT"]
+        done = self.states["완료"]
         for view in boards:
             current = view.get("filter") or ""
             tokens = shlex.split(current)
             has_filter = any(
                 token.startswith("-status:")
-                and "완료" in token[len("-status:") :].split(",")
+                and done in token[len("-status:") :].split(",")
                 for token in tokens
             )
             if not has_filter:
-                updated = f"{current} -status:완료" if current else "-status:완료"
+                exclusion = "-status:" + (json.dumps(done, ensure_ascii=False) if any(char.isspace() for char in done) else done)
+                updated = f"{current} {exclusion}" if current else exclusion
                 self._mutate(
                     "updateProjectV2View",
                     {"viewId": view["id"], "filter": updated},
@@ -346,6 +354,8 @@ def run_gh(args: list[str], payload: str | None = None) -> dict[str, Any]:
 # basis: estimate
 def main(argv: list[str] | None = None, gh: Gh = run_gh) -> int:
     parser = StdoutArgumentParser(description=__doc__)
+    parser.add_argument("--project", type=int, action="append", default=[])
+    parser.add_argument("--status-map", action="append", default=[], metavar="ROLE=NAME")
     parser.add_argument("--repo", help="owner/name (기본: 현재 디렉터리 저장소)")
     sub = parser.add_subparsers(dest="command", required=True)
     for command in ("set", "setup", "check"):
@@ -359,7 +369,15 @@ def main(argv: list[str] | None = None, gh: Gh = run_gh) -> int:
     parser.set_defaults(fix=False)
     try:
         args = parser.parse_args(argv)
-        return ProjectStatus(args.repo, gh).run(args)
+        states = dict(zip(STATES, STATES))
+        for mapping in args.status_map:
+            role, separator, name = mapping.partition("=")
+            if not separator or role not in states or not name.strip() or any(char in name for char in '\r\n,'):
+                raise ProjectError(f"invalid status mapping: {mapping}")
+            states[role] = name
+        if len(set(states.values())) != len(STATES):
+            raise ProjectError("status mapping names must be unique")
+        return ProjectStatus(args.repo, gh, states).run(args)
     except (ProjectError, OSError, ValueError, KeyError) as error:
         print(f"오류: {error}")
         return 2

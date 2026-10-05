@@ -1,5 +1,5 @@
 """GitHub에 게시할 글의 저장소 링크와 비공개 경로를 검사한다.
-인자: --repo 저장소, --fix 선택, UTF-8 파일 또는 생략·-로 stdin
+인자: --repo 저장소, --remote 원격(기본 origin), --fix 선택, UTF-8 파일 또는 생략·-로 stdin
 출력: stdout 위반 또는 수정 본문, stderr 수정 후 위반·입력 오류, 종료 0 통과·1 위반·2 입력 오류
 """
 
@@ -54,16 +54,16 @@ class _Context:
     # cost: time O(f), heap O(f), stack O(1), io 5
     # vars: f = HEAD 파일 목록 크기
     # basis: estimate
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, remote_name: str = "origin") -> None:
         self.root = Path(_run(["git", "-C", str(root), "rev-parse", "--show-toplevel"]))
-        remote = self.git("remote", "get-url", "origin")
+        remote = self.git("remote", "get-url", remote_name)
         match = re.fullmatch(
             r"(?:https?://github\.com/|git@github\.com:|ssh://git@github\.com/)"
             r"([^/]+/[^/]+?)(?:\.git)?/?",
             remote,
         )
         if match is None:
-            raise ValueError("origin must be a github.com repository")
+            raise ValueError(f"{remote_name} must be a github.com repository")
         self.repositories: dict[str, _Repository] = {}
         self.target = self.lookup(match[1])
         self.sha = self.git("rev-parse", "HEAD")
@@ -285,6 +285,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--fix", action="store_true", help="write revised body to stdout"
     )
+    parser.add_argument("--remote", default="origin", help="GitHub remote name")
     args = parser.parse_args(argv)
     try:
         text = (
@@ -292,7 +293,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.file == "-"
             else Path(args.file).read_text(encoding="utf-8")
         )
-        context = _Context(args.repo)
+        context = _Context(args.repo, args.remote)
         findings = _scan(text, context)
         if args.fix:
             text = _fix(text, findings)

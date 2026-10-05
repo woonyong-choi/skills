@@ -27,12 +27,12 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     if args.mutoscope is not None:
         print(
-            "deprecated: --mutoscope will be removed after this release; use --daphnis",
+            "deprecated: --mutoscope removal date undecided; use --daphnis",
             file=sys.stderr,
         )
     if "MUTOSCOPE_PATH" in os.environ:
         print(
-            "deprecated: MUTOSCOPE_PATH will be removed after this release; use DAPHNIS_PATH",
+            "deprecated: MUTOSCOPE_PATH removal date undecided; use DAPHNIS_PATH",
             file=sys.stderr,
         )
     try:

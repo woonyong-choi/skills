@@ -73,7 +73,7 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 - 실행 스크립트 진입점에서 한 번만 `logging.basicConfig(...)`나 `logging.config.dictConfig(...)`로 설정
 - 값은 f-string 대신 지연 포맷으로: `logger.info("session started: %s", session_id)`
 - 구조화 값은 `extra={"session_id": session_id}`
-- `print`는 프로그램 결과 출력에만. CLI 도구의 로그는 stderr (`basicConfig` 기본값)
+- 출력 경계: (code-style 오류와 로그). `basicConfig` 기본 스트림은 stderr
 
 ## 공개 범위와 주석
 

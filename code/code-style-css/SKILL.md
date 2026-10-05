@@ -56,7 +56,7 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 | 8 | 기타 | `cursor`, `pointer-events`, `user-select` |
 
 - 축약 속성 뒤에 개별 속성. 반대 순서 금지(`padding-top` 뒤 `padding`)
-- 같은 속성 두 번 선언 금지. 대체 값이 필요하면 `@supports`
+- 같은 속성 두 번 선언 금지. 지원 브라우저에서 속성·값 지원이 갈리면 `@supports`
 
 ## 선택자
 
@@ -90,7 +90,7 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 
 ## 테스트
 
-- 화면 확인: Playwright로 밝은·어두운 테마, 최소 지원 폭·각 breakpoint 전후·최대 검토 폭 스크린샷. 사용한 폭 기록
+- 화면 확인: Playwright로 밝은·어두운 테마, 저장소 지원표의 최소·최대 폭과 각 breakpoint 전후 스크린샷. 지원표가 없으면 수용 조건에 사용 폭 기록
 - 실제 배경 면 위의 최종 합성 색·불투명도·전환 상태 확인. 정지 화면과 움직이는 중간 상태의 규칙 적용 범위 구분
 - `prefers-reduced-motion: reduce` 에뮬레이션에서 움직임 정지 확인
 - 넘침 확인: 버튼·탭 글자가 상자를 넘지 않는지 `scrollWidth <= clientWidth`

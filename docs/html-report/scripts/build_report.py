@@ -211,7 +211,8 @@ def _check_options(options: list[dict[str, Any]], where: str) -> None:
             _check_table(option["table"], f"{at}.table")
 
 
-# cost: time O(options + effect rows), heap O(1), stack O(1)
+# cost: time O(options + rows), heap O(1), stack O(1)
+# vars: options = 선택지 수, rows = 효과 표 행 수
 # basis: estimate
 def _check_question(question: dict[str, Any], where: str) -> None:
     _need(question, "title", where, str)
@@ -231,6 +232,7 @@ def _check_question(question: dict[str, Any], where: str) -> None:
 
 
 # cost: time O(questions * options), heap O(1), stack O(1)
+# vars: questions = 질문 수, options = 질문당 최대 선택지·효과 행 수
 # basis: estimate
 def _validate(spec: dict[str, Any]) -> None:
     kind = spec.get("kind", "decision") if isinstance(spec, dict) else None
@@ -288,7 +290,8 @@ def _inline_frame(document: str, alt: str, style: str) -> str:
     )
 
 
-# cost: time O(render or input bytes), heap O(output), stack O(1), io 1 or 3
+# cost: time O(n + r), heap O(o), stack O(1), io 3
+# vars: n = 인라인 입력 바이트 수, r = 외부 렌더 시간, o = 렌더 결과 바이트 수
 # basis: estimate
 def _picture(image: dict[str, Any], renderer: FigureRenderer) -> str:
     try:
@@ -321,7 +324,8 @@ def _picture(image: dict[str, Any], renderer: FigureRenderer) -> str:
     return _inline_frame(source.read_text(encoding="utf-8"), alt, style)
 
 
-# cost: time O(rows * cols), heap O(rows * cols), stack O(1)
+# cost: time O(n), heap O(n), stack O(1)
+# vars: n = 표 셀·정렬·너비 설정의 전체 글자 수
 # basis: estimate
 def _table(spec: dict[str, Any]) -> str:
     aligns = spec.get("align", [])
@@ -349,7 +353,8 @@ def _table(spec: dict[str, Any]) -> str:
     return f"<table>{column_group}<thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table>"
 
 
-# cost: time O(figures + rows), heap O(output), stack O(1)
+# cost: time O(n + r), heap O(n + o), stack O(1), io O(f)
+# vars: n = 이 호출의 전체 입력 글자 수, r = 하위 외부 렌더 시간 합, o = 그림 포함 출력 바이트 수, f = 그림 수
 # basis: estimate
 def _option(option: dict[str, Any], renderer: FigureRenderer) -> str:
     body = "".join(_picture(image, renderer) for image in option.get("images", []))
@@ -361,7 +366,8 @@ def _option(option: dict[str, Any], renderer: FigureRenderer) -> str:
     return f'<div class="{class_name}"><h4>{_inline(option["label"])}</h4>{body}</div>'
 
 
-# cost: time O(options * figures), heap O(output), stack O(1)
+# cost: time O(n + r), heap O(n + o), stack O(1), io O(f)
+# vars: n = 이 호출의 전체 입력 글자 수, r = 하위 외부 렌더 시간 합, o = 그림 포함 출력 바이트 수, f = 그림 수
 # basis: estimate
 def _options(options: list[dict[str, Any]], renderer: FigureRenderer) -> str:
     inner = "".join(_option(option, renderer) for option in options)
@@ -374,7 +380,8 @@ KINDS = {
 }
 
 
-# cost: time O(options + figures + effect rows), heap O(output), stack O(1)
+# cost: time O(n + r), heap O(n + o), stack O(1), io O(f)
+# vars: n = 이 호출의 전체 입력 글자 수, r = 하위 외부 렌더 시간 합, o = 그림 포함 출력 바이트 수, f = 그림 수
 # basis: estimate
 def _question(
     number: int, question: dict[str, Any], renderer: FigureRenderer, kind: str
@@ -408,7 +415,8 @@ def _question(
     )
 
 
-# cost: time O(questions * options * figures), heap O(output), stack O(1)
+# cost: time O(n + r), heap O(n + o), stack O(1), io O(f)
+# vars: n = 이 호출의 전체 입력 글자 수, r = 하위 외부 렌더 시간 합, o = 그림 포함 출력 바이트 수, f = 그림 수
 # basis: estimate
 def build(spec: dict[str, Any], renderer: FigureRenderer, tokens_css: str) -> str:
     _validate(spec)
@@ -445,7 +453,7 @@ def build(spec: dict[str, Any], renderer: FigureRenderer, tokens_css: str) -> st
 def _daphnis(value: str | None) -> Daphnis | None:
     if "MUTOSCOPE_PATH" in os.environ:
         print(
-            "deprecated: MUTOSCOPE_PATH will be removed after this release; use DAPHNIS_PATH",
+            "deprecated: MUTOSCOPE_PATH removal date undecided; use DAPHNIS_PATH",
             file=sys.stderr,
         )
     configured = (
@@ -482,15 +490,15 @@ def _arguments() -> argparse.Namespace:
     arguments = parser.parse_args()
     if arguments.mutoscope is not None:
         print(
-            "deprecated: --mutoscope will be removed after this release; use --daphnis",
+            "deprecated: --mutoscope removal date undecided; use --daphnis",
             file=sys.stderr,
         )
     arguments.daphnis = arguments.daphnis or arguments.mutoscope
     return arguments
 
 
-# cost: time O(size of input + render), heap O(size of output), stack O(1), io 3+
-# vars: render = dap input count times daphnis render cost
+# cost: time O(n + r), heap O(n + o), stack O(1), io O(f + p)
+# vars: n = JSON·토큰 입력 바이트 수, r = 외부 렌더 시간 합, o = 출력 바이트 수, f = 그림 수, p = PATH 탐색 항목 수
 # basis: estimate
 def main() -> None:
     arguments = _arguments()
