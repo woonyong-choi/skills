@@ -10,5 +10,5 @@ mkdir -p "$skills_target/.claude" "$skills_target/.codex"
 python3 tools/skill-sync/scripts/install.py --source . --target-home "$skills_target"
 ```
 
-- 확인: 종료 코드 0과 도구별 `설치 성공` 또는 `일치`, 마지막 zip 목록 확인
+- 확인: 종료 코드 0과 도구별 `설치 성공` 또는 `일치`, 마지막 zip 재생성 목록 확인. 계정 배포 상태는 설치 명령에서 미확인
 - 같은 명령 재실행: 기존 manifest로 변경된 스킬만 동기화. 비관리 동명 폴더는 보존하고 충돌 보고
