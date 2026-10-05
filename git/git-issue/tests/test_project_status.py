@@ -31,6 +31,7 @@ class FakeGh:
             {"id": "I1", "number": 1, "state": "OPEN"},
             {"id": "I2", "number": 2, "state": "CLOSED"},
         ]
+        self.pull_requests = [{"id": "PR115", "number": 115, "state": "MERGED"}]
         self.items: list[dict[str, Any]] = []
         self.views = [
             {
@@ -45,7 +46,11 @@ class FakeGh:
         self.calls: list[dict[str, Any]] = []
 
     def add_item(self, number: int, status: str | None) -> None:
-        issue = next(issue for issue in self.issues if issue["number"] == number)
+        issue = next(
+            content
+            for content in self.issues + self.pull_requests
+            if content["number"] == number
+        )
         self.items.append(
             {
                 "id": f"ITEM{number}",
@@ -66,7 +71,11 @@ class FakeGh:
             value = variables["input"]
             self.writes.append((name, copy.deepcopy(value)))
             if name == "addProjectV2ItemById":
-                number = int(value["contentId"][1:])
+                number = next(
+                    content["number"]
+                    for content in self.issues + self.pull_requests
+                    if content["id"] == value["contentId"]
+                )
                 self.add_item(number, None)
                 return {"data": {name: {"item": {"id": f"ITEM{number}"}}}}
             if name == "updateProjectV2ItemFieldValue":
@@ -100,11 +109,31 @@ class FakeGh:
                 }
             }
         elif "items(" in query:
-            result = {"node": {"items": connection(self.items)}}
+            items = copy.deepcopy(self.items)
+            if "... on PullRequest{" not in query:
+                for item in items:
+                    if (item.get("content") or {}).get("id") in {
+                        pr["id"] for pr in self.pull_requests
+                    }:
+                        item["content"] = {}
+            result = {"node": {"items": connection(items)}}
         elif "views(" in query:
             result = {"node": {"views": connection(self.views)}}
         elif "issues(" in query:
             result = {"repository": {"issues": connection(self.issues)}}
+        elif "issueOrPullRequest(" in query:
+            result = {
+                "repository": {
+                    "issueOrPullRequest": next(
+                        (
+                            content
+                            for content in self.issues + self.pull_requests
+                            if content["number"] == variables["number"]
+                        ),
+                        None,
+                    )
+                }
+            }
         elif "issue(" in query:
             result = {
                 "repository": {
@@ -142,6 +171,53 @@ def test_set_same_status_has_no_writes(gh: FakeGh) -> None:
     gh.add_item(1, "작업 중")
 
     assert project_status.main(["set", "1", "작업 중", "--repo", "owner/repo"], gh) == 0
+    assert gh.writes == []
+
+
+def test_set_pr_adds_and_moves_status_in_all_projects(gh: FakeGh) -> None:
+    gh.projects.append({"id": "Q", "number": 20, "title": "Second"})
+
+    assert project_status.main(["--repo", "owner/repo", "set", "115", "완료"], gh) == 0
+    assert gh.writes == [
+        write
+        for project_id in ("P", "Q")
+        for write in (
+            ("addProjectV2ItemById", {"projectId": project_id, "contentId": "PR115"}),
+            (
+                "updateProjectV2ItemFieldValue",
+                {
+                    "projectId": project_id,
+                    "itemId": "ITEM115",
+                    "fieldId": "F",
+                    "value": {"singleSelectOptionId": "5"},
+                },
+            ),
+        )
+    ]
+
+
+def test_set_pr_same_status_has_no_writes(gh: FakeGh) -> None:
+    gh.add_item(115, "완료")
+
+    assert project_status.main(["set", "115", "완료"], gh) == 0
+    assert gh.writes == []
+
+
+def test_set_missing_number_returns_two_without_writes(gh: FakeGh, capsys: Any) -> None:
+    assert project_status.main(["set", "999", "완료"], gh) == 2
+    output = capsys.readouterr()
+    assert "not found: owner/repo#999" in output.out
+    assert output.err == ""
+    assert gh.writes == []
+
+
+@pytest.mark.parametrize("args", [["check"], ["check", "--fix"]])
+def test_check_ignores_prs_on_and_off_board(gh: FakeGh, args: list[str]) -> None:
+    gh.add_item(1, "대기")
+    gh.add_item(115, "작업 중")
+    gh.pull_requests.append({"id": "PR116", "number": 116, "state": "OPEN"})
+
+    assert project_status.main(args, gh) == 0
     assert gh.writes == []
 
 

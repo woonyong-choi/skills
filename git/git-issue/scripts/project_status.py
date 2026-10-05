@@ -1,4 +1,4 @@
-"""저장소에 연결된 Projects v2의 이슈 등록과 Status를 관리한다.
+"""저장소에 연결된 Projects v2의 이슈·PR 등록과 Status를 관리한다.
 인자: --repo owner/name, set 번호 상태 | setup | check [--fix]
 출력: stdout 프로젝트·상태·불일치·오류, 종료 0 성공·1 불일치·2 실패
 """
@@ -54,7 +54,9 @@ class ProjectStatus:
             raise ProjectError(
                 f"{self.repo}: 연결된 프로젝트 없음; 생성은 사용자 요청 필요"
             )
-        issue = self._issue(args.number) if args.command == "set" else None
+        content = (
+            self._issue_or_pull_request(args.number) if args.command == "set" else None
+        )
         issues = self._issues() if args.command == "check" else []
         plans = []
         for project in projects:
@@ -64,8 +66,8 @@ class ProjectStatus:
                 continue
             items = self._items(project)
             changes = (
-                [(issue, args.status)]
-                if issue
+                [(content, args.status)]
+                if content
                 else self._mismatches(project, issues, items)
             )
             if args.command == "set" or args.fix:
@@ -153,15 +155,17 @@ class ProjectStatus:
                 return field
         raise ProjectError(f"프로젝트 {project['number']}: Status 단일 선택 필드 없음")
 
-    def _issue(self, number: int) -> dict[str, Any]:
+    def _issue_or_pull_request(self, number: int) -> dict[str, Any]:
         data = self._query(
-            "query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){issue(number:$number){id number state}}}",
+            "query($owner:String!,$name:String!,$number:Int!){"
+            "repository(owner:$owner,name:$name){issueOrPullRequest(number:$number){"
+            "... on Issue{id number} ... on PullRequest{id number}}}}",
             {**self.repository, "number": number},
         )
-        issue = (data.get("repository") or {}).get("issue")
-        if not issue:
-            raise ProjectError(f"issue not found: {self.repo}#{number}")
-        return issue
+        content = (data.get("repository") or {}).get("issueOrPullRequest")
+        if not content:
+            raise ProjectError(f"issue or pull request not found: {self.repo}#{number}")
+        return content
 
     def _issues(self) -> list[dict[str, Any]]:
         return self._pages(
@@ -177,7 +181,8 @@ class ProjectStatus:
         items = self._project_pages(
             project,
             "items",
-            "id content{... on Issue{id number state repository{nameWithOwner}}}"
+            "id content{... on Issue{id number state repository{nameWithOwner}}"
+            "... on PullRequest{id number repository{nameWithOwner}}}"
             'fieldValueByName(name:"Status"){... on ProjectV2ItemFieldSingleSelectValue{name}}',
         )
         return {
@@ -225,18 +230,18 @@ class ProjectStatus:
         self,
         project: dict[str, Any],
         field: dict[str, Any],
-        issue: dict[str, Any],
+        content: dict[str, Any],
         status: str,
         item: dict[str, Any] | None,
     ) -> None:
         if item is not None and self._status(item) == status:
-            print(f"#{issue['number']}: {status} 유지 (쓰기 없음)")
+            print(f"#{content['number']}: {status} 유지 (쓰기 없음)")
             return
         option = self._option(field, status, project)
         if item is None:
             result = self._mutate(
                 "addProjectV2ItemById",
-                {"projectId": project["id"], "contentId": issue["id"]},
+                {"projectId": project["id"], "contentId": content["id"]},
                 "item{id}",
             )
             item = result["item"]
@@ -250,7 +255,7 @@ class ProjectStatus:
             },
             "projectV2Item{id}",
         )
-        print(f"#{issue['number']}: {status} 변경")
+        print(f"#{content['number']}: {status} 변경")
 
     # cost: time O(n + v), heap O(n + v), stack O(1), io O(p + v)
     # vars: n = Status 선택지 수, p = 뷰 조회 페이지, v = 보드 뷰
