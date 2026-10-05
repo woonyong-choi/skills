@@ -5,7 +5,7 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 
 # Code Style: Python
 
-- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
+- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 Python 규칙. 그 밖에서 code-style과 다르면 code-style 우선
 
 ## 이름
@@ -91,33 +91,10 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 
 ## 린트 설정
 
-`pyproject.toml`:
+Ruff·mypy·pytest 설정 생성·변경·감사 전 [lint.md](references/lint.md) 필수 확인
 
-```toml
-[tool.ruff.lint]
-select = ["E", "W", "F", "I", "N", "UP", "B", "SIM", "PLR0913", "FBT", "D", "S101", "S110", "BLE", "G"]
-# 누락 docstring 규칙 제외: docstring은 필요할 때만
-ignore = ["D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107"]
-
-[tool.ruff.lint.pylint]
-max-args = 7
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "D"]
-
-[tool.mypy]
-strict = true
-
-[tool.pytest.ini_options]
-filterwarnings = ["error"]
-```
-
-- ruff `max-args`: `self`·`cls` 제외 → 7 그대로 (code-style 수치 기준)
-- `FBT`는 위치 인자 bool을 금지 → bool 매개변수는 키워드 전용(`*, verbose: bool`)만
 - ruff가 못 잡는 것은 직접 확인: 함수·파일 길이, 중첩 깊이, 인지 복잡도, `&&`·`||`(`and`·`or`) 개수, 이름, 비교 순서, 선언 순서, 로그 레벨
+- `FBT`는 위치 인자 bool을 금지 → bool 매개변수는 키워드 전용(`*, verbose: bool`)만
 
 ## 검사 명령
 

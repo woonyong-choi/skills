@@ -5,7 +5,7 @@ description: "Rust 코드를 작성·검토·리팩터링하거나 rustfmt·Clip
 
 # Code Style: Rust
 
-- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
+- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 Rust 규칙. 그 밖에서 code-style과 다르면 code-style 우선
 
 ## 이름
@@ -64,17 +64,7 @@ description: "Rust 코드를 작성·검토·리팩터링하거나 rustfmt·Clip
 - 버전: 작업 공간 `Cargo.toml`의 `[workspace.dependencies]`에 한 번만. 각 crate는 `thiserror.workspace = true`처럼 참조. 단일 패키지는 해당 `Cargo.toml`의 `[dependencies]`에 지정
 - 라이브러리 crate에 `anyhow`·`tracing-subscriber` 의존성 금지
 
-`thiserror`:
-
-```rust
-#[derive(Debug, thiserror::Error)]
-pub enum ConfigError {
-    #[error("config file not found: {path}")]
-    NotFound { path: PathBuf },
-    #[error("failed to parse config")]
-    Parse(#[from] toml::de::Error),
-}
-```
+`thiserror` 코드 예를 대조할 때 [오류·로그 예](references/error-examples.md#thiserror) 필수 확인
 
 - 공개 오류 enum은 모듈마다 하나, 이름은 `<대상>Error`. 공개 함수는 `Result<T, <대상>Error>` 반환
 - variant 이름은 실패한 내용: `NotFound`, `Parse`. `Error` 접미사 금지
@@ -82,51 +72,22 @@ pub enum ConfigError {
 - 같은 하위 오류가 여러 상황에서 생기면 `#[from]` 대신 `map_err`로 상황별 variant 사용
 - crate 밖에 배포하는 라이브러리의 공개 오류 enum은 `#[non_exhaustive]`
 
-`anyhow`:
-
-```rust
-use anyhow::Context;
-
-fn main() -> anyhow::Result<()> {
-    let config = Config::load(&path)
-        .with_context(|| format!("failed to load config: {}", path.display()))?;
-    anyhow::ensure!(config.is_valid(), "config should be valid");
-    Ok(())
-}
-```
+`anyhow` 코드 예를 대조할 때 [오류·로그 예](references/error-examples.md#anyhow) 필수 확인
 
 - 실행 파일 crate의 함수는 `anyhow::Result<T>` 반환. `main`도 `anyhow::Result<()>` 반환
 - 문맥은 고정 문자열이면 `.context("...")`, 값이 들어가면 `.with_context(|| format!(...))`
 - 새 오류는 `anyhow::bail!("...")`, 조건 검사는 `anyhow::ensure!(조건, "...")`
 
-`tracing`:
-
-```rust
-use tracing::{debug, info, instrument};
-
-#[instrument(skip(self), fields(session_id = %self.id))]
-fn run(&self) -> Result<(), EngineError> {
-    info!("session started");
-    debug!(turn = self.turn, "sending prompt");
-    Ok(())
-}
-```
+`tracing` 코드 예를 대조할 때 [오류·로그 예](references/error-examples.md#tracing) 필수 확인
 
 - 값은 메시지에 넣지 않고 필드로: `info!(session_id = %id, "session started")`. `%`는 Display, `?`는 Debug
 - 세션·요청처럼 흐름 단위 함수에 `#[instrument]`. 큰 인자와 비밀값은 `skip`
 - 레벨: code-style 로그 레벨 표
 
-`tracing-subscriber`:
-
-```rust
-tracing_subscriber::fmt()
-    .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
-    .with_writer(std::io::stderr)
-    .init();
-```
+`tracing-subscriber` 코드 예를 대조할 때 [오류·로그 예](references/error-examples.md#tracing-subscriber) 필수 확인
 
 - 실행 파일 `main` 시작에서 한 번만 설정. 레벨은 `RUST_LOG` 환경 변수로
-- 로그·결과 스트림 구분: (code-style 오류와 로그). tracing writer는 위 설정 참조
+- 로그·결과 스트림 구분: (code-style 오류와 로그). tracing writer는 stderr 지정 필수
 
 ## 공개 범위와 주석
 
@@ -142,45 +103,11 @@ tracing_subscriber::fmt()
 
 ## 린트 설정
 
-workspace는 각 crate의 `Cargo.toml`에 `[lints] workspace = true`를 두고 루트에서 아래 설정을 관리한다. 단일 패키지는 해당 `Cargo.toml`의 `[lints.rust]`, `[lints.clippy]`에 같은 규칙 적용
+Cargo·Clippy 설정 생성·변경·감사 전 [lint.md](references/lint.md) 필수 확인
 
-작업 공간 `Cargo.toml`:
-
-```toml
-[workspace.lints.rust]
-unreachable_pub = "warn"
-
-[workspace.lints.clippy]
-too_many_lines = "warn"
-too_many_arguments = "warn"
-fn_params_excessive_bools = "warn"
-excessive_nesting = "warn"
-cognitive_complexity = "warn"
-if_not_else = "warn"
-unwrap_used = "warn"
-panic = "warn"
-todo = "warn"
-unimplemented = "warn"
-```
-
-`clippy.toml`:
-
-```toml
-too-many-lines-threshold = 100
-too-many-arguments-threshold = 8
-max-fn-params-bools = 3
-excessive-nesting-threshold = 5
-cognitive-complexity-threshold = 15
-allow-unwrap-in-tests = true
-allow-panic-in-tests = true
-```
-
-- 중첩 깊이 (code-style 수치 기준) 계산에 `match`·`loop`·`if let`·`while let` 포함
-- clippy 매개변수 수에 self 포함 → 7개 (code-style 수치 기준) + self = 8
-- clippy 중첩에 impl·fn 블록 포함 → impl(1) + fn(2) + 3단 (code-style 수치 기준) = 5. impl 밖 함수는 1단 더 허용되므로 직접 확인
-- clippy 인지 복잡도: 실험 단계(nursery) 규칙, SonarQube와 점수 차이. 기준은 clippy 점수
-- clippy 기본 규칙이 잡는 것: `x == true` 비교(`bool_comparison`), 불필요한 부정(`nonminimal_bool`), 테스트 모듈 뒤 선언(`items_after_test_module`)
 - clippy가 못 잡는 것은 직접 확인: 이름, 비교 순서, `&&`·`||` 개수와 섞기, 선언 순서, 로그 레벨
+- 중첩 깊이 (code-style 수치 기준) 계산에 `match`·`loop`·`if let`·`while let` 포함
+- impl 밖 함수의 중첩은 clippy 허용값과 별도로 code-style 절대 최대 직접 확인
 
 ## 검사 명령
 

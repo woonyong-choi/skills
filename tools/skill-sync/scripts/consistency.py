@@ -7,11 +7,11 @@ import importlib.util
 import re
 from collections import defaultdict
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
-PRIORITY = '- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용'
-SCRIPT_LOCATION = '`<이 스킬 폴더>`: 이 SKILL.md가 있는 폴더. 스크립트 본문은 읽지 않고 실행만. Windows에서 `python3`가 없으면 `py -3`'
+PRIORITY = '- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용'
 FENCE = re.compile(r'^\s*(`{3,}|~{3,})')
-REFERENCE = re.compile(r'\([^)]*[a-z]+(?:-[a-z]+)+[^)]*\)|\[[^]]+\]\([^)]+\)')
+REFERENCE = re.compile(r'\([^)]*[a-z]+(?:-[a-z]+)+[^)]*\)|\[[^]]+\]\([^)]+\)|[a-z][a-z0-9-]* `references/[^`]+\.md`')
 COST = re.compile(r'^time O\([^()]+\)(?: [^,]+)?(?:, O\([^()]+\) worst)?, heap O\([^()]+\), stack O\([^()]+\)(?:, (?:alloc|io|tokens) [^,]+)*$')
 
 
@@ -39,7 +39,7 @@ def read_terms(skills: dict[str, Path]) -> dict[str, str]:
     owner = skills.get('repo-docs')
     if owner is None:
         return {}
-    text = (owner / 'SKILL.md').read_text(encoding='utf-8')
+    text = (owner / 'references' / 'writing.md').read_text(encoding='utf-8')
     section = text.split('## 용어\n', 1)[1].split('\n## ', 1)[0]
     terms = {}
     for _, line in prose_lines(section):
@@ -51,6 +51,37 @@ def read_terms(skills: dict[str, Path]) -> dict[str, str]:
         for term in cells[1].split(', '):
             terms[term.split('(')[0]] = cells[0]
     return terms
+
+
+# cost: time O(n + b), heap O(n + b), stack O(1), io O(f)
+# vars: n = 문서 글자 수, b = 링크 대상 문서 글자 수 합계, f = 링크 수
+# basis: estimate
+def check_references(path: Path, text: str, skills: dict[str, Path]) -> list[str]:
+    errors = []
+    for number, line in prose_lines(text):
+        targets = []
+        prose = re.sub(r'`[^`]*`', '', line)
+        for link in re.findall(r'\[[^\]]+\]\(([^)]+)\)', prose):
+            url = urlsplit(link)
+            if url.scheme or url.netloc or '{' in link:
+                continue
+            targets.append((path.parent / unquote(url.path) if url.path else path, unquote(url.fragment)))
+        for name, relative in re.findall(r'([a-z][a-z0-9-]*) `(references/[^`]+\.md)`', line):
+            if name not in skills:
+                errors.append(f'참조 링크: {number}: 없는 스킬 {name}')
+                continue
+            targets.append((skills[name] / relative, ''))
+        for target, anchor in targets:
+            if not target.is_file():
+                errors.append(f'참조 링크: {number}: 없는 파일 {target}')
+                continue
+            if not anchor:
+                continue
+            headings = [row.lstrip('#').strip().lower() for _, row in prose_lines(target.read_text(encoding='utf-8')) if row.startswith('#')]
+            anchors = {re.sub(r'[^\w\- ]', '', heading.replace('`', '')).replace(' ', '-') for heading in headings}
+            if anchor not in anchors:
+                errors.append(f'참조 링크: {number}: 없는 절 {target}#{anchor}')
+    return errors
 
 
 def check_prose(text: str, terms: dict[str, str]) -> list[str]:
@@ -78,9 +109,9 @@ def check_prose(text: str, terms: dict[str, str]) -> list[str]:
     return errors
 
 
-def collect_rules(text: str) -> list[tuple[int, str]]:
+def collect_rules(text: str, *, include_intro: bool = False) -> list[tuple[int, str]]:
     rules = []
-    in_body = False
+    in_body = include_intro
     for number, line in prose_lines(text):
         if line.startswith('## '):
             in_body = True
@@ -94,7 +125,7 @@ def collect_rules(text: str) -> list[tuple[int, str]]:
         else:
             continue
         # 규범 문장만 비교하여 단순 항목명·표 머리의 중복을 제외한다.
-        if rule != SCRIPT_LOCATION and len(re.sub(r'\s', '', rule)) >= 20 and (match or re.search(r'금지|필수|우선|만 허용|만 사용', rule)):
+        if len(re.sub(r'\s', '', rule)) >= 20 and (match or re.search(r'금지|필수|우선|만 허용|만 사용', rule)):
             rules.append((number, re.sub(r'\s+', ' ', rule).strip().rstrip('.')))
     return rules
 
@@ -166,8 +197,8 @@ def load_cost_checker() -> object:
     return module
 
 
-# cost: time O(n·t + s²), heap O(n), stack O(n), io O(f)
-# vars: n = 전체 글자 수, t = 용어 수, s = 가장 긴 스크립트 줄 수, f = 파일 수
+# cost: time O(n·t + b + s²), heap O(n + b), stack O(n), io O(f + l)
+# vars: n = 전체 글자 수, t = 용어 수, b = 링크 대상 글자 수 합계, s = 가장 긴 스크립트 줄 수, f = 파일 수, l = 링크 수
 # basis: estimate
 def check_consistency(paths: list[Path]) -> dict[Path, list[str]]:
     skills = {path.parent.name: path.parent for path in paths}
@@ -176,10 +207,14 @@ def check_consistency(paths: list[Path]) -> dict[Path, list[str]]:
     duplicates = defaultdict(list)
     cost_checker = load_cost_checker()
     for path in paths:
-        text = path.read_text(encoding='utf-8')
-        errors[path].extend(check_prose(text, terms))
-        for line, rule in collect_rules(text):
-            duplicates[rule].append((path, line))
+        documents = [path, *sorted((path.parent / 'references').rglob('*.md'))]
+        for document in documents:
+            text = document.read_text(encoding='utf-8')
+            label = document.relative_to(path.parent)
+            found = check_prose(text, terms) + check_references(document, text, skills)
+            errors[path].extend(f'{error} ({label})' for error in found)
+            for line, rule in collect_rules(text, include_intro=document != path):
+                duplicates[rule].append((path, f'{label}:{line}'))
         for script in sorted((path.parent / 'scripts').rglob('*')):
             if script.suffix not in ('.py', '.js', '.mjs') or script.name.startswith('test_') or '__pycache__' in script.parts:
                 continue

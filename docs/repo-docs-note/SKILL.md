@@ -1,11 +1,11 @@
 ---
 name: repo-docs-note
-description: "개발 중 직접 확인한 insight나 조사한 reference를 짧은 저장소 기록으로 남길 때 사용."
+description: "개발 중 단일 실행 관측이나 자료 요약을 짧은 기록으로 남길 때 사용."
 ---
 
 # Repo Docs Note
 
-- 사용자 지시를 먼저 적용. 해당 주제의 사용자 지시가 없으면 작업 대상 저장소의 같은 주제 규칙 파일(예: `AGENTS.md`, `CONTRIBUTING.md`) 적용. 둘 다 없으면 이 스킬 적용. 다른 스킬과 겹치는 규칙은 머리의 연결에 적힌 스킬 중 그 규칙을 정한 스킬 적용
+- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 짧은 개발 기록. 정한 설계(repo-docs-design), 고른 이유(repo-docs-decision), 판단 과정(repo-docs-journal), 측정(repo-docs-experiment)은 범위 밖
 
 - 한 기록 = 종류 하나, 주제 하나. 섞이면 분리
@@ -25,72 +25,13 @@ description: "개발 중 직접 확인한 insight나 조사한 reference를 짧�
 
 ## insight
 
-````text
----
-type: insight
-date: {YYYY-MM-DD}
-tags: [{태그}]
----
-
-# {알게 된 것 한 문장}
-
-{결론과 적용 조건}
-
-## 상황
-
-| 항목 | 값 |
-|---|---|
-| 작업 | {무엇을 하다가} |
-| 환경 | {운영체제, 도구와 버전} |
-
-## 알게 된 것
-
-{원인과 동작을 한 문단}
-
-## 근거
-
-```{언어}
-{명령, 출력, 코드}
-```
-
-## 적용
-
-- {다음에 하는 것}
-
-## 확인하지 않은 것
-
-- {확인하지 않은 조건}
-````
+단일 실행 관측인 insight 작성·갱신 전 [insight.md](references/insight.md) 필수 확인
 
 ## reference
 
-````text
----
-type: reference
-date: {YYYY-MM-DD}
-tags: [{태그}]
----
+자료 요약인 reference 작성·갱신 전 [reference.md](references/reference.md) 필수 확인
 
-# {대상} {주제}
-
-{결론과 적용 조건}
-
-## 내용
-
-| 항목 | 값 |
-|---|---|
-| {항목} | {값} |
-
-## 출처
-
-| 출처 | 버전 | 확인한 날짜 |
-|---|---|---|
-| [{제목}]({URL}) | {버전} | {YYYY-MM-DD} |
-
-## 확인하지 않은 것
-
-- {확인하지 않은 것}
-````
+## 공통 규칙
 
 | 자리 | 규칙 |
 |---|---|

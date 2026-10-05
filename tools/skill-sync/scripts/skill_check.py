@@ -61,7 +61,8 @@ def check(path, names):
         if line.startswith('- 필요할 때만 읽기: '):
             for clause in line.split(';'):
                 if '→' in clause:
-                    targets.extend(re.findall(r'[a-z][a-z0-9-]*(?:\*)?', clause.split('→', 1)[1]))
+                    destination = re.sub(r'`[^`]+`', '', clause.split('→', 1)[1])
+                    targets.extend(re.findall(r'[a-z][a-z0-9-]*(?:\*)?', destination))
         for target in targets:
             if target == 'git-*':
                 continue

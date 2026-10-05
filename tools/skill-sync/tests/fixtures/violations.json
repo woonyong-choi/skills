@@ -96,5 +96,26 @@
     "before": "출력: stdout 파일 내용, 종료 0",
     "after": "출력:\n설명은 다음 줄",
     "kind": "스크립트 출력 형식"
+  },
+  {
+    "id": "missing-reference",
+    "file": "alpha/SKILL.md",
+    "before": "`references/writing.md`",
+    "after": "`references/missing.md`",
+    "kind": "참조 링크"
+  },
+  {
+    "id": "missing-anchor",
+    "file": "alpha/SKILL.md",
+    "before": "writing.md#용어",
+    "after": "writing.md#없는-절",
+    "kind": "참조 링크"
+  },
+  {
+    "id": "nested-reference",
+    "file": "repo-docs/references/writing.md",
+    "before": "../SKILL.md#작성-규칙",
+    "after": "../missing.md#작성-규칙",
+    "kind": "참조 링크"
   }
 ]
