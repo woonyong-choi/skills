@@ -118,6 +118,67 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었다. 채
 
 보류는 열등함을 입증한 결과가 아니다. 두 모델의 정답 합의는 인간 검증이 아니며, 불일치 요청을 제외한 표본에는 선택 편향이 남는다. 이 수치는 제한된 스킬 선택 실험의 결과이며 실제 작업 완성도나 전체 도구 환경의 성능을 뜻하지 않는다. 확인 모델의 결과, 판정 기준과 공개 집계의 범위는 [2차 실험 결과](experiments/skill-exposure/report.md)에 있다. 앞선 형식 통일·조건부 읽기 실험은 [1차 실험 결과](experiments/skill-format-unification/report.md)에 있다.
 
+### 기본 본문 크기
+
+기준 커밋 `d7e8489`와 #25 변경 후의 실제 스킬 27개를 비교했다. 값은 frontmatter와 개행을 포함한 UTF-8 `SKILL.md` 전체 바이트다. 시험 fixture와 실험 보관본은 제외했다. 하위 문서로 옮긴 내용은 보존하며, 이 표는 저장소 용량이나 평균 호출 비용의 감소를 뜻하지 않는다.
+
+| 스킬 | 변경 전 | 변경 후 | 감소 |
+|---|---:|---:|---:|
+| [code-refactoring](code/code-refactoring/SKILL.md) | 12,758 | 4,865 | 7,893 |
+| [code-style](code/code-style/SKILL.md) | 20,750 | 19,747 | 1,003 |
+| [code-style-css](code/code-style-css/SKILL.md) | 7,479 | 6,523 | 956 |
+| [code-style-javascript](code/code-style-javascript/SKILL.md) | 7,279 | 5,321 | 1,958 |
+| [code-style-kotlin](code/code-style-kotlin/SKILL.md) | 7,125 | 5,536 | 1,589 |
+| [code-style-python](code/code-style-python/SKILL.md) | 5,728 | 5,034 | 694 |
+| [code-style-rust](code/code-style-rust/SKILL.md) | 8,073 | 6,251 | 1,822 |
+| [design-tokens](design/design-tokens/SKILL.md) | 8,991 | 7,502 | 1,489 |
+| [folder-naming](code/folder-naming/SKILL.md) | 3,399 | 3,213 | 186 |
+| [git-branch](git/git-branch/SKILL.md) | 7,827 | 5,587 | 2,240 |
+| [git-commit](git/git-commit/SKILL.md) | 5,753 | 5,017 | 736 |
+| [git-issue](git/git-issue/SKILL.md) | 17,281 | 8,155 | 9,126 |
+| [git-pull-request](git/git-pull-request/SKILL.md) | 6,169 | 5,026 | 1,143 |
+| [html-report](docs/html-report/SKILL.md) | 10,501 | 9,117 | 1,384 |
+| [repo-docs](docs/repo-docs/SKILL.md) | 20,511 | 11,048 | 9,463 |
+| [repo-docs-decision](docs/repo-docs-decision/SKILL.md) | 5,568 | 2,881 | 2,687 |
+| [repo-docs-design](docs/repo-docs-design/SKILL.md) | 10,869 | 4,274 | 6,595 |
+| [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md) | 12,990 | 6,463 | 6,527 |
+| [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | 14,171 | 4,151 | 10,020 |
+| [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 6,458 | 3,473 | 2,985 |
+| [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 3,693 | 2,596 | 1,097 |
+| [repo-docs-note](docs/repo-docs-note/SKILL.md) | 3,141 | 2,352 | 789 |
+| [repo-docs-promo](docs/repo-docs-promo/SKILL.md) | 5,039 | 3,283 | 1,756 |
+| [repo-docs-readme](docs/repo-docs-readme/SKILL.md) | 12,684 | 11,218 | 1,466 |
+| [repo-docs-root](docs/repo-docs-root/SKILL.md) | 6,999 | 2,815 | 4,184 |
+| [repo-docs-spec](docs/repo-docs-spec/SKILL.md) | 7,736 | 1,941 | 5,795 |
+| [skill-sync](tools/skill-sync/SKILL.md) | 8,231 | 5,405 | 2,826 |
+| 합계 | 247,203 | 158,794 | 88,409 |
+
+기본 본문 합계는 35.8% 줄었다. 아래 조건에 해당하는 작업은 하위 문서를 추가로 읽는다. 이미 읽은 정본은 같은 작업에서 중복 합산하지 않으며, 원본 변경 시 다시 확인한다.
+
+### 읽기 연결
+
+`기반`은 먼저 적용하는 스킬이다. 종류별·언어별 스킬의 필수 규칙은 본문에 남기고, 하위 문서는 작업·파일·단계 조건이 맞을 때 읽는다. 다른 스킬의 하위 문서는 이름으로 찾은 스킬 폴더 기준 경로다. 같은 스킬의 하위 문서는 상대 링크로 열 수 있으며, 설치본과 zip에도 같은 내용이 들어간다.
+
+| 작업 | 먼저 읽는 정본 | 조건부 하위 문서 |
+|---|---|---|
+| Python 코드 검토 | code-style, code-style-python | 비용 대상 함수 작성·변경·검토 시 code-style의 `references/cost.md`; 린트 설정 생성·변경·감사 시 Python의 `references/lint.md` |
+| CSS 검토 | code-style, design-tokens, code-style-css | Stylelint 설정 작업 시 CSS의 `references/lint.md`; 토큰 분류·단계 신설·변경 시 `references/categories.md` |
+| 커밋 메시지 작성 | git-commit, repo-docs의 `references/writing.md` | 메시지 예 대조 시 git-commit의 `references/examples.md`; 실제 커밋 전 검사 시 code-style |
+| 설계 문서 작성 | repo-docs, `references/writing.md`, repo-docs-design | 작성·갱신·검토 대상에 따라 `references/index.md`, `architecture.md`, `design.md`, `glossary.md` 중 해당 문서 |
+| 이슈 본문 작성 | git-issue, repo-docs의 `references/writing.md` | 종류별 `references/{design,build,bug,experiment}.md`; 게시 전 `public-links.md`; 상태 사건 발생 전 `project-status.md` |
+| 스킬 검사 | skill-sync, `references/execution.md` | 형식 수정 시 `references/authoring.md`; 도구 설치 시 `installation.md`; 계정 배포 시 `claude-upload.md` |
+
+위 연결에 따른 정적 읽기량이다. Python·CSS 검토는 설정 변경이 없는 기본 경로이며 비용 주석 대상이면 상세 문서를 추가한다. 아키텍처 작성은 공통 문체와 선택한 템플릿까지 포함한다. 실제 호출 빈도나 평균 토큰 사용량을 측정한 값은 아니다.
+
+| 작업 | 변경 전 바이트 | 변경 후 바이트 | 감소 |
+|---|---:|---:|---:|
+| Python 코드 검토 | 26,478 | 24,781 | 1,697 |
+| CSS 검토 | 37,220 | 33,772 | 3,448 |
+| 커밋 메시지 작성 | 26,264 | 14,534 | 11,730 |
+| 아키텍처 문서 작성 | 31,380 | 27,543 | 3,837 |
+
+공통 우선순위 정본은 [스킬 작성 형식](tools/skill-sync/references/authoring.md#공통-원칙)에 두고, 각 본문에는 같은 우선순위 요약을 남긴다. 스크립트 위치·Windows 명령은 [실행 규칙](tools/skill-sync/references/execution.md), Git 글의 문체는 [문서 작성 규칙](docs/repo-docs/references/writing.md), PR 생성·머지 후 판 상태는 [판 상태 절차](git/git-issue/references/project-status.md)에서 관리한다.
+
 ## 상태
 
 스킬 원본, 설치 스크립트, 일관성 검사와 CI를 제공한다. 릴리스 배포판은 없으며 저장소 원본에서 설치한다. 규칙과 명령은 변경될 수 있으므로 업데이트할 때 설치 결과를 확인한다.
