@@ -22,6 +22,7 @@ import shutil
 import sys
 import time
 import zipfile
+import zlib
 from pathlib import Path
 
 INSTALL_HOME = Path.home()
@@ -254,16 +255,19 @@ def sync(root: Path, skills: list[Path], dry_run: bool) -> bool:
     return success
 
 
-# cost: time O(f), heap O(f), stack O(1), io 1
-# vars: f = zip 안 파일 수
+# cost: time O(b + f), heap O(f + m), stack O(1), io O(f)
+# vars: b = zip과 원본 파일 바이트 수 합계, f = 파일 수, m = 가장 큰 파일 바이트 수
 # basis: estimate
-def is_valid_archive(archive: Path, skill_name: str) -> bool:
-    with zipfile.ZipFile(archive) as bundle:
-        entries = bundle.infolist()
-        skill_files = [item.filename for item in entries if Path(item.filename).name == "SKILL.md"]
-        return skill_files == [f"{skill_name}/SKILL.md"] and not any(
-            SKIP.intersection(Path(item.filename).parts) for item in entries
-        )
+def is_valid_archive(archive: Path, skill_name: str, files: dict[str, Path]) -> bool:
+    try:
+        with zipfile.ZipFile(archive) as bundle:
+            names = bundle.namelist()
+            skill_files = [name for name in names if Path(name).name == "SKILL.md"]
+            if skill_files != [f"{skill_name}/SKILL.md"] or len(names) != len(files) or set(names) != set(files):
+                return False
+            return all(bundle.read(name) == path.read_bytes() for name, path in files.items())
+    except (zipfile.BadZipFile, EOFError, RuntimeError, NotImplementedError, zlib.error):
+        return False
 
 
 # cost: time O(s·b + s·f log f + s·f·d), heap O(s + f + b), stack O(d), io O(s·f)
@@ -287,23 +291,26 @@ def build_claude_zips(source: Path, skills: list[Path], dry_run: bool, output: P
         archive = output / f"{skill.name}.zip"
         if archive.is_symlink():
             raise ValueError(f"symlink archive: {archive}")
-        if record.get(skill.name) == digest and archive.is_file() and is_valid_archive(archive, skill.name):
+        nested_skills = {path.parent for path in skill.rglob("SKILL.md") if path.is_file() and path.parent != skill}
+        files = {
+            f"{skill.name}/{path.relative_to(skill).as_posix()}": path
+            for path in sorted(skill.rglob("*"))
+            if path.is_file() and not SKIP.intersection(path.parts) and not nested_skills.intersection(path.parents)
+        }
+        if record.get(skill.name) == digest and archive.is_file() and is_valid_archive(archive, skill.name, files):
             continue
         changed.append(archive)
         if dry_run:
             continue
         output.mkdir(parents=True, exist_ok=True)
         staged_archive = output / f".{skill.name}.{uuid.uuid4().hex}.zip"
-        nested_skills = {path.parent for path in skill.rglob("SKILL.md") if path.is_file() and path.parent != skill}
         try:
             with zipfile.ZipFile(staged_archive, "w", zipfile.ZIP_DEFLATED) as bundle:
-                for path in sorted(skill.rglob("*")):
-                    if not path.is_file() or SKIP.intersection(path.parts) or nested_skills.intersection(path.parents):
-                        continue
-                    info = zipfile.ZipInfo(f"{skill.name}/{path.relative_to(skill).as_posix()}", date_time=(2020, 1, 1, 0, 0, 0))
+                for name, path in files.items():
+                    info = zipfile.ZipInfo(name, date_time=(2020, 1, 1, 0, 0, 0))
                     info.external_attr = 0o644 << 16
                     bundle.writestr(info, path.read_bytes(), zipfile.ZIP_DEFLATED)
-            if not is_valid_archive(staged_archive, skill.name):
+            if not is_valid_archive(staged_archive, skill.name, files):
                 raise ValueError(f"invalid archive: {archive}: expected exactly one {skill.name}/SKILL.md and no cache files")
             os.replace(staged_archive, archive)
         finally:
@@ -360,7 +367,8 @@ def main(argv: list[str]) -> int:
         if not args.dry_run and success:
             POINTER.parent.mkdir(parents=True, exist_ok=True)
             POINTER.write_text(str(source) + "\n")
-        print("Claude 계정에 올릴 zip: " + (", ".join(str(path) for path in changed) if changed else "없음"))
+        print("Claude 계정 zip 재생성: " + (", ".join(str(path) for path in changed) if changed else "없음"))
+        print("Claude 계정 배포 상태: 미확인 (로컬 zip manifest는 업로드 기록이 아님)")
         return 0 if success else 1
     except (OSError, ValueError) as error:
         print(f"install failed: {error}", file=sys.stderr)
