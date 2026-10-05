@@ -1,4 +1,4 @@
 interface:
   display_name: "Skill Sync"
-  short_description: "스킬 형식 검사, Codex·Claude·Antigravity 설치, Claude 계정 zip"
+  short_description: "스킬 형식 검사, Codex·Claude·Antigravity 설치, Claude 계정 배포"
   default_prompt: "$skill-sync 스킬로 처리해 줘: [요청]"
