@@ -7,7 +7,7 @@ description: "UI의 색·글꼴·간격·시간 값을 토큰으로 정의·사�
 
 - 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 범위: 화면에 보이는 모든 값의 정의, 이름, 사용 방법, 하드코딩 검사
-- 필요할 때만 읽기: CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색·글꼴·크기 → repo-docs-figures; 기대값 근거 확인 → code-style
+- 필요할 때만 읽기: 결과가 다른 미확정 디자인 선택 → repo-docs-design; CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색·글꼴·크기 → repo-docs-figures; 기대값 근거 확인 → code-style
 
 ## 원칙
 

@@ -31,7 +31,9 @@ jobs:
       - name: Install figure renderer and browser
         working-directory: .runtime/daphnis
         run: |
-          npm ci
+          # The pinned renderer uses committed tokens; the private authoring package is unused.
+          npm pkg delete 'dependencies.@woonyong-choi/design-tokens'
+          npm install
           npx playwright-core install --with-deps chromium
       - name: Run report tests
         run: python3 docs/html-report/tests/test_build_report.py --daphnis .runtime/daphnis
