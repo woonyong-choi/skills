@@ -93,6 +93,94 @@ const setActive=()=>{const current=sections.find(section=>section.getBoundingCli
 const observer=new IntersectionObserver(setActive);sections.forEach(section=>observer.observe(section));addEventListener("scroll",setActive,{passive:true});setActive();
 """
 
+REVIEW_CSS = """
+:root{--review-unit:var(--space-4,16px);--review-radius:var(--radius-lg,14px);--review-small:var(--font-size-sm,13px);--review-border:color-mix(in srgb,var(--report-ink) 14%,var(--report-page));--review-muted:color-mix(in srgb,var(--report-ink) 65%,var(--report-page));--review-surface:color-mix(in srgb,var(--report-ink) 3%,var(--report-page))}
+body.review-page{max-width:1200px;padding:calc(var(--review-unit)*3) calc(var(--review-unit)*2);background:var(--report-page);letter-spacing:-.015em}
+.review-page h1{font-size:clamp(1.5rem,3vw,2rem);letter-spacing:-.04em;line-height:1.3;margin-bottom:var(--review-unit)}
+.review-page>.theme{float:right;margin:0}.review-page>.intro{max-width:65ch;color:var(--review-muted);margin-bottom:calc(var(--review-unit)*2)}
+.review-page .theme button{font-size:var(--review-small);border-color:transparent;background:transparent;color:var(--review-muted)}
+.review-page .theme button[aria-pressed="true"]{background:var(--review-surface);color:var(--report-ink)}
+.review{border-block:1px solid var(--review-border);padding:var(--review-unit) 0;margin-bottom:calc(var(--review-unit)*2)}
+.review-toolbar{display:flex;align-items:center;gap:var(--review-unit);flex-wrap:wrap}.review-toolbar output{color:var(--review-muted);font-size:var(--review-small);margin-right:auto}
+.review button,.review select,.review-page .decision-actions label{font:inherit;font-size:var(--review-small);padding:calc(var(--review-unit)/2) var(--review-unit);border:1px solid var(--review-border);border-radius:var(--report-radius);color:var(--report-ink);background:var(--report-page);cursor:pointer}
+.review .copy-button{color:var(--report-page);background:var(--report-ink);border-color:var(--report-ink)}
+.review details{margin-top:var(--review-unit);font-size:var(--review-small);color:var(--review-muted)}
+.review [data-review-notice]:empty{display:none}.review [data-review-notice]{font-size:var(--review-small);margin-bottom:0}
+.review-page section{margin:calc(var(--review-unit)*3) 0}.review-page h2{font-size:1.125rem;border:0;padding:0;margin:0}.review-page .what{color:var(--review-muted);font-size:var(--review-small);margin:calc(var(--review-unit)/2) 0 var(--review-unit)}
+.review-page .cols{gap:var(--review-unit);align-items:stretch}.review-page .col{display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--review-border);border-radius:var(--review-radius);background:var(--report-page);padding:var(--review-unit)}
+.review-page .col:has(input:checked){border-color:var(--report-ink);box-shadow:inset 0 0 0 1px var(--report-ink)}
+.review-page .col.mock{border-style:dashed}.review-page h4{font-size:var(--review-small);margin-bottom:var(--review-unit)}
+.review-page .frame{border-radius:var(--report-radius);background:var(--review-surface);padding:0;overflow:hidden}.review-page .frame img{max-height:420px}.review-page figcaption{font-size:var(--review-small);color:var(--review-muted)}
+.option-feedback{margin-top:auto;padding-top:var(--review-unit)}.option-select{display:flex;align-items:center;gap:calc(var(--review-unit)/2);min-height:calc(var(--review-unit)*2);cursor:pointer;font-size:var(--review-small);font-weight:600}
+.review-page input[type=radio]{accent-color:var(--report-ink);margin:0}.review-page textarea{display:block;width:100%;resize:vertical;min-height:calc(var(--review-unit)*3);margin-top:calc(var(--review-unit)/2);padding:calc(var(--review-unit)*.75);border:1px solid var(--review-border);border-radius:var(--report-radius);background:var(--review-surface);color:var(--report-ink);font:inherit;font-size:var(--review-small);line-height:1.5}
+.review-page textarea::placeholder{color:var(--review-muted)}.review-page :is(button,select,textarea,input,summary):focus-visible{outline:2px solid var(--report-ink);outline-offset:3px}
+.decision-actions{display:flex;align-items:center;gap:calc(var(--review-unit)/2);flex-wrap:wrap;margin-top:var(--review-unit)}.review-page .decision-actions label{display:flex;align-items:center;gap:calc(var(--review-unit)/2)}
+.review-reasons{margin-top:var(--review-unit);font-size:var(--review-small);color:var(--review-muted)}.review-reasons summary{cursor:pointer}.review-reasons .rec{background:var(--review-surface);border-left-color:var(--review-border);color:var(--report-ink)}
+@media(max-width:700px){body.review-page{padding:var(--review-unit)}.review-page>.theme{float:none;margin-bottom:var(--review-unit)}.review-page .cols{grid-template-columns:1fr}.review-toolbar{gap:calc(var(--review-unit)/2)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+"""
+
+REVIEW_SCRIPT = """
+const review = document.querySelector('[data-review]');
+const sections = [...document.querySelectorAll('section[data-question]')];
+const output = document.querySelector('[data-review-output]');
+const notice = document.querySelector('[data-review-notice]');
+const filter = document.querySelector('[data-review-filter]');
+const key = 'visual-review:' + review.dataset.review;
+function decisions() {
+  return sections.map(section => {
+    const selected = section.querySelector('[data-choice]:checked');
+    return {id: section.id, title: section.querySelector('h2').textContent,
+      choice: selected.value, label: selected.dataset.label,
+      options: [...section.querySelectorAll('[data-option-note]')].map(input => ({
+        id: input.dataset.optionNote, label: input.dataset.label, note: input.value
+      }))};
+  });
+}
+function updateReview() {
+  const rows = decisions();
+  output.value = JSON.stringify({title: document.title, version: review.dataset.version,
+    report: review.dataset.review, decisions: rows}, null, 2);
+  sections.forEach((section, index) => {
+    const value = rows[index].choice;
+    const state = value.startsWith('option-') ? 'selected' : value || 'pending';
+    section.hidden = filter.value !== 'all' && filter.value !== state;
+  });
+  const visible = sections.filter(section => !section.hidden).length;
+  document.querySelector('[data-review-count]').textContent =
+    `${rows.filter(row => row.choice).length} / ${rows.length}개 검토`;
+  document.querySelector('[data-review-empty]').hidden = visible !== 0;
+  try { localStorage.setItem(key, JSON.stringify(rows)); }
+  catch { notice.textContent = '저장할 수 없습니다. 닫기 전에 결과를 복사하세요.'; }
+}
+try {
+  const saved = JSON.parse(localStorage.getItem(key) || '[]');
+  if (!Array.isArray(saved)) throw new Error('invalid review');
+  sections.forEach(section => {
+    const row = saved.find(item => item?.id === section.id);
+    if (!row) return;
+    const selected = [...section.querySelectorAll('[data-choice]')].find(input => input.value === row.choice);
+    if (selected) selected.checked = true;
+    section.querySelectorAll('[data-option-note]').forEach(input => {
+      const option = Array.isArray(row.options) && row.options.find(item => item?.id === input.dataset.optionNote);
+      if (typeof option?.note === 'string') input.value = option.note;
+    });
+  });
+} catch { notice.textContent = '이전 판정을 읽지 못했습니다. 기존 복사본을 확인하세요.'; }
+document.addEventListener('input', event => {
+  if (event.target.matches('[data-choice], [data-option-note]')) updateReview();
+});
+filter.addEventListener('change', updateReview);
+document.querySelector('[data-review-copy]').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(output.value); notice.textContent = '복사했습니다. 대화에 붙여넣어 주세요.'; }
+  catch {
+    output.closest('details').open = true; output.focus(); output.select();
+    notice.textContent = '자동 복사 불가. 선택된 결과를 직접 복사하세요.';
+  }
+});
+updateReview();
+"""
+
 
 class ReportError(Exception):
     """입력이 틀렸을 때 던진다. main이 `build_report.py: 메시지`로 바꿔 종료한다."""
@@ -240,6 +328,9 @@ def _validate(spec: dict[str, Any]) -> None:
         raise ReportError(f"kind must be one of {sorted(KINDS)}: {kind}")
     _need(spec, "title", "input", str)
     _need(spec, "intro", "input", str)
+    if "review" in spec:
+        if not _need(spec, "review", "input", str).strip():
+            raise ReportError("review version must not be empty")
     for number, question in enumerate(_need(spec, "questions", "input", list), 1):
         _check_question(question, f"questions[{number}]")
 
@@ -356,22 +447,39 @@ def _table(spec: dict[str, Any]) -> str:
 # cost: time O(n + r), heap O(n + o), stack O(1), io O(f)
 # vars: n = 이 호출의 전체 입력 글자 수, r = 하위 외부 렌더 시간 합, o = 그림 포함 출력 바이트 수, f = 그림 수
 # basis: estimate
-def _option(option: dict[str, Any], renderer: FigureRenderer) -> str:
+def _option(
+    option: dict[str, Any], renderer: FigureRenderer, controls: str = ""
+) -> str:
     body = "".join(_picture(image, renderer) for image in option.get("images", []))
     if "text" in option:
         body += f'<pre class="msg">{html.escape(option["text"])}</pre>'
     if "table" in option:
         body += _table(option["table"])
     class_name = "col mock" if option.get("mock") else "col"
-    return f'<div class="{class_name}"><h4>{_inline(option["label"])}</h4>{body}</div>'
+    return f'<div class="{class_name}"><h4>{_inline(option["label"])}</h4>{body}{controls}</div>'
 
 
 # cost: time O(n + r), heap O(n + o), stack O(1), io O(f)
 # vars: n = 이 호출의 전체 입력 글자 수, r = 하위 외부 렌더 시간 합, o = 그림 포함 출력 바이트 수, f = 그림 수
 # basis: estimate
-def _options(options: list[dict[str, Any]], renderer: FigureRenderer) -> str:
-    inner = "".join(_option(option, renderer) for option in options)
-    return f'<div class="cols c{min(max(len(options), 1), MAX_COLUMNS)}">{inner}</div>'
+def _options(
+    options: list[dict[str, Any]], renderer: FigureRenderer, question_number: int = 0
+) -> str:
+    cards = []
+    for index, option in enumerate(options, 1):
+        label = html.escape(option["label"])
+        controls = (
+            (
+                f'<div class="option-feedback"><label class="option-select"><input type="radio" '
+                f'name="q{question_number}" value="option-{index}" data-choice data-label="{label}">이 안 선택</label>'
+                f'<textarea data-option-note="option-{index}" data-label="{label}" aria-label="{label} 수정 의견" '
+                'rows="2" placeholder="좋은 점이나 바꿀 점을 적어 주세요"></textarea></div>'
+            )
+            if question_number
+            else ""
+        )
+        cards.append(_option(option, renderer, controls))
+    return f'<div class="cols c{min(max(len(options), 1), MAX_COLUMNS)}">{"".join(cards)}</div>'
 
 
 KINDS = {
@@ -384,7 +492,12 @@ KINDS = {
 # vars: n = 이 호출의 전체 입력 글자 수, r = 하위 외부 렌더 시간 합, o = 그림 포함 출력 바이트 수, f = 그림 수
 # basis: estimate
 def _question(
-    number: int, question: dict[str, Any], renderer: FigureRenderer, kind: str
+    number: int,
+    question: dict[str, Any],
+    renderer: FigureRenderer,
+    kind: str,
+    *,
+    review: bool = False,
 ) -> str:
     words = KINDS[kind]
     effect = "".join(
@@ -405,13 +518,33 @@ def _question(
         f'<div class="check"><b>확인할 점</b><ul>{items}</ul></div>' if items else ""
     )
     recommendation, reason = question["rec"]
+    evidence = (
+        '<table class="effect"><thead><tr><th></th><th>좋은 점</th>'
+        f"<th>{words['bad']}</th></tr></thead><tbody>{effect}</tbody></table>"
+        f'{checks}<p class="rec"><b>{words["rec"]} {_inline(recommendation)}</b> {_inline(reason)}</p>'
+    )
+    actions = ""
+    if review:
+        evidence = f'<details class="review-reasons"><summary>비교 근거 보기</summary>{evidence}</details>'
+        actions = (
+            '<div class="decision-actions">'
+            + "".join(
+                f'<label><input type="radio" name="q{number}" value="{value}" data-choice data-label="{label}"'
+                f"{' checked' if not value else ''}>{label}</label>"
+                for value, label in [
+                    ("", "미선택"),
+                    ("hold", "보류"),
+                    ("revise", "다시 제안"),
+                ]
+            )
+            + "</div>"
+        )
+    marker = " data-question" if review else ""
+    prefix = "" if review else f"<b>{words['what']}</b> "
     return (
-        f'<section id="q{number}"><h2>{number}. {_inline(question["title"])}</h2>'
-        f'<p class="what"><b>{words["what"]}</b> {_inline(question["what"])}</p>'
-        f"{_options(question['options'], renderer)}{extra}{note}"
-        '<table class="effect"><colgroup><col><col style="width:50%"><col style="width:50%"></colgroup>'
-        f"<thead><tr><th></th><th>좋은 점</th><th>{words['bad']}</th></tr></thead><tbody>{effect}</tbody></table>"
-        f'{checks}<p class="rec"><b>{words["rec"]} {_inline(recommendation)}</b> {_inline(reason)}</p></section>'
+        f'<section id="q{number}"{marker}><h2>{number:02d}. {_inline(question["title"])}</h2>'
+        f'<p class="what">{prefix}{_inline(question["what"])}</p>'
+        f"{_options(question['options'], renderer, number if review else 0)}{actions}{extra}{note}{evidence}</section>"
     )
 
 
@@ -423,9 +556,14 @@ def build(spec: dict[str, Any], renderer: FigureRenderer, tokens_css: str) -> st
     kind = spec.get("kind", "decision")
     questions = spec["questions"]
     sections = "".join(
-        _question(number, question, renderer, kind)
+        _question(number, question, renderer, kind, review="review" in spec)
         for number, question in enumerate(questions, 1)
     )
+    review = ""
+    if "review" in spec:
+        sections, review = _review(
+            spec, sections, renderer.base, tokens_css + CSS + REVIEW_CSS
+        )
     navigation = "".join(
         f'<a href="#q{number}" title="{html.escape(question["title"])}"><span>{number}</span>'
         f'<span class="nav-title">{_inline(_nav_title(question["title"]))}</span></a>'
@@ -438,13 +576,40 @@ def build(spec: dict[str, Any], renderer: FigureRenderer, tokens_css: str) -> st
         '<button type="button" data-mode="dark" aria-pressed="false">다크</button></div>'
     )
     title = html.escape(spec["title"])
+    styles = CSS + REVIEW_CSS if review else CSS
+    body_class = ' class="review-page"' if review else ""
+    script = REVIEW_SCRIPT if review else NAVIGATION_SCRIPT
+    nav = "" if review else f'<nav aria-label="보고서 섹션">{navigation}</nav>'
     return (
         f'<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-        f"<title>{title}</title><style>{tokens_css}{CSS}</style><script>{THEME_SCRIPT}</script></head><body>"
-        f"<h1>{title} ({len(questions)}개)</h1>{theme}<p>{_inline(spec['intro'])}</p>"
-        f'<nav aria-label="보고서 섹션">{navigation}</nav>{sections}'
-        f"<script>{NAVIGATION_SCRIPT}</script></body></html>"
+        f"<title>{title}</title><style>{tokens_css}{styles}</style><script>{THEME_SCRIPT}</script></head><body{body_class}>"
+        f'{theme}<h1>{title}</h1><p class="intro">{_inline(spec["intro"])}</p>'
+        f"{nav}{review}{sections}<script>{script}</script></body></html>"
     )
+
+
+# cost: time O(n + b), heap O(n + b), stack O(1), io O(f)
+# vars: n = 보고서 길이, b = 외부 그림 바이트, f = 외부 그림 수
+# basis: estimate
+def _review(
+    spec: dict[str, Any], sections: str, base: Path, styles: str
+) -> tuple[str, str]:
+    digest = hashlib.sha256(
+        (json.dumps(spec, ensure_ascii=False) + sections + styles).encode()
+    )
+    for source in re.findall(r'<img src="([^"]+)"', sections):
+        digest.update((base / html.unescape(source)).read_bytes())
+    panel = (
+        f'<div class="review" data-review="{digest.hexdigest()}" data-version="{html.escape(spec["review"])}">'
+        '<div class="review-toolbar"><label><select aria-label="보기" data-review-filter><option value="all">전체 보기</option>'
+        '<option value="pending">미선택</option><option value="selected">선택 완료</option>'
+        '<option value="revise">다시 제안</option><option value="hold">보류</option></select></label>'
+        '<output data-review-count aria-live="polite"></output>'
+        '<button class="copy-button" type="button" data-review-copy>선택 결과 복사</button></div>'
+        '<details><summary>전달할 내용 확인</summary><textarea data-review-output aria-label="선택 결과 JSON" rows="8" readonly></textarea></details>'
+        '<p data-review-notice role="status"></p><p data-review-empty hidden>해당 항목이 없습니다. 전체 보기로 돌아가세요.</p></div>'
+    )
+    return sections, panel
 
 
 # cost: time O(p), heap O(p), stack O(1), io O(p)
