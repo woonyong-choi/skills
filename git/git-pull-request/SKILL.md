@@ -7,7 +7,7 @@ description: "PR 본문·검토 댓글을 작성하거나 계약·문서 동반�
 
 - 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 범위: PR 종류, 본문, 계약 검토, 문서 동반, 검토 댓글, 머지 조건. 제목, 브랜치, 머지 절차(git-branch)와 제목 형식(git-commit) 제외
-- 필요할 때만 읽기: 제목·본문·댓글 작성·검토 → repo-docs `references/writing.md` 필수 확인; 테스트 변경 근거 확인 → code-style; 그림 원본·입력·산출물 변경 → repo-docs-figures
+- 필요할 때만 읽기: 제목·본문·댓글 작성·검토 → repo-docs `references/writing.md` 필수 확인; 구현 검증·머지 조건 확인 → code-style; 그림 원본·입력·산출물 변경 → repo-docs-figures
 - 필요할 때만 읽기: PR 본문·리뷰·댓글의 파일·문서·코드 링크 작성·검토 → git-issue `references/public-links.md` 필수 확인
 - PR 생성·머지 전 [판 상태 절차](../git-issue/references/project-status.md) 필수 확인
 
@@ -49,6 +49,7 @@ Closes: #{번호} 또는 Refs: #{번호}
 - 이슈 연결이 있으면 첫 줄: `Closes: #{번호}` 또는 `Refs: #{번호}`. 독립 추적이 필요 없는 작은 정리는 이 줄 생략
 - `Closes:`와 `Refs:` 판단 기준: git-issue 닫기 절
 - 검증: 실제로 실행한 것만. 실행하지 못한 것은 `실행 안 함: {이유}`
+- 검증: 이슈 유무와 무관하게 요청 조건과 관측 근거 연결. 검사 이름만으로 충족 판정 금지
 - 테스트 변경 근거: (code-style 테스트). 삭제는 근거 폐기·중복 병합 등 삭제 이유 포함
 - 가정: 작은 선택도 기록(기본값, 오류 메시지, 이름). 설계를 바꾸는 선택이면 PR 중단, 설계 이슈 생성
 
