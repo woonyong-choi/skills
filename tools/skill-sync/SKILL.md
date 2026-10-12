@@ -24,6 +24,8 @@ description: "스킬 원본의 형식·참조를 검사하거나 요청한 도�
 6. 배포 실패 시 막힌 단계·원인·복구 명령 보고
 7. 커밋 요청이 있으면 원본 저장소 커밋
 
+행동 규칙 변경 시 [행동 검토](references/authoring.md#행동-검토) 필수 확인. 형식 통과와 실제 작업 효과 구분
+
 ```sh
 python3 <이 스킬 폴더>/scripts/skill_check.py <원본 저장소>
 python3 <이 스킬 폴더>/scripts/install.py
