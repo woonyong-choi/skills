@@ -31,7 +31,12 @@ TOPICS: Final = {
     "resources": ("requirements", "resources"),
     "interface": ("interfaces",),
     "external": ("interfaces", "operations"),
-    "infrastructure": RULES,
+    "infrastructure": (
+        "requirements",
+        "decisions",
+        "infrastructure-cost",
+        "operations",
+    ),
     "operations": ("operations",),
     "review": (),
 }
