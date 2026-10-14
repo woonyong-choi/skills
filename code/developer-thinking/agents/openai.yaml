@@ -1,0 +1,4 @@
+interface:
+  display_name: "Developer Thinking"
+  short_description: "빠진 요구·규모·선택을 찾아 근거와 트레이드오프로 설명"
+  default_prompt: "$developer-thinking 스킬로 빠진 판단과 선택 근거를 확인해 줘: [요청]"
