@@ -121,6 +121,8 @@ def select_for_tool(payload: dict, repo: Path, scope: dict) -> None:
         else repo
     )
     tool = payload.get("tool_name", "")
+    if tool == "apply_patch" and isinstance(value, dict):
+        command = "\n".join(str(value.get(key) or "") for key in ("command", "patch"))
     is_edit = tool in {"Write", "Edit", "MultiEdit", "apply_patch"}
     names = re.findall(r"[\w./-]+\.(?:py|m?js|jsx|tsx?|rs|kts?|css)\b", command)
     try:
@@ -311,6 +313,9 @@ def _query_args(payload: dict) -> tuple[str, list[str]] | None:
     command = str(
         value.get("command", value.get("cmd", "")) if isinstance(value, dict) else value
     )
+    # 조회 예외는 확장·치환·연속 실행 없는 단일 명령에만 적용한다.
+    if any(character in command for character in "\n\r$`"):
+        return None
     try:
         lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|<>()")
         lexer.whitespace_split = True

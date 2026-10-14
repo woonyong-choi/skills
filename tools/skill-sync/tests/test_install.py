@@ -255,6 +255,7 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str) -
     patch = '*** Begin Patch\n*** Update File: code/code-style/scripts/read_rules.py\n@@\n+def added():\n+    raise ValueError()\n*** End Patch'
     for field in ('command', 'patch'):
         assert invoke('PreToolUse', session_id=session + '-patch-' + field, tool_name='apply_patch', tool_input={field: patch})['hookSpecificOutput']['permissionDecision'] == 'deny'
+    assert invoke('PreToolUse', session_id=session + '-patch-combined', tool_name='apply_patch', tool_input={'command': 'apply_patch', 'patch': patch})['hookSpecificOutput']['permissionDecision'] == 'deny'
     assert invoke('PreToolUse', agent_id='separate-worker')['hookSpecificOutput']['permissionDecision'] == 'deny'
     fresh = {'session_id': session + '-query-first'}
     invoke('SessionStart', **fresh)
@@ -271,6 +272,21 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str) -
     assert not invoke('Stop', stop_hook_active=True, **read_session)
     invoke('PostCompact')
     assert not invoke('PreToolUse', tool_input={'command': 'true'})
+    assert invoke('PreToolUse')['hookSpecificOutput']['permissionDecision'] == 'deny'
+    for suffix in ('\ntouch source.py', ' "$(touch source.py)"', ' `touch source.py`', '; touch source.py'):
+        unsafe = f'{sys.executable} {style} --catalog' + suffix
+        assert invoke('PreToolUse', tool_input={'command': unsafe})['hookSpecificOutput']['permissionDecision'] == 'deny'
+    string_query = invoke('PreToolUse', tool_input=f'{sys.executable} {reader} implement')
+    assert '--pending' in string_query['hookSpecificOutput']['updatedInput']['command']
+    rule_source = style.parents[1] / 'references/structure.md'
+    original = rule_source.read_bytes()
+    try:
+        rule_source.write_text('## temporarily unavailable\n', encoding='utf-8')
+        failed = invoke('PreToolUse')
+        assert '필수 규칙 자동 조회 실패' in failed['hookSpecificOutput']['additionalContext']
+        assert not invoke('PreToolUse', tool_input={'command': 'ls'})
+    finally:
+        rule_source.write_bytes(original)
     assert invoke('PreToolUse')['hookSpecificOutput']['permissionDecision'] == 'deny'
 
 

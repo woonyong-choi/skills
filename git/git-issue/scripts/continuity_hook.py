@@ -678,7 +678,24 @@ def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]
             is_query = reader.select_query(payload, scope)
             if not reader.is_rule_query(payload):
                 reader.select_for_tool(payload, repo, scope)
-        pending = reader.pending_rules(state)
+        try:
+            pending = reader.pending_rules(state)
+        except (OSError, ValueError) as error:
+            diagnostic = str(error)
+            repeated = state.get("rule_error") == diagnostic
+            state["rule_error"] = diagnostic
+            core.save(state_path, state)
+            return (
+                {}
+                if repeated
+                else response(
+                    event,
+                    "필수 규칙 자동 조회 실패: "
+                    + diagnostic
+                    + ". 읽음·검사 통과로 처리하지 마세요. 해당 소유 원문을 직접 확인하거나 조회기를 복구한 뒤 영향 작업을 계속하세요. 문서 위치 검사는 유지됩니다.",
+                )
+            )
+        state.pop("rule_error", None)
         if event == "PostToolUse":
             output = reader.collect_tool_output(payload)
             delivered = [digest for digest, _, body in pending if body in output]
@@ -691,6 +708,8 @@ def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]
         command = f"python3 {shlex.quote(str(source))} --pending {shlex.quote(str(state_path))}"
         if event == "PreToolUse" and is_query:
             value = payload["tool_input"]
+            if isinstance(value, str):
+                value = {"command": value}
             key = "command" if "command" in value else "cmd"
             return {
                 "hookSpecificOutput": {
