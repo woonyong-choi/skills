@@ -68,6 +68,14 @@ class DocumentStyleTest(unittest.TestCase):
                 found = {"굵게 남용 비율" if message.startswith("굵게 남용 비율") else message for message in messages if message.startswith(signals)}
                 self.assertEqual(found, expected)
                 self.assertEqual(code, 1 if messages else 0)
+        for name, source, expected in (
+            ("README.md", "설계 단계입니다.\n", 0),
+            ("README.ko.md", "설계 단계입니다.\n", 0),
+            ("guide.md", "설계 단계입니다.\n", 1),
+            ("README.md", "설계 단계다.\n", 1),
+        ):
+            with patch("builtins.open", mock_open(read_data=source)), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(check_doc.main([name]), expected)
 
 
 if __name__ == "__main__":

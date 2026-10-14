@@ -5,7 +5,7 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 
 # Code Style: JavaScript
 
-- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
+- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 JavaScript 규칙. 그 밖에서 code-style과 다르면 code-style 우선
 - 필요할 때만 읽기: CSS 문자열, 인라인 style, SVG 속성 값 작성 → design-tokens; 파일 이름 결정 → folder-naming
 

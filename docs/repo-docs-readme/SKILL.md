@@ -5,7 +5,7 @@ description: "저장소 루트 README.md와 README.ko.md를 작성·갱신·번�
 
 # Repo Docs Readme
 
-- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
+- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 루트 `README.md`와 `README.ko.md`의 절 구성과 절 규칙
 - 필요할 때만 읽기: 대표 그림, 흐름 그림, 측정 결과 차트, 데모 GIF 제작 → repo-docs-figures; README 갱신 뒤 `llms.txt` 재생성 → repo-docs-llms
 

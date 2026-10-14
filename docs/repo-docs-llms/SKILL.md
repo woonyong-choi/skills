@@ -5,7 +5,7 @@ description: "README와 문서 목록에서 llms.txt·llms-full.txt를 생성·�
 
 # Repo Docs Llms
 
-- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
+- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 루트 `llms.txt`, `llms-full.txt`의 형식과 생성
 - 필요할 때만 읽기: 생성물 동반 PR 확인 → git-pull-request
 
