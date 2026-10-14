@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -370,7 +371,11 @@ def handle(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
     if payload.get("hook_event_name") == "PreToolUse":
         folder = find_task(root, payload, host)
         project = Path(core.read(folder / "binding.json")["repo"]) if folder else None
-        return document_guard.check_tool(payload, project)
+        guarded = document_guard.check_tool(payload, project)
+        return guarded or _rule_gate(host, payload, root)
+    guarded = _rule_gate(host, payload, root)
+    if guarded:
+        return guarded
     result = handle_continuity(host, payload, root)
     event = payload.get("hook_event_name", "")
     if event != "SessionStart" or not payload.get("cwd"):
@@ -381,7 +386,9 @@ def handle(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
     else:
         notice = f"프로젝트 맥락 미확인: {context_result['error']}. 개발·문서 작업 전 등록·진입점을 해결. 단순 질문 제외. 임의 문서 저장 위치 대체 금지."
     output = result.setdefault("hookSpecificOutput", {"hookEventName": event})
-    output["additionalContext"] = output.get("additionalContext", "") + "\n" + notice
+    output["additionalContext"] = (
+        _developer_rules() + output.get("additionalContext", "") + "\n" + notice
+    )
     return result
 
 
@@ -449,7 +456,10 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
                     "start_source": payload.get("source", "unknown"),
                 }
             )
-            text = "개발 작업은 developer-thinking 본문과 현재 단계의 필수 원문 확인. " + context(folder, binding)
+            text = (
+                "개발 작업은 developer-thinking 본문과 현재 단계의 필수 원문 확인. "
+                + context(folder, binding)
+            )
             if link_error:
                 text += f" 새 session을 현재 task에 연결하지 못했습니다: {link_error}. 자동 연결·재개 입력을 하지 말고 bind 상태를 확인하세요."
         elif event == "UserPromptSubmit":
@@ -458,8 +468,11 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
             state["turn_task_snapshot"] = (
                 core.digest(core.snapshot(binding["repo"], paths)) if paths else None
             )
-            if state.pop("needs_restore", False) or not checkpoint:
-                text = context(folder, binding)
+            needs_restore = state.pop("needs_restore", False)
+            if needs_restore or not checkpoint:
+                text = (_developer_rules() if needs_restore else "") + context(
+                    folder, binding
+                )
             else:
                 text = f"현재 연결: {folder.name}, {binding['url']}. developer-thinking의 현재 단계 적용. git-issue의 과업 판정에 따라 goal 유지·scope.outcomes 대조. 독립 결과 전환은 기존 기록 저장 후 bind --session-id {session} --from-task {folder.name}. 작업 경계는 checkpoint --sync --status 진행|검토|보류. 단순 질문은 추가 기록 불필요."
             if not paths:
@@ -599,6 +612,128 @@ def main() -> int:
             print("{}")
         # 안내 훅 실패가 Stop 재시도를 유발하지 않도록 종료하고 준비 검사는 별도로 실패 처리한다.
         return 0
+
+
+# cost: time O(n), heap O(n), stack O(1), io O(1)
+# vars: n = 최상위 지침 바이트
+# basis: estimate
+def _developer_rules() -> str:
+    skill = Path(__file__).resolve().parents[1]
+    candidates = (
+        skill.parent / "developer-thinking/SKILL.md",
+        skill.parents[1] / "code/developer-thinking/SKILL.md",
+    )
+    source = next((path for path in candidates if path.is_file()), None)
+    if source is None:
+        raise core.ContinuityError("developer-thinking entrypoint missing")
+    text = source.read_text(encoding="utf-8")
+    if not text.strip():
+        raise core.ContinuityError("developer-thinking entrypoint empty")
+    return f"개발 작업의 실행 지침. 원본 위치: {source.parent}. 아래 본문은 이미 제공됐으므로 재조회 없이 적용.\n{text}\n"
+
+
+# cost: time O(b), heap O(b), stack O(1), io O(f)
+# vars: b = 도구 출력·필수 원문 바이트, f = 선택 파일 수
+# basis: estimate
+def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
+    folder = find_task(root, payload, host)
+    session = payload.get("session_id")
+    event = payload.get("hook_event_name")
+    if folder is None or not isinstance(session, str) or not session:
+        return {}
+    if event not in {
+        "SessionStart",
+        "PostCompact",
+        "PreToolUse",
+        "PostToolUse",
+        "Stop",
+    }:
+        return {}
+    skill = Path(__file__).resolve().parents[1]
+    source = skill.parent / "developer-thinking/scripts/read_rules.py"
+    if not source.is_file():
+        source = skill.parents[1] / "code/developer-thinking/scripts/read_rules.py"
+    spec = importlib.util.spec_from_file_location("developer_rule_reader", source)
+    if spec is None or spec.loader is None:
+        raise core.ContinuityError("developer rule reader unavailable")
+    reader = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(reader)
+    state_path = folder / (
+        "session-"
+        + hashlib.sha256(
+            (host + session + str(payload.get("agent_id") or "")).encode()
+        ).hexdigest()[:20]
+        + ".json"
+    )
+    with core.locked(folder):
+        state = core.read(state_path)
+        is_query = False
+        if event in {"SessionStart", "PostCompact"}:
+            state["rule_seen"] = []
+            state.pop("rule_scope", None)
+            state.pop("rule_stop_notice", None)
+        elif event in {"PreToolUse", "PostToolUse"}:
+            repo = Path(core.read(folder / "binding.json")["repo"])
+            scope = state.setdefault("rule_scope", {})
+            is_query = reader.select_query(payload, scope)
+            if not reader.is_rule_query(payload):
+                reader.select_for_tool(payload, repo, scope)
+        try:
+            pending = reader.pending_rules(state)
+        except (OSError, ValueError) as error:
+            diagnostic = str(error)
+            repeated = state.get("rule_error") == diagnostic
+            state["rule_error"] = diagnostic
+            core.save(state_path, state)
+            return (
+                {}
+                if repeated
+                else response(
+                    event,
+                    "필수 규칙 자동 조회 실패: "
+                    + diagnostic
+                    + ". 읽음·검사 통과로 처리하지 마세요. 해당 소유 원문을 직접 확인하거나 조회기를 복구한 뒤 영향 작업을 계속하세요. 문서 위치 검사는 유지됩니다.",
+                )
+            )
+        state.pop("rule_error", None)
+        if event == "PostToolUse":
+            output = reader.collect_tool_output(payload)
+            delivered = [digest for digest, _, body in pending if body in output]
+            state["rule_seen"] = list(
+                dict.fromkeys([*state.get("rule_seen", []), *delivered])
+            )
+            if delivered:
+                state.pop("rule_stop_notice", None)
+        core.save(state_path, state)
+        command = f"python3 {shlex.quote(str(source))} --pending {shlex.quote(str(state_path))}"
+        if event == "PreToolUse" and is_query:
+            value = payload["tool_input"]
+            if isinstance(value, str):
+                value = {"command": value}
+            key = "command" if "command" in value else "cmd"
+            return {
+                "hookSpecificOutput": {
+                    "hookEventName": event,
+                    "permissionDecision": "allow",
+                    "updatedInput": {**value, key: command},
+                }
+            }
+        if event not in {"PreToolUse", "Stop"} or not pending:
+            return {}
+        if event == "PreToolUse" and reader.is_rule_query(payload):
+            return {}
+        reason = f"필수 원문 {len(pending)}개가 아직 도구 결과로 전달되지 않았습니다. 먼저 `{command}`를 실행하세요. 출력은 자르거나 요약하지 말고, 남은 원문 안내가 있으면 같은 명령을 이어 실행하세요. 이미 전달된 원문은 자동 제외합니다. 원문을 적용한 뒤 원래 작업을 다시 실행할 수 있습니다. 사용자 승인이나 기록 작성 요청은 불필요합니다."
+        if event == "PreToolUse":
+            return document_guard.deny(reason)
+        fingerprint = core.digest([row[0] for row in pending])
+        if (
+            payload.get("stop_hook_active")
+            or state.get("rule_stop_notice") == fingerprint
+        ):
+            return {}
+        state["rule_stop_notice"] = fingerprint
+        core.save(state_path, state)
+        return {"decision": "block", "reason": reason}
 
 
 if __name__ == "__main__":
