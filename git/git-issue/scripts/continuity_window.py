@@ -38,14 +38,21 @@ def screen(pane: str) -> str:
 
 
 # 실제로 관측한 진행줄(점·별 스피너와 시간·토큰 표시), 실행 중인 도구, 대기열의 입력,
-# 하단에 표시되는 백그라운드 셸·작업("1 shell still running", "1 shell")을 모두 작업 중으로 본다.
+# 입력줄 아래 status의 백그라운드 셸·작업("1 shell still running", "1 shell")을 모두 작업 중으로 본다.
 BUSY_CLAUDE = (
     r"^\s*[·✻✽✢✳✶✺✹✷✴✸]\s+\S[^\n]*…"
     r"|\(\d+(?:m \d+)?s\b[^)\n]*[↑↓]\s*[\d.]+k? tokens"
     r"|^\s*⎿\s+(?:Running|Waiting)…"
     r"|Press up to edit queued messages"
-    r"|\b\d+ (?:shells?|background tasks?)\b"
 )
+BACKGROUND_FOOTER = r"\b[1-9]\d* (?:shells?|background tasks?)\b"
+
+
+def background_running(text: str) -> bool:
+    """마지막 입력줄 아래 status만 본다. 본문에 인용된 과거 로그나 0 shell은 작업 중이 아니다."""
+    lines = text.splitlines()
+    last = max((n for n, line in enumerate(lines) if re.match(r"^(?:›|❯)", line)), default=-1)
+    return bool(re.search(BACKGROUND_FOOTER, "\n".join(lines[last + 1 :])))
 
 
 def idle(text: str, host: str, cursor_column: int | None = None) -> bool:
@@ -55,7 +62,7 @@ def idle(text: str, host: str, cursor_column: int | None = None) -> bool:
         text,
     ):
         return False
-    if host == "claude" and re.search(BUSY_CLAUDE, text, re.M):
+    if host == "claude" and (re.search(BUSY_CLAUDE, text, re.M) or background_running(text)):
         return False
     prompts: list[str] = re.findall(r"^(?:›|❯)(.*)$", text, re.M)
     if not prompts:
@@ -96,7 +103,8 @@ def screen_state(text: str, host: str, cursor_column: int | None = None) -> tupl
         if re.search(pattern, tail):
             return "attention", label
     if re.search(BUSY_TAIL, tail) or (
-        host == "claude" and re.search(BUSY_CLAUDE, tail, re.M)
+        host == "claude"
+        and (re.search(BUSY_CLAUDE, tail, re.M) or background_running(tail))
     ):
         return "busy", ""
     prompts: list[str] = re.findall(r"^(?:›|❯)(.*)$", text, re.M)
