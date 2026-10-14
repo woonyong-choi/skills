@@ -16,12 +16,12 @@ description: "IT 제품을 설계·구현·수정·검토·배포할 때 적용.
 4. 검증: code-style의 검증으로 요청한 산출물과 근거 대조
 5. 기록: git-issue의 checkpoint·상태·완료 규칙 적용
 
-- 요청한 산출물·쓰기 범위 준수. 읽기 전용은 stdout, 임시 파일 금지. 유효한 결정·결과 재사용
+- 요청 산출물·쓰기 범위 준수. 읽기 전용은 stdout, 임시 파일 금지. 유효한 결정·결과 재사용
 - 실패·새 사실은 영향 단계로 복귀. 하위 스킬에서 루트 전체 재호출 금지
 
 ## 필요한 규칙
 
-- 요청·변경 경로로 분류 선택. 신규 제품은 전체 영역 적용 여부 확인
+- 요청·변경 경로에 해당하는 분류를 합쳐 조회. 신규 제품은 전체 영역 대조
 - `spec`: 스펙·규모·보장 → repo-docs-design의 requirements
 - `choice`: 기술·구조·정책 선택 → requirements와 repo-docs-design의 선택 절
 - `infrastructure`: 구매·구축·인프라 → requirements·설계 선택·infrastructure와 code-style의 operations
