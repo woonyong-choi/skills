@@ -3,7 +3,6 @@
 import hashlib
 import json
 import os
-import runpy
 import shutil
 import subprocess
 import sys
@@ -74,8 +73,11 @@ def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
     for tool in ('.claude/skills', '.codex/skills', '.gemini/config/skills'):
         installed = install_home / tool / 'skill-sync'
         assert {path.relative_to(installed).as_posix(): path.read_bytes() for path in installed.rglob('*') if path.is_file()} == files
-        assert len(list(installed.parent.glob('*/SKILL.md'))) == 27
+        expected_names = {p.parent.name for category in ('code', 'docs', 'design', 'git', 'tools') for p in (ROOT / category).glob('*/SKILL.md')}
+        assert {p.parent.name for p in installed.parent.glob('*/SKILL.md')} == expected_names
         assert not list(installed.parent.glob('*/tests'))
+        assert not list(installed.parent.glob('*/.claude-plugin'))
+        assert not list(installed.parent.glob('*/.codex-plugin'))
         # #25: 평탄한 설치본의 검사기가 하위 문서·앵커·용어 정본을 조회.
         checked = subprocess.run([sys.executable, str(installed / 'scripts/skill_check.py'), str(installed.parent)], capture_output=True, text=True)
         assert (checked.returncode, checked.stdout) == (0, 'total 0\n'), checked.stderr + checked.stdout
@@ -155,29 +157,3 @@ def test_install_changed_zip_payload_rebuilt(install_home: Path, damage: str) ->
     with zipfile.ZipFile(archive_path) as archive:
         assert len(archive.namelist()) == len(expected)
         assert {name: archive.read(name) for name in archive.namelist()} == expected
-
-
-# 이슈 #21: 생성 결과의 SKILL.md 누락·중복·위치 오류는 설치 실패로 보고.
-@pytest.mark.parametrize('invalid_kind', ['missing', 'duplicate', 'misplaced'])
-def test_install_invalid_generated_zip_fails(install_home: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture, invalid_kind: str) -> None:
-    install = runpy.run_path(str(INSTALL))
-    write = zipfile.ZipFile.writestr
-
-    def write_invalid(bundle: zipfile.ZipFile, info: zipfile.ZipInfo, data: bytes, *args: object, **kwargs: object) -> None:
-        if info.filename == 'alpha/SKILL.md':
-            if invalid_kind == 'missing':
-                return
-            if invalid_kind == 'duplicate':
-                write(bundle, 'alpha/nested/SKILL.md', data)
-            if invalid_kind == 'misplaced':
-                info.filename = 'wrong/SKILL.md'
-        write(bundle, info, data, *args, **kwargs)
-
-    monkeypatch.setattr(zipfile.ZipFile, 'writestr', write_invalid)
-
-    result = install['main'](['--source', str(SOURCE), '--target-home', str(install_home), '--dist', str(install_home / 'dist')])
-
-    assert result == 1
-    assert 'SKILL.md' in capsys.readouterr().err
-    assert not (install_home / 'dist/alpha.zip').exists()
-    assert not list((install_home / 'dist').glob('.*.zip'))

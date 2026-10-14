@@ -35,12 +35,12 @@ python3 <이 스킬 폴더>/scripts/install.py
 
 ## 설치
 
-| 도구 | 위치 |
-|---|---|
-| Codex | `~/.codex/skills/` |
-| Antigravity | `~/.gemini/config/skills/` |
-| Claude Code | `~/.claude/skills/` |
-| Claude 계정(웹, 데스크톱, 원격 세션) | 실행 때 확인한 공식 배포 방식 사용. 아래 UI 스크립트는 지원 환경에 한정 |
+도구 → 위치:
+
+- Codex → `~/.codex/skills/`
+- Antigravity → `~/.gemini/config/skills/`
+- Claude Code → `~/.claude/skills/`
+- Claude 계정(웹, 데스크톱, 원격 세션) → 실행 때 확인한 공식 배포 방식 사용. 아래 UI 스크립트는 지원 환경에 한정
 
 - 도구 폴더가 없는 도구: 설치 제외
 - 원본 저장소 찾는 순서: `--source`, 환경 변수 `SKILLS_SOURCE`, 스크립트가 든 git 저장소, 마지막으로 쓴 원본(`~/.config/skills/source`). 모두 없으면 사용자에게 원본 경로 확인
@@ -48,7 +48,7 @@ python3 <이 스킬 폴더>/scripts/install.py
 - 스킬 제거: `install.py --remove {이름}`. 설치 목록 파일 `.repo-skills.json`에 있는 단일 스킬 이름만 허용. 대상이 도구 설치 폴더 바로 아래에 있고 심볼릭 링크가 아닌지 확인한 뒤 휴지통 이동과 목록 갱신. 원본에 남아 있으면 다음 동기화 때 재설치
 - 바꿀 내용만 확인: `install.py --dry-run`
 - Claude 계정에 업로드할 zip 생성 폴더: `--dist {폴더}`. 기본은 원본 저장소의 `dist/claude`. 설치·원본 포인터·휴지통의 홈 경로는 `--target-home {폴더}`로 지정, 생략 시 현재 사용자 홈 사용
-- Claude 계정 zip 구성: 루트 스킬 폴더의 `SKILL.md` 하나만 포함. `SKILL.md`가 있는 하위 폴더는 그 안의 파일까지 제외, 나머지 보조 파일은 기존 제외 규칙에 따라 포함. 세 도구 설치본과 zip 모두 `tests/` 제외
+- Claude 계정 zip 구성: 루트 스킬 폴더의 `SKILL.md` 하나만 포함. `SKILL.md`가 있는 하위 폴더는 그 안의 파일까지 제외, 나머지 보조 파일은 기존 제외 규칙에 따라 포함. 세 도구 설치본과 zip 모두 `tests/`·`.claude-plugin/`·`.codex-plugin/` 제외. 플러그인은 별도 설치하여 스킬 폴더의 중복 자동 로드 방지
 - zip 검사: 기존 zip의 파일 목록·중복·내용을 배포 대상 원본과 대조, 손상·불일치 시 재생성. 새 zip도 같은 검사 후 교체, 위반 시 설치 실패(종료 코드 1)
 - 배포 판정: zip 폴더의 `.repo-skills.json`은 생성에 사용한 원본 해시, 계정 업로드 영수증으로 사용 금지. `Claude 계정 zip 재생성: 없음`도 계정 상태 미확인, 변경 목록만으로 배포 완료 판정 금지
 - 검사 의존 스킬: 검사 스크립트와 같은 원본 루트의 `code/code-style/scripts/check_cost_comments.py`를 우선 사용, 없으면 평탄한 설치 루트의 `code-style/scripts/check_cost_comments.py` 사용. 검사 대상 root와 별개인 실행 위치 기준 의존, 누락 시 입력 오류. 참조 링크는 원본형과 평탄한 설치형 양쪽에서 확인

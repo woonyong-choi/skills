@@ -5,6 +5,7 @@ on:
     branches: [main]
 permissions:
   contents: read
+  issues: read
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -20,7 +21,13 @@ jobs:
         run: python3 -m pip install pytest==8.4.2
       - name: Check skills
         run: python3 tools/skill-sync/scripts/skill_check.py .
+      - name: Install skills for hook integration tests
+        run: |
+          mkdir -p "$HOME/.codex" "$HOME/.claude"
+          python3 tools/skill-sync/scripts/install.py --source . --tool codex --tool claude-code
       - name: Run Python tests
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/scripts/test_check_doc.py docs/html-report/tests/test_daphnis_cli.py
       - name: Load figure renderer
         uses: actions/checkout@v4

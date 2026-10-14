@@ -12,14 +12,14 @@ description: "Rust 코드를 작성·검토·리팩터링하거나 rustfmt·Clip
 
 - 대소문자 표기: Rust API Guidelines. 포맷: rustfmt
 
-| 대상 | 규칙 | 예 |
-|---|---|---|
-| 접근자 | `get_` 없이 필드 이름. setter는 `set_` | `name()`, `set_name()` |
-| 생성 | `new`, `with_*`, `from_*` | `Session::new`, `Config::from_file` |
-| 변환 | `as_` 비용 없는 빌림, `to_` 복사·계산, `into_` 소유권 이동 | `as_str`, `to_string`, `into_inner` |
-| 반복자 | `iter`, `iter_mut`, `into_iter` | |
-| 약어 | 타입은 `Uuid`, 함수·변수는 `uuid` | |
-| 단위 | `std::time::Duration` 우선 | `timeout: Duration` |
+대상 → 규칙 → 예:
+
+- 접근자 → `get_` 없이 필드 이름. setter는 `set_` → `name()`, `set_name()`
+- 생성 → `new`, `with_*`, `from_*` → `Session::new`, `Config::from_file`
+- 변환 → `as_` 비용 없는 빌림, `to_` 복사·계산, `into_` 소유권 이동 → `as_str`, `to_string`, `into_inner`
+- 반복자 → `iter`, `iter_mut`, `into_iter`
+- 약어 → 타입은 `Uuid`, 함수·변수는 `uuid`
+- 단위 → `std::time::Duration` 우선 → `timeout: Duration`
 
 ## 선언 순서
 
@@ -39,11 +39,11 @@ description: "Rust 코드를 작성·검토·리팩터링하거나 rustfmt·Clip
 
 ## 오류와 로그
 
-| 경우 | 처리 |
-|---|---|
-| 일어날 수 있는 실패 | `Result` 반환 |
-| 코드에 버그가 없으면 일어날 수 없는 경우 | `assert!(조건, "<이유>")`, `expect("<성립해야 하는 이유>")`, `unreachable!("<이유>")` |
-| 테스트 | `unwrap`·`expect`·`panic!` 허용 |
+경우 → 처리:
+
+- 일어날 수 있는 실패 → `Result` 반환
+- 코드에 버그가 없으면 일어날 수 없는 경우 → `assert!(조건, "<이유>")`, `expect("<성립해야 하는 이유>")`, `unreachable!("<이유>")`
+- 테스트 → `unwrap`·`expect`·`panic!` 허용
 
 - 테스트 밖에서 `unwrap`, `panic!`, `todo!`, `unimplemented!` 금지
 - 초안 PR의 미완성 자리표시 예외: code-style 오류와 로그 절
@@ -54,12 +54,12 @@ description: "Rust 코드를 작성·검토·리팩터링하거나 rustfmt·Clip
 
 라이브러리. 저장소에 이미 정한 다른 라이브러리가 있으면 그것 우선
 
-| crate | 쓰는 곳 | 역할 |
-|---|---|---|
-| `thiserror` | 라이브러리 crate | 오류 enum 정의 |
-| `anyhow` | 실행 파일 crate | 여러 오류를 한 타입으로 받고 문맥 추가 |
-| `tracing` | 모든 crate | 로그 기록 |
-| `tracing-subscriber` (`env-filter` 기능) | 실행 파일 crate | 로그 출력 설정 |
+crate → 쓰는 곳 → 역할:
+
+- `thiserror` → 라이브러리 crate → 오류 enum 정의
+- `anyhow` → 실행 파일 crate → 여러 오류를 한 타입으로 받고 문맥 추가
+- `tracing` → 모든 crate → 로그 기록
+- `tracing-subscriber` (`env-filter` 기능) → 실행 파일 crate → 로그 출력 설정
 
 - 버전: 작업 공간 `Cargo.toml`의 `[workspace.dependencies]`에 한 번만. 각 crate는 `thiserror.workspace = true`처럼 참조. 단일 패키지는 해당 `Cargo.toml`의 `[dependencies]`에 지정
 - 라이브러리 crate에 `anyhow`·`tracing-subscriber` 의존성 금지

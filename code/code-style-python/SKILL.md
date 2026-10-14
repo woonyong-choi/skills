@@ -13,16 +13,16 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 - 대소문자 표기: PEP 8. 포맷: `ruff format`
 - 모든 함수 시그니처에 타입 힌트 필수
 
-| 대상 | 규칙 | 예 |
-|---|---|---|
-| 접근자 | 공개 속성 그대로. 계산·검증이 필요해지면 `@property`. `get_x()`·`set_x()` 금지 | `session.name` |
-| 생성 | `__init__`. 다른 생성 방법은 `@classmethod` `from_*` | `Config.from_file(path)` |
-| 변환 | `to_*` 새 객체, `as_*` 다른 표현 | `to_dict()`, `as_posix()` |
-| 반복자 | 제너레이터 함수 `iter_*` | `iter_sessions()` |
-| 상수 | 모듈 최상위, UPPER_SNAKE_CASE | `MAX_RETRY = 3` |
-| 약어 | 클래스 이름은 약어 전체 대문자, 함수·변수는 소문자 | `HTTPServerError`, `http_client` |
-| 비공개 | 앞에 `_` 하나. `__` 이름 변환은 하위 클래스와 이름이 겹칠 때만 | `_cache` |
-| 단위 | `datetime.timedelta` 우선 | `timeout: timedelta` |
+대상 → 규칙 → 예:
+
+- 접근자 → 공개 속성 그대로. 계산·검증이 필요해지면 `@property`. `get_x()`·`set_x()` 금지 → `session.name`
+- 생성 → `__init__`. 다른 생성 방법은 `@classmethod` `from_*` → `Config.from_file(path)`
+- 변환 → `to_*` 새 객체, `as_*` 다른 표현 → `to_dict()`, `as_posix()`
+- 반복자 → 제너레이터 함수 `iter_*` → `iter_sessions()`
+- 상수 → 모듈 최상위, UPPER_SNAKE_CASE → `MAX_RETRY = 3`
+- 약어 → 클래스 이름은 약어 전체 대문자, 함수·변수는 소문자 → `HTTPServerError`, `http_client`
+- 비공개 → 앞에 `_` 하나. `__` 이름 변환은 하위 클래스와 이름이 겹칠 때만 → `_cache`
+- 단위 → `datetime.timedelta` 우선 → `timeout: timedelta`
 
 ## 선언 순서
 
@@ -50,11 +50,11 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 
 ## 오류와 로그
 
-| 경우 | 처리 |
-|---|---|
-| 일어날 수 있는 실패 | 예외 발생 |
-| 코드에 버그가 없으면 일어날 수 없는 경우 | `raise AssertionError("<성립해야 하는 이유>")` |
-| 테스트 | `assert` 허용 |
+경우 → 처리:
+
+- 일어날 수 있는 실패 → 예외 발생
+- 코드에 버그가 없으면 일어날 수 없는 경우 → `raise AssertionError("<성립해야 하는 이유>")`
+- 테스트 → `assert` 허용
 
 - 테스트 밖에서 `assert` 금지 (`python -O`에서 사라짐)
 - `NotImplementedError`는 추상 메서드에만. 본문이 `pass`·`...`뿐인 미완성 함수 금지

@@ -12,16 +12,16 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 
 - 대소문자 표기: Kotlin 공식 코딩 컨벤션. 포맷: ktlint
 
-| 대상 | 규칙 | 예 |
-|---|---|---|
-| 접근자 | 프로퍼티로. `getX()`·`setX()` 함수 금지 | `session.name` |
-| 읽기 전용 공개 | `private set`, 또는 비공개 백킹 프로퍼티 `_이름` | `private val _items`, `val items: List<Item> get() = _items` |
-| 생성 | 생성자. 팩토리는 companion object에 용도가 드러나는 이름 | `Config.fromFile(path)`, `Point.fromPolar(a, r)` |
-| 변환 | `toX()` 새 객체, `asX()` 원본을 감싼 뷰 | `toList()`, `asSequence()` |
-| 실패하면 null | `OrNull` 접미사 | `findOrNull(id)` |
-| 상수 | `const val`, SCREAMING_SNAKE_CASE | `const val MAX_RETRY = 3` |
-| 약어 | 두 글자는 모두 대문자, 세 글자 이상은 첫 글자만 | `IOStream`, `HttpClient` |
-| 단위 | `kotlin.time.Duration` 우선 | `timeout: Duration` |
+대상 → 규칙 → 예:
+
+- 접근자 → 프로퍼티로. `getX()`·`setX()` 함수 금지 → `session.name`
+- 읽기 전용 공개 → `private set`, 또는 비공개 백킹 프로퍼티 `_이름` → `private val _items`, `val items: List<Item> get() = _items`
+- 생성 → 생성자. 팩토리는 companion object에 용도가 드러나는 이름 → `Config.fromFile(path)`, `Point.fromPolar(a, r)`
+- 변환 → `toX()` 새 객체, `asX()` 원본을 감싼 뷰 → `toList()`, `asSequence()`
+- 실패하면 null → `OrNull` 접미사 → `findOrNull(id)`
+- 상수 → `const val`, SCREAMING_SNAKE_CASE → `const val MAX_RETRY = 3`
+- 약어 → 두 글자는 모두 대문자, 세 글자 이상은 첫 글자만 → `IOStream`, `HttpClient`
+- 단위 → `kotlin.time.Duration` 우선 → `timeout: Duration`
 
 - I/O·잠금·외부 호출·입력 크기 비례 순회·예외·상태 변경이 없고 같은 상태에서 같은 값을 주는 계산은 함수 대신 프로퍼티
 
@@ -45,13 +45,13 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 
 ## 오류와 로그
 
-| 경우 | 처리 |
-|---|---|
-| 호출하는 쪽이 경우별로 처리할 실패 | `sealed interface` 결과 타입 반환 |
-| 실패 이유가 하나뿐인 실패 | `null` 반환, 함수 이름에 `OrNull` |
-| 복구하지 않고 위로 올릴 실패 (I/O 등) | 예외. 실행 앱 최상위에서 한 번 처리 |
-| 코드에 버그가 없으면 일어날 수 없는 경우 | 인자는 `require(조건) { "<이유>" }`, 상태는 `check(조건) { "<이유>" }`, 도달 불가는 `error("<이유>")` |
-| 테스트 | `!!`·`assertFailsWith` 허용 |
+경우 → 처리:
+
+- 호출하는 쪽이 경우별로 처리할 실패 → `sealed interface` 결과 타입 반환
+- 실패 이유가 하나뿐인 실패 → `null` 반환, 함수 이름에 `OrNull`
+- 복구하지 않고 위로 올릴 실패 (I/O 등) → 예외. 실행 앱 최상위에서 한 번 처리
+- 코드에 버그가 없으면 일어날 수 없는 경우 → 인자는 `require(조건) { "<이유>" }`, 상태는 `check(조건) { "<이유>" }`, 도달 불가는 `error("<이유>")`
+- 테스트 → `!!`·`assertFailsWith` 허용
 
 - 테스트 밖에서 `!!`, `TODO()` 금지
 - 예외는 역할이 드러나는 자체 예외 클래스로. `Exception`·`RuntimeException` 직접 던지기 금지
@@ -63,10 +63,10 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 
 로그:
 
-| 라이브러리 | 쓰는 곳 | 역할 |
-|---|---|---|
-| `org.slf4j:slf4j-api` | 모든 모듈 | 로그 기록 |
-| `ch.qos.logback:logback-classic` | 실행 앱 모듈 | 로그 출력 설정 |
+라이브러리 → 쓰는 곳 → 역할:
+
+- `org.slf4j:slf4j-api` → 모든 모듈 → 로그 기록
+- `ch.qos.logback:logback-classic` → 실행 앱 모듈 → 로그 출력 설정
 
 - 저장소에 이미 정한 다른 라이브러리가 있으면 그것 우선
 - 라이브러리 모듈에 `logback-classic` 의존성 금지

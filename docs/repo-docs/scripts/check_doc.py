@@ -345,6 +345,25 @@ def check(path: str) -> int:
 # basis: estimate
 # 파일마다 줄 검사와 문서 구조 검사
 def main(paths: list[str]) -> int:
+    if paths and paths[0] == "--project":
+        if len(paths) < 3:
+            print("usage: check_doc.py --project PROJECT FILE [FILE ...]", file=sys.stderr)
+            return 2
+        from pathlib import Path
+        import subprocess
+        root = Path(__file__).resolve().parents[2]
+        checker = root / "git-issue/scripts/project_context.py"
+        if not checker.is_file():
+            checker = root.parent / "git/git-issue/scripts/project_context.py"
+        if not checker.is_file():
+            print("project context checker missing", file=sys.stderr)
+            return 2
+        project, paths = paths[1], paths[2:]
+        for path in paths:
+            result = subprocess.run([sys.executable, str(checker), "--project", project, "--write", str(Path(path).resolve())], capture_output=True, text=True)
+            if result.returncode:
+                print(result.stdout or result.stderr, file=sys.stderr)
+                return 2
     if not paths:
         print("usage: check_doc.py FILE [FILE ...]", file=sys.stderr)
         return 2

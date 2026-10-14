@@ -20,7 +20,7 @@ Refs: #42
 ```
 
 ```
-refactor(api)!: 사용자 조회 응답 필드 이름 변경
+feat(api)!: 사용자 조회 응답 필드 이름 변경
 
 BREAKING CHANGE: user_name 대신 name 필드 사용
 ```

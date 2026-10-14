@@ -1,0 +1,67 @@
+{
+  "sections": [
+    {
+      "title": "언어별 스킬",
+      "path": "references/language.md",
+      "sha256": "da033c1d8bec805bf06b35f57ed0925cefabda98bff8ecfe950064348659eedf",
+      "id": "CS-LANGUAGE",
+      "condition": "작업 언어의 스킬 선택·변경"
+    },
+    {
+      "title": "수치 기준",
+      "path": "references/structure.md",
+      "sha256": "40455faba260541f31ffd3b9ad5188801e5aaf101d03218b709a1f0764d6a0b1",
+      "id": "CS-SIZE",
+      "condition": "함수·타입·분기·매개변수·파일 크기 변경"
+    },
+    {
+      "title": "이름",
+      "path": "references/structure.md",
+      "sha256": "c0f49bed53aea74ed4c0a1f0563d6b7893224eca236a40bbbe532051668a5981",
+      "id": "CS-NAME",
+      "condition": "이름 추가·변경"
+    },
+    {
+      "title": "조건식",
+      "path": "references/structure.md",
+      "sha256": "2bb6b527767b6b99a243f3379671beeb1b798f29fd737a7ef5a3d786b0434b6f",
+      "id": "CS-CONDITION",
+      "condition": "조건식·분기 변경"
+    },
+    {
+      "title": "선언 순서",
+      "path": "references/structure.md",
+      "sha256": "f607f0bd24894a7c2d1812cffae2fd95315760405684fc17e9bcc6dea02fb963",
+      "id": "CS-ORDER",
+      "condition": "선언 추가·이동"
+    },
+    {
+      "title": "공개 범위와 주석",
+      "path": "references/structure.md",
+      "sha256": "b6d56d1615c4585793a6c5eb31333727f84150ad782871862329f254a339a52e",
+      "id": "CS-VISIBILITY",
+      "condition": "공개 범위·필드·주석 추가·변경"
+    },
+    {
+      "title": "오류와 로그",
+      "path": "references/errors.md",
+      "sha256": "8e476e757e3eee67583f5302002cdbd08299b3828c9a9c894e46663aa1b49115",
+      "id": "CS-ERROR",
+      "condition": "실패 가능한 입력·외부 경계·오류·로그 변경"
+    },
+    {
+      "title": "비용 주석",
+      "path": "references/cost-policy.md",
+      "sha256": "e8a3df5bf2c658150f9377a49b13aa6aecf4ef889ed8ec463dedf5f3c4662f3b",
+      "id": "CS-COST",
+      "condition": "I/O·프로세스·모델 호출·비용 대상 변경"
+    },
+    {
+      "title": "테스트",
+      "path": "references/testing.md",
+      "sha256": "251fee93953931a7c484cfc2cffa0be88df9810a72c59b6c1994f37c8dadd240",
+      "id": "CS-TEST",
+      "condition": "테스트 선택·추가·변경"
+    }
+  ]
+}
