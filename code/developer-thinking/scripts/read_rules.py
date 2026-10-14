@@ -19,9 +19,11 @@ RULES: Final = {
     "choice": (
         "repo-docs-design",
         "SKILL.md",
-        ("적용", "요구 확인", "선택", "설명과 조사", "구조 경계"),
+        ("", "적용", "요구 확인", "선택", "설명과 조사", "구조 경계"),
     ),
     "infrastructure": ("repo-docs-design", "references/infrastructure.md", ()),
+    "implement": ("code-style", "SKILL.md", ("", "조건별 읽기", "원칙", "구현")),
+    "failure": ("code-style", "SKILL.md", ("실패 처리",)),
     "data-and-concurrency": ("code-style", "references/data-and-concurrency.md", ()),
     "resources": ("code-style", "references/resources.md", ()),
     "operations": ("code-style", "references/operations.md", ()),
@@ -29,7 +31,9 @@ RULES: Final = {
     "review": ("code-style", "SKILL.md", ("검증",)),
 }
 TOPICS: Final = {
-    "product": tuple(RULES),
+    "product": tuple(rule for rule in RULES if rule not in ("implement", "failure")),
+    "implement": ("implement",),
+    "failure": ("failure",),
     "spec": ("requirements",),
     "choice": ("choice", "requirements"),
     "data": ("data-and-concurrency",),
@@ -77,7 +81,11 @@ def _owner_path(name: str) -> Path:
 def _select_sections(text: str, headings: tuple[str, ...]) -> str:
     if not headings:
         return text
-    blocks = {part.split("\n", 1)[0]: "## " + part for part in text.split("\n## ")[1:]}
+    parts = text.split("\n## ")
+    blocks = {
+        "": parts[0],
+        **{part.split("\n", 1)[0]: "## " + part for part in parts[1:]},
+    }
     missing = set(headings) - blocks.keys()
     if missing:
         raise ValueError("required sections missing: " + ", ".join(sorted(missing)))
@@ -92,11 +100,15 @@ def _read_rules(topics: list[str]) -> str:
     for topic in topics:
         selected.update(TOPICS[topic])
     output = []
+    contents = {}
     for rule, (owner, path, headings) in RULES.items():
         if rule in selected:
-            content = (_owner_path(owner) / path).read_text(encoding="utf-8")
+            source = _owner_path(owner) / path
+            if source not in contents:
+                contents[source] = source.read_text(encoding="utf-8")
             output.append(
-                f"<!-- {owner}/{path} -->\n" + _select_sections(content, headings)
+                f"<!-- {owner}/{path} -->\n"
+                + _select_sections(contents[source], headings)
             )
     return "\n".join(output)
 

@@ -25,7 +25,7 @@ ID → 적용 조건 → 정본:
 - CS-COST → I/O·프로세스·모델 호출·비용 대상 변경 → [비용 주석](references/cost-policy.md)의 해당 절
 - CS-TEST → 테스트 선택·추가·변경 → [테스트](references/testing.md)의 해당 절
 
-- 조회: Python 3.9 이상·표준 라이브러리의 `python3 <이 스킬 폴더>/scripts/read_rules.py --ids CS-CONDITION CS-ERROR`. 출력: 선택한 절 원문·조건·출처·해시 JSON, 오류 종료 2. `--catalog`는 조건 목록만 출력. 정본 파일 전체 대신 대상 절 필수 확인
+- 조회: Python 3.9+·표준 라이브러리의 `python3 <이 스킬 폴더>/scripts/read_rules.py --ids CS-CONDITION CS-ERROR --text`. 출력: 조건·출처·원문, 내부 해시 검증. `--text` 생략 시 해시 포함 JSON, `--catalog`는 조건 목록. 오류 종료 2. 전체 파일 대신 대상 절 필수 확인
 - 필수 조건이 둘 이상이면 합집합 조회. 작은 수정에도 해당 오류·검사·예외 규칙 제외 금지. 새 함수는 이름·수치·선언·공개 범위와 실제 변경 조건 모두 적용
 
 - 데이터·공유 상태·비동기 변경: [data-and-concurrency.md](references/data-and-concurrency.md) 필수 확인
