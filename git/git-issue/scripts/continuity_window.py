@@ -37,12 +37,14 @@ def screen(pane: str) -> str:
     return tmux("capture-pane", "-p", "-t", pane)
 
 
-# 실제로 관측한 진행줄(점·별 스피너와 시간·토큰 표시), 실행 중인 도구, 대기열의 입력을 모두 작업 중으로 본다.
+# 실제로 관측한 진행줄(점·별 스피너와 시간·토큰 표시), 실행 중인 도구, 대기열의 입력,
+# 하단에 표시되는 백그라운드 셸·작업("1 shell still running", "1 shell")을 모두 작업 중으로 본다.
 BUSY_CLAUDE = (
     r"^\s*[·✻✽✢✳✶✺✹✷✴✸]\s+\S[^\n]*…"
     r"|\(\d+(?:m \d+)?s\b[^)\n]*[↑↓]\s*[\d.]+k? tokens"
     r"|^\s*⎿\s+(?:Running|Waiting)…"
     r"|Press up to edit queued messages"
+    r"|\b\d+ (?:shells?|background tasks?)\b"
 )
 
 

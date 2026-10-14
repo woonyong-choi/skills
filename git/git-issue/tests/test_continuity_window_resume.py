@@ -193,6 +193,26 @@ class ResumeWatchTest(base.RoutingCase):
             "busy",
         )
 
+    def test_background_shell_is_busy_until_its_footer_disappears(self) -> None:
+        for footer in ("1 shell still running", "⏵⏵ bypass permissions on · 1 shell"):
+            screen = f"작업 로그\n❯ \n{footer}\n"
+            self.assertEqual(window.screen_state(screen, "claude", 2)[0], "busy", footer)
+            self.assertFalse(window.idle(screen, "claude", 2), footer)
+        self.assertEqual(window.screen_state(IDLE, "claude", 2)[0], "idle")
+
+        def with_background(tick: int) -> str:
+            return f"작업 로그 {tick}\n❯ \n1 shell still running\n"
+
+        saved, send, clock, error = self.watch(
+            lambda t: with_background(int(t)) if t < 210 else IDLE
+        )
+        self.assertIsNone(error)
+        send.assert_not_called()
+        self.assertGreater(clock.now - 1000.0, 210)
+        self.assertEqual(saved["phase"], "resumed")
+        self.assertEqual(saved["activity"], "idle_confirmed")
+        self.assertGreaterEqual(saved["idle_confirmed_at"] - saved["working_since"], 210)
+
     def test_finish_reset_sends_resume_input_once_then_only_watches(self) -> None:
         home = self.task("old", sessions=[base.OLD], issue=1)
         base.write(home / "checkpoint.json", {"remote_id": "r1"})
