@@ -114,9 +114,8 @@ class ProjectStatus:
         count = 0
         for project, field, item_changes in plans:
             print(f"프로젝트 {project['number']} {project['title']} ({self.repo})")
-            if args.command in ("setup", "colors"):
-                self._colors(project, field)
             if args.command == "colors":
+                self._colors(project, field)
                 continue
             if args.command == "setup":
                 self._setup(project, field)
@@ -298,6 +297,7 @@ class ProjectStatus:
     # vars: n = Status 선택지 수, p = 뷰 조회 페이지, v = 보드 뷰
     # basis: estimate
     def _setup(self, project: dict[str, Any], field: dict[str, Any]) -> None:
+        self._colors(project, field)
         options = field["options"]
         missing = [
             name
