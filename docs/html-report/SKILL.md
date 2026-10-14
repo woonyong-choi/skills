@@ -87,10 +87,10 @@ description: "시각적 후보를 비교·선택하거나 화면 결과를 판�
 기존 생성 스크립트는 `.dap` 입력에 daphnis를 사용한다. 일반 SVG·HTML 인라인 입력과 래스터 입력도 지원한다. 도구가 없고 `.dap` 입력도 없으면 시스템 색으로 생성한다. 저장소 토큰과 맞지 않는 어댑터는 공통 그림·테마 조건에 맞는 렌더러로 교체 필수
 
 ### 그림
-- 구조도, 순서도, 상태도, 데이터 관계도, 차트: daphnis 원본 `.dap` 우선. 생성 스크립트가 `node <daphnis 경로>/src/cli.js render ... --strict --html`로 만든 HTML 재생기를 보고서의 `iframe srcdoc`에 넣기. 외부 파일 참조와 `<img>` 사용 금지
+- `.dap` 선택 시: `node <daphnis 경로>/src/cli.js render ... --strict --html`로 만든 HTML 재생기를 보고서의 `iframe srcdoc`에 넣기. 외부 파일 참조와 `<img>` 사용 금지
 - `inline`: 미리 만든 SVG 또는 HTML 조각 경로. 같은 `iframe srcdoc`에 넣기. 그림마다 독립 문서라 SVG id·`<style>`·재생기 스크립트 충돌 없음
 - `dap`: `<daphnis 경로>`는 `--daphnis` 인자 또는 `DAPHNIS_PATH` 환경 변수. 렌더 실패는 보고서 생성 실패. `--static`은 움직임 없는 SVG를 같은 방식으로 넣기
-- `src`: daphnis로 그릴 수 없는 스크린샷, 실행 화면 캡처만. 검증 대상 테마를 고정해 캡처하고 테마명 표시
+- `src`: 실제 스크린샷·실행 화면 캡처. 검증 대상 테마를 고정해 캡처하고 테마명 표시
 - 색·글꼴·아이콘과 대비 기준: (repo-docs-figures 도구와 파일)
 - 보고서 틀은 daphnis `src/tokens.css`를 읽어 역할 토큰만 사용. 토큰 색 값 복사 금지
 - 보고서 기본 테마: 시스템. 맨 위 `시스템 / 라이트 / 다크` 선택. 선택값은 `daphnis-theme` localStorage에 기억하고, 루트 `data-theme`·`color-scheme`과 모든 인라인 재생기에 함께 적용
