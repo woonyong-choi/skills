@@ -306,13 +306,23 @@ def bind(folder: Path, args: argparse.Namespace) -> dict:
                     for item in args.status_map
                     for value in ("--status-map", item)
                 ],
-                "set",
+                "check",
+                "--number",
                 str(args.issue),
-                "진행",
+                "--fix",
             ]
         )
     save(folder / "binding.json", binding)
     if previous:
+        # 같은 세션의 과업 전환은 압축이 아니므로 전달한 원문만 승계한다.
+        for host in ("claude", "codex"):
+            name = "session-" + hashlib.sha256((host + session).encode()).hexdigest()[:20] + ".json"
+            prior_state = read(previous.parent / name)
+            current_state = read(folder / name)
+            current_state["rule_seen"] = prior_state.get("rule_seen", [])
+            current_state.pop("rule_scope", None)
+            current_state.pop("rule_stop_notice", None)
+            save(folder / name, current_state)
         prior_binding = read(previous)
         prior_binding["session_ids"] = [
             value for value in prior_binding.get("session_ids", []) if value != session
@@ -405,7 +415,7 @@ def sync(folder: Path, state: dict, binding: dict) -> dict:
                 "remote checkpoint advanced; restore and reconcile before publishing"
             )
         body = MARKER + "\n## 작업 기록\n\n"
-        previous = next(
+        previous: dict = next(
             (item["data"] for item in records if item["id"] == record.get("parent")), {}
         )
         scope = record.get("scope")
@@ -793,6 +803,8 @@ def main() -> int:
         if args.command == "doctor":
             result = doctor(folder)
         else:
+            if folder is None:
+                raise ContinuityError("task required")
             with (
                 contextlib.nullcontext()
                 if args.command == "restore"

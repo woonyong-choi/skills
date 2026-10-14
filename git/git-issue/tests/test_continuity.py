@@ -29,6 +29,23 @@ def test_missing_plugin_cache_uses_stable_entrypoint(host: str, variable: str) -
     assert result.returncode == 0
     assert json.loads(result.stdout) == {}
     assert not result.stderr
+    import sys
+    upgrade = Path(__file__).resolve().parents[1] / "scripts/upgrade_plugin.py"
+    for arguments in (("--help",), (host, "--help")):
+        help_result = subprocess.run([sys.executable, str(upgrade), *arguments], capture_output=True, text=True, env={**os.environ, "PATH": str(absent)})
+        assert help_result.returncode == 0 and "usage:" in help_result.stdout
+    # #59: 설치 전에도 셸 복구는 열고 구조화된 쓰기는 차단한다.
+    import re
+    for tool, allowed in (("Bash", True), ("exec_command", True), ("Write", False), ("apply_patch", False)):
+        entry = next(row for row in config["hooks"]["PreToolUse"] if re.fullmatch(row["matcher"], tool))
+        missing = subprocess.run(
+            ["/bin/sh", "-c", entry["hooks"][0]["command"]],
+            input=json.dumps({"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": {"command": "ls"}}),
+            text=True, capture_output=True,
+            env={**os.environ, "HOME": str(absent)},
+        )
+        assert missing.returncode == 0 and "unavailable" in missing.stderr
+        assert (json.loads(missing.stdout) == {}) == allowed
 
 
 @pytest.mark.parametrize("host", ["codex", "claude"])

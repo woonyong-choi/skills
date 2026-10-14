@@ -5,7 +5,7 @@ description: "PR 본문·검토 댓글을 작성하거나 계약·문서 동반�
 
 # Git Pull Request
 
-- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
+- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 범위: PR 종류, 본문, 계약 검토, 문서 동반, 검토 댓글, 머지 조건. 제목, 브랜치, 머지 절차(git-branch)와 제목 형식(git-commit) 제외
 - 필요할 때만 읽기: 제목·본문·댓글 작성·검토 → repo-docs `references/writing.md` 필수 확인; 구현 검증·머지 조건 확인 → code-style; 그림 원본·입력·산출물 변경 → repo-docs-figures
 - 필요할 때만 읽기: PR 본문·리뷰·댓글의 파일·문서·코드 링크 작성·검토 → git-issue `references/public-links.md` 필수 확인
@@ -84,7 +84,7 @@ Closes: #{번호} 또는 Refs: #{번호}
 
 ## 금지
 
-- 제목·본문·댓글의 작성 표시 금지 항목: (git-issue 금지)
+- 작성 표시 금지 항목: (repo-docs references/writing.md 문체)
 - 실행하지 않은 검증 기록
 - 비공개 기록 링크나 내용
 - 절 빼기, 빈 절 두기

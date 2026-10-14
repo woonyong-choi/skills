@@ -47,6 +47,7 @@ python3 <이 스킬 폴더>/scripts/continuity.py restore --task 작업명
 python3 <이 스킬 폴더>/scripts/continuity.py doctor --task 작업명
 ```
 
+- bind는 보드 등록·불일치만 보정하고 유효 상태 보존. 착수·재개 단계는 `checkpoint --sync --status`로 명시
 - 프로젝트가 없는 저장소: project-status의 새 저장소 절차로 생성·자동화 확인 후 `--project 번호`로 연결. 이슈 단독 bind 금지. 권한·도구 부족이면 기존 입력을 보존하고 미완료로 보고
 - 같은 작업 경로의 여러 채팅: bind에 `--session-id 현재채팅ID` 지정(Codex는 `CODEX_THREAD_ID` 기본값). 한 채팅은 한 작업에만 연결. 전환은 기존 기록 저장 후 `--from-task 이전작업` 명시, 미전송 기록이면 거부. 이전 기록과 다른 채팅 연결은 보존. 훅은 명시된 채팅 연결을 우선하고 없을 때만 저장소 경로로 탐색
 - 기존 보드 역할 이름이 다르면 `bind --status-map 역할=이름` 반복 지정(project-status 규칙). 스크립트 함수를 임시 교체해 우회 금지

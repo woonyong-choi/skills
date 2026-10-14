@@ -5,7 +5,7 @@ description: "개발 중 단일 실행 관측이나 자료 요약을 짧은 기�
 
 # Repo Docs Note
 
-- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
+- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 짧은 개발 기록. 정한 설계(repo-docs-design), 고른 이유(repo-docs-decision), 판단 과정(repo-docs-journal), 측정(repo-docs-experiment)은 범위 밖
 
 - 한 기록 = 종류 하나, 주제 하나. 섞이면 분리

@@ -52,7 +52,7 @@
     {
       "title": "비용 주석",
       "path": "references/cost-policy.md",
-      "sha256": "e8a3df5bf2c658150f9377a49b13aa6aecf4ef889ed8ec463dedf5f3c4662f3b",
+      "sha256": "7694a5a88170e8fbaa9301d5b393f1b7ad58da6aa76a7cb39b177cfd508fe619",
       "id": "CS-COST",
       "condition": "I/O·프로세스·모델 호출·비용 대상 변경"
     },

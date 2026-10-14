@@ -11,7 +11,7 @@ import urllib.parse
 import re
 import sys
 
-FORMAL_FILES = {"README.ko.md"}
+FORMAL_FILES = {"README.md", "README.ko.md"}
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 FENCE_CLOSE = re.compile(r"^ {0,3}(?:`+|~+)[ \t]*$")
 NOT_PARAGRAPH = re.compile(r"^(\||- |[0-9]+\. |#|!\[|\[!|---|<)|^[a-z_]+: ")

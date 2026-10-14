@@ -5,7 +5,7 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 
 # Repo Docs Root
 
-- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
+- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 루트와 `.github/`의 문서 파일. README와 `llms.txt`는 제외(repo-docs-readme, repo-docs-llms)
 - 필요할 때만 읽기: 단계 판정(단계 표), 필요한 도구 문장(설치 절) → repo-docs-readme; CONTRIBUTING 커밋과 PR 절 → git-branch, git-commit, git-pull-request; 이슈 필요 여부와 연결 → git-issue
 
