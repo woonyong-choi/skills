@@ -600,6 +600,7 @@ def main() -> int:
         if (
             isinstance(locals().get("payload"), dict)
             and payload.get("hook_event_name") == "PreToolUse"
+            and payload.get("tool_name") in {"Write", "Edit", "MultiEdit", "apply_patch"}
         ):
             print(
                 json.dumps(
@@ -667,6 +668,11 @@ def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]
     )
     with core.locked(folder):
         state = core.read(state_path)
+        if event in {"PreToolUse", "PostToolUse"}:
+            observed = state.setdefault("rule_tools", {}).setdefault(event, [])
+            name = str(payload.get("tool_name", ""))
+            if name not in observed:
+                observed.append(name)
         is_query = False
         if event in {"SessionStart", "PostCompact"}:
             state["rule_seen"] = []

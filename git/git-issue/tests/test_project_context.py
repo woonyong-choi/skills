@@ -36,10 +36,8 @@ class ProjectContextWorkflow(unittest.TestCase):
             return json.loads(result.stdout)
 
         def hook(host: str, project: Path, tool: str, tool_input: dict) -> dict:
-            spec = json.loads((PLUGIN / "hooks" / (host + ".json")).read_text())
-            command = spec["hooks"]["PreToolUse"][0]["hooks"][0]["command"]
             payload = {"hook_event_name": "PreToolUse", "session_id": "context-verification", "cwd": str(project), "tool_name": tool, "tool_input": tool_input}
-            result = subprocess.run(["/bin/sh", "-c", command], input=json.dumps(payload), env={**environment, "PLUGIN_ROOT": str(PLUGIN), "CLAUDE_PLUGIN_ROOT": str(PLUGIN)}, capture_output=True, text=True, timeout=15)
+            result = subprocess.run([sys.executable, str(PLUGIN / "scripts/continuity_hook.py"), host], input=json.dumps(payload), env=environment, capture_output=True, text=True, timeout=15)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertFalse(result.stderr, result.stderr)
             return json.loads(result.stdout)
@@ -130,6 +128,45 @@ class ProjectContextWorkflow(unittest.TestCase):
                         self.assertFalse(target.exists())
                 self.assertEqual(hook(host, project, "Bash", {"command": f"printf bad > {forbidden}"})["hookSpecificOutput"]["permissionDecision"], "deny")
                 self.assertEqual(hook(host, project, "Bash", {"command": "git status --short"}), {})
+                for command in (
+                    "pip install -r requirements.txt",
+                    "python3 -m pip install -r requirements.txt",
+                    "env python3 -m pip install -r requirements.txt",
+                    "bash -c 'cat guide.md'",
+                    "python3 public_links.py --fix body.md",
+                    "git commit -F - <<'MSG'\nfix(repo): user's rule\nMSG",
+                    "git status\npip install -r requirements.txt",
+                    "cat guide.md\ntouch source.py",
+                    "printf '<<EOF'\npip install -r requirements.txt",
+                    "sed 's/a/b/' guide.md",
+                    "perl -pe 's/a/b/' guide.md",
+                    "perl -Mstrict -ne 'print' notes.txt",
+                    "dd if=guide.md of=result.json",
+                    "cat <<-MSG\n\tuser's rule\n\tMSG\npip install -r requirements.txt",
+                ):
+                    self.assertEqual(hook(host, project, "Bash", {"command": command}), {}, command)
+                for command in (
+                    "cp body.md fixed.md", "ls\ntouch denied.md",
+                    "python3 public_links.py --fix body.md > fixed.md",
+                    "cat <<'MSG' > denied.md\nuser's rule\nMSG",
+                    "printf '<<EOF'\nprintf bad > denied.md",
+                    'printf "<<EOF"\ntouch denied.md',
+                    "printf ok # <<EOF\ntouch denied.md",
+                    "sed -i '' 's/a/b/' denied.md",
+                    "perl -pi -e 's/a/b/' denied.md",
+                    "dd if=/dev/null of=denied.md",
+                    "bash -c 'tee denied.md'", "sh -lc 'touch denied.md'",
+                    "env cp a denied.md", "sudo cp a denied.md",
+                    "X=1 cp a denied.md", "command cp a denied.md",
+                    "(cp a denied.md)", "{ cp a denied.md; }",
+                    "echo $(cp a denied.md)", "if true; then cp a denied.md; fi",
+                    "git mv a.md denied.md", "env sed -i s/a/b/ denied.md",
+                    "sh <<'MSG'\ncp a denied.md\nMSG",
+                    "cp a \\\n denied.md",
+                ):
+                    self.assertEqual(hook(host, project, "Bash", {"command": command})["hookSpecificOutput"]["permissionDecision"], "deny", command)
+                mixed = {"command": "apply_patch", "patch": f"*** Update File: {forbidden}\n@@\n+text"}
+                self.assertEqual(hook(host, project, "apply_patch", mixed)["hookSpecificOutput"]["permissionDecision"], "deny")
                 self.assertEqual(hook(host, project, "Bash", {"command": "claude -p 'Inspect guide.md' > run.jsonl 2> run.stderr"}), {})
                 self.assertEqual(hook(host, project, "Bash", {"command": "python3 check_doc.py guide.md\npython3 install.py --source ."}), {})
                 self.assertEqual(hook(host, project, "Bash", {"command": "python3 -c \"Path('result.json').write_text('{}')\"\ncat guide.md"}), {})

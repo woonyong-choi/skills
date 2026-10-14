@@ -5,7 +5,7 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 
 # Code Style: Kotlin
 
-- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
+- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 Kotlin(JVM 서버, CLI) 규칙. Android 제외. 그 밖에서 code-style과 다르면 code-style 우선
 
 ## 이름

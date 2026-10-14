@@ -5,7 +5,7 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 
 # Code Style: CSS
 
-- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
+- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: code-style, design-tokens 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 CSS 규칙(`.css`, `<style>`, 인라인 `style`, JavaScript 문자열 안 CSS). 그 밖에서 code-style과 다르면 code-style 우선
 - 필요할 때만 읽기: class·파일 이름의 금지 이름 확인 → folder-naming
 
@@ -71,7 +71,7 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 - 화면 값: 토큰만 (design-tokens 원칙)
 - 길이 단위: 글자 크기 `rem`, 테두리 `px` 토큰, 배치 비율 `%`·`fr`
 - `0`에 단위 금지(`0px` X)
-- 토큰 정의 파일의 색 표기: 소문자 6자리 hex나 `oklch()`
+- 수기 CSS 토큰 정의의 색 표기: 소문자 6자리 hex나 `oklch()`. 생성 CSS는 design-tokens의 정본·생성물 규칙 적용
 
 ## 반응형과 접근성
 

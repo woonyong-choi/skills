@@ -37,11 +37,14 @@ def main() -> int:
     except (OSError, ValueError, subprocess.TimeoutExpired) as error:
         print(f"Work Continuity unavailable: {error}", file=sys.stderr)
         try:
-            event = json.loads(payload).get("hook_event_name")
+            request = json.loads(payload)
+            event = request.get("hook_event_name")
+            is_file_write = request.get("tool_name") in {"Write", "Edit", "MultiEdit", "apply_patch"}
         except (ValueError, AttributeError):
             event = None
-        result = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Work Continuity document guard unavailable; repair installation before writing"}} if event == "PreToolUse" else {}
-        print(json.dumps(result))
+            is_file_write = False
+        failure = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Work Continuity document guard unavailable; repair installation before writing"}} if event == "PreToolUse" and is_file_write else {}
+        print(json.dumps(failure))
         return 0
 
 

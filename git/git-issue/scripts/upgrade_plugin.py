@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 import subprocess
@@ -48,8 +49,11 @@ def upgrade(host: str) -> dict:
 # vars: n = hook definitions bytes, v = retained versions
 # basis: estimate
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("host", choices=("claude", "codex"))
+    args = parser.parse_args()
     try:
-        print(json.dumps(upgrade(sys.argv[1]), ensure_ascii=False))
+        print(json.dumps(upgrade(args.host), ensure_ascii=False))
         return 0
     except (OSError, ValueError, IndexError, subprocess.TimeoutExpired) as error:
         print(str(error), file=sys.stderr)

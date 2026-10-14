@@ -5,7 +5,7 @@ description: "UI·아이콘의 시각 변경을 검수하거나 공통 토큰·�
 
 # Design Tokens
 
-- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
+- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 범위: 화면 값의 정의·사용·하드코딩 검사와 기존 시각 표현 변경 검수
 - 필요할 때만 읽기: 결과가 다른 미확정 디자인 선택 → repo-docs-design; CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색·글꼴·크기 → repo-docs-figures; 기대값 근거 확인 → code-style `references/testing.md` 필수 확인
 
@@ -60,6 +60,7 @@ python3 <이 스킬 폴더>/scripts/build_tokens.py tokens.json --out <생성 �
 - 위치: 저장소에 화면 코드가 한 곳이면 그 소스 루트, 여럿이면 공유 폴더 하나. 생성물은 커밋
 - 생성물 첫 줄: 정본 경로와 `생성물, 손으로 고치지 않음` 주석
 - 생성물은 포매터·린터 제외: `.prettierignore`, ESLint `ignores`, Stylelint `ignoreFiles`
+- 생성기는 정본 단위 보존. CSS 글자 크기는 정본 dimension에 `rem` 명시, 단위 없는 수의 `px` 기본값 사용 금지
 - 다크 모드: `@media (prefers-color-scheme: dark)`와 `[data-theme='dark']` 두 곳에 같은 값 생성. `[data-theme='light']`는 밝은 값 강제
 
 ## 쓰는 방법

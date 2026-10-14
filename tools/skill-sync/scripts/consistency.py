@@ -9,7 +9,7 @@ from collections import defaultdict
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-PRIORITY = '- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용'
+PRIORITY = '- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용'
 FENCE = re.compile(r'^\s*(`{3,}|~{3,})')
 REFERENCE = re.compile(r'\([^)]*[a-z]+(?:-[a-z]+)+[^)]*\)|\[[^]]+\]\([^)]+\)|[a-z][a-z0-9-]* `references/[^`]+\.md`')
 COST = re.compile(r'^time O\([^()]+\)(?: [^,]+)?(?:, O\([^()]+\) worst)?, heap O\([^()]+\), stack O\([^()]+\)(?:, (?:alloc|io|tokens) [^,]+)*$')

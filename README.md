@@ -5,7 +5,7 @@
   <a href="#설치">설치</a> · <a href="#사용법">사용법</a> · <a href="#스킬-목록">스킬 목록</a> · <a href="#측정-결과">측정 결과</a>
 </p>
 
-개발 작업은 [Developer Thinking](code/developer-thinking/SKILL.md)에서 연결·결정·실행·검증·기록 순서로 진행한다. 각 단계는 기존 소유 스킬의 해당 규칙만 읽는다. 원본은 역할별 폴더에 두고, Claude Code와 Codex에는 같은 이름과 내용으로 설치한다.
+개발 작업은 [Developer Thinking](code/developer-thinking/SKILL.md)에서 연결·결정·실행·검증·기록 순서로 진행합니다. 각 단계는 기존 소유 스킬의 해당 규칙만 읽습니다. 원본은 역할별 폴더에 두고, Claude Code와 Codex에는 같은 이름과 내용으로 설치합니다.
 
 ## 작동 방식
 
@@ -14,11 +14,11 @@
   <img src="docs/assets/skill-exposure-light.svg" alt="분류별 원본을 평평한 목록으로 설치하고 선택한 스킬의 본문과 참조를 읽는 구조">
 </picture>
 
-설치 폴더에는 스킬 이름과 짧은 description을 노출한다. developer-thinking은 실행 순서와 조회 선택을, 하위 스킬은 주제별 판단을 소유한다. `기반`은 선행 적용 관계이며 같은 문맥의 같은 원문은 재사용한다. `필요할 때만 읽기`는 해당 조건의 절만 조회하며 루트 전체를 다시 실행하지 않는다.
+설치 폴더에는 스킬 이름과 짧은 description을 노출합니다. developer-thinking은 실행 순서와 조회 선택을, 하위 스킬은 주제별 판단을 소유합니다. `기반`은 선행 적용 관계이며 같은 문맥의 같은 원문은 재사용합니다. `필요할 때만 읽기`는 해당 조건의 절만 조회하며 루트 전체를 다시 실행하지 않습니다.
 
 ## 설치
 
-Python 3.9 이상이 필요하다. 설치 스크립트는 표준 라이브러리만 사용한다. 저장소를 내려받은 뒤 루트에서 아래 명령을 실행한다. 설치 절차, 충돌 처리와 제거 방법의 정본은 [skill-sync](tools/skill-sync/SKILL.md#설치)다.
+Python 3.9 이상이 필요합니다. 설치 스크립트는 표준 라이브러리만 사용합니다. 저장소를 내려받은 뒤 루트에서 아래 명령을 실행합니다. 설치 절차, 충돌 처리와 제거 방법의 정본은 [skill-sync](tools/skill-sync/SKILL.md#설치)입니다.
 
 ```sh
 skills_target="${SKILLS_TARGET_HOME:-$HOME}"
@@ -26,7 +26,7 @@ mkdir -p "$skills_target/.claude" "$skills_target/.codex"
 python3 tools/skill-sync/scripts/install.py --source . --target-home "$skills_target"
 ```
 
-Claude Code와 Codex의 사용자 스킬 폴더에 설치한다. 기본 대상은 현재 사용자 홈이다. 별도 홈에서 확인하려면 실행 전에 `SKILLS_TARGET_HOME`을 그 경로로 지정한다. 성공 시 `설치 성공` 또는 `일치`와 배포 zip 목록을 출력하고 종료 코드 0을 반환한다. 스킬별 보조 도구의 요구 조건은 각 SKILL.md에 있다.
+Claude Code와 Codex의 사용자 스킬 폴더에 설치합니다. 기본 대상은 현재 사용자 홈입니다. 별도 홈에서 확인하려면 실행 전에 `SKILLS_TARGET_HOME`을 그 경로로 지정합니다. 성공 시 `설치 성공` 또는 `일치`와 배포 zip 목록을 출력하고 종료 코드 0을 반환합니다. 스킬별 보조 도구의 요구 조건은 각 SKILL.md에 있습니다.
 
 ## 사용법
 
@@ -42,15 +42,15 @@ Claude Code와 Codex의 사용자 스킬 폴더에 설치한다. 기본 대상�
 $git-pull-request 현재 diff와 테스트 결과로 PR 본문을 작성해 줘.
 ```
 
-요청과 스킬 설명이 맞으면 도구가 자동으로 선택할 수도 있다. 명시 호출은 원하는 규칙을 지정하는 방법이다. 파일 수정, Git 실행, 게시 범위는 함께 적은 요청에 따른다.
+요청과 스킬 설명이 맞으면 도구가 자동으로 선택할 수도 있습니다. 명시 호출은 원하는 규칙을 지정하는 방법입니다. 파일 수정, Git 실행, 게시 범위는 함께 적은 요청에 따릅니다.
 
 ### 압축 후 작업 복구
 
-Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continuity`를 유지한다. 연결한 이슈에 작업 기록을 저장하고 새 세션·압축 후 복구 명령을 안내한다. [판 상태](git/git-issue/references/project-status.md), [기록·복구](git/git-issue/references/continuity.md), [설치·호스트 연결](git/git-issue/references/continuity-hosts.md)은 해당 작업 때만 읽는다. 판단은 소유 스킬, 저장·복구는 플러그인 코드가 담당한다.
+Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continuity`를 유지합니다. 연결한 이슈에 작업 기록을 저장하고 새 세션·압축 후 복구 명령을 안내합니다. [판 상태](git/git-issue/references/project-status.md), [기록·복구](git/git-issue/references/continuity.md), [설치·호스트 연결](git/git-issue/references/continuity-hosts.md)은 해당 작업 때만 읽습니다. 판단은 소유 스킬, 저장·복구는 플러그인 코드가 담당합니다.
 
-기존 `issue-continuity`는 이전 설치 ID다. 중복 활성화 여부를 먼저 확인하고, 활성 갱신은 설치·호스트 연결의 안정된 진입점 절차를 따른다.
+기존 `issue-continuity`는 이전 설치 ID다. 중복 활성화 여부를 먼저 확인하고, 활성 갱신은 설치·호스트 연결의 안정된 진입점 절차를 따릅니다.
 
-설치와 실제 훅 실행은 별도다. Codex는 `/hooks`에서 새 훅 정의를 검토·신뢰해야 실행한다. 사용량 신호가 없으면 임계값은 미확인으로 남기고 작업 경계와 압축 훅을 사용한다.
+설치와 실제 훅 실행은 별도다. Codex는 `/hooks`에서 새 훅 정의를 검토·신뢰해야 실행합니다. 사용량 신호가 없으면 임계값은 미확인으로 남기고 작업 경계와 압축 훅을 사용합니다.
 
 ## 스킬 목록
 
@@ -109,7 +109,7 @@ Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continu
 
 ## 측정 결과
 
-스킬 27개의 노출 구조를 비교한 2차 실험에서 H-flat을 채택했다. 주 모델은 gpt-5.6-luna이며 128개 요청을 구조마다 3회 평가했다. gpt-6-astra는 같은 요청 중 16개를 3회씩 확인했다. 표의 값은 선택한 스킬 집합의 정밀도와 재현율이며, 괄호는 요청 군집 bootstrap 95% 신뢰구간이다.
+스킬 27개의 노출 구조를 비교한 2차 실험에서 H-flat을 채택했습니다. 주 모델은 gpt-5.6-luna이며 128개 요청을 구조마다 3회 평가했습니다. gpt-6-astra는 같은 요청 중 16개를 3회씩 확인했습니다. 표의 값은 선택한 스킬 집합의 정밀도와 재현율이며, 괄호는 요청 군집 bootstrap 95% 신뢰구간입니다.
 
 | 구조 | 처음 보여 주는 것 | 주 모델 정밀도(%) | 주 모델 재현율(%) | 판정 |
 |---|---|---:|---:|---|
@@ -123,13 +123,13 @@ Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continu
   <img src="docs/assets/skill-quality-light.svg" alt="H-flat은 대조와 가까운 재현율을 유지하며 H-tree와 H-hybrid의 정밀도 점추정은 더 높게 나타난 결과">
 </picture>
 
-H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었다. 채택은 점추정 순위가 아니라 품질, 일관성, 연결 누락, 읽기량, 왕복·지연 기준의 동시 통과로 결정했다. 후보 선택을 고려한 98.333% 동시 구간을 사용했으며 H-flat만 모든 기준을 통과했다. tree는 재현율·정확 집합·일관성·연결 누락 기준을, hybrid는 일관성·연결 누락·목록 크기·연결 개선 기준 등을 통과하지 못했다.
+H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니다. 채택은 점추정 순위가 아니라 품질, 일관성, 연결 누락, 읽기량, 왕복·지연 기준의 동시 통과로 결정했습니다. 후보 선택을 고려한 98.333% 동시 구간을 사용했으며 H-flat만 모든 기준을 통과했습니다. tree는 재현율·정확 집합·일관성·연결 누락 기준을, hybrid는 일관성·연결 누락·목록 크기·연결 개선 기준 등을 통과하지 못했습니다.
 
-보류는 열등함을 입증한 결과가 아니다. 두 모델의 정답 합의는 인간 검증이 아니며, 불일치 요청을 제외한 표본에는 선택 편향이 남는다. 이 수치는 제한된 스킬 선택 실험의 결과이며 실제 작업 완성도나 전체 도구 환경의 성능을 뜻하지 않는다. 확인 모델의 결과, 판정 기준과 공개 집계의 범위는 [2차 실험 결과](experiments/skill-exposure/report.md)에 있다. 앞선 형식 통일·조건부 읽기 실험은 [1차 실험 결과](experiments/skill-format-unification/report.md)에 있다.
+보류는 열등함을 입증한 결과가 아닙니다. 두 모델의 정답 합의는 인간 검증이 아니며, 불일치 요청을 제외한 표본에는 선택 편향이 남는다. 이 수치는 제한된 스킬 선택 실험의 결과이며 실제 작업 완성도나 전체 도구 환경의 성능을 뜻하지 않습니다. 확인 모델의 결과, 판정 기준과 공개 집계의 범위는 [2차 실험 결과](experiments/skill-exposure/report.md)에 있습니다. 앞선 형식 통일·조건부 읽기 실험은 [1차 실험 결과](experiments/skill-format-unification/report.md)에 있습니다.
 
-### 기본 본문 크기
+### 과거 실험의 본문 크기
 
-기준 커밋 `d7e8489`와 #25 변경 후의 실제 스킬 27개를 비교했다. 값은 frontmatter와 개행을 포함한 UTF-8 `SKILL.md` 전체 바이트다. 시험 fixture와 실험 보관본은 제외했다. 하위 문서로 옮긴 내용은 보존하며, 이 표는 저장소 용량이나 평균 호출 비용의 감소를 뜻하지 않는다.
+기준 커밋 `d7e8489`와 #25 변경 후의 실제 스킬 27개를 비교했습니다. 값은 frontmatter와 개행을 포함한 UTF-8 `SKILL.md` 전체 바이트입니다. 시험 fixture와 실험 보관본은 제외했습니다. 하위 문서로 옮긴 내용은 보존하며, 이 표는 저장소 용량이나 평균 호출 비용의 감소를 뜻하지 않습니다.
 
 | 스킬 | 변경 전 | 변경 후 | 감소 |
 |---|---:|---:|---:|
@@ -162,11 +162,11 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었다. 채
 | [skill-sync](tools/skill-sync/SKILL.md) | 8,231 | 5,405 | 2,826 |
 | 합계 | 247,203 | 158,794 | 88,409 |
 
-기본 본문 합계는 35.8% 줄었다. 아래 조건에 해당하는 작업은 하위 문서를 추가로 읽는다. 이미 읽은 정본은 같은 작업에서 중복 합산하지 않으며, 원본 변경 시 다시 확인한다.
+기본 본문 합계는 35.8% 줄었습니다. 아래 조건에 해당하는 작업은 하위 문서를 추가로 읽습니다. 이미 읽은 정본은 같은 작업에서 중복 합산하지 않으며, 원본 변경 시 다시 확인합니다.
 
 ### 읽기 연결
 
-`기반`은 먼저 적용하는 스킬이다. 종류별·언어별 스킬의 필수 규칙은 본문에 남기고, 하위 문서는 작업·파일·단계 조건이 맞을 때 읽는다. 다른 스킬의 하위 문서는 이름으로 찾은 스킬 폴더 기준 경로다. 같은 스킬의 하위 문서는 상대 링크로 열 수 있으며, 설치본과 zip에도 같은 내용이 들어간다.
+`기반`은 먼저 적용하는 스킬입니다. 종류별·언어별 스킬의 필수 규칙은 본문에 남기고, 하위 문서는 작업·파일·단계 조건이 맞을 때 읽습니다. 다른 스킬의 하위 문서는 이름으로 찾은 스킬 폴더 기준 경로입니다. 같은 스킬의 하위 문서는 상대 링크로 열 수 있으며, 설치본과 zip에도 같은 내용이 들어갑니다.
 
 | 작업 | 먼저 읽는 정본 | 조건부 하위 문서 |
 |---|---|---|
@@ -177,7 +177,7 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었다. 채
 | 이슈 본문 작성 | git-issue, repo-docs의 `references/writing.md` | 종류별 `references/{design,build,bug,experiment}.md`; 게시 전 `public-links.md`; 상태 사건 발생 전 `project-status.md` |
 | 스킬 검사 | skill-sync, `references/execution.md` | 형식 수정 시 `references/authoring.md`; 도구 설치 시 `installation.md`; 계정 배포 시 `claude-upload.md` |
 
-위 연결에 따른 정적 읽기량이다. Python·CSS 검토는 설정 변경이 없는 기본 경로이며 비용 주석 대상이면 상세 문서를 추가한다. 아키텍처 작성은 공통 문체와 선택한 템플릿까지 포함한다. 실제 호출 빈도나 평균 토큰 사용량을 측정한 값은 아니다.
+위 연결에 따른 정적 읽기량입니다. Python·CSS 검토는 설정 변경이 없는 기본 경로이며 비용 주석 대상이면 상세 문서를 추가합니다. 아키텍처 작성은 공통 문체와 선택한 템플릿까지 포함합니다. 실제 호출 빈도나 평균 토큰 사용량을 측정한 값은 아닙니다.
 
 | 작업 | 변경 전 바이트 | 변경 후 바이트 | 감소 |
 |---|---:|---:|---:|
@@ -186,24 +186,24 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었다. 채
 | 커밋 메시지 작성 | 26,264 | 14,534 | 11,730 |
 | 아키텍처 문서 작성 | 31,380 | 27,543 | 3,837 |
 
-공통 우선순위 정본은 [스킬 작성 형식](tools/skill-sync/references/authoring.md#공통-원칙)에 두고, 각 본문에는 같은 우선순위 요약을 남긴다. 스크립트 위치·Windows 명령은 [실행 규칙](tools/skill-sync/references/execution.md), Git 글의 문체는 [문서 작성 규칙](docs/repo-docs/references/writing.md), PR 생성·머지 후 판 상태는 [판 상태 절차](git/git-issue/references/project-status.md)에서 관리한다.
+공통 우선순위 정본은 [스킬 작성 형식](tools/skill-sync/references/authoring.md#공통-원칙)에 두고, 각 본문에는 같은 우선순위 요약을 남깁니다. 스크립트 위치·Windows 명령은 [실행 규칙](tools/skill-sync/references/execution.md), Git 글의 문체는 [문서 작성 규칙](docs/repo-docs/references/writing.md), PR 생성·머지 후 판 상태는 [판 상태 절차](git/git-issue/references/project-status.md)에서 관리합니다.
 
 ## 상태
 
-스킬 원본, 설치 스크립트, 일관성 검사와 CI를 제공한다. 릴리스 배포판은 없으며 저장소 원본에서 설치한다. 규칙과 명령은 변경될 수 있으므로 업데이트할 때 설치 결과를 확인한다.
+스킬 원본, 설치 스크립트, 일관성 검사와 CI를 제공합니다. 릴리스 배포판은 없으며 저장소 원본에서 설치합니다. 규칙과 명령은 변경될 수 있으므로 업데이트할 때 설치 결과를 확인합니다.
 
 ## 개발
 
-[스킬 작성 형식](tools/skill-sync/references/authoring.md)과 [일관성 검사 기준](tools/skill-sync/references/consistency.md)을 따른다. CI는 아래 일관성 검사와 Python 시험을 실행하며, daphnis와 Chromium을 설치해 HTML 보고서 시험도 실행한다.
+[스킬 작성 형식](tools/skill-sync/references/authoring.md)과 [일관성 검사 기준](tools/skill-sync/references/consistency.md)을 따릅니다. CI는 아래 일관성 검사와 Python 시험을 실행하며, daphnis와 Chromium을 설치해 HTML 보고서 시험도 실행합니다.
 
 ```sh
 python3 tools/skill-sync/scripts/skill_check.py .
 python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/scripts/test_check_doc.py docs/html-report/tests/test_daphnis_cli.py
 ```
 
-시험에는 pytest가 필요하다. 그림 원본, 밝은·어두운 SVG와 재생성 명령은 [그림 재현 안내](docs/assets/README.md)에 있다.
+시험에는 pytest가 필요합니다. 그림 원본, 밝은·어두운 SVG와 재생성 명령은 [그림 재현 안내](docs/assets/README.md)에 있습니다.
 
-저장소 전체 시험은 `python3 -m pytest -q`로 실행한다. `DAPHNIS_PATH`가 없거나 빈 값이면 HTML 보고서 시험 3개는 경로 설정 안내와 함께 건너뛴다. 보고서 시험을 실행하려면 의존성이 설치된 그림 도구 작업본 루트를 지정한다. 브라우저 시험에는 Node.js, `playwright-core`와 Chromium이 필요하다.
+저장소 전체 시험은 `python3 -m pytest -q`로 실행합니다. `DAPHNIS_PATH`가 없거나 빈 값이면 HTML 보고서 시험 3개는 경로 설정 안내와 함께 건너뜁니다. 보고서 시험을 실행하려면 의존성이 설치된 그림 도구 작업본 루트를 지정합니다. 브라우저 시험에는 Node.js, `playwright-core`와 Chromium이 필요합니다.
 
 ```sh
 DAPHNIS_PATH="<그림 도구 작업본 루트>" python3 -m pytest -q docs/html-report/tests/test_build_report.py

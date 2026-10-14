@@ -26,10 +26,11 @@ Python 3.9 이상, macOS/Linux, 표준 라이브러리, git, 인증된 gh. 기�
 - 갱신 순서: 정본 검사 → 기존 설치기로 두 제품 스킬 동기화 → `scripts/upgrade_plugin.py codex`와 `claude` 실행 → 새 정의 신뢰 확인 → 실제 훅 검사. Python 3.9 이상·표준 라이브러리·제품 CLI 필요. 출력은 설치 결과·보존 경로 JSON, 실패 종료 2
 - 안정된 진입점: 사용자 스킬 설정의 `work-continuity.py`. 공유 잠금으로 실행 중인 런타임을 보호하고 설치기는 배타 잠금으로 교체. 갱신기는 공식 CLI를 사용하며 사라진 옛 훅 정의·진입점만 호환 복원. 가짜 성공 스크립트·신뢰 우회 금지
 - 새 훅 목록을 이미 실행 중인 호스트가 다시 읽었는지는 별도 확인. 설치 성공을 현재 대화 활성화로 보고하거나 반복 재시작 요구 금지
-- 훅 파일 누락·처리 오류: `PreToolUse`는 쓰기 거부, 다른 이벤트는 진단 후 비차단 종료. 자동 재시도 요청 금지. 기록 저장·복구 오류와 초기화 준비 거부 유지. 훅 종료 0을 저장·복구 성공 근거로 사용 금지
+- 훅 파일 누락·처리 오류: 구조화된 파일 쓰기는 거부, 셸·그 밖 이벤트는 진단 후 비차단 종료. 셸은 설치 복구 경로 보존을 위한 예외, 문서 검사 완료 의미 아님. 기록·초기화 준비 실패 유지, 재시도 루프·종료 0의 성공 해석 금지
 - 기존 설치 도구로 git-issue·code-style·git-branch 동기화. 플러그인 카탈로그 정본은 저장소의 `.claude-plugin/marketplace.json`과 `.agents/plugins/marketplace.json`
 
 ```sh
+python3 <skill-sync 스킬 폴더>/scripts/install.py --source <스킬 정본 경로> --tool codex --tool claude-code
 claude plugin marketplace add <스킬 정본 경로>
 claude plugin install work-continuity@woon-skills
 codex plugin marketplace add <스킬 정본 경로>

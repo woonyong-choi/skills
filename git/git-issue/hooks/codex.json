@@ -86,13 +86,24 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "^(Write|Edit|MultiEdit|apply_patch|Bash|exec_command)$",
+        "matcher": "^(Write|Edit|MultiEdit|apply_patch)$",
         "hooks": [
           {
             "type": "command",
             "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" codex; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Work Continuity document guard unavailable\"}}'; fi",
             "timeout": 5,
             "statusMessage": "Validate Document Destination"
+          }
+        ]
+      },
+      {
+        "matcher": "^(Bash|exec_command)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" codex; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{}'; fi",
+            "timeout": 5,
+            "statusMessage": "Inspect Shell Document Writes"
           }
         ]
       }

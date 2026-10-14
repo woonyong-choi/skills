@@ -5,7 +5,7 @@ description: "구현된 protocol·CLI·UI·data·configuration·errors의 형식
 
 # Repo Docs Spec
 
-- 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
+- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 인터페이스 문서 템플릿과 항목 규칙
 - 필요할 때만 읽기: 데이터 그림을 만들거나 바꿀 때 → repo-docs-figures; 요구·검증 범위, 생성표 의미, 호환성 확인 → repo-docs-design의 요구사항 절
 - 문서 생성 여부: 만드는 조건(repo-docs 문서 목록). 검증된 구현과 같은 PR에서 최초 작성, 기본 브랜치 반영 여부는 사실 상태로 구분. 구현 전에는 `docs/design/{주제}.md` 상세 설계(repo-docs-design)
