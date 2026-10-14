@@ -62,7 +62,7 @@ docs/experiments/
 1. 저장소 추적 정책에 따라 실험 식별자 생성. GitHub 사용 시 `experiment` 이슈(git-issue), 추적기가 없으면 설계 문서 내부 식별자 사용
 2. `design.md`, `run.sh`, `scripts/` 작성, 수집 전 설계·가설·판정 기준을 커밋으로 고정
 3. 일반 실측: 2번 설계 커밋을 같은 PR의 첫 기준점으로 두고, 수집·결과를 더해 함께 머지
-4. 수집 전 승인해야 할 비용·데이터 접근·판정 조건이 있는 실험만 2번을 저장소 승인 절차로 먼저 확정. PR 사용 시 사전 등록 PR 머지. 이슈 연결은 git-issue 닫기 절
+4. 수집 전 승인해야 할 데이터 접근·판정 조건이 있는 실험만 2번을 저장소 승인 절차로 먼저 확정. PR 사용 시 사전 등록 PR 머지. 이슈 연결은 git-issue 닫기 절
 5. `./run.sh collect`로 수집. 사전 열람 데이터는 설계에 기록하고 확인 분석용 자료와 구분
 6. `./run.sh verify`, `./run.sh analyze` 후 결과 차트 변환(repo-docs-figures references/conversion.md 변환)
 7. `report.md`, `data/README.md` 작성, `docs/experiments/README.md` 결론 칸 기입
