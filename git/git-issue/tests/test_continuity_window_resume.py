@@ -199,6 +199,22 @@ class ResumeWatchTest(base.RoutingCase):
             self.assertEqual(window.screen_state(screen, "claude", 2)[0], "busy", footer)
             self.assertFalse(window.idle(screen, "claude", 2), footer)
         self.assertEqual(window.screen_state(IDLE, "claude", 2)[0], "idle")
+        for footer in ("0 shells", "0 shell", "idle"):
+            screen = f"작업 로그\n❯ \n{footer}\n"
+            self.assertEqual(window.screen_state(screen, "claude", 2)[0], "idle", footer)
+        self.assertEqual(
+            window.screen_state("1 shell still running\n❯ \n", "claude", 2)[0],
+            "idle",
+            "본문 인용",
+        )
+        self.assertEqual(
+            window.screen_state("⎿ 1 shell\n완료\n❯ \n⏵⏵ bypass permissions on\n", "claude", 2)[0],
+            "idle",
+            "본문 인용",
+        )
+        self.assertEqual(
+            window.screen_state("완료\n❯ \n⏵⏵ 10 shells\n", "claude", 2)[0], "busy"
+        )
 
         def with_background(tick: int) -> str:
             return f"작업 로그 {tick}\n❯ \n1 shell still running\n"
