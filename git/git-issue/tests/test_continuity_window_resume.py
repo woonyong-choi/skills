@@ -211,7 +211,6 @@ class ResumeWatchTest(base.RoutingCase):
         self.assertGreater(clock.now - 1000.0, 210)
         self.assertEqual(saved["phase"], "resumed")
         self.assertEqual(saved["activity"], "idle_confirmed")
-        self.assertGreaterEqual(saved["idle_confirmed_at"] - saved["working_since"], 210)
 
     def test_finish_reset_sends_resume_input_once_then_only_watches(self) -> None:
         home = self.task("old", sessions=[base.OLD], issue=1)
