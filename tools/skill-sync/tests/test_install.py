@@ -58,9 +58,10 @@ def install_home(request: pytest.FixtureRequest) -> Iterator[Path]:
         shutil.rmtree(target_home)
 
 
-# #32: 세 도구 설치본과 zip에서 tests 제외, 원본 관리 스킬 수 보존.
+# #32, #49: 세 도구 설치본과 zip에서 tests 제외, 원본 스킬 목록 보존.
 def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
     command = [sys.executable, str(INSTALL), '--source', str(ROOT), '--target-home', str(install_home), '--dist', str(install_home / 'dist')]
+    expected_skills = {path.parent.name for path in ROOT.glob('*/*/SKILL.md')}
 
     result = subprocess.run(command, capture_output=True, text=True)
 
@@ -74,7 +75,7 @@ def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
     for tool in ('.claude/skills', '.codex/skills', '.gemini/config/skills'):
         installed = install_home / tool / 'skill-sync'
         assert {path.relative_to(installed).as_posix(): path.read_bytes() for path in installed.rglob('*') if path.is_file()} == files
-        assert len(list(installed.parent.glob('*/SKILL.md'))) == 27
+        assert {path.parent.name for path in installed.parent.glob('*/SKILL.md')} == expected_skills
         assert not list(installed.parent.glob('*/tests'))
         # #25: 평탄한 설치본의 검사기가 하위 문서·앵커·용어 정본을 조회.
         checked = subprocess.run([sys.executable, str(installed / 'scripts/skill_check.py'), str(installed.parent)], capture_output=True, text=True)
