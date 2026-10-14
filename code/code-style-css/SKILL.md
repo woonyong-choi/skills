@@ -14,14 +14,14 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 - 대소문자 표기: 소문자 kebab-case. 포맷: Prettier
 - 파일: 역할 명사 kebab-case `.css` (folder-naming과 같은 기준)
 
-| 대상 | 규칙 | 예 |
-|---|---|---|
-| 구성 요소 class | 저장소 접두사 + 구성 요소 이름. 접두사는 저장소마다 하나 | `.app-figure`, `.app-tabs` |
-| 구성 요소 안 부분 | 구성 요소 이름 + `-` + 부분 이름 | `.app-tabs-button` |
-| 상태 class | `is-`·`has-` 접두사. 구성 요소 class와 함께만 사용 | `.app-tabs-button.is-active` |
-| JavaScript 연결용 | `js-` 접두사 또는 `data-*` 속성. 스타일 규칙에 사용 금지 | `data-step="2"` |
-| 사용자 정의 속성 | design-tokens 이름 규칙 | `--color-accent` |
-| 애니메이션 `@keyframes` | 동작 이름 kebab-case | `fade-in` |
+대상 → 규칙 → 예:
+
+- 구성 요소 class → 저장소 접두사 + 구성 요소 이름. 접두사는 저장소마다 하나 → `.app-figure`, `.app-tabs`
+- 구성 요소 안 부분 → 구성 요소 이름 + `-` + 부분 이름 → `.app-tabs-button`
+- 상태 class → `is-`·`has-` 접두사. 구성 요소 class와 함께만 사용 → `.app-tabs-button.is-active`
+- JavaScript 연결용 → `js-` 접두사 또는 `data-*` 속성. 스타일 규칙에 사용 금지 → `data-step="2"`
+- 사용자 정의 속성 → design-tokens 이름 규칙 → `--color-accent`
+- 애니메이션 `@keyframes` → 동작 이름 kebab-case → `fade-in`
 
 - class·파일의 금지 이름: folder-naming 적용
 - 모양을 뜻하는 이름 금지(`.blue-text`, `.mt-8`). 역할 이름만. 저장소가 유틸리티 CSS 프레임워크를 쓰면 그 규칙 우선
@@ -44,16 +44,16 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 
 규칙 안 속성:
 
-| 순서 | 묶음 | 예 |
-|---|---|---|
-| 1 | 사용자 정의 속성 | `--button-height` |
-| 2 | 위치 | `position`, `inset`, `z-index` |
-| 3 | 배치 | `display`, `flex`, `grid`, `gap`, `align-*`, `justify-*`, `place-*` |
-| 4 | 상자 | `width`, `height`, `min-*`, `max-*`, `margin`, `padding`, `box-sizing`, `overflow` |
-| 5 | 글자 | `font`, `font-*`, `line-height`, `letter-spacing`, `text-*`, `white-space` |
-| 6 | 모양 | `color`, `background`, `border`, `border-radius`, `box-shadow`, `opacity` |
-| 7 | 애니메이션 | `transition`, `animation`, `transform` |
-| 8 | 기타 | `cursor`, `pointer-events`, `user-select` |
+순서 → 묶음 → 예:
+
+- 1 → 사용자 정의 속성 → `--button-height`
+- 2 → 위치 → `position`, `inset`, `z-index`
+- 3 → 배치 → `display`, `flex`, `grid`, `gap`, `align-*`, `justify-*`, `place-*`
+- 4 → 상자 → `width`, `height`, `min-*`, `max-*`, `margin`, `padding`, `box-sizing`, `overflow`
+- 5 → 글자 → `font`, `font-*`, `line-height`, `letter-spacing`, `text-*`, `white-space`
+- 6 → 모양 → `color`, `background`, `border`, `border-radius`, `box-shadow`, `opacity`
+- 7 → 애니메이션 → `transition`, `animation`, `transform`
+- 8 → 기타 → `cursor`, `pointer-events`, `user-select`
 
 - 축약 속성 뒤에 개별 속성. 반대 순서 금지(`padding-top` 뒤 `padding`)
 - 같은 속성 두 번 선언 금지. 지원 브라우저에서 속성·값 지원이 갈리면 `@supports`

@@ -1,0 +1,14 @@
+{
+  "name": "woon-skills",
+  "owner": {
+    "name": "choi woo-nyong"
+  },
+  "plugins": [
+    {
+      "name": "work-continuity",
+      "source": "./git/git-issue",
+      "description": "이슈 기반 작업 기록과 문맥 초기화 후 복구",
+      "version": "0.1.13"
+    }
+  ]
+}

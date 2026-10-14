@@ -1,0 +1,231 @@
+"""누락된 플러그인의 실제 Stop 명령이 재시도를 요청하지 않는지 확인."""
+
+import json
+from pathlib import Path
+
+import pytest
+
+
+@pytest.mark.parametrize(
+    "host,variable", [("codex", "PLUGIN_ROOT"), ("claude", "CLAUDE_PLUGIN_ROOT")]
+)
+def test_missing_plugin_cache_uses_stable_entrypoint(host: str, variable: str) -> None:
+    import os
+    import subprocess
+
+    absent = Path(__file__).parent / "absent-plugin"
+    assert not absent.exists()
+    config = json.loads(
+        (Path(__file__).resolve().parents[1] / "hooks" / (host + ".json")).read_text()
+    )
+    command = config["hooks"]["Stop"][0]["hooks"][0]["command"]
+    result = subprocess.run(
+        ["/bin/sh", "-c", command],
+        input="{}",
+        text=True,
+        capture_output=True,
+        env={**os.environ, variable: str(absent)},
+    )
+    assert result.returncode == 0
+    assert json.loads(result.stdout) == {}
+    assert not result.stderr
+
+
+@pytest.mark.parametrize("host", ["codex", "claude"])
+def test_hook_records_without_reset_or_read_only_stop(host: str) -> None:
+    """skills#43: 실제 checkpoint와 훅 명령의 저장 전용 계약."""
+    import os
+    import shutil
+    import subprocess
+    import time
+
+    plugin = Path(__file__).resolve().parents[1]
+    repo = plugin.parents[1]
+    root = (
+        repo.parent
+        / ".local/orchestration/issue-continuity/test-runtime"
+        / ("hook-policy-" + host)
+    )
+    assert not root.exists()
+    folder = root / "policy"
+    folder.mkdir(parents=True)
+    session = "00000000-0000-4000-8000-000000000043"
+    binding = {
+        "repo": str(repo),
+        "remote": "woonyong-choi/skills",
+        "issue": 43,
+        "url": "https://github.com/woonyong-choi/skills/issues/43",
+        "session_ids": [session],
+    }
+    (folder / "binding.json").write_text(json.dumps(binding))
+    record = {
+        key: "fixture"
+        for key in (
+            "goal",
+            "constraints",
+            "plan",
+            "hypotheses",
+            "actions",
+            "results",
+            "next",
+        )
+    }
+    issue = json.loads(subprocess.run(["gh", "api", "repos/woonyong-choi/skills/issues/43"], capture_output=True, text=True, check=True).stdout)
+    import re
+    section = issue["body"].split("## 완료 조건\n", 1)[1].split("\n## ", 1)[0]
+    criteria = re.findall(r"^- \[[ xX]\] (.+)$", section, re.M)
+    record["scope"] = {"criteria": criteria, "stage": "저장·복구 경계 검사", "relation": "continue", "covers": [2], "reason": "기존 기록 계약의 실제 CLI 검사", "boundary": "별도 기능은 새 과업"}
+    record["scope"]["outcomes"] = [{"result": "저장한 작업 기록을 복구", "criterion": 2, "criterion_result": "기록 저장·복구 검사", "verification": "실제 checkpoint 후 restore의 필드 대조", "independent": False, "counterfactual": "저장·복구 조건을 충족하려면 같은 기록 보존이 필요하며 별도 결과 없음"}]
+    record["actions"] = "fixture\nfixture"
+    source = root / "record.json"
+    source.write_text(json.dumps(record))
+
+    def invoke(event: str, *, actor: str = session) -> dict:
+        result = subprocess.run(
+            ["python3", str(plugin / "scripts/continuity_hook.py"), host],
+            input=json.dumps(
+                {"hook_event_name": event, "session_id": actor, "cwd": str(repo)}
+            ),
+            capture_output=True,
+            text=True,
+            env={**os.environ, "ISSUE_CONTINUITY_ROOT": str(root)},
+        )
+        assert result.returncode == 0 and not result.stderr, result.stderr
+        return json.loads(result.stdout)
+
+    try:
+        saved = subprocess.run(
+            [
+                "python3",
+                str(plugin / "scripts/continuity.py"),
+                "--root",
+                str(root),
+                "checkpoint",
+                "--task",
+                "policy",
+                "--input",
+                str(source),
+                "--watch-path",
+                "git/git-issue/tests/continuity-runtime-fixture",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        assert saved.returncode == 0, saved.stderr
+        saved_record = json.loads(saved.stdout)
+        assert saved_record["data"]["actions"] == "fixture"
+        for change in ("goal", "relation", "covers", "criteria", "missing", "vague", "independent", "uncovered"):
+            invalid = json.loads(json.dumps(record))
+            if change == "vague":
+                del invalid["scope"]["outcomes"]
+                invalid["scope"]["reason"] = "전체 작업과 관련된 개선"
+            elif change == "independent":
+                invalid["scope"]["outcomes"][0]["independent"] = True
+            elif change == "uncovered":
+                invalid["scope"]["covers"] = [1, 2]
+            elif change == "goal":
+                invalid["goal"] = "different outcome"
+            elif change == "missing":
+                del invalid["scope"]
+            else:
+                invalid["scope"][change] = "independent" if change == "relation" else []
+            source.write_text(json.dumps(invalid))
+            rejected = subprocess.run(["python3", str(plugin / "scripts/continuity.py"), "--root", str(root), "checkpoint", "--task", "policy", "--input", str(source)], capture_output=True, text=True)
+            assert rejected.returncode == 2, rejected.stdout
+            assert json.loads((folder / "checkpoint.json").read_text())["pending"]["id"] == saved_record["pending"]["id"]
+        source.write_text(json.dumps(record))
+        prompt = invoke("UserPromptSubmit")["hookSpecificOutput"]["additionalContext"]
+        assert "--from-task policy" in prompt
+        assert invoke("Stop") == {}
+        (folder / "meter.json").write_text(
+            json.dumps({"session_id": session, "percent": 80, "at": time.time()})
+        )
+        text = invoke("PostToolUse")["hookSpecificOutput"]["additionalContext"]
+        assert "같은 채팅에서 계속" in text
+        assert "/clear" not in text and "/compact" not in text
+        assert invoke("PostToolUse") == {}
+        restored = subprocess.run(
+            [
+                "python3",
+                str(plugin / "scripts/continuity.py"),
+                "--root",
+                str(root),
+                "restore",
+                "--task",
+                "policy",
+                "--offline",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        assert restored.returncode == 0, restored.stderr
+        assert json.loads(restored.stdout)["ready"] is True
+        assert "untracked" not in json.loads(restored.stdout)["actual"]
+        binding["repo"] = str(root / "removed-worktree")
+        (folder / "binding.json").write_text(json.dumps(binding))
+        missing = subprocess.run(
+            [
+                "python3",
+                str(plugin / "scripts/continuity.py"),
+                "--root",
+                str(root),
+                "restore",
+                "--task",
+                "policy",
+                "--offline",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        assert missing.returncode == 0, missing.stderr
+        result = json.loads(missing.stdout)
+        assert result["ready"] is False and result["data"] == saved_record["data"]
+        assert "working tree missing" in result["problems"]
+        assert invoke("Stop") == {}
+        assert (
+            "--from-task policy"
+            in invoke("UserPromptSubmit")["hookSpecificOutput"]["additionalContext"]
+        )
+        assert invoke("Stop") == {}
+        binding["repo"] = str(repo)
+        (folder / "binding.json").write_text(json.dumps(binding))
+        (folder / "checkpoint.json").unlink()
+        assert invoke("Stop") == {}
+        saved = subprocess.run(
+            ["python3", str(plugin / "scripts/continuity.py"), "--root", str(root),
+             "checkpoint", "--task", "policy", "--input", str(source),
+             "--watch-path", "git/git-issue/tests/continuity-runtime-fixture"],
+            capture_output=True, text=True, check=True,
+        )
+        invoke("UserPromptSubmit")
+        invoke("UserPromptSubmit", actor="unbound-reader")
+        changed_file = repo / "git/git-issue/tests/continuity-runtime-fixture"
+        other_file = repo / ("git/git-issue/tests/continuity-other-" + host)
+        assert not changed_file.exists()
+        assert not other_file.exists()
+        try:
+            other_file.write_text("another task")
+            assert invoke("Stop") == {}
+            other_file.write_text("another task changed again")
+            assert invoke("Stop") == {}
+            changed_file.write_text("runtime change")
+            assert invoke("Stop", actor="unbound-reader") == {}
+            assert invoke("Stop")["decision"] == "block"
+            assert invoke("Stop") == {}
+            subprocess.run(
+                ["python3", str(plugin / "scripts/continuity.py"), "--root", str(root),
+                 "checkpoint", "--task", "policy", "--input", str(source)],
+                capture_output=True, text=True, check=True,
+            )
+            assert invoke("Stop") == {}
+            changed_file.unlink()
+            assert invoke("Stop")["decision"] == "block"
+            assert invoke("Stop") == {}
+            invoke("SessionStart")
+            invoke("UserPromptSubmit")
+            assert invoke("Stop") == {}
+        finally:
+            changed_file.unlink(missing_ok=True)
+            other_file.unlink()
+    finally:
+        shutil.rmtree(root)

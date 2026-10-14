@@ -19,4 +19,5 @@ python3 <이 스킬 폴더>/scripts/public_links.py --repo <게시 대상 저장
 - 링크 규칙 진단: `relative repository link: replace with a public web link` 또는 `repository path in code text: replace with a public web link`. HEAD에 있는 저장소 파일의 상대 링크·코드 표기는 공개 웹 링크로 변환 대상, 상대 경로 자체는 게시 금지 대상에서 제외
 - 게시 금지 규칙 진단: `private path`, `path outside repository`, `unpublished file` 뒤 `do not publish; summarize without its location`. 비공개 위치는 공개 링크 변환 없이 위치를 뺀 내용만 요약 대상. 다른 비공개 저장소는 `private repository: do not publish; summarize without its address`
 - 자동 수정: HEAD에 포함된 저장소 파일만 웹 링크로 변환, 줄 번호가 있으면 현재 HEAD SHA 고정. 비공개 경로·다른 비공개 저장소 주소는 원문 유지와 위반 보고만 수행
+- 첫 커밋 전: 일반 이슈 본문 검사 허용, 파일 전체를 미발행으로 취급. 존재하지 않는 커밋·기본 브랜치 URL 생성 금지
 - 종료 코드: 통과 또는 모든 위반 수정 0, 남은 위반 1, 입력·Git·공개 여부 조회 실패 2. 수정 결과 재검사 후 게시

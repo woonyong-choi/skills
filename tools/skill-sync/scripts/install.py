@@ -25,6 +25,11 @@ import zipfile
 import zlib
 from pathlib import Path
 
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
+
 INSTALL_HOME = Path.home()
 TARGETS = {
     "codex": INSTALL_HOME / ".codex" / "skills",
@@ -35,7 +40,7 @@ TOOL_HOMES = {"codex": INSTALL_HOME / ".codex", "antigravity": INSTALL_HOME / ".
 MANIFEST = ".repo-skills.json"
 POINTER = INSTALL_HOME / ".config" / "skills" / "source"
 TRASH = INSTALL_HOME / ".skill-trash"
-SKIP = {"tests", ".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__"}
+SKIP = {".claude-plugin", ".codex-plugin", "tests", ".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__"}
 CATEGORIES = ("git", "code", "docs", "design", "tools")
 
 
@@ -170,6 +175,23 @@ def _write_manifest(root: Path, record: dict[str, str]) -> None:
 # vars: b = 스킬 바이트 수, f = 파일 수, d = 폴더 깊이
 # basis: estimate
 def _replace_skill(root: Path, skill: Path, digest: str, installed: dict[str, str]) -> None:
+    configuration = INSTALL_HOME / ".config/skills"
+    configuration.mkdir(parents=True, exist_ok=True)
+    with (configuration / "runtime.lock").open("a") as lock:
+        if fcntl is not None:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+        _replace_skill_locked(root, skill, digest, installed)
+        if skill.name == "git-issue":
+            entry = configuration / "work-continuity.py"
+            staged_entry = configuration / "work-continuity.pending"
+            staged_entry.write_bytes((skill / "scripts/hook_entry.py").read_bytes())
+            os.replace(staged_entry, entry)
+
+
+# cost: time O(b), heap O(f), stack O(d), io O(f)
+# vars: b = skill bytes, f = file count, d = folder depth
+# basis: estimate
+def _replace_skill_locked(root: Path, skill: Path, digest: str, installed: dict[str, str]) -> None:
     target = _skill_path(root, skill.name)
     if skill.is_symlink() or any(path.is_symlink() for path in skill.rglob("*")):
         raise ValueError(f"source symlink: {skill}")
@@ -334,10 +356,11 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--dist", type=Path, help="Claude zip 출력 폴더")
     parser.add_argument("--remove", nargs="+", metavar="NAME")
+    parser.add_argument("--tool", action="append", choices=tuple(TARGETS), help="설치 대상 제한, 여러 번 지정 가능")
     args = parser.parse_args(argv)
     if args.target_home is not None:
         configure_target_home(args.target_home)
-    roots = [TARGETS[tool] for tool, home in TOOL_HOMES.items() if home.is_dir()]
+    roots = [TARGETS[tool] for tool, home in TOOL_HOMES.items() if home.is_dir() and (not args.tool or tool in args.tool)]
     success = True
     try:
         if args.remove:

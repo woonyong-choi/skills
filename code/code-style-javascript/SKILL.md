@@ -14,16 +14,16 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 - 대소문자 표기: 변수·함수 camelCase, 클래스 PascalCase, 모듈 상수 UPPER_SNAKE_CASE. 포맷: Prettier
 - 파일: 소문자 kebab-case `.js` (folder-naming과 같은 기준)
 
-| 대상 | 규칙 | 예 |
-|---|---|---|
-| 접근자 | 필드나 `get` 접근자. 계산 없는 `getX()`·`setX()` 메서드 금지 | `session.name`, `get isReady()` |
-| 생성 | `constructor`. 다른 생성 방법은 `static from*`·`create*` 팩토리 | `Config.fromFile(path)`, `createPlayer(root)` |
-| 변환 | `to*` 새 값, `as*` 같은 값의 다른 표현 | `toJson()`, `asArray()` |
-| 반복자 | 제너레이터 `*iter*`나 `[Symbol.iterator]` | `*iterSessions()` |
-| 상수 | 모듈 최상위의 바뀌지 않는 값만 UPPER_SNAKE_CASE. 객체 상수는 `Object.freeze` | `MAX_RETRY`, `DEFAULTS` |
-| 약어 | 한 단어처럼 camelCase·PascalCase | `httpClient`, `parseUrl`, `HttpError` |
-| 비공개 | 모듈: export 안 함. 클래스: `#` 필드·메서드. `_` 접두사 금지 | `#cache` |
-| 단위 | 시간 타입이 없어 접미사 필수 | `timeoutMs`, `sizeBytes` |
+대상 → 규칙 → 예:
+
+- 접근자 → 필드나 `get` 접근자. 계산 없는 `getX()`·`setX()` 메서드 금지 → `session.name`, `get isReady()`
+- 생성 → `constructor`. 다른 생성 방법은 `static from*`·`create*` 팩토리 → `Config.fromFile(path)`, `createPlayer(root)`
+- 변환 → `to*` 새 값, `as*` 같은 값의 다른 표현 → `toJson()`, `asArray()`
+- 반복자 → 제너레이터 `*iter*`나 `[Symbol.iterator]` → `*iterSessions()`
+- 상수 → 모듈 최상위의 바뀌지 않는 값만 UPPER_SNAKE_CASE. 객체 상수는 `Object.freeze` → `MAX_RETRY`, `DEFAULTS`
+- 약어 → 한 단어처럼 camelCase·PascalCase → `httpClient`, `parseUrl`, `HttpError`
+- 비공개 → 모듈: export 안 함. 클래스: `#` 필드·메서드. `_` 접두사 금지 → `#cache`
+- 단위 → 시간 타입이 없어 접미사 필수 → `timeoutMs`, `sizeBytes`
 
 ## 선언 순서
 
@@ -56,11 +56,11 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 
 ## 오류와 로그
 
-| 경우 | 처리 |
-|---|---|
-| 일어날 수 있는 실패 | `Error` 하위 클래스 throw. async 함수는 reject |
-| 코드에 버그가 없으면 일어날 수 없는 경우 | `throw new Error('<성립해야 하는 이유>')` |
-| 테스트 | `node:assert/strict` 단언 |
+경우 → 처리:
+
+- 일어날 수 있는 실패 → `Error` 하위 클래스 throw. async 함수는 reject
+- 코드에 버그가 없으면 일어날 수 없는 경우 → `throw new Error('<성립해야 하는 이유>')`
+- 테스트 → `node:assert/strict` 단언
 
 - 문자열·객체 throw 금지. 항상 `Error` 인스턴스
 - 원인 보존: `throw new ConfigError('failed to read config', { cause: error })`

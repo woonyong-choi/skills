@@ -13,14 +13,14 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 
 ## 파일
 
-| 파일 | 위치 | 언어·문체 규칙을 정한 스킬 | 설계 | 개발 중 | 실행 가능 | 배포 |
-|---|---|---|---|---|---|---|
-| `LICENSE` | 루트 | 해당 없음 | 조건부 | 조건부 | 조건부 | 조건부 |
-| `AGENTS.md` | 루트 | repo-docs | 조건부 | 조건부 | 조건부 | 조건부 |
-| `CLAUDE.md` | 루트 | 해당 없음 | 조건부 | 조건부 | 조건부 | 조건부 |
-| `CONTRIBUTING.md` | `.github/` | repo-docs | 없음 | 필수 | 필수 | 필수 |
-| `SECURITY.md` | `.github/` | repo-docs | 없음 | 없음 | 필수 | 필수 |
-| `CHANGELOG.md` | 루트 | repo-docs | 없음 | 없음 | 없음 | 필수 |
+파일 → 위치 → 언어·문체 규칙을 정한 스킬 → 설계 → 개발 중 → 실행 가능 → 배포:
+
+- `LICENSE` → 루트 → 해당 없음 → 조건부 → 조건부 → 조건부 → 조건부
+- `AGENTS.md` → 루트 → repo-docs → 조건부 → 조건부 → 조건부 → 조건부
+- `CLAUDE.md` → 루트 → 해당 없음 → 조건부 → 조건부 → 조건부 → 조건부
+- `CONTRIBUTING.md` → `.github/` → repo-docs → 없음 → 필수 → 필수 → 필수
+- `SECURITY.md` → `.github/` → repo-docs → 없음 → 없음 → 필수 → 필수
+- `CHANGELOG.md` → 루트 → repo-docs → 없음 → 없음 → 없음 → 필수
 
 - `LICENSE`: 라이선스를 정했을 때만. 근거는 패키지 선언(`Cargo.toml`, `package.json`, `pyproject.toml`의 `license`)의 SPDX 식별자나 사용자가 정한 라이선스. `UNLICENSED`, `proprietary`, 선언 없음이면 생성 금지, 임의 선택 금지
 - `LICENSE` 내용: SPDX 식별자의 공식 원문 그대로, 연도와 저작권자(기존 저작권 고지 또는 사용자가 지정한 권리자, git 이름으로 자동 추정 금지)만 기입
@@ -30,10 +30,12 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 
 ## CLAUDE.md
 
-- 이 진입 파일을 사용하는 경우 `AGENTS.md`를 가리키는 심볼릭 링크 하나: `ln -s AGENTS.md CLAUDE.md`
+- 이 진입 파일을 사용하는 경우 `AGENTS.md`를 가리키는 심볼릭 링크 하나: `ln -s AGENTS.md CLAUDE.md`. 등록 Vault 프로젝트에서 링크를 쓸 수 없으면 `@AGENTS.md` 한 줄 import, 실제 도구 읽기 확인 필수
 - 별도 내용 금지. 에이전트 지침의 원본은 `AGENTS.md` 하나
 
 ## AGENTS.md
+
+- 등록 Vault 프로젝트: repo-docs `references/project-context.md` 필수 확인. 루트는 짧은 진입 연결, 상세 지침은 등록 Vault의 agent 정본. 기존 지침 의미·상위 적용 범위 대조 후 이전, 승인 문서 임의 제거 금지
 
 `AGENTS.md` 작성·갱신·검토 전 [agents.md](references/agents.md) 필수 확인
 

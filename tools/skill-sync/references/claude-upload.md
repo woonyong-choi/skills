@@ -24,10 +24,10 @@ python3 tools/skill-sync/scripts/deploy.py --login
 - 로그인 프로필: `~/.config/skills/browser-profile`(700). 다른 프로필 복사, 비밀번호·쿠키·토큰 출력과 저장소 저장 금지
 - 자동 실행: 화면 밖 일반 Chrome. 로그인 만료·보안 확인 시 진단 PNG 경로와 `--login` 명령 출력 후 실패, 우회·자동 재시도 금지
 - 사람의 유일한 단계: `--login`으로 보이는 창에서 로그인·보안 확인 후 창 닫기. 배포 작업은 실행하지 않으며 이후 기본 명령 재실행 필요
-- 진단 위치: `~/.config/skills/browser-logs/`. 화면 구조 불일치는 실패, 모델 호출 없이 가짜 계정 어댑터로 시험
+- 진단 위치: `~/.config/skills/browser-logs/`. 화면 구조 불일치는 실패. 계정 배포는 실제 업로드·목록 재조회로 검증
 
 ## 공식 경로 확인
 
 2026-10-05 확인 결과, [API 문서](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview#cross-surface-availability)는 API 업로드와 claude.ai의 분리를 명시한다. [계정 도움말](https://support.claude.com/en/articles/12512180-use-skills-in-claude)은 ZIP UI 업로드를, [Claude Code 문서](https://code.claude.com/docs/en/skills)는 로컬 폴더·플러그인 배포를 안내한다. 개인 계정에 올리는 공식 API·CLI는 확인되지 않아 UI 어댑터를 사용한다.
 
-같은 저장 프로필로 재확인한 headless는 보안 확인 화면에서 중단됐다. 화면 밖 일반 Chrome은 목록 조회에 성공했으나 뒤 실행에서 보안 확인이 다시 나타났다. 따라서 일반 창도 인증 성공을 보장하지 않으며 보안 확인 시 위 인증 절차를 따른다.
+- headless·일반 창 모두 인증 성공을 가정하지 않음. 보안 확인이 나타나면 위 인증 절차 적용

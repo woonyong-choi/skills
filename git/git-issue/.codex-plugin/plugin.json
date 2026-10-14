@@ -1,0 +1,13 @@
+{
+  "name": "work-continuity",
+  "version": "0.1.13",
+  "description": "이슈 기반 작업 기록과 문맥 초기화 후 복구",
+  "hooks": "./hooks/codex.json",
+  "author": {
+    "name": "choi woo-nyong"
+  },
+  "interface": {
+    "displayName": "Developer Thinking",
+    "shortDescription": "이슈에 작업 맥락을 저장하고 초기화 후 복구"
+  }
+}

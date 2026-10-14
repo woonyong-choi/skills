@@ -66,9 +66,11 @@ class _Context:
             raise ValueError(f"{remote_name} must be a github.com repository")
         self.repositories: dict[str, _Repository] = {}
         self.target = self.lookup(match[1])
-        self.sha = self.git("rev-parse", "HEAD")
-        self.files = set(
-            self.git("ls-tree", "-r", "--name-only", "-z", "HEAD").split("\0")
+        self.sha = self.git("rev-parse", "--revs-only", "HEAD")
+        self.files = (
+            set(self.git("ls-tree", "-r", "--name-only", "-z", "HEAD").split("\0"))
+            if self.sha
+            else set()
         )
 
     def git(self, *args: str) -> str:

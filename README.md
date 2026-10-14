@@ -5,7 +5,7 @@
   <a href="#설치">설치</a> · <a href="#사용법">사용법</a> · <a href="#스킬-목록">스킬 목록</a> · <a href="#측정-결과">측정 결과</a>
 </p>
 
-코드를 고치고 문서를 쓰는 작업에서 이름, 형식, 검증 절차를 반복해서 설명하지 않도록 작업별 규칙을 제공한다. 필요한 스킬을 선택하면 그 본문과 관련 규칙을 읽는 구조다. 원본은 역할별 폴더에 두고, Claude Code와 Codex에는 같은 이름과 내용으로 설치한다.
+개발 작업은 [Developer Thinking](code/developer-thinking/SKILL.md)에서 연결·결정·실행·검증·기록 순서로 진행한다. 각 단계는 기존 소유 스킬의 해당 규칙만 읽는다. 원본은 역할별 폴더에 두고, Claude Code와 Codex에는 같은 이름과 내용으로 설치한다.
 
 ## 작동 방식
 
@@ -14,7 +14,7 @@
   <img src="docs/assets/skill-exposure-light.svg" alt="분류별 원본을 평평한 목록으로 설치하고 선택한 스킬의 본문과 참조를 읽는 구조">
 </picture>
 
-설치 폴더에는 스킬 이름과 짧은 description을 모두 노출하는 H-flat 구조를 사용한다. 스킬 본문을 합치거나 선택을 중계하는 별도 스킬을 추가하지 않는다. 본문의 `기반`은 항상 읽는 규칙, `필요할 때만 읽기`는 해당 조건에서 읽는 규칙이다.
+설치 폴더에는 스킬 이름과 짧은 description을 노출한다. developer-thinking은 실행 순서와 조회 선택을, 하위 스킬은 주제별 판단을 소유한다. `기반`은 선행 적용 관계이며 같은 문맥의 같은 원문은 재사용한다. `필요할 때만 읽기`는 해당 조건의 절만 조회하며 루트 전체를 다시 실행하지 않는다.
 
 ## 설치
 
@@ -44,6 +44,14 @@ $git-pull-request 현재 diff와 테스트 결과로 PR 본문을 작성해 줘.
 
 요청과 스킬 설명이 맞으면 도구가 자동으로 선택할 수도 있다. 명시 호출은 원하는 규칙을 지정하는 방법이다. 파일 수정, Git 실행, 게시 범위는 함께 적은 요청에 따른다.
 
+### 압축 후 작업 복구
+
+Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continuity`를 유지한다. 연결한 이슈에 작업 기록을 저장하고 새 세션·압축 후 복구 명령을 안내한다. [판 상태](git/git-issue/references/project-status.md), [기록·복구](git/git-issue/references/continuity.md), [설치·호스트 연결](git/git-issue/references/continuity-hosts.md)은 해당 작업 때만 읽는다. 판단은 소유 스킬, 저장·복구는 플러그인 코드가 담당한다.
+
+기존 `issue-continuity`는 이전 설치 ID다. 중복 활성화 여부를 먼저 확인하고, 활성 갱신은 설치·호스트 연결의 안정된 진입점 절차를 따른다.
+
+설치와 실제 훅 실행은 별도다. Codex는 `/hooks`에서 새 훅 정의를 검토·신뢰해야 실행한다. 사용량 신호가 없으면 임계값은 미확인으로 남기고 작업 경계와 압축 훅을 사용한다.
+
 ## 스킬 목록
 
 ### Git과 GitHub
@@ -60,6 +68,7 @@ $git-pull-request 현재 diff와 테스트 결과로 PR 본문을 작성해 줘.
 | 스킬 | 용도 |
 |---|---|
 | [code-style](code/code-style/SKILL.md) | 이름, 오류 처리, 주석, 테스트의 공통 규칙 |
+| [developer-thinking](code/developer-thinking/SKILL.md) | 개발 실행 순서, 조건별 규칙 조회 |
 | [code-refactoring](code/code-refactoring/SKILL.md) | 문제 원인에 맞는 리팩터링 기법 선택 |
 | [code-style-css](code/code-style-css/SKILL.md) | CSS 선택자, 배치, 반응형, 접근성 |
 | [code-style-javascript](code/code-style-javascript/SKILL.md) | JavaScript 코드와 ESLint·Prettier·node:test |

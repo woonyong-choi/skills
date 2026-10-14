@@ -1,0 +1,102 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" codex; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{}'; fi",
+            "timeout": 5,
+            "statusMessage": "Restore Work Context"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" codex; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{}'; fi",
+            "timeout": 5,
+            "statusMessage": "Check Task Continuity"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" codex; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{}'; fi",
+            "timeout": 5,
+            "statusMessage": "Check Context Usage"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" codex; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{}'; fi",
+            "timeout": 20,
+            "statusMessage": "Sync Work Checkpoint"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" codex; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{}'; fi",
+            "timeout": 5,
+            "statusMessage": "Mark Context for Recovery"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" codex; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{}'; fi",
+            "timeout": 5,
+            "statusMessage": "Verify Work Checkpoint"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" codex; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{}'; fi",
+            "timeout": 3,
+            "statusMessage": "Record Session End"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^(Write|Edit|MultiEdit|apply_patch|Bash|exec_command)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" codex; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Work Continuity document guard unavailable\"}}'; fi",
+            "timeout": 5,
+            "statusMessage": "Validate Document Destination"
+          }
+        ]
+      }
+    ]
+  },
+  "description": "Preserve and restore issue-based work context"
+}

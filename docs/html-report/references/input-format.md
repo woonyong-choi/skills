@@ -19,14 +19,14 @@
 }
 ```
 
-| 입력 | 필수·형식 |
-|---|---|
-| 최상위 | `title`, `intro`, `questions` 필수. `kind`는 `decision` 또는 `result`, 생략 시 decision |
-| 질문 | `title`, `what`, `options`, `effect`, `rec` 필수 |
-| 선택지 | `label` 필수. `images`, `table`, `text`, `mock`은 해당 자료가 있을 때 |
-| 그림 | `dap`, `inline`, `src` 중 하나와 `alt`. 경로는 입력 폴더 기준. `max_height`의 의미는 [구성 절의 이미지 항목](../SKILL.md#구성) 참조 |
-| 표 | `head`, `rows` 필수. `align`, `widths` 선택 |
-| 보충 | `check`, `note`, `extra` 선택. extra 항목은 `title`과 실제 options 필요, 빈 예시 삽입 금지 |
+입력 → 필수·형식:
+
+- 최상위 → `title`, `intro`, `questions` 필수. `kind`는 `decision` 또는 `result`, 생략 시 decision
+- 질문 → `title`, `what`, `options`, `effect`, `rec` 필수
+- 선택지 → `label` 필수. `images`, `table`, `text`, `mock`은 해당 자료가 있을 때
+- 그림 → `dap`, `inline`, `src` 중 하나와 `alt`. 경로는 입력 폴더 기준. `max_height`의 의미는 [구성 절의 이미지 항목](../SKILL.md#구성) 참조
+- 표 → `head`, `rows` 필수. `align`, `widths` 선택
+- 보충 → `check`, `note`, `extra` 선택. extra 항목은 `title`과 실제 options 필요, 빈 예시 삽입 금지
 
 ## 선택 기능
 

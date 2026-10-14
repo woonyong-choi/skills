@@ -13,9 +13,9 @@
 - `stack`: 재귀 깊이와 큰 지역 배열 기준. 없으면 O(1)
 - 숫자 바이트: 크기가 정해진 타입(`u64` = 8바이트 등)이나 측정값만. 그 밖에는 기호 식(지어낸 수치 방지)
 
-| 언어 | 주석 기호 | 힙 측정 | 시간 측정 |
-|---|---|---|---|
-| Rust | `//` | `dhat` | `criterion` |
-| Kotlin | `//` | JFR 할당 기록 | JMH |
-| Python | `#` | `tracemalloc` | `pytest-benchmark` |
-| JavaScript | `//` | `node --heap-prof` | `node --cpu-prof` |
+언어 → 주석 기호 → 힙 측정 → 시간 측정:
+
+- Rust → `//` → `dhat` → `criterion`
+- Kotlin → `//` → JFR 할당 기록 → JMH
+- Python → `#` → `tracemalloc` → `pytest-benchmark`
+- JavaScript → `//` → `node --heap-prof` → `node --cpu-prof`

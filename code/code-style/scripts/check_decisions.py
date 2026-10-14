@@ -26,10 +26,10 @@ claim: 선택 필드, pass/fail/unknown 중 주장한 판정.
   전체 후보 pass도 누락된 요구·실제 동작·운영 보장 증명 아님.
 
 예시:
-{"requirements":{"cash":{"source":"first month <= 100 USD","limit":"100",
-"operator":"<=","unit":"USD","scope":"first-month cash"}},
-"candidates":{"annual":{"cash":{"value":"10*6*12","unit":"USD",
-"scope":"first-month cash","evidence":"provided quote","certainty":"known"}}}}
+{"requirements":{"memory":{"source":"peak memory <= 100 MiB","limit":"100",
+"operator":"<=","unit":"MiB","scope":"process peak"}},
+"candidates":{"buffered":{"memory":{"value":"20*6","unit":"MiB",
+"scope":"process peak","evidence":"measured buffers","certainty":"known"}}}}
 """
 
 from __future__ import annotations
