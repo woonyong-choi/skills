@@ -43,7 +43,7 @@ description: "README·docs에 넣는 구조도·차트·대체 글·데모 GIF�
 
 - daphnis 작업 시작 전 → [도구와 파일](references/daphnis.md)
 - daphnis 설치·직접 실행 전 → [설치와 실행](references/execution.md)
-- Markdown 안 그림 또는 CI 연결 변경 전 → [Markdown과 CI](references/markdown.md)
+- daphnis의 Markdown 그림 또는 CI 연결 변경 전 → [Markdown과 CI](references/markdown.md)
 - daphnis 그림 원본 작성·변경 전 → [그림 작성](references/syntax.md)
 - daphnis 실험 차트 작성·변경 전 → [실험 차트](references/charts.md)
 - VHS 녹화 원본 작성·실행 전 → [VHS](references/vhs.md)

@@ -32,7 +32,7 @@ description: "저장소의 새 폴더 구조·이름을 정하거나 요청받�
 - 루트 소스 → `<프로젝트>-<제품·실행 단위>` → `<프로젝트>-server`, `<프로젝트>-web`, `<프로젝트>-desktop`, `<프로젝트>-protocol`
 - 루트 비소스 → 아래 이름 우선, 없으면 언어·도구 관례 이름. 접두사 없음 → `assets`, `docs`, `scripts`, `tools`, `examples`, `config`, `.github`
 - 모듈 → 역할·도메인 명사, 접두사 없음 → `core`, `engine`, `cli`, `tui`, `api`, `auth`, `store`
-- 외부 서비스 → 연결 폴더 아래 서비스 이름 → `providers/codex`, `adapters/s3`
+- 외부 서비스 → 연결 폴더 아래 실제 서비스 이름 → `providers/<service>`, `adapters/<service>`
 
 ## 모듈 이름
 
@@ -42,7 +42,7 @@ description: "저장소의 새 폴더 구조·이름을 정하거나 요청받�
 
 - 같은 종류 여럿이면 복수형 → `providers`, `sessions`, `judges`
 - 역할 하나면 단수형 → `queue`, `store`, `config`
-- 외부 서비스 이름은 연결 폴더 안에서만 → `providers/claude` O, `claude-handler` X
+- 외부 서비스 이름은 연결 폴더 안에서만 → `providers/<service>` O, `<service>-handler` X
 
 ## 금지
 

@@ -1,7 +1,7 @@
 {
   "name": "work-continuity",
-  "version": "0.1.13",
-  "description": "이슈 기반 작업 기록과 문맥 초기화 후 복구",
+  "version": "0.1.14",
+  "description": "Developer Thinking: 개발 판단·검증과 이슈 기반 작업 복구",
   "hooks": "./hooks/claude.json",
   "author": {
     "name": "choi woo-nyong"

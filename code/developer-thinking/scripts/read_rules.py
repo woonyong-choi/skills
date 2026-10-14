@@ -15,12 +15,12 @@ from pathlib import Path
 from typing import Final
 
 RULES: Final = {
+    "requirements": ("repo-docs-design", "references/requirements.md", ()),
     "choice": (
         "repo-docs-design",
         "SKILL.md",
         ("적용", "요구 확인", "선택", "설명과 조사", "구조 경계"),
     ),
-    "requirements": ("repo-docs-design", "references/requirements.md", ()),
     "infrastructure": ("repo-docs-design", "references/infrastructure.md", ()),
     "data-and-concurrency": ("code-style", "references/data-and-concurrency.md", ()),
     "resources": ("code-style", "references/resources.md", ()),
