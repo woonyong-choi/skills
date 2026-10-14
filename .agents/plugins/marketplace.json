@@ -1,0 +1,20 @@
+{
+  "name": "woon-skills",
+  "interface": {
+    "displayName": "Woon Skills"
+  },
+  "plugins": [
+    {
+      "name": "work-continuity",
+      "source": {
+        "source": "local",
+        "path": "./git/git-issue"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

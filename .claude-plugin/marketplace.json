@@ -1,0 +1,14 @@
+{
+  "name": "woon-skills",
+  "owner": {
+    "name": "choi woo-nyong"
+  },
+  "plugins": [
+    {
+      "name": "work-continuity",
+      "source": "./git/git-issue",
+      "description": "Developer Thinking: 개발 판단·검증과 이슈 기반 작업 복구",
+      "version": "0.1.14"
+    }
+  ]
+}

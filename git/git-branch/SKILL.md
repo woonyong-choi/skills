@@ -19,18 +19,18 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 
 기준: 저장소 쓰기 권한이 있는 사람 수. 1명이면 혼자, 2명 이상이면 팀. AI 에이전트 제외.
 
-| 항목 | 혼자 | 팀 |
-|---|---|---|
-| 기본 브랜치 직접 push | 금지 | 금지 |
-| PR | 필수 | 필수 |
-| 머지 전 리뷰 승인 | 없음 | 작성자가 아닌 사람 1명 |
-| 검증 | CI 있으면 CI 통과, 없으면 로컬 빌드·테스트·포맷·린트 통과 | 혼자와 동일 |
+항목 → 혼자 → 팀:
+
+- 기본 브랜치 직접 push → 금지 → 금지
+- PR → 필수 → 필수
+- 머지 전 리뷰 승인 → 없음 → 작성자가 아닌 사람 1명
+- 검증 → CI 있으면 CI 통과, 없으면 로컬 빌드·테스트·포맷·린트 통과 → 혼자와 동일
 
 ## 작업 단위
 
 이슈로 추적하는 작업 하나 = 브랜치 하나 = PR 하나 = 작업 주체 하나.
 
-- 이슈 없이 PR을 만드는 기준: (git-issue 닫기)
+- 작업 이슈 연결·작은 후속 작업 재사용 기준: (git-issue 닫기)
 - 작업 주체: 사람은 이슈 담당자(assignee), 같은 계정을 쓰는 AI 에이전트는 그 브랜치를 만든 에이전트
 - `experiment` 이슈의 사전 등록 PR 여부와 결과 연결: repo-docs-experiment 흐름
 - 서로 독립된 추적 작업이면 이슈부터 분리
@@ -38,19 +38,19 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 
 ## 이름
 
-`type/이슈번호-scope-설명` 또는 `type/scope-설명`
+`type/이슈번호-scope-설명`
 
-- 이슈를 추적하면 첫 형식, 이슈 없는 작은 정리는 둘째 형식
+- 작은 후속 정리도 git-issue의 연결 기준에 따라 기존 이슈 번호 사용
 - type, scope: 커밋과 같은 단어 (git-commit type, scope)
 - 설명: 영어 소문자 kebab-case, 2~5단어
 
-| 예 | 뜻 |
-|---|---|
-| `feat/{번호}-api-add-endpoint` | 해당 이슈, api에 엔드포인트 추가 |
-| `fix/{번호}-ui-panel-height` | 해당 이슈, ui 영역 높이 오류 |
-| `docs/{번호}-readme-install` | 해당 이슈, README 설치 방법 |
-| `docs/repo-comment-cleanup` | 이슈 없는 주석 정리 |
-| `release/v0.1` | 릴리스 브랜치 (예외 형식) |
+예 → 뜻:
+
+- `feat/{번호}-api-add-endpoint` → 해당 이슈, api에 엔드포인트 추가
+- `fix/{번호}-ui-panel-height` → 해당 이슈, ui 영역 높이 오류
+- `docs/{번호}-readme-install` → 해당 이슈, README 설치 방법
+- `docs/{번호}-repo-comment-cleanup` → 기존 이슈의 후속 주석 정리
+- `release/v0.1` → 릴리스 브랜치 (예외 형식)
 
 ## 시작 전 확인
 
@@ -78,7 +78,7 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 
 - 제목·scope 선택: (git-commit 형식, scope)
 - 이슈 연결: git-issue 닫기 절
-- 머지 전: `git merge {원격}/{기본 브랜치}` 후 변경된 입력에 대한 검사 실행. 증거 재사용 조건: (code-style 검증 증거)
+- 머지 전: `git merge {원격}/{기본 브랜치}` 후 변경된 입력에 대한 검사 실행. 증거 재사용 조건: (code-style 검증)
 - 본문에 AI 흔적 금지
 
 ## 머지

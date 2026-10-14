@@ -43,10 +43,10 @@ def read_terms(skills: dict[str, Path]) -> dict[str, str]:
     section = text.split('## 용어\n', 1)[1].split('\n## ', 1)[0]
     terms = {}
     for _, line in prose_lines(section):
-        if not line.startswith('|'):
+        if not line.startswith('- ') or ' → ' not in line:
             continue
-        cells = [cell.strip() for cell in line.strip('|').split('|')]
-        if len(cells) != 2 or cells[0] == '쓰는 말' or cells[0].startswith('-'):
+        cells = line[2:].split(' → ', 1)
+        if len(cells) != 2:
             continue
         for term in cells[1].split(', '):
             terms[term.split('(')[0]] = cells[0]
@@ -99,8 +99,10 @@ def check_prose(text: str, terms: dict[str, str]) -> list[str]:
             if level == 2:
                 headings.add(title)
             previous_level = level
-        # 정본의 금지어 표는 잘못된 용어를 설명하는 정의이며 사용 문장이 아니다.
-        if line.startswith('|') and any(line.startswith(f'| {good} | {bad}') for bad, good in terms.items()):
+        if re.fullmatch(r'\s*\|[| :\-]+\|\s*', line):
+            errors.append(f'지시 형식: {number}: 표 대신 조건별 목록 사용')
+        # 금지어 정의 자체를 잘못된 용어 사용으로 판정하지 않는다.
+        if any(line.startswith(f'- {good} → {bad}') for bad, good in terms.items()):
             continue
         visible = re.sub(r'`[^`]*`|\]\([^)]+\)', '', line)
         for bad, good in terms.items():

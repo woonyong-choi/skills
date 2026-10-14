@@ -7,7 +7,7 @@ description: "README·docs에 넣는 구조도·차트·대체 글·데모 GIF�
 
 - 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 그림 원본 형식, 변환, 검사, 대체 글. 그림을 넣는 자리는 종류별 스킬 담당
-- 필요할 때만 읽기: README 그림 배치 → repo-docs-readme; 실험 차트의 통계·신뢰구간 → repo-docs-experiment
+- 필요할 때만 읽기: README 그림 배치 → repo-docs-readme의 머리·절 규칙; 실험 차트의 통계·신뢰구간 → repo-docs-experiment의 통계 규칙
 
 - 원본·입력 JSON·만든 그림 함께 커밋. 만든 그림의 손 수정 금지
 - 순서·전이·시간 변화가 전달할 정보이면 움직이는 SVG, 최종 구조·값만 전달하면 정지 SVG
@@ -39,13 +39,13 @@ description: "README·docs에 넣는 구조도·차트·대체 글·데모 GIF�
 
 해당 작업 시작 전 아래 하위 문서 필수 확인
 
-| 조건 | 하위 문서 |
-|---|---|
-| daphnis 작업 시작 전 | [도구와 파일](references/daphnis.md) |
-| daphnis 설치·직접 실행 전 | [설치와 실행](references/execution.md) |
-| Markdown 안 그림 또는 CI 연결 변경 전 | [Markdown과 CI](references/markdown.md) |
-| daphnis 그림 원본 작성·변경 전 | [그림 작성](references/syntax.md) |
-| daphnis 실험 차트 작성·변경 전 | [실험 차트](references/charts.md) |
-| VHS 녹화 원본 작성·실행 전 | [VHS](references/vhs.md) |
-| render_figures.py 변환 실행 전 | [변환](references/conversion.md) |
-| daphnis 변환·검사 또는 변환 도구 교체 전 | [검사](references/validation.md) |
+조건 → 하위 문서:
+
+- daphnis 작업 시작 전 → [도구와 파일](references/daphnis.md)
+- daphnis 설치·직접 실행 전 → [설치와 실행](references/execution.md)
+- daphnis의 Markdown 그림 또는 CI 연결 변경 전 → [Markdown과 CI](references/markdown.md)
+- daphnis 그림 원본 작성·변경 전 → [그림 작성](references/syntax.md)
+- daphnis 실험 차트 작성·변경 전 → [실험 차트](references/charts.md)
+- VHS 녹화 원본 작성·실행 전 → [VHS](references/vhs.md)
+- render_figures.py 변환 실행 전 → [변환](references/conversion.md)
+- daphnis 변환·검사 또는 변환 도구 교체 전 → [검사](references/validation.md)

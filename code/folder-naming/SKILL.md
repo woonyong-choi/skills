@@ -27,32 +27,32 @@ description: "저장소의 새 폴더 구조·이름을 정하거나 요청받�
 
 ## 종류별 이름
 
-| 종류 | 형식 | 예 |
-|---|---|---|
-| 루트 소스 | `<프로젝트>-<제품·실행 단위>` | `<프로젝트>-server`, `<프로젝트>-web`, `<프로젝트>-desktop`, `<프로젝트>-protocol` |
-| 루트 비소스 | 아래 이름 우선, 없으면 언어·도구 관례 이름. 접두사 없음 | `assets`, `docs`, `scripts`, `tools`, `examples`, `config`, `.github` |
-| 모듈 | 역할·도메인 명사, 접두사 없음 | `core`, `engine`, `cli`, `tui`, `api`, `auth`, `store` |
-| 외부 서비스 | 연결 폴더 아래 서비스 이름 | `providers/codex`, `adapters/s3` |
+종류 → 형식 → 예:
+
+- 루트 소스 → `<프로젝트>-<제품·실행 단위>` → `<프로젝트>-server`, `<프로젝트>-web`, `<프로젝트>-desktop`, `<프로젝트>-protocol`
+- 루트 비소스 → 아래 이름 우선, 없으면 언어·도구 관례 이름. 접두사 없음 → `assets`, `docs`, `scripts`, `tools`, `examples`, `config`, `.github`
+- 모듈 → 역할·도메인 명사, 접두사 없음 → `core`, `engine`, `cli`, `tui`, `api`, `auth`, `store`
+- 외부 서비스 → 연결 폴더 아래 실제 서비스 이름 → `providers/<service>`, `adapters/<service>`
 
 ## 모듈 이름
 
 모듈 안 하위 폴더도 같은 규칙.
 
-| 규칙 | 예 |
-|---|---|
-| 같은 종류 여럿이면 복수형 | `providers`, `sessions`, `judges` |
-| 역할 하나면 단수형 | `queue`, `store`, `config` |
-| 외부 서비스 이름은 연결 폴더 안에서만 | `providers/claude` O, `claude-handler` X |
+규칙 → 예:
+
+- 같은 종류 여럿이면 복수형 → `providers`, `sessions`, `judges`
+- 역할 하나면 단수형 → `queue`, `store`, `config`
+- 외부 서비스 이름은 연결 폴더 안에서만 → `providers/<service>` O, `<service>-handler` X
 
 ## 금지
 
-| 금지 | 이유 | 대신 |
-|---|---|---|
-| `utils`, `common`, `misc`, `helpers`, `etc` | 내용 파악 불가 | 역할 이름 (`time`, `paths`) |
-| `new`, `old`, `temp`, `v2`, `backup` | 상태는 git이 관리 | 삭제 또는 브랜치 |
-| `crates`, `packages`, `libs`, 루트 `src` | 기술 종류 기준 묶기 | `<프로젝트>-<제품>` |
-| 경로 안 이름 반복 (`<프로젝트>-server/<프로젝트>-core`) | 중복 | `<프로젝트>-server/core` |
-| 대문자·공백·밑줄 | 표기 혼용 | 소문자 kebab-case |
+금지 → 이유 → 대신:
+
+- `utils`, `common`, `misc`, `helpers`, `etc` → 내용 파악 불가 → 역할 이름 (`time`, `paths`)
+- `new`, `old`, `temp`, `v2`, `backup` → 상태는 git이 관리 → 삭제 또는 브랜치
+- `crates`, `packages`, `libs`, 루트 `src` → 기술 종류 기준 묶기 → `<프로젝트>-<제품>`
+- 경로 안 이름 반복 (`<프로젝트>-server/<프로젝트>-core`) → 중복 → `<프로젝트>-server/core`
+- 대문자·공백·밑줄 → 표기 혼용 → 소문자 kebab-case
 
 언어가 강제하는 표기(Rust 모듈 snake_case, Java package 등)는 그 언어 우선.
 
@@ -60,10 +60,10 @@ description: "저장소의 새 폴더 구조·이름을 정하거나 요청받�
 
 패키지·crate 이름: 폴더와 별개로 `<프로젝트>-<모듈>`. 언어·레지스트리 표기 관례 우선 (Python `<프로젝트>_<모듈>` 등).
 
-| 폴더 | 패키지·crate |
-|---|---|
-| `<프로젝트>-server/core` | `<프로젝트>-core` |
-| `<프로젝트>-server/cli` | `<프로젝트>-cli` |
+폴더 → 패키지·crate:
+
+- `<프로젝트>-server/core` → `<프로젝트>-core`
+- `<프로젝트>-server/cli` → `<프로젝트>-cli`
 
 ## 이름 바꿀 때
 
