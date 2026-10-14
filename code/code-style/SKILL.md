@@ -7,7 +7,9 @@ description: "코드를 작성·검토할 때 언어 공통의 이름·오류·�
 
 - 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 범위: 코드 공통 규칙의 정본. 언어별 스킬은 언어별 스킬 절의 항목만 정하고, 그 밖에서 다르면 이 스킬 우선
-- 필요할 때만 읽기: 모든 코드 작성·검토의 착수·재개 → developer-thinking 본문 필수 확인; 결과가 다른 미확정 설계 선택 → repo-docs-design; 리팩터링 기법 선택 → code-refactoring; 파일·모듈 이름 결정 → folder-naming
+- 필요할 때만 읽기: 결과가 다른 미확정 설계 선택 → repo-docs-design; 리팩터링 기법 선택 → code-refactoring; 파일·모듈 이름 결정 → folder-naming
+
+코드 작성·검토의 착수·재개: [developer-thinking](../developer-thinking/SKILL.md) 본문 먼저 적용.
 
 ## 언어별 스킬
 
