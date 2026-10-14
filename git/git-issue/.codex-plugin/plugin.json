@@ -1,6 +1,6 @@
 {
   "name": "work-continuity",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "개발 판단·검증과 이슈 기반 작업 복구",
   "hooks": "./hooks/codex.json",
   "author": {
