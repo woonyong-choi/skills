@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -101,6 +102,9 @@ def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
             assert plain.stdout.count(row['text']) == 1
         invalid = subprocess.run([sys.executable, str(reader), '--catalog', '--text'], capture_output=True, text=True)
         assert invalid.returncode == 2 and not invalid.stdout
+        _check_code_style_language_reader(reader, installed.parent)
+        _check_installed_rule_hooks(installed.parent, install_home / 'orchestration')
+
     with zipfile.ZipFile(install_home / 'dist/skill-sync.zip') as archive:
         assert [name for name in archive.namelist() if Path(name).name == 'SKILL.md'] == ['skill-sync/SKILL.md']
         expected = {f'skill-sync/{name}': content for name, content in files.items() if not name.startswith('tests/fixtures/valid/')}
@@ -177,3 +181,167 @@ def test_install_changed_zip_payload_rebuilt(install_home: Path, damage: str) ->
     with zipfile.ZipFile(archive_path) as archive:
         assert len(archive.namelist()) == len(expected)
         assert {name: archive.read(name) for name in archive.namelist()} == expected
+
+
+def _check_installed_rule_hooks(skills: Path, root: Path) -> None:
+    # #58: 시작·압축 복구마다 정본 한 번, 미저장 checkpoint는 본문 재주입 사유가 아니다.
+    hook = skills / 'git-issue/scripts/continuity_hook.py'
+    root_rules = (skills / 'developer-thinking/SKILL.md').read_text()
+    env = {**os.environ, 'ISSUE_CONTINUITY_ROOT': str(root), 'ISSUE_CONTINUITY_TASK': '', 'ISSUE_CONTINUITY_WINDOW': ''}
+    folder = root / 'rule-entry'
+    folder.mkdir(parents=True, exist_ok=True)
+    for host in ('claude', 'codex'):
+        for is_bound in (False, True):
+            session = f'install-rules-{host}-{is_bound}-{skills.parent.name}'
+            binding = {'repo': str(ROOT), 'url': 'https://github.com/woonyong-choi/skills/issues/58', 'session_ids': [session]}
+            (folder / 'binding.json').write_text(json.dumps(binding if is_bound else {}))
+            events = [('SessionStart', 1), ('UserPromptSubmit', 0), ('UserPromptSubmit', 0)]
+            if is_bound:
+                events += [('PostCompact', 0), ('UserPromptSubmit', 1), ('UserPromptSubmit', 0)]
+            for event, expected_count in events:
+                payload = {'hook_event_name': event, 'cwd': str(ROOT), 'session_id': session}
+                hooked = subprocess.run([sys.executable, str(hook), host], input=json.dumps(payload), capture_output=True, text=True, env=env)
+                assert hooked.returncode == 0 and not hooked.stderr, hooked.stderr
+                context = json.loads(hooked.stdout).get('hookSpecificOutput', {}).get('additionalContext', '')
+                assert context.count(root_rules) == expected_count, (host, is_bound, event)
+            if is_bound:
+                _check_rule_gate(hook, env, host, session)
+
+
+def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str) -> None:
+    # #58: 실제 설치 훅 → 누락 차단 → 원문 조회 → 출력 대조 → 원래 도구 재개.
+    payload = {'cwd': str(ROOT), 'session_id': session, 'tool_name': 'Bash', 'tool_input': {'command': 'cat git/git-issue/scripts/continuity_hook.py'}}
+    def invoke(event: str, **extra: object) -> dict:
+        done = subprocess.run([sys.executable, str(hook), host], input=json.dumps({**payload, 'hook_event_name': event, **extra}), capture_output=True, text=True, env=env)
+        assert done.returncode == 0 and not done.stderr, done.stderr
+        return json.loads(done.stdout)
+
+    blocked = invoke('PreToolUse')['hookSpecificOutput']
+    assert blocked['permissionDecision'] == 'deny'
+    command = blocked['permissionDecisionReason'].split('`')[1]
+    delivered = []
+    for _ in range(8):
+        read = subprocess.run(shlex.split(command), capture_output=True, text=True, env=env)
+        assert read.returncode == 0, read.stderr
+        assert read.stdout not in delivered
+        delivered.append(read.stdout)
+        if len(delivered) == 1:
+            invoke('PostToolUse', tool_response={'stdout': read.stdout[:20]})
+            assert invoke('PreToolUse')['hookSpecificOutput']['permissionDecision'] == 'deny'
+        invoke('PostToolUse', tool_response={'stdout': read.stdout})
+        if not invoke('PreToolUse'):
+            break
+    else:
+        raise AssertionError('rule gate did not finish after complete output')
+    repeated = subprocess.run(shlex.split(command), capture_output=True, text=True, env=env)
+    assert '전달 완료' in repeated.stdout
+    assert not invoke('PreToolUse')
+    reader = hook.parents[2] / 'developer-thinking/scripts/read_rules.py'
+    query = {'command': f'{sys.executable} {reader} implement'}
+    rewritten = invoke('PreToolUse', tool_input=query)['hookSpecificOutput']['updatedInput']
+    reused = subprocess.run(shlex.split(rewritten['command']), capture_output=True, text=True, env=env)
+    assert reused.returncode == 0 and '전달 완료' in reused.stdout
+    style = hook.parents[2] / 'code-style/scripts/read_rules.py'
+    for arguments in ('--ids=CS-ERROR --text --language=python', '--ids CS-ERROR --text --language python'):
+        query_input = {'command': f'{sys.executable} {style} {arguments}'}
+        rewritten = invoke('PreToolUse', tool_input=query_input)['hookSpecificOutput']['updatedInput']
+        reused = subprocess.run(shlex.split(rewritten['command']), capture_output=True, text=True, env=env)
+        assert reused.returncode == 0 and '전달 완료' in reused.stdout
+    for arguments in ('--ids CS-NAEM --text', '--ids CS-ERROR --text --language=Py/x', '--ids CS-ERROR --text --language=missing'):
+        invalid = f'{sys.executable} {style} {arguments}'
+        assert not invoke('PreToolUse', tool_input={'command': invalid})
+        failed = subprocess.run(shlex.split(invalid), capture_output=True, text=True, env=env)
+        assert (failed.returncode, failed.stdout) == (2, '')
+    patch = '*** Begin Patch\n*** Update File: code/code-style/scripts/read_rules.py\n@@\n+def added():\n+    raise ValueError()\n*** End Patch'
+    for field in ('command', 'patch'):
+        assert invoke('PreToolUse', session_id=session + '-patch-' + field, tool_name='apply_patch', tool_input={field: patch})['hookSpecificOutput']['permissionDecision'] == 'deny'
+    assert invoke('PreToolUse', agent_id='separate-worker')['hookSpecificOutput']['permissionDecision'] == 'deny'
+    fresh = {'session_id': session + '-query-first'}
+    invoke('SessionStart', **fresh)
+    rewritten = invoke('PreToolUse', tool_input=query, **fresh)['hookSpecificOutput']['updatedInput']
+    prior = subprocess.run(shlex.split(rewritten['command']), capture_output=True, text=True, env=env)
+    assert prior.returncode == 0 and '# Code Style' in prior.stdout
+    invoke('PostToolUse', tool_input=rewritten, tool_response={'stdout': prior.stdout}, **fresh)
+    blocked = invoke('PreToolUse', **fresh)['hookSpecificOutput']['permissionDecisionReason']
+    remaining = subprocess.run(shlex.split(blocked.split('`')[1]), capture_output=True, text=True, env=env)
+    assert remaining.returncode == 0 and '# Code Style\n' not in remaining.stdout
+    read_session = {'session_id': session + '-read', 'tool_name': 'Read', 'tool_input': {'file_path': str(ROOT / 'code/code-style/scripts/read_rules.py')}}
+    invoke('PostToolUse', tool_response='source inspected', **read_session)
+    assert invoke('Stop', **read_session)['decision'] == 'block'
+    assert not invoke('Stop', stop_hook_active=True, **read_session)
+    invoke('PostCompact')
+    assert not invoke('PreToolUse', tool_input={'command': 'true'})
+    assert invoke('PreToolUse')['hookSpecificOutput']['permissionDecision'] == 'deny'
+
+
+# #58: code-style 조회의 --language 공개 계약. 실패는 종료 2와 빈 stdout.
+def _check_code_style_language_reader(reader: Path, skills: Path) -> None:
+    def run(*arguments: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run([sys.executable, str(reader), *arguments], capture_output=True, text=True)
+
+    language = (skills / 'code-style-python/SKILL.md').read_text()
+    cost = (skills / 'code-style/references/cost.md').read_text()
+    rows = json.loads(run('--ids', 'CS-ERROR', 'CS-COST').stdout)
+    selected = run('--ids', 'CS-ERROR', 'CS-COST', 'CS-ERROR', '--text', '--language', 'python', 'python')
+    assert selected.returncode == 0, selected.stderr
+    for text in (*(row['text'] for row in rows), language, cost):
+        assert selected.stdout.count(text) == 1
+    assert [selected.stdout.count(f'<!-- {name} -->') for name in ('code-style-python/SKILL.md', 'code-style/references/cost.md')] == [1, 1]
+    assert selected.stdout.count('<!-- CS-LANGUAGE |') == 1
+    assert selected.stdout.index('<!-- CS-LANGUAGE |') < selected.stdout.index('<!-- CS-ERROR |')
+
+    rust = (skills / 'code-style-rust/SKILL.md').read_text()
+    for arguments in (
+        ('--language', 'python', '--language', 'rust'),
+        ('--language', 'python', 'rust', '--language', 'python'),
+    ):
+        merged = run('--ids', 'CS-ERROR', '--text', *arguments)
+        assert merged.returncode == 0, merged.stderr
+        assert (merged.stdout.count(language), merged.stdout.count(rust)) == (1, 1), arguments
+
+    unselected = run('--ids', 'CS-ERROR', '--text')
+    assert unselected.returncode == 0, unselected.stderr
+    assert language not in unselected.stdout and cost not in unselected.stdout and 'CS-LANGUAGE' not in unselected.stdout
+
+    for arguments in (
+        ('--ids', 'CS-ERROR', '--text', '--language', 'Python'),
+        ('--ids', 'CS-ERROR', '--text', '--language', 'python', '../python'),
+        ('--ids', 'CS-ERROR', '--text', '--language', 'missing-language'),
+        ('--ids', 'CS-ERROR', '--language', 'python'),
+        ('--catalog', '--text', '--language', 'python'),
+        ('--text', '--language', 'python'),
+        ('--ids', 'CS-ERROR', '--text', '--language'),
+    ):
+        failed = run(*arguments)
+        assert (failed.returncode, failed.stdout) == (2, ''), arguments
+
+    for removed, arguments in (
+        (skills / 'code-style-python/SKILL.md', ('--ids', 'CS-ERROR', '--text', '--language', 'python')),
+        (skills / 'code-style/references/cost.md', ('--ids', 'CS-ERROR', 'CS-COST', '--text')),
+    ):
+        content = removed.read_bytes()
+        removed.unlink()
+        try:
+            failed = run(*arguments)
+        finally:
+            removed.write_bytes(content)
+        assert (failed.returncode, failed.stdout) == (2, ''), removed
+
+    # 같은 ID가 다른 절을 가리키면 마지막 항목으로 덮어쓰지 않고 거부.
+    catalog = json.loads((skills / 'code-style/references/rule-map.json').read_text())
+    first, second = catalog['sections'][:2]
+    duplicate = json.dumps({'sections': [*catalog['sections'], {**first, 'title': second['title']}]})
+    for source, replacements, arguments in (
+        (skills / 'code-style/references/rule-map.json', ('null', '{"sections": null}', '{"sections": [null]}', '{"sections": [{}]}'), ('--catalog',)),
+        (skills / 'code-style/references/rule-map.json', (duplicate,), ('--ids', first['id'], '--text')),
+        (skills / 'code-style/references/errors.md', ('## missing\n',), ('--ids', 'CS-ERROR', '--text')),
+    ):
+        content = source.read_bytes()
+        try:
+            for replacement in replacements:
+                source.write_text(replacement, encoding='utf-8')
+                failed = run(*arguments)
+                assert (failed.returncode, failed.stdout) == (2, ''), source
+                assert str(source) in failed.stderr and 'Traceback' not in failed.stderr
+        finally:
+            source.write_bytes(content)
