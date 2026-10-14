@@ -1,6 +1,6 @@
 """정본 문서에서 요청한 규칙 절만 출력.
-인자: --ids 규칙ID [규칙ID ...] 또는 --catalog
-출력: 규칙 ID·조건·정본 경로·본문 JSON, 잘못된 ID·손상된 정본은 stderr와 종료 2
+인자: --ids 규칙ID [규칙ID ...] 또는 --catalog, --ids와 --text로 원문 출력
+출력: 기본 JSON, --text는 ID·조건·출처와 원문. 잘못된 ID·손상된 정본은 stderr와 종료 2
 """
 
 from __future__ import annotations
@@ -56,7 +56,10 @@ def main() -> int:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--catalog", action="store_true")
     mode.add_argument("--ids", nargs="+")
+    parser.add_argument("--text", action="store_true")
     args = parser.parse_args()
+    if args.text and not args.ids:
+        parser.error("--text requires --ids")
     try:
         if args.catalog:
             manifest = json.loads((ROOT / "references/rule-map.json").read_text())
@@ -66,7 +69,15 @@ def main() -> int:
             ]
         else:
             result = select_rules(ROOT, args.ids)
-        print(json.dumps(result, ensure_ascii=False))
+        if args.text:
+            print(
+                "\n".join(
+                    f"<!-- {row['id']} | {row['condition']} | code-style/{row['source']} -->\n{row['text']}"
+                    for row in result
+                )
+            )
+        else:
+            print(json.dumps(result, ensure_ascii=False))
         return 0
     except (ValueError, OSError, KeyError, StopIteration) as error:
         print(str(error), file=sys.stderr)

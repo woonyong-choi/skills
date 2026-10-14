@@ -81,6 +81,26 @@ def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
         # #25: 평탄한 설치본의 검사기가 하위 문서·앵커·용어 정본을 조회.
         checked = subprocess.run([sys.executable, str(installed / 'scripts/skill_check.py'), str(installed.parent)], capture_output=True, text=True)
         assert (checked.returncode, checked.stdout) == (0, 'total 0\n'), checked.stderr + checked.stdout
+        reader = installed.parent / 'developer-thinking/scripts/read_rules.py'
+        selected = subprocess.run([sys.executable, str(reader), 'product', 'implement', 'failure', 'implement'], capture_output=True, text=True)
+        assert selected.returncode == 0, selected.stderr
+        assert '- 필요할 때만 읽기: 결과가 다른 미확정 설계 선택' in selected.stdout
+        assert '- 필요할 때만 읽기: 코드에 들어간 인터페이스 문서' in selected.stdout
+        assert selected.stdout.index('# Code Style') < selected.stdout.index('## 실패 처리')
+        for heading in ('조건별 읽기', '원칙', '구현', '실패 처리', '검증'):
+            assert selected.stdout.count(f'\n## {heading}\n') == 1
+        review = subprocess.run([sys.executable, str(reader), 'review'], capture_output=True, text=True)
+        assert review.returncode == 0, review.stderr
+        assert '## 구현' not in review.stdout and '## 실패 처리' not in review.stdout
+        reader = installed.parent / 'code-style/scripts/read_rules.py'
+        command = [sys.executable, str(reader), '--ids', 'CS-ERROR', 'CS-TEST', 'CS-ERROR']
+        original = subprocess.run(command, capture_output=True, text=True)
+        plain = subprocess.run([*command, '--text'], capture_output=True, text=True)
+        assert original.returncode == plain.returncode == 0
+        for row in json.loads(original.stdout):
+            assert plain.stdout.count(row['text']) == 1
+        invalid = subprocess.run([sys.executable, str(reader), '--catalog', '--text'], capture_output=True, text=True)
+        assert invalid.returncode == 2 and not invalid.stdout
     with zipfile.ZipFile(install_home / 'dist/skill-sync.zip') as archive:
         assert [name for name in archive.namelist() if Path(name).name == 'SKILL.md'] == ['skill-sync/SKILL.md']
         expected = {f'skill-sync/{name}': content for name, content in files.items() if not name.startswith('tests/fixtures/valid/')}
