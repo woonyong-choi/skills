@@ -7,7 +7,7 @@ description: "GitHub 이슈의 제목·본문·라벨·완료 조건을 작성�
 
 - 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 범위: 이슈 종류, 라벨, 제목, 본문 틀, 묶음, 상태, 닫기. 브랜치와 PR 흐름(git-branch), PR 본문(git-pull-request), 커밋 형식(git-commit) 제외
-- 필요할 때만 읽기: 제목·본문·댓글 작성·검토 → repo-docs `references/writing.md` 필수 확인; 공통 끝말의 뜻이나 영역 라벨의 scope 단어 → git-commit
+- 필요할 때만 읽기: 개발 작업 착수·재개 → developer-thinking 본문 필수 확인; 제목·본문·댓글 작성·검토 → repo-docs `references/writing.md` 필수 확인; 공통 끝말의 뜻이나 영역 라벨의 scope 단어 → git-commit
 
 ## 종류
 

@@ -1,4 +1,4 @@
 interface:
   display_name: "Developer Thinking"
-  short_description: "빠진 요구·규모·선택을 찾아 근거와 트레이드오프로 설명"
-  default_prompt: "$developer-thinking 스킬로 빠진 판단과 선택 근거를 확인해 줘: [요청]"
+  short_description: "제품 개발의 요구·제약·선택·구현·검증을 단계별 필수 대조"
+  default_prompt: "$developer-thinking을 적용해 다음 개발 요청의 제약·대안을 확인하고 선택·위임 범위에서 실행해 줘. 분석 요청은 분석까지만, 구현 요청은 구현·검증까지: [요청]"

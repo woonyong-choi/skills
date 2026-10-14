@@ -7,7 +7,7 @@ description: "저장소 아키텍처·기능 설계·용어·문서 안내를 �
 
 - 우선순위: 해당 주제의 사용자 지시 → 저장소 규칙 → 이 스킬. 중복 규칙은 머리에 연결한 정본 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 새 기능을 넣는 자리, 설계 문서 네 종류(`docs/README.md`, `architecture.md`, `design/{주제}.md`, `glossary.md`)의 절 구성, 코드로 옮기는 규칙
-- 필요할 때만 읽기: 코드에 들어간 인터페이스 문서(프로토콜, 명령, 화면, 데이터, 설정, 오류) → repo-docs-spec; 타입으로 드러나지 않는 실패 조건·제약을 코드 주석으로 옮길 때 → code-style; 맥락, 구성 요소, 순서, 상태 그림 → repo-docs-figures; 시각적 후보 비교·사용자 판정 → html-report; 대안 선택 근거 기록 → repo-docs-decision; 설계 값 측정 → repo-docs-experiment; 문서 동반 확인 → git-pull-request
+- 필요할 때만 읽기: IT 제품 아키텍처·기능 설계 착수·재개 → developer-thinking 본문 필수 확인; 코드에 들어간 인터페이스 문서(프로토콜, 명령, 화면, 데이터, 설정, 오류) → repo-docs-spec; 타입으로 드러나지 않는 실패 조건·제약을 코드 주석으로 옮길 때 → code-style; 맥락, 구성 요소, 순서, 상태 그림 → repo-docs-figures; 시각적 후보 비교·사용자 판정 → html-report; 대안 선택 근거 기록 → repo-docs-decision; 설계 값 측정 → repo-docs-experiment; 문서 동반 확인 → git-pull-request
 
 ## 설계 선택
 
