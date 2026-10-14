@@ -1,5 +1,5 @@
 """저장소에 연결된 Projects v2의 이슈·PR 등록과 Status를 관리한다.
-인자: --repo owner/name, --project 번호 반복(기본 연결 프로젝트 전부), --status-map 역할=이름 반복(기본 한국어 여섯 상태), set 번호 상태 | setup | check [--fix]
+인자: --repo owner/name, --project 번호 반복(colors 필수), --status-map 역할=이름 반복, set 번호 상태 | setup | colors | check [--fix]
 출력: stdout 프로젝트·상태·불일치·오류, 종료 0 성공·1 불일치·2 실패
 """
 
@@ -13,6 +13,15 @@ from collections.abc import Callable
 from typing import Any, NoReturn, Optional
 
 STATES = ("대기", "작업 중", "검증 중", "선택 필요", "보류", "완료")
+STATE_COLORS = {
+    "대기": "GRAY",
+    "진행": "BLUE",
+    "검토": "GREEN",
+    "보류": "RED",
+    "작업 중": "BLUE",
+    "검증 중": "GREEN",
+    "선택 필요": "RED",
+}
 PAGE = "pageInfo { hasNextPage endCursor }"
 Gh = Callable[[list[str], Optional[str]], dict[str, Any]]
 
@@ -27,8 +36,11 @@ class StdoutArgumentParser(argparse.ArgumentParser):
 
 
 class ProjectStatus:
-    def __init__(self, repo: str | None, gh: Gh, states: dict[str, str] | None = None) -> None:
+    def __init__(
+        self, repo: str | None, gh: Gh, states: dict[str, str] | None = None
+    ) -> None:
         self.states = states or dict(zip(STATES, STATES))
+        self._status_field_ids: set[str] = set()
         self.gh = gh
         self.repo = (
             repo
@@ -43,6 +55,8 @@ class ProjectStatus:
     # vars: n = 전체 응답 항목 수, p = 전체 조회 페이지, c = 변경 항목, v = 보드 뷰
     # basis: estimate
     def run(self, args: argparse.Namespace) -> int:
+        if args.command == "colors" and not args.project:
+            raise ProjectError("colors requires an explicit --project")
         projects = self._pages(
             "query($owner:String!,$name:String!,$cursor:String){"
             "repository(owner:$owner,name:$name){projectsV2(first:100,after:$cursor){"
@@ -55,7 +69,9 @@ class ProjectStatus:
             missing = set(args.project) - {project["number"] for project in projects}
             if missing:
                 raise ProjectError(f"연결되지 않은 프로젝트: {sorted(missing)}")
-            projects = [project for project in projects if project["number"] in args.project]
+            projects = [
+                project for project in projects if project["number"] in args.project
+            ]
         if not projects:
             raise ProjectError(
                 f"{self.repo}: 연결된 프로젝트 없음; 생성은 사용자 요청 필요"
@@ -64,10 +80,16 @@ class ProjectStatus:
             self._issue_or_pull_request(args.number) if args.command == "set" else None
         )
         issues = self._issues() if args.command == "check" else []
-        plans = []
+        plans: list[
+            tuple[
+                dict[str, Any],
+                dict[str, Any],
+                list[tuple[dict[str, Any], str, dict[str, Any] | None]],
+            ]
+        ] = []
         for project in projects:
             field = self._status_field(project)
-            if args.command == "setup":
+            if args.command in ("setup", "colors"):
                 plans.append((project, field, []))
                 continue
             items = self._items(project)
@@ -90,14 +112,18 @@ class ProjectStatus:
                 )
             )
         count = 0
-        for project, field, changes in plans:
+        for project, field, item_changes in plans:
             print(f"프로젝트 {project['number']} {project['title']} ({self.repo})")
+            if args.command in ("setup", "colors"):
+                self._colors(project, field)
+            if args.command == "colors":
+                continue
             if args.command == "setup":
                 self._setup(project, field)
                 continue
-            count += len(changes)
+            count += len(item_changes)
             if args.command == "set" or args.fix:
-                for value, status, item in changes:
+                for value, status, item in item_changes:
                     self._set(project, field, value, status, item)
         if args.command == "check":
             print(f"불일치 {count}개" + ("; 수정 완료" if args.fix and count else ""))
@@ -121,7 +147,7 @@ class ProjectStatus:
     def _pages(
         self, query: str, variables: dict[str, Any], parent: str, field: str
     ) -> list[dict[str, Any]]:
-        nodes = []
+        nodes: list[dict[str, Any]] = []
         cursor = None
         while True:
             data = self._query(query, {**variables, "cursor": cursor})
@@ -158,6 +184,7 @@ class ProjectStatus:
         )
         for field in fields:
             if field.get("name") == "Status":
+                self._status_field_ids.add(field["id"])
                 return field
         raise ProjectError(f"프로젝트 {project['number']}: Status 단일 선택 필드 없음")
 
@@ -218,7 +245,11 @@ class ProjectStatus:
             target = self.states["대기"]
             if issue["state"] == "OPEN" and item is None:
                 reason = "열린 이슈가 판에 없음"
-            elif issue["state"] == "CLOSED" and item is not None and status != self.states["완료"]:
+            elif (
+                issue["state"] == "CLOSED"
+                and item is not None
+                and status != self.states["완료"]
+            ):
                 reason, target = "닫힌 이슈인데 완료가 아님", self.states["완료"]
             elif issue["state"] == "OPEN" and status == self.states["완료"]:
                 reason = "열린 이슈인데 완료"
@@ -296,7 +327,11 @@ class ProjectStatus:
                 for token in tokens
             )
             if not has_filter:
-                exclusion = "-status:" + (json.dumps(done, ensure_ascii=False) if any(char.isspace() for char in done) else done)
+                exclusion = "-status:" + (
+                    json.dumps(done, ensure_ascii=False)
+                    if any(char.isspace() for char in done)
+                    else done
+                )
                 updated = f"{current} {exclusion}" if current else exclusion
                 self._mutate(
                     "updateProjectV2View",
@@ -310,9 +345,60 @@ class ProjectStatus:
         if not boards:
             print("보드 뷰 없음; 필터 적용 대상 없음")
 
+    # cost: time O(n), heap O(n), stack O(1)
+    # vars: n = 선택지 수
+    # basis: estimate
+    def _colored_options(self, options: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        colors = dict(STATE_COLORS)
+        colors.update(
+            {
+                name: STATE_COLORS[role]
+                for role, name in self.states.items()
+                if role in STATE_COLORS
+            }
+        )
+        colors.pop(self.states["완료"], None)
+        return [
+            {**option, "color": colors.get(option["name"], option["color"])}
+            for option in options
+        ]
+
+    # cost: time O(n + b), heap O(n + b), stack O(1), io O(p + 1)
+    # vars: n = 선택지 수, b = 응답 크기, p = 필드 조회 페이지 수
+    # basis: estimate
+    def _colors(self, project: dict[str, Any], field: dict[str, Any]) -> None:
+        options = self._colored_options(field["options"])
+        if options == field["options"]:
+            print("상태 색상 일치 (쓰기 없음)")
+            return
+        self._mutate(
+            "updateProjectV2Field",
+            {"fieldId": field["id"], "singleSelectOptions": options},
+            "projectV2Field{... on ProjectV2SingleSelectField{id}}",
+        )
+        actual = self._status_field(project)
+        if actual["options"] != options:
+            raise ProjectError("status colors or preserved options differ after update")
+        field["options"] = actual["options"]
+        print("상태 색상 변경·재조회 완료")
+
+    # cost: time O(n + b), heap O(n + b), stack O(1), io 1
+    # vars: n = 선택지 수, b = 요청과 응답 크기
+    # basis: estimate
     def _mutate(
         self, name: str, value: dict[str, Any], selection: str
     ) -> dict[str, Any]:
+        if (
+            name == "updateProjectV2Field"
+            and value.get("fieldId") in self._status_field_ids
+        ):
+            if "singleSelectOptions" in value:
+                value = {
+                    **value,
+                    "singleSelectOptions": self._colored_options(
+                        value["singleSelectOptions"]
+                    ),
+                }
         input_type = name[0].upper() + name[1:] + "Input!"
         return self._query(
             f"mutation($input:{input_type}){{{name}(input:$input){{{selection}}}}}",
@@ -355,10 +441,12 @@ def run_gh(args: list[str], payload: str | None = None) -> dict[str, Any]:
 def main(argv: list[str] | None = None, gh: Gh = run_gh) -> int:
     parser = StdoutArgumentParser(description=__doc__)
     parser.add_argument("--project", type=int, action="append", default=[])
-    parser.add_argument("--status-map", action="append", default=[], metavar="ROLE=NAME")
+    parser.add_argument(
+        "--status-map", action="append", default=[], metavar="ROLE=NAME"
+    )
     parser.add_argument("--repo", help="owner/name (기본: 현재 디렉터리 저장소)")
     sub = parser.add_subparsers(dest="command", required=True)
-    for command in ("set", "setup", "check"):
+    for command in ("set", "setup", "colors", "check"):
         command_parser = sub.add_parser(command)
         command_parser.add_argument("--repo", default=argparse.SUPPRESS)
         if command == "set":
@@ -372,7 +460,12 @@ def main(argv: list[str] | None = None, gh: Gh = run_gh) -> int:
         states = dict(zip(STATES, STATES))
         for mapping in args.status_map:
             role, separator, name = mapping.partition("=")
-            if not separator or role not in states or not name.strip() or any(char in name for char in '\r\n,'):
+            if (
+                not separator
+                or role not in states
+                or not name.strip()
+                or any(char in name for char in "\r\n,")
+            ):
                 raise ProjectError(f"invalid status mapping: {mapping}")
             states[role] = name
         if len(set(states.values())) != len(STATES):
