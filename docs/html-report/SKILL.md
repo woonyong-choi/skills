@@ -79,7 +79,7 @@ python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html] 
 
 ## 전달
 
-- 열기 조건: 보고서 폴더가 사용자 컴퓨터에 있음. 원격·클라우드 세션이면 폴더 전체(`index.html`, `theme/`, 그림 폴더)를 사용자 폴더로 복사 후 그 경로 사용
+- 열기 위치: 사용자 컴퓨터의 보고서 폴더. 원격·클라우드 세션이면 폴더 전체(`index.html`, `theme/`, 그림 폴더)를 사용자 폴더로 복사 후 그 경로 사용
 - 결과에 열기 명령 그대로 제공, 경로는 따옴표로 감싼 절대 경로: macOS `open -a "Google Chrome" "<폴더>/index.html"`, Linux `google-chrome "<폴더>/index.html"`, Windows `start chrome "<폴더>\index.html"`
 - 사용자 컴퓨터에서 명령 실행 가능하면 직접 실행. 앱 실행이 막힌 실행 환경(Codex 기본 보호 모드 등)이면 명령만 제공, 권한 우회 금지
 
