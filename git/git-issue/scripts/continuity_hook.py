@@ -25,6 +25,8 @@ import continuity as core
 import project_context
 import document_guard
 
+EDIT_TOOLS = frozenset({"Write", "Edit", "MultiEdit", "apply_patch"})
+
 
 def session_tasks(root: Path, session: object) -> list[Path]:
     """session이 명시 bind된 task 폴더들. session이 없으면 빈 목록"""
@@ -378,7 +380,7 @@ def handle(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
         return guarded
     result = handle_continuity(host, payload, root)
     event = payload.get("hook_event_name", "")
-    if event != "SessionStart" or not payload.get("cwd"):
+    if event != "SessionStart" or not _in_git(payload.get("cwd")):
         return result
     context_result = project_context.inspect_project(Path(payload["cwd"]))
     if context_result["ready"]:
@@ -404,7 +406,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
     if folder is not None and host == "codex":
         record_codex_session(root, folder, payload)
     if folder is None:
-        if event in ("SessionStart", "UserPromptSubmit"):
+        if event in ("SessionStart", "UserPromptSubmit") and _in_git(payload.get("cwd")):
             if len(session_tasks(root, payload.get("session_id"))) > 1:
                 return response(
                     event,
@@ -412,7 +414,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
                 )
             return response(
                 event,
-                f"개발 작업은 developer-thinking 본문부터 현재 단계의 소유 규칙 적용. git-issue의 과업 연결·보드 초기화에 따라 bind --session-id {payload.get('session_id', '현재채팅ID')} 연결. 미확인을 완료로 처리 금지. 단순 질의응답 제외.",
+                f"개발 작업은 developer-thinking 적용, git-issue 과업 연결로 bind --session-id {payload.get('session_id', '현재채팅ID')}. 단순 질의응답 제외.",
             )
         return {}
     session = payload.get("session_id")
@@ -618,6 +620,16 @@ def main() -> int:
 # cost: time O(n), heap O(n), stack O(1), io O(1)
 # vars: n = 최상위 지침 바이트
 # basis: estimate
+def _in_git(cwd: object) -> bool:
+    if not isinstance(cwd, str) or not cwd:
+        return False
+    try:
+        done = subprocess.run(["git", "-C", cwd, "rev-parse", "--is-inside-work-tree"], capture_output=True, text=True, timeout=2)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return done.stdout.strip() == "true"
+
+
 def _developer_rules() -> str:
     skill = Path(__file__).resolve().parents[1]
     candidates = (
@@ -682,7 +694,8 @@ def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]
             repo = Path(core.read(folder / "binding.json")["repo"])
             scope = state.setdefault("rule_scope", {})
             is_query = reader.select_query(payload, scope)
-            if not reader.is_rule_query(payload):
+            # 읽기·실행 명령은 조회 강제 대상이 아니다. 실제 편집만 규칙 하한을 선택한다.
+            if payload.get("tool_name") in EDIT_TOOLS:
                 reader.select_for_tool(payload, repo, scope)
         try:
             pending = reader.pending_rules(state)
@@ -726,7 +739,7 @@ def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]
             }
         if event not in {"PreToolUse", "Stop"} or not pending:
             return {}
-        if event == "PreToolUse" and reader.is_rule_query(payload):
+        if event == "PreToolUse" and payload.get("tool_name") not in EDIT_TOOLS:
             return {}
         reason = f"필수 원문 {len(pending)}개가 아직 도구 결과로 전달되지 않았습니다. 먼저 `{command}`를 실행하세요. 출력은 자르거나 요약하지 말고, 남은 원문 안내가 있으면 같은 명령을 이어 실행하세요. 이미 전달된 원문은 자동 제외합니다. 원문을 적용한 뒤 원래 작업을 다시 실행할 수 있습니다. 사용자 승인이나 기록 작성 요청은 불필요합니다."
         if event == "PreToolUse":

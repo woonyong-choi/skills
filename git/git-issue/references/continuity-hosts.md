@@ -11,7 +11,7 @@ Python 3.9 이상, macOS/Linux, 표준 라이브러리, git, 인증된 gh. 기�
 - 이 스킬 폴더가 work-continuity 플러그인 루트. 플러그인은 훅만 제공(스킬은 skill-sync 설치), 두 제품이 같은 scripts 사용, 훅 JSON만 제품별
 - 사용량: Claude는 status line의 현재 context_window, Codex는 아래 세션 메타데이터 어댑터. 검증 불가 시 unknown, 계정 한도·누적 사용량으로 추정 금지
 - PostToolUse 75%: 다음 안전한 작업 경계에서 저장 요청. 80% 이상: 미저장 기록 정리를 새 작업보다 우선. 압축 주기마다 임계값별 한 번만. 작업 중단·강제 압축 없음
-- PreToolUse: 구조화된 파일 도구의 문서 경로 검사와 셸 문서 쓰기 거부(정본 repo-docs `references/project-context.md`). Vault·프로젝트 미등록, 영역 이탈은 거부. 필수 원문 미전달 시 조회 명령 안내와 함께 거부
+- PreToolUse: 구조화된 파일 도구의 문서 경로 검사와 셸 문서 쓰기 거부(정본 repo-docs `references/project-context.md`). Vault·프로젝트 미등록, 영역 이탈은 거부. 편집 도구는 필수 원문 미전달 시 조회 명령 안내와 함께 거부, 읽기·실행 명령은 비대상. SessionStart 주입·bind 안내는 git 작업본에서만
 - PreCompact: 작성된 기록 동기화 시도, 실패는 로컬 보존. 새 의미 요약 생성 없음
 - PostCompact·SessionStart·UserPromptSubmit: 복구 필요 표시 또는 복구 명령 연결. 모든 요청에 전체 이슈 재주입 금지
 - SessionStart: 등록 Vault·프로젝트·두 진입점 검사 결과 안내. 미등록 환경은 자동 추정 대신 등록 오류 보고. 안내 훅이 임의 셸·외부 앱 쓰기를 차단한다고 표현 금지

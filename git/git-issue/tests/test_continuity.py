@@ -247,3 +247,29 @@ def test_hook_records_without_reset_or_read_only_stop(host: str) -> None:
             other_file.unlink()
     finally:
         shutil.rmtree(root)
+
+
+def test_rule_gate_blocks_edits_not_reads(tmp_path: Path) -> None:
+    """#62: 읽기·실행 명령은 필수 원문 강제 대상이 아니고, 편집만 미전달 원문으로 거부한다."""
+    import subprocess
+    import sys
+
+    scripts = Path(__file__).resolve().parents[1] / "scripts"
+    sys.path.insert(0, str(scripts))
+    import continuity_hook
+
+    repo = tmp_path / "repo"
+    (repo / "src").mkdir(parents=True)
+    (repo / "src/a.py").write_text("def f():\n    return open('x').read()\n")
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    root = tmp_path / "tasks"
+    (root / "t").mkdir(parents=True)
+    session = "00000000-0000-4000-8000-000000000062"
+    (root / "t/binding.json").write_text(json.dumps({"repo": str(repo), "session_ids": [session]}))
+    base = {"hook_event_name": "PreToolUse", "session_id": session, "cwd": str(repo)}
+    read = {**base, "tool_name": "Bash", "tool_input": {"command": "cat src/a.py"}}
+    assert continuity_hook._rule_gate("claude", read, root) == {}
+    edit = {**base, "tool_name": "Edit", "tool_input": {"file_path": str(repo / "src/a.py"), "old_string": "x", "new_string": "y"}}
+    denied = continuity_hook._rule_gate("claude", edit, root)
+    assert denied["hookSpecificOutput"]["permissionDecision"] == "deny"
+    assert continuity_hook._rule_gate("claude", read, root) == {}
