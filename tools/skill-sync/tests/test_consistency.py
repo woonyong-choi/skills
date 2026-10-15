@@ -57,3 +57,33 @@ def test_cli_empty_root_is_input_error() -> None:
     result = run_check(FIXTURES)
     assert result.returncode == 2
     assert '검사할 SKILL.md 없음' in result.stderr
+
+
+def section(path: str, title: str) -> list[str]:
+    text = (ROOT / path).read_text(encoding='utf-8')
+    body = text.split(f'\n## {title}\n', 1)[1].split('\n## ', 1)[0]
+    return [line for line in body.splitlines() if line.strip()]
+
+
+def test_readme_steps_follow_developer_thinking() -> None:
+    # #82: README의 단계 이름은 developer-thinking 실행 순서가 정본
+    steps = [line.split('. ', 1)[1].split(':', 1)[0] for line in section('code/developer-thinking/SKILL.md', '실행 순서') if line[0].isdigit()]
+    readme = (ROOT / 'README.md').read_text(encoding='utf-8')
+    assert '·'.join(steps) + ' 순서' in readme
+
+
+def test_shared_guides_have_one_owner() -> None:
+    # #82: UI·CSS 안내는 code-style, Closes·Refs 선택은 git-issue 닫기만 소유
+    thinking = (ROOT / 'code/developer-thinking/SKILL.md').read_text(encoding='utf-8')
+    assert 'design-tokens' not in thinking and 'code-style-css' not in thinking
+    commit = (ROOT / 'git/git-commit/SKILL.md').read_text(encoding='utf-8')
+    assert '→ 관련 이슈' not in commit and '→ 이 커밋으로 닫는 이슈' not in commit
+    assert '(git-issue 닫기)' in commit
+
+
+def test_issue_binding_reads_continuity_before_bind() -> None:
+    # #82: bind를 정의한 continuity.md 확인이 bind 지시보다 먼저
+    lines = section('git/git-issue/SKILL.md', '과업 연결과 기록')
+    required = next(index for index, line in enumerate(lines) if 'references/continuity.md' in line)
+    bind = next(index for index, line in enumerate(lines) if 'bind(' in line)
+    assert required < bind
