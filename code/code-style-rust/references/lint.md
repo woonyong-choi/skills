@@ -34,6 +34,6 @@ allow-panic-in-tests = true
 ```
 
 - clippy 매개변수 수에 self 포함 → 7개 (code-style 수치 기준) + self = 8
-- clippy 중첩에 impl·fn 블록 포함 → impl(1) + fn(2) + 3단 (code-style 수치 기준) = 5. impl 밖 함수는 1단 더 허용되므로 직접 확인
+- clippy 중첩에 impl·fn 블록 포함 → impl(1) + fn(2) + 3단 (code-style 수치 기준) = 5
 - clippy 인지 복잡도: 실험 단계(nursery) 규칙, SonarQube와 점수 차이. 기준은 clippy 점수
 - clippy 기본 규칙이 잡는 것: `x == true` 비교(`bool_comparison`), 불필요한 부정(`nonminimal_bool`), 테스트 모듈 뒤 선언(`items_after_test_module`)

@@ -45,7 +45,7 @@ python3 <이 스킬 폴더>/scripts/install.py
 - 도구 폴더가 없는 도구: 설치 제외
 - 원본 저장소 찾는 순서: `--source`, 환경 변수 `SKILLS_SOURCE`, 스크립트가 든 git 저장소, 마지막으로 쓴 원본(`~/.config/skills/source`). 모두 없으면 사용자에게 원본 경로 확인
 - 관리 범위: 이 스크립트가 설치한 스킬만(도구 폴더의 `.repo-skills.json`). manifest에 없는 같은 이름 폴더는 충돌로 남기고 설치 제외. 원본에서 빠진 manifest 항목은 대상 폴더를 `~/.skill-trash/`로 이동, Claude 배포 zip과 manifest 항목 정리
-- 스킬 제거: `install.py --remove {이름}`. 설치 목록 파일 `.repo-skills.json`에 있는 단일 스킬 이름만 허용. 대상이 도구 설치 폴더 바로 아래에 있고 심볼릭 링크가 아닌지 확인한 뒤 휴지통 이동과 목록 갱신. 원본에 남아 있으면 다음 동기화 때 재설치
+- 스킬 제거: `install.py --remove {이름} [{이름} ...]`. manifest에 있는 스킬 이름만 허용. 대상이 도구 설치 폴더 바로 아래이고 심볼릭 링크가 아닌지 확인한 뒤 휴지통 이동과 목록 갱신. 원본에 남아 있으면 다음 동기화 때 재설치
 - 바꿀 내용만 확인: `install.py --dry-run`
 - Claude 계정에 업로드할 zip 생성 폴더: `--dist {폴더}`. 기본은 원본 저장소의 `dist/claude`. 설치·원본 포인터·휴지통의 홈 경로는 `--target-home {폴더}`로 지정, 생략 시 현재 사용자 홈 사용
 - Claude 계정 zip 구성: 루트 스킬 폴더의 `SKILL.md` 하나만 포함. `SKILL.md`가 있는 하위 폴더는 그 안의 파일까지 제외, 나머지 보조 파일은 기존 제외 규칙에 따라 포함. 세 도구 설치본과 zip 모두 `tests/`·`.claude-plugin/`·`.codex-plugin/` 제외. 플러그인은 별도 설치하여 스킬 폴더의 중복 자동 로드 방지

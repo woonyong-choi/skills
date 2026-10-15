@@ -41,7 +41,7 @@ python3 <이 스킬 폴더>/scripts/gen_llms.py
 - 입력 검사에 하나라도 실패하면 파일을 쓰지 않고 중단
 - 코드 블록 안 표 행: 목록에서 제외
 
-- 실행 뒤 확인: `llms.txt` 링크 수와 `docs/README.md` 표 행 수 일치(`CHANGELOG.md` 행 제외)
+- 실행 뒤 확인: `llms.txt` 링크 수 = `docs/README.md` 표 행 수 + `CHANGELOG.md`가 있으면 1
 - `llms-full.txt`의 파일 구분 줄 `<!-- {경로} -->`: 형식의 일부, repo-docs 검사 대상 제외
 
 ## 갱신

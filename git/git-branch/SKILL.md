@@ -40,7 +40,7 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 
 `type/이슈번호-scope-설명`
 
-- 작은 후속 정리도 git-issue의 연결 기준에 따라 기존 이슈 번호 사용
+- 작은 후속 정리도 기존 이슈 번호 (git-issue 과업 연결과 기록)
 - type, scope: 커밋과 같은 단어 (git-commit type, scope)
 - 설명: 영어 소문자 kebab-case, 2~5단어
 
@@ -79,13 +79,12 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 - 제목·scope 선택: (git-commit 형식, scope)
 - 이슈 연결: git-issue 닫기 절
 - 머지 전: `git merge {원격}/{기본 브랜치}` 후 변경된 입력에 대한 검사 실행. 증거 재사용 조건: (code-style 검증)
-- 본문 작성 표시: (git-pull-request 금지)
 
 ## 머지
 
 - squash merge만
 - squash 메시지: 첫 줄은 PR 제목, 본문과 꼬리말은 커밋 규칙, 이슈 연결이 있으면 PR 본문과 같은 `Closes: #{번호}` 또는 `Refs: #{번호}`
-- GitHub의 자동 커밋 목록 삭제. 작성 표시·꼬리말은 git-commit 금지 규칙 적용
+- GitHub의 자동 커밋 목록 삭제. 작성 표시: (git-commit 금지)
 - AI 몫: PR 생성까지. 머지는 요청이 있을 때만
 - 머지 후 자기 브랜치 삭제: 원격, 로컬, worktree. 정리 스크립트로 한 번에(정리 절)
 

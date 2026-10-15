@@ -1,5 +1,5 @@
-"""추적 그림 원본을 daphnis SVG와 VHS GIF로 변환.
-인자: 선택 원본 경로, --daphnis 경로(--mutoscope 호환 별칭), --static, --require-data, --require-ci, 저장소 루트에서 실행
+"""추적 그림 원본을 ThinkFlow SVG와 VHS GIF로 변환.
+인자: 선택 원본 경로, --thinkflow 경로, --static, 저장소 루트에서 실행
 출력: SVG·GIF와 도구 출력, 종료 0 성공·비영 종료 실패
 """
 
@@ -17,55 +17,32 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sources", nargs="*")
     parser.add_argument(
-        "--daphnis",
-        help="checkout or src/cli.js; default: DAPHNIS_PATH or daphnis on PATH",
+        "--thinkflow",
+        help="checkout or src/cli.js; default: THINKFLOW_PATH or thinkflow on PATH",
     )
-    parser.add_argument("--mutoscope", help="deprecated alias for --daphnis")
     parser.add_argument("--static", action="store_true")
-    parser.add_argument("--require-data", action="store_true")
-    parser.add_argument("--require-ci", action="store_true")
     args = parser.parse_args(argv)
-    if args.mutoscope is not None:
-        print(
-            "deprecated: --mutoscope removal date undecided; use --daphnis",
-            file=sys.stderr,
-        )
-    if "MUTOSCOPE_PATH" in os.environ:
-        print(
-            "deprecated: MUTOSCOPE_PATH removal date undecided; use DAPHNIS_PATH",
-            file=sys.stderr,
-        )
     try:
         sources = args.sources or _tracked_sources()
-        invalid = [p for p in sources if not p.endswith((".dap", ".tape"))]
+        invalid = [p for p in sources if not p.endswith((".thinkflow", ".tape"))]
         if invalid:
             for source in invalid:
-                print(f"{source}: migrate to .dap before rendering", file=sys.stderr)
+                print(f"{source}: migrate to .thinkflow before rendering", file=sys.stderr)
             return 1
-        figures = [p for p in sources if p.endswith(".dap")]
+        figures = [p for p in sources if p.endswith(".thinkflow")]
         tapes = [p for p in sources if p.endswith(".tape")]
-        if tapes and (args.static or args.require_data or args.require_ci):
+        if tapes and args.static:
             print("figure options cannot be applied to .tape files", file=sys.stderr)
             return 1
-        configured = (
-            args.daphnis
-            or args.mutoscope
-            or os.environ.get("DAPHNIS_PATH")
-            or os.environ.get("MUTOSCOPE_PATH")
-        )
-        command = ["daphnis"]
+        configured = args.thinkflow or os.environ.get("THINKFLOW_PATH")
+        command = ["thinkflow"]
         if configured:
             path = Path(configured).expanduser()
             cli = path / "src" / "cli.js" if path.is_dir() else path
             command = ["node", str(cli)]
-        flags = ["--strict"]
-        if args.require_data:
-            flags.append("--require-data")
-        if args.require_ci:
-            flags.append("--require-ci")
         if figures:
-            subprocess.run(command + ["check", *figures, *flags], check=True)
-            render_flags = flags + (["--static"] if args.static else [])
+            subprocess.run(command + ["check", *figures, "--strict"], check=True)
+            render_flags = ["--strict"] + (["--static"] if args.static else [])
             subprocess.run(command + ["render", *figures, *render_flags], check=True)
         for source in tapes:
             subprocess.run(["vhs", source], check=True)
@@ -82,7 +59,7 @@ def main(argv: list[str]) -> int:
 # basis: estimate
 def _tracked_sources() -> list[str]:
     result = subprocess.run(
-        ["git", "ls-files", "-z", "--", "*.dap", "*.tape", "*.d2", "*.vl.json"],
+        ["git", "ls-files", "-z", "--", "*.thinkflow", "*.tape"],
         capture_output=True,
         check=True,
     )

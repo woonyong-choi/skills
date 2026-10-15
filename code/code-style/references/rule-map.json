@@ -3,9 +3,9 @@
     {
       "title": "언어별 스킬",
       "path": "references/language.md",
-      "sha256": "da033c1d8bec805bf06b35f57ed0925cefabda98bff8ecfe950064348659eedf",
+      "sha256": "7fcd4c81f25ad26e0d8331ec20853c592544844fae239e8f9faf484717ca9d4a",
       "id": "CS-LANGUAGE",
-      "condition": "작업 언어의 스킬 선택·변경"
+      "condition": "모든 코드 작성·검토"
     },
     {
       "title": "수치 기준",
@@ -17,7 +17,7 @@
     {
       "title": "이름",
       "path": "references/structure.md",
-      "sha256": "c0f49bed53aea74ed4c0a1f0563d6b7893224eca236a40bbbe532051668a5981",
+      "sha256": "f2714f70ebafb0e0e0482a30b9ab6e9fed0423534f8b433ddd06f536096a01d6",
       "id": "CS-NAME",
       "condition": "이름 추가·변경"
     },
@@ -45,7 +45,7 @@
     {
       "title": "오류와 로그",
       "path": "references/errors.md",
-      "sha256": "8e476e757e3eee67583f5302002cdbd08299b3828c9a9c894e46663aa1b49115",
+      "sha256": "dc99e7e360a52e68525ea65fc5ae33d74b50103de45c8b8e6d41a02faf4b4702",
       "id": "CS-ERROR",
       "condition": "실패 가능한 입력·외부 경계·오류·로그 변경"
     },
@@ -59,7 +59,7 @@
     {
       "title": "테스트",
       "path": "references/testing.md",
-      "sha256": "251fee93953931a7c484cfc2cffa0be88df9810a72c59b6c1994f37c8dadd240",
+      "sha256": "863969fb3ce8b07132d4c94519c14923b610e05cd90b11d9d86286ba0c1747fe",
       "id": "CS-TEST",
       "condition": "테스트 선택·추가·변경"
     }

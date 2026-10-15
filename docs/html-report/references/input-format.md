@@ -1,6 +1,21 @@
 # 입력 JSON
 
-입력 JSON 예(외부 파일 없이 생성 가능):
+설명 페이지 예:
+
+```json
+{
+  "kind": "explain",
+  "title": "주문 처리 구조",
+  "lead": "주문은 API가 받고 큐를 거쳐 워커가 처리한다",
+  "sections": [
+    {"title": "전체 흐름", "text": ["API는 주문을 큐에 넣고 바로 응답한다"], "figure": "overview.thinkflow", "caption": "주문이 저장되기까지"}
+  ]
+}
+```
+
+- `explain` → `title`, `lead`, `sections` 필수. 절은 `title`, `text`(문단 배열) 필수. 선택: `figure`(`.thinkflow`, 파일 이름 중복 금지), `image`(png·gif·jpg·webp·svg), `caption`, `files`(내려받을 데이터 경로 배열). `image`·`files`는 `attachments/`에 복사
+
+비교 보고서 예(외부 파일 없이 생성 가능):
 
 ```json
 {
@@ -21,10 +36,10 @@
 
 입력 → 필수·형식:
 
-- 최상위 → `title`, `intro`, `questions` 필수. `kind`는 `decision` 또는 `result`, 생략 시 decision
+- 비교 최상위 → `title`, `intro`, `questions` 필수. `kind`는 `decision` 또는 `result`, 생략 시 decision
 - 질문 → `title`, `what`, `options`, `effect`, `rec` 필수
 - 선택지 → `label` 필수. `images`, `table`, `text`, `mock`은 해당 자료가 있을 때
-- 그림 → `dap`, `inline`, `src` 중 하나와 `alt`. 경로는 입력 폴더 기준. `max_height`의 의미는 [구성 절의 이미지 항목](../SKILL.md#구성) 참조
+- 그림 → `thinkflow`, `inline`, `src` 중 하나와 `alt`. 경로는 입력 폴더 기준. `max_height`: (SKILL 비교 보고서)
 - 표 → `head`, `rows` 필수. `align`, `widths` 선택
 - 보충 → `check`, `note`, `extra` 선택. extra 항목은 `title`과 실제 options 필요, 빈 예시 삽입 금지
 

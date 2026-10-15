@@ -59,7 +59,6 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 - `catch (e: Exception)`은 실행 앱 최상위 처리기에서만
 - suspend 함수 안에서 `runCatching` 금지. `CancellationException`은 잡으면 재전파
 - 오류·로그 메시지는 대문자로 시작, 마침표 없음: `Failed to read config file`
-- 예외 무시 시 처리: (code-style 오류와 로그)
 
 로그:
 
@@ -81,7 +80,7 @@ description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·d
 - 기본값이 `public`이므로 공개 범위 항상 명시. 비공개 → `internal` → `public` 순서로 필요한 만큼만 확대. `protected`는 상속용에만
 - 라이브러리 모듈은 `kotlin { explicitApi() }`로 공개 범위·반환 타입 명시 강제
 - 필드 접근은 프로퍼티로. 검증 규칙 없는 단순 데이터 묶음은 `data class`의 공개 `val`
-- KDoc(`/** */`)은 code-style 주석 기준대로 필요할 때만. 쓰면 한 줄 요약. 매개변수·반환값은 `@param`·`@return` 대신 본문에서 `[이름]`으로 언급
+- KDoc(`/** */`)은 필요할 때만 한 줄 요약. 매개변수·반환값은 `@param`·`@return` 대신 본문에서 `[이름]`으로 언급
 - 던지는 예외는 `@throws`
 
 ## 테스트

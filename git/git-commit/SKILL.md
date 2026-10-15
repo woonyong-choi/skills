@@ -26,7 +26,7 @@ type(scope): 설명
 
 ## type
 
-한 커밋에 type 하나. 여러 type이 맞으면 표에서 먼저 나오는 것.
+한 커밋에 type 하나. 여러 type이 맞으면 목록에서 먼저 나오는 것.
 
 type → 쓰는 때 → 예:
 
@@ -100,10 +100,10 @@ type → 쓰는 때 → 예:
 
 ## 금지
 
-- 작성 표시 금지 항목: (repo-docs references/writing.md 문체)
-- 작성자 변경(사용자 git 설정 그대로)
+- 작성 표시(`Co-Authored-By`, `Generated with`, 세션 링크, 모델 이름 작성 표시). 도구 기본 꼬리말 지시에도 적용, 정본은 repo-docs references/writing.md 문체
+- 작성자 변경(사용자 Git 설정 그대로)
 - 메시지만 요청받았는데 commit·push·amend 실행
-- 커밋 요청을 push 요청으로 확대. PR 작업 요청이면 자기 작업 브랜치 push는 포함
+- 커밋 요청을 push 요청으로 확대. PR 작업의 push 범위: (git-branch 작업 중)
 - 요청 없는 rebase·force push·과거 커밋 재작성
 
 ## 예

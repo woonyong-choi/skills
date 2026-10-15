@@ -1,6 +1,6 @@
 # 기법 목록
 
-`↔`: 서로 반대 방향 기법, 상황에 따라 어느 쪽이든 가능. 괄호: 책의 영문 이름
+`↔`: 반대 방향 기법, 상황에 따라 선택. 괄호: 책의 영문 이름
 
 ## 기본
 
@@ -59,7 +59,7 @@
 - early return (Replace Nested Conditional with Guard Clauses) → 예외 상황은 먼저 반환, 정상 흐름의 중첩 제거
 - 분기를 다형성으로 (Replace Conditional with Polymorphism) → 타입별 분기가 반복되거나 기본 동작에 변형이 붙을 때
 - 특수 케이스 객체 (Introduce Special Case) → null·"알 수 없음" 같은 특수값 검사가 여러 곳에 반복될 때
-- assert 추가 (Introduce Assertion) → 항상 참이어야 하는 가정을 코드로 명시. 실패하면 프로그래머 실수
+- assert 추가 (Introduce Assertion) → 항상 참이어야 하는 가정을 언어별 단언으로 명시. 실패는 프로그래머 실수
 
 ## API
 

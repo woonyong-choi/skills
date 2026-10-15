@@ -73,6 +73,7 @@ class DocumentStyleTest(unittest.TestCase):
             ("README.ko.md", "설계 단계입니다.\n", 0),
             ("guide.md", "설계 단계입니다.\n", 1),
             ("README.md", "설계 단계다.\n", 1),
+            ("/vault/worktree/p/docs/design/a.md", "# 가\n\n## 예시\n\n## 요약\n", 1),
         ):
             with patch("builtins.open", mock_open(read_data=source)), contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(check_doc.main([name]), expected)

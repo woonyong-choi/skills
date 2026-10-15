@@ -6,11 +6,11 @@ description: "저장소의 새 폴더 구조·이름을 정하거나 요청받�
 # Folder Naming
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
-- 범위: 새로 만드는 폴더, 이름 변경을 요청받은 폴더의 구조와 이름. 기존 폴더는 요청 없이 변경 금지
+- 범위: 새 폴더와 이름 변경을 요청받은 폴더의 구조·이름, 파일·모듈 이름은 금지 절만. 기존 폴더는 요청 없이 변경 금지
 
 ## 구조
 
-기존 빌드·패키지 관리자 구조는 유지한다. 아래 구조와 기술 종류 폴더 금지는 기존 제약이 없는 새 제품 폴더 설계에만 적용
+기존 빌드·패키지 관리자 구조 유지. 아래 구조와 기술 종류 폴더 금지는 기존 제약 없는 새 제품 폴더 설계에만 적용
 
 ```
 <프로젝트>/
@@ -23,26 +23,24 @@ description: "저장소의 새 폴더 구조·이름을 정하거나 요청받�
 ```
 
 - 제외: 도구가 만들거나 요구하는 폴더 (`target`, `node_modules`, `build`, `.idea`, `.vscode`, `.cargo` 등)
-- 패키지, 모듈이 하나뿐인 저장소: 언어 기본 구조(`src/` 등) 그대로
+- 패키지·모듈이 하나뿐인 저장소: 언어 기본 구조(`src/` 등) 그대로
 
 ## 종류별 이름
 
 종류 → 형식 → 예:
 
-- 루트 소스 → `<프로젝트>-<제품·실행 단위>` → `<프로젝트>-server`, `<프로젝트>-web`, `<프로젝트>-desktop`, `<프로젝트>-protocol`
+- 루트 소스 → `<프로젝트>-<제품·실행 단위>` → `<프로젝트>-server`, `<프로젝트>-web`, `<프로젝트>-protocol`
 - 루트 비소스 → 아래 이름 우선, 없으면 언어·도구 관례 이름. 접두사 없음 → `assets`, `docs`, `scripts`, `tools`, `examples`, `config`, `.github`
 - 모듈 → 역할·도메인 명사, 접두사 없음 → `core`, `engine`, `cli`, `tui`, `api`, `auth`, `store`
 - 외부 서비스 → 연결 폴더 아래 실제 서비스 이름 → `providers/<service>`, `adapters/<service>`
 
 ## 모듈 이름
 
-모듈 안 하위 폴더도 같은 규칙.
-
-규칙 → 예:
+모듈 안 하위 폴더도 같은 규칙. 규칙 → 예:
 
 - 같은 종류 여럿이면 복수형 → `providers`, `sessions`, `judges`
 - 역할 하나면 단수형 → `queue`, `store`, `config`
-- 외부 서비스 이름은 연결 폴더 안에서만 → `providers/<service>` O, `<service>-handler` X
+- 외부 서비스 이름은 연결 폴더 안에서만 → `<service>-handler` X
 
 ## 금지
 
@@ -50,11 +48,9 @@ description: "저장소의 새 폴더 구조·이름을 정하거나 요청받�
 
 - `utils`, `common`, `misc`, `helpers`, `etc` → 내용 파악 불가 → 역할 이름 (`time`, `paths`)
 - `new`, `old`, `temp`, `v2`, `backup` → 상태는 git이 관리 → 삭제 또는 브랜치
-- `crates`, `packages`, `libs`, 루트 `src` → 기술 종류 기준 묶기 → `<프로젝트>-<제품>`
+- `crates`, `packages`, `libs`, 루트 `src`(단일 패키지 제외) → 기술 종류 기준 묶기 → `<프로젝트>-<제품>`
 - 경로 안 이름 반복 (`<프로젝트>-server/<프로젝트>-core`) → 중복 → `<프로젝트>-server/core`
-- 대문자·공백·밑줄 → 표기 혼용 → 소문자 kebab-case
-
-언어가 강제하는 표기(Rust 모듈 snake_case, Java package 등)는 그 언어 우선.
+- 대문자·공백·밑줄 → 표기 혼용 → 소문자 kebab-case. 언어가 강제하는 표기(Rust 모듈 snake_case, Java package 등)는 그 언어 우선
 
 ## 배포 이름
 

@@ -10,7 +10,7 @@ description: "저장소 밖 홍보 영상의 촬영 순서·데모·내보내기
 
 - 녹화 자동화: 지정 도구의 시작·종료·저장 확인이 검증된 경우에만 사용. 미검증이면 사용자 수동 녹화
 - README와 docs의 데모 GIF: VHS(repo-docs-figures), 이 스킬 대상 밖
-- 위치: 저장소 비공개 경로 정책 우선, 기본 `.local/promo/{영상}/`. `{영상}`은 영어 소문자 kebab-case
+- 위치: `.local/promo/{영상}/`(repo-docs 문서 목록 위치 규칙). `{영상}`은 영어 소문자 kebab-case
 
 ## 폴더
 
@@ -68,8 +68,6 @@ description: "저장소 밖 홍보 영상의 촬영 순서·데모·내보내기
 
 macOS Bash 모형 작성 또는 수동 녹화 순서 안내 전 [recording.md](references/recording.md) 필수 확인
 
-- 모형 표시 필수. 창 제목·화면에 사용자 이름, 홈 경로, 키, 실제 사용자 데이터 노출 금지
-
 ## 확인
 
 사용자가 내보낸 파일을 받으면 아래 항목 확인:
@@ -77,4 +75,4 @@ macOS Bash 모형 작성 또는 수동 녹화 순서 안내 전 [recording.md](r
 1. 길이와 크기가 `shot.md`와 일치
 2. `합성 데이터` 글자 노출(데이터가 합성 데이터일 때)
 3. 사용자 이름, 경로, 알림, 다른 앱 창 미노출
-4. 자막과 화면 글자에 쓰지 않는 말(repo-docs references/writing.md 용어 표) 없음
+4. 자막과 화면 글자에 쓰지 않는 말(repo-docs references/writing.md 용어) 없음
