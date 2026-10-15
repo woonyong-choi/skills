@@ -53,7 +53,7 @@ def pane_identity(pane: str) -> str | None:
             ],
             capture_output=True,
             text=True,
-            timeout=2,
+            timeout=project_context.time_budget(2),
         )
     except (OSError, subprocess.TimeoutExpired):
         return None
@@ -173,26 +173,28 @@ def adopt_new_session(
     return ""
 
 
-CODEX_RECORD_MAX_AGE_SECONDS = 6 * 60 * 60
+METER_RECORD_MAX_AGE_SECONDS = 6 * 60 * 60
 
 
 # cost: time O(1), heap O(1), stack O(1), io 3
 # basis: estimate
-def record_codex_session(root: Path, folder: Path, payload: dict[str, Any]) -> None:
-    """검증된 Codex 관리 창에서 현재 session의 유일한 명시 bind가 folder일 때만 session ID와 rollout 경로를 창 home의 meter.json에 남긴다.
+def record_session(root: Path, folder: Path, payload: dict[str, Any], host: str) -> None:
+    """transcript 사용량 어댑터(HOSTS[host].context)가 있는 호스트의 검증된 관리 창에서, 현재 session의 유일한 명시 bind가 folder일 때만 session ID와 transcript 경로를 창 home의 meter.json에 남긴다.
 
     창의 active_task가 없거나 낡았어도 기록한다. window.json은 쓰지 않고 관리기가 이 session의 bind를 따라 active_task를 갱신한다. 본문은 읽지 않는다.
     """
+    if core.HOSTS[host].context is None:
+        return  # status line이 사용량을 기록하는 호스트
     session = payload.get("session_id")
     path = payload.get("transcript_path")
-    window = managed_window(root, "codex")
+    window = managed_window(root, host)
     if window is None or not isinstance(session, str) or not session:
         return
     home = window[0]
     if session_tasks(root, session) != [folder]:
         return  # 미등록·중복 bind는 session을 확정할 수 없다
     record = {
-        "host": "codex",
+        "host": host,
         "session_id": session,
         "transcript_path": path if isinstance(path, str) and path else None,
         "percent": None,
@@ -203,13 +205,11 @@ def record_codex_session(root: Path, folder: Path, payload: dict[str, Any]) -> N
             core.save(home / "meter.json", record)
     except (OSError, ValueError, core.ContinuityError) as error:
         # 기록 실패가 훅 응답을 막지 않게 한다. 사용량은 unknown으로 남는다.
-        print(
-            f"continuity hook: codex session record skipped: {error}", file=sys.stderr
-        )
+        print(f"continuity hook: {host} session record skipped: {error}", file=sys.stderr)
 
 
-def codex_record(home: Path, now: float) -> tuple[str, Path] | None:
-    """meter.json의 최근 Codex session 기록. 형식·최근성이 틀리면 None"""
+def meter_record(home: Path, host: str, now: float) -> tuple[str, Path] | None:
+    """meter.json의 최근 host session 기록. 형식·최근성이 틀리면 None. session ID 형식은 어댑터가 검증"""
     try:
         meter = core.read(home / "meter.json")
     except (OSError, ValueError):
@@ -219,24 +219,25 @@ def codex_record(home: Path, now: float) -> tuple[str, Path] | None:
         meter.get("transcript_path"),
         meter.get("at"),
     )
-    if meter.get("host") != "codex" or not isinstance(path, str) or not path:
+    if meter.get("host") != host or not isinstance(path, str) or not path:
         return None
-    if not isinstance(session, str) or not core.CODEX_SESSION_ID.fullmatch(session):
+    if not isinstance(session, str) or not session:
         return None
     if not isinstance(at, (int, float)) or isinstance(at, bool):
         return None
-    fresh = -core.CODEX_CLOCK_SKEW_SECONDS <= now - at <= CODEX_RECORD_MAX_AGE_SECONDS
+    fresh = -core.CODEX_CLOCK_SKEW_SECONDS <= now - at <= METER_RECORD_MAX_AGE_SECONDS
     return (session, Path(path)) if fresh else None
 
 
 # cost: time O(t), heap O(t), stack O(1), io 4
 # vars: t = continuity.TRANSCRIPT_TAIL_BYTES
 # basis: estimate
-def codex_meter(home: Path, now: float | None = None) -> tuple[float | None, str | None]:
-    """창 home meter.json의 최근 session으로 계산한 (사용량 %, 검증한 session ID). rollout 판독 정본: continuity HOSTS["codex"].context"""
+def host_meter(home: Path, host: str, now: float | None = None) -> tuple[float | None, str | None]:
+    """창 home meter.json의 최근 session으로 계산한 (사용량 %, 검증한 session ID). 판독 정본: continuity HOSTS[host].context"""
+    adapter = core.HOSTS[host].context
     now = time.time() if now is None else now
-    record = codex_record(home, now)
-    return core.HOSTS["codex"].context(record[1], record[0], now) if record else (None, None)
+    record = meter_record(home, host, now) if adapter else None
+    return adapter(record[1], record[0], now) if record else (None, None)
 
 
 def response(event: str, text: str) -> dict[str, Any]:
@@ -260,6 +261,10 @@ def tool_command(payload: dict[str, Any]) -> str:
     return value if isinstance(value, str) else ""
 
 
+# bind 전 요청 임시 파일 보관 기한. 같은 턴의 bind 승계에만 쓰므로 하루 지난 파일은 다시 쓰일 일이 없다.
+PROMPT_HOLD_SECONDS = 24 * 60 * 60
+
+
 def pending_prompt_path(root: Path, host: str, session: str) -> Path:
     """bind 전 요청의 비공개 임시 보관 위치. 세션당 최신 하나"""
     return root / ".prompts" / (
@@ -281,10 +286,28 @@ def hold_prompt(root: Path, host: str, payload: dict[str, Any]) -> None:
         return
     top = core.run(["git", "rev-parse", "--show-toplevel"], cwd=payload["cwd"]).strip()
     if not core.private_problem(root, top):
+        prune_prompts(root, time.time())
         core.save(
             pending_prompt_path(root, host, session),
             {"text": core.clip(prompt, core.ORIGINAL_LIMIT)},
         )
+
+
+def prune_prompts(root: Path, now: float) -> None:
+    """보관 기한이 지난 bind 전 요청 파일 삭제. 세션 종료를 받지 못한 세션의 파일 정리"""
+    for path in (root / ".prompts").glob("*.json"):
+        try:
+            if now - path.stat().st_mtime > PROMPT_HOLD_SECONDS:
+                path.unlink()
+        except FileNotFoundError:
+            continue  # 다른 훅이 먼저 지움
+
+
+def drop_prompt(root: Path, host: str, payload: dict[str, Any]) -> None:
+    """세션 종료 때 그 세션의 bind 전 요청 파일 삭제. bind하지 않은 세션의 요청은 승계할 곳이 없다"""
+    session = payload.get("session_id")
+    if isinstance(session, str) and session:
+        pending_prompt_path(root, host, session).unlink(missing_ok=True)
 
 
 def persisted_notice(folder: Path, state: dict[str, Any]) -> str:
@@ -351,8 +374,10 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
     link_error = ""
     if folder is not None and event == "SessionStart":
         link_error = adopt_new_session(root, folder, payload, host)
-    if folder is not None and host == "codex":
-        record_codex_session(root, folder, payload)
+    if folder is not None:
+        record_session(root, folder, payload, host)
+    if event == "SessionEnd":
+        drop_prompt(root, host, payload)
     if folder is None:
         hold_prompt(root, host, payload)
         if event in ("SessionStart", "UserPromptSubmit") and _in_git(payload.get("cwd")):
@@ -616,7 +641,7 @@ def main() -> int:
                 handle(
                     host,
                     payload,
-                    Path(os.environ.get("ISSUE_CONTINUITY_ROOT", core.ROOT)),
+                    core.default_root(),
                 ),
                 ensure_ascii=False,
             )
@@ -634,7 +659,7 @@ def main() -> int:
         if (
             isinstance(locals().get("payload"), dict)
             and payload.get("hook_event_name") == "PreToolUse"
-            and payload.get("tool_name") in {"Write", "Edit", "MultiEdit", "apply_patch"}
+            and document_guard.guarded_write(payload)
         ):
             print(
                 json.dumps(
@@ -656,7 +681,7 @@ def _in_git(cwd: object) -> bool:
     if not isinstance(cwd, str) or not cwd:
         return False
     try:
-        done = subprocess.run(["git", "-C", cwd, "rev-parse", "--is-inside-work-tree"], capture_output=True, text=True, timeout=2)
+        done = subprocess.run(["git", "-C", cwd, "rev-parse", "--is-inside-work-tree"], capture_output=True, text=True, timeout=project_context.time_budget(2))
     except (OSError, subprocess.TimeoutExpired):
         return False
     return done.stdout.strip() == "true"

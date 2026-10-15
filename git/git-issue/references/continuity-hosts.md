@@ -4,7 +4,7 @@
 
 ## 실행 환경
 
-Python 3.9 이상, macOS/Linux, 표준 라이브러리, git, 인증된 gh. 기록 기본 루트는 `~/workspace/woon/.local/orchestration`, 다른 환경은 continuity.py 전역 `--root`로 지정. 개인 경로를 공통 필수 경로로 간주 금지
+Python 3.9 이상, macOS/Linux, 표준 라이브러리, git, 인증된 gh. 기록 루트: 환경 변수 `ISSUE_CONTINUITY_ROOT` 하나(훅·status line·창 실행기·continuity.py 공통, 판정 정본 continuity.py `default_root`). 없으면 `~/workspace/woon/.local/orchestration`. 다른 환경은 호스트를 실행하는 환경에 이 변수 설정. continuity.py 전역 `--root`는 그 실행 한 번만 변경, 훅 미적용. 개인 경로를 공통 필수 경로로 간주 금지
 
 ## 훅
 
@@ -20,7 +20,8 @@ Python 3.9 이상, macOS/Linux, 표준 라이브러리, git, 인증된 gh. 기�
 - SessionEnd: 종료 표시와 로컬 기록 대조 결과만. 강제 종료 시 새 기록 생성 보장 없음
 - 계획 모드: 원격 쓰기 없음. 실행 작업으로 자동 전환 금지
 - 과업 선택: 현재 세션의 명시 bind 우선, 중복 연결이면 자동 선택 거부. `ISSUE_CONTINUITY_TASK`는 미등록 세션의 초기 힌트이며 새 bind 덮어쓰기 금지. 검증된 관리 창에서는 창의 활성 과업을 따르고 시작 cwd·옛 환경변수로 복귀 금지
-- 훅 파일 누락·처리 오류: 구조화된 파일 쓰기는 거부, 셸·그 밖 이벤트는 진단 후 비차단 종료(설치 복구 경로 보존, 문서 검사 완료로 해석 금지). 기록·초기화 준비 실패 유지, 재시도 루프·종료 0의 성공 해석 금지
+- 시간 예산: `hook_entry.py` `HOOK_TIMEOUTS`가 훅 JSON의 이벤트별 timeout과 같고(시험이 대조), 진입점은 그보다 먼저 런타임을 끊고 런타임 내부 git·gh·tmux 대기 상한은 넘겨받은 마감 시각(`WORK_CONTINUITY_DEADLINE`) 이내. 마감 초과는 처리 오류
+- 훅 파일 누락·처리 오류·시간 초과: 구조화된 파일 쓰기와 셸 `apply_patch`·`applypatch`는 거부, 그 밖 셸·이벤트는 진단 후 비차단 종료(설치 복구 경로 보존, 문서 검사 완료로 해석 금지). 기록·초기화 준비 실패 유지, 재시도 루프·종료 0의 성공 해석 금지
 
 ## 호스트별 출처
 

@@ -5,7 +5,7 @@ checkpoint --task 이름 --input JSON파일 [--sync]
 restore --task 이름 [--offline] [--verify-clear]
 doctor [--task 이름]
 cache-report --transcript 호스트 JSONL [--host claude|codex]
-모든 명령의 --root는 개인 작업 기록 루트. 기본 ~/workspace/woon/.local/orchestration.
+모든 명령의 --root는 개인 작업 기록 루트. 기본 ISSUE_CONTINUITY_ROOT, 없으면 ~/workspace/woon/.local/orchestration.
 인자: 명령별 --help 또는 위 설명
 출력: stdout JSON 또는 원래 status line, 실패 stderr와 종료 코드
 """
@@ -29,9 +29,11 @@ import time
 import uuid
 from typing import Any, BinaryIO, Callable, Iterator, NamedTuple
 
+import project_context
 import task_scope
 
 ROOT = Path.home() / "workspace/woon/.local/orchestration"
+ROOT_ENV = "ISSUE_CONTINUITY_ROOT"
 FIELDS = ("goal", "constraints", "plan", "hypotheses", "actions", "results", "next")
 TITLES = ("목표·완료 조건", "제약·제외 범위", "계획", "가설", "처리", "결과", "다음")
 MARKER = "<!-- work-checkpoint-v1 -->"
@@ -47,12 +49,18 @@ class ContinuityError(Exception):
     pass
 
 
+def default_root() -> Path:
+    """작업 기록 루트 정본: ISSUE_CONTINUITY_ROOT, 없으면 ROOT. CLI·훅·status line·창 실행기 공통"""
+    configured = os.environ.get(ROOT_ENV)
+    return Path(configured).expanduser() if configured else ROOT
+
+
 # cost: time O(n), heap O(n), stack O(1), io 1
 # vars: n = 명령 입출력 바이트
 # basis: estimate
 def run(args: list[str], payload: str | None = None, cwd: str | None = None) -> str:
     result = subprocess.run(
-        args, input=payload, cwd=cwd, text=True, capture_output=True, timeout=15
+        args, input=payload, cwd=cwd, text=True, capture_output=True, timeout=project_context.time_budget(15)
     )
     if result.returncode:
         raise ContinuityError(
@@ -1307,7 +1315,7 @@ def doctor(folder: Path | None) -> dict:
 # basis: estimate
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=ROOT)
+    parser.add_argument("--root", type=Path, default=default_root(), help=f"한 번만 바꿀 때. 훅과 같은 루트는 {ROOT_ENV}")
     sub = parser.add_subparsers(dest="command", required=True)
     report = sub.add_parser("cache-report")
     report.add_argument("--transcript", required=True)
