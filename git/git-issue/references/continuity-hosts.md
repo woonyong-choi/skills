@@ -12,14 +12,32 @@ Python 3.9 이상, macOS/Linux, 표준 라이브러리, git, 인증된 gh. 기�
 - 사용량: Claude는 status line의 현재 context_window, Codex는 아래 세션 메타데이터 어댑터. 검증 불가 시 unknown, 계정 한도·누적 사용량으로 추정 금지
 - PostToolUse 75%: 다음 안전한 작업 경계에서 저장 요청. 80% 이상: 미저장 기록 정리를 새 작업보다 우선. 압축 주기마다 임계값별 한 번만. 작업 중단·강제 압축 없음
 - PreToolUse: 구조화된 파일 도구의 문서 경로 검사와 셸 문서 쓰기 거부(정본 repo-docs `references/project-context.md`). 로그 리디렉션은 `.log`, `.txt`·`.md` 등 문서 확장자 리디렉션은 문서 쓰기로 거부. Vault·프로젝트 미등록, 영역 이탈은 거부. 편집 도구는 필수 원문 미전달 시 조회 명령 안내와 함께 거부, 읽기·실행 명령은 비대상. SessionStart 주입·bind 안내는 git 작업본에서만
-- PreCompact: 작성된 기록 동기화 시도, 실패는 로컬 보존. 새 의미 요약 생성 없음
+- PreCompact: 작성된 기록 동기화 시도 후 실제 파일·원격 재조회 대조, 실패는 로컬 보존·SessionStart 안내. 새 의미 요약 생성 없음
 - PostCompact·SessionStart·UserPromptSubmit: 복구 필요 표시 또는 복구 명령 연결. 모든 요청에 전체 이슈 재주입 금지
-- SessionStart: 등록 Vault·프로젝트·두 진입점 검사 결과 안내. 미등록 환경은 자동 추정 대신 등록 오류 보고. 안내 훅이 임의 셸·외부 앱 쓰기를 차단한다고 표현 금지
-- Stop: continuity.md의 Stop 알림 조건에서 한 번 보완 요청. Stop 재진입 무한 반복 금지
-- SessionEnd: 종료 표시만. 강제 종료 시 새 기록 생성 보장 없음
+- SessionStart: 등록 Vault·프로젝트·두 진입점 검사 결과와 실제 checkpoint 대조 실패 안내. 미등록 환경은 자동 추정 대신 등록 오류 보고. 안내 훅이 임의 셸·외부 앱 쓰기를 차단한다고 표현 금지. 같은 상태의 주입 문구는 같은 바이트(시각·임의 순서 금지)
+- 요청·응답 원문: 두 제품 모두 UserPromptSubmit `prompt`, Stop `last_assistant_message` 우선, 없으면 아래 호스트별 출처의 transcript 끝부분. 둘 다 없으면 있는 값만 저장. 저장 위치·상한은 continuity.md
+- Stop: continuity.md의 Stop 알림 조건에서 한 번 보완 요청. PostToolUse에서 본 checkpoint 명령은 주장으로만 기록, Stop에서 실제 저장·동기화 대조. Stop 재진입 무한 반복 금지
+- SessionEnd: 종료 표시와 로컬 기록 대조 결과만. 강제 종료 시 새 기록 생성 보장 없음
 - 계획 모드: 원격 쓰기 없음. 실행 작업으로 자동 전환 금지
 - 과업 선택: 현재 세션의 명시 bind 우선, 중복 연결이면 자동 선택 거부. `ISSUE_CONTINUITY_TASK`는 미등록 세션의 초기 힌트이며 새 bind 덮어쓰기 금지. 검증된 관리 창에서는 창의 활성 과업을 따르고 시작 cwd·옛 환경변수로 복귀 금지
-- 훅 파일 누락·처리 오류: 구조화된 파일 쓰기는 거부, 셸·그 밖 이벤트는 진단 후 비차단 종료(설치 복구 경로 보존, 문서 검사 완료 의미 아님). 기록·초기화 준비 실패 유지, 재시도 루프·종료 0의 성공 해석 금지
+- 훅 파일 누락·처리 오류: 구조화된 파일 쓰기는 거부, 셸·그 밖 이벤트는 진단 후 비차단 종료(설치 복구 경로 보존, 문서 검사 완료로 해석 금지). 기록·초기화 준비 실패 유지, 재시도 루프·종료 0의 성공 해석 금지
+
+## 호스트별 출처
+
+정본: continuity.py `HOSTS` 어댑터 하나. 다른 위치의 호스트 분기 추가 금지
+
+- Claude transcript: payload `transcript_path`. 요청·응답: `user`·`assistant` 줄의 `message.content` text 블록, `isMeta`·`isCompactSummary`·도구 결과 제외
+- Codex transcript: payload `transcript_path`, 없으면 `session_id`로 `$CODEX_HOME/sessions/*/*/*/rollout-*-<ID>.jsonl` 조회. 세션 폴더 안 일반 파일·첫 줄 session_meta ID 일치의 유일한 후보만, 링크·중복 거절
+- Codex 요청: `event_msg` `user_message`(입력 원문). `response_item` user 메시지는 환경·지침 주입 포함이라 제외. 응답: `agent_message` 또는 `response_item` assistant `output_text`
+- 캐시 지표 Claude: `message.usage`의 `input`(캐시 밖)·`cache_read`·`cache_creation`, 같은 `message.id` 중복 줄 병합
+- 캐시 지표 Codex: `token_count` `last_token_usage`의 `input`(캐시 포함)·`cached_input`·`uncached_input`(차이). 캐시 쓰기 값 없음, Claude `cache_creation`과 동일 지표 주장 금지. 같은 `total_token_usage` 반복 줄 제외
+
+## 캐시 측정
+
+- `continuity.py cache-report --transcript <JSONL> [--host claude|codex]`: 요청별 호스트 지표와 읽기 비율 JSON, 본문 출력 없음. `--host` 생략 시 내용으로 판정, 판정 불가는 종료 2. 훅 매 턴 출력 없음
+- 읽기 비율: Claude `cache_read / (input + cache_read + cache_creation)`, Codex `cached_input / input`
+- 경계: 첫 요청·세션 변경(Claude `sessionId`, Codex `session_meta`)은 `start`, `compact_boundary`·`compacted` 뒤는 `compact`. `spike_metric`(Claude `cache_creation`, Codex `uncached_input`)이 1024와 경계 밖 중앙값 2배 중 큰 값 이상이면 spike, 경계 spike는 `boundary_spikes`
+- 판정: 같은 상태의 SessionStart 재시작 뒤 `boundary_spikes` 반복이면 주입 문구 변동 후보. 첫 요청의 생성은 정상 비용, 단일 기록으로 원인 확정 금지
 
 ## 설치와 검증
 
@@ -72,9 +90,9 @@ python3 <이 스킬 폴더>/scripts/continuity_window.py --task 작업명 --host
 - 기록 작성 전 최신 이슈 복구. 자동 초기화 기록의 goal·constraints가 기존 값과 다르면 전환 거부, 정당한 범위 변경은 먼저 일반 checkpoint로 기록. 나머지 필드 의미 보존은 실행자 확인
 - Claude는 기존 출력을 보존하는 status line 사용, 입력 제안은 실행기 전용 설정에서 끄고 전역 설정 보존
 - `--cycles 1`: 한 번 전환 후 제어기만 종료, 창 유지. 기본 0은 지속 감시. 초기화 직후 사용량이 임계값 아래로 내려간 뒤에만 다음 전환
-- `--attach`: 기록된 관리 창의 pane·프로세스·window ID·host·실제 제목·유휴 상태 확인 뒤 입력 없이 감시 재개. 중복 제어기·신뢰·인증 대기·초기화 진행 중이면 거부. 멈춘 옛 제어기 재개용 아님
+- `--attach`: 기록된 관리 창의 pane·프로세스·window ID·host·실제 제목·유휴 상태 확인 뒤 입력 없이 감시 재개. 중복 제어기·신뢰·인증 대기·초기화 진행 중이면 거부. 멈춘 옛 제어기 재개에 사용 금지
 - `--recover`: 저장된 같은 창에서 초기화 이후 확인 단계만 복구. 창·호스트·제목·기록 버전 일치 필수. 새 세션 미확인 시 재초기화 금지. 재개 입력을 이미 보냈거나 불명확하면 중복 전송 거부
-- window.json의 resumed는 복구 입력 후 유휴 도달이며 업무 완료 증명 아님. 네트워크·권한·기록·창 확인 실패는 blocked에 이유, 자동 재시작 루프 없음
+- window.json의 resumed는 복구 입력 후 유휴 도달 표시, 업무 완료 증명으로 사용 금지. 네트워크·권한·기록·창 확인 실패는 blocked에 이유, 자동 재시작 루프 없음
 
 ### Codex 세션 메타데이터 어댑터
 

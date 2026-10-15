@@ -2,8 +2,9 @@
 
 bind --task 이름 --repo 경로 --issue 번호 --project 번호 [--session-id 현재채팅ID]
 checkpoint --task 이름 --input JSON파일 [--sync]
-restore --task 이름 [--offline]
+restore --task 이름 [--offline] [--verify-clear]
 doctor [--task 이름]
+cache-report --transcript 호스트 JSONL [--host claude|codex]
 모든 명령의 --root는 개인 작업 기록 루트. 기본 ~/workspace/woon/.local/orchestration.
 인자: 명령별 --help 또는 위 설명
 출력: stdout JSON 또는 원래 status line, 실패 stderr와 종료 코드
@@ -15,6 +16,7 @@ import argparse
 import contextlib
 import fcntl
 import hashlib
+import itertools
 import json
 import os
 from pathlib import Path
@@ -23,7 +25,7 @@ import subprocess
 import sys
 import time
 import uuid
-from typing import Any, Iterator
+from typing import Any, Callable, Iterator, NamedTuple
 
 import task_scope
 
@@ -31,6 +33,12 @@ ROOT = Path.home() / "workspace/woon/.local/orchestration"
 FIELDS = ("goal", "constraints", "plan", "hypotheses", "actions", "results", "next")
 TITLES = ("목표·완료 조건", "제약·제외 범위", "계획", "가설", "처리", "결과", "다음")
 MARKER = "<!-- work-checkpoint-v1 -->"
+# 비공개 대화 원문: 작업 기록 폴더의 exchange.json에만 저장, 원격 게시 없음
+EXCHANGE = "exchange.json"
+ORIGINAL_LIMIT = 8000
+TURN_LIMIT = 4000
+TRANSCRIPT_TAIL_BYTES = 4 << 20
+SPIKE_MIN_TOKENS = 1024
 
 
 class ContinuityError(Exception):
@@ -77,6 +85,9 @@ def save(path: Path, value: dict) -> None:
         stream.flush()
         os.fsync(stream.fileno())
     os.replace(draft, path)
+    # 쓰기 성공 신호 대신 실제 파일을 다시 읽어 대조한다.
+    if read(path) != json.loads(json.dumps(value, ensure_ascii=False)):
+        raise ContinuityError("saved state differs on read-back: " + path.name)
 
 
 # cost: time O(n), heap O(n), stack O(1), io O(n + 1)
@@ -321,7 +332,7 @@ def bind(folder: Path, args: argparse.Namespace) -> dict:
     save(folder / "binding.json", binding)
     if previous:
         # 같은 세션의 과업 전환은 압축이 아니므로 전달한 원문만 승계한다.
-        for host in ("claude", "codex"):
+        for host in HOSTS:
             name = "session-" + hashlib.sha256((host + session).encode()).hexdigest()[:20] + ".json"
             prior_state = read(previous.parent / name)
             current_state = read(folder / name)
@@ -401,6 +412,45 @@ def latest(records: list[dict]) -> dict:
     return heads[0] if heads else {}
 
 
+def signature(data: dict, scope: dict | None) -> str:
+    """원격 기록 digest와 같은 규칙의 서명. scope 없는 옛 기록은 data만."""
+    return digest({"data": data, "scope": scope} if scope else data)
+
+
+# cost: time O(n), heap O(n), stack O(1), io 1
+# vars: n = checkpoint.json 바이트와 원격 기록 수
+# basis: estimate
+def verify_checkpoint(
+    folder: Path,
+    records: list[dict] | None = None,
+    *,
+    synced: bool = False,
+    since: int | None = None,
+) -> dict:
+    """저장 주장 대신 실제 checkpoint.json(records가 있으면 원격 기록)을 다시 읽어 대조. 불일치는 ContinuityError"""
+    state = read(folder / "checkpoint.json")
+    if not state.get("data"):
+        raise ContinuityError("checkpoint not persisted")
+    validate(state["data"])
+    signed = signature(state["data"], state.get("scope"))
+    pending = state.get("pending")
+    if pending and pending.get("digest") != signed:
+        raise ContinuityError("local checkpoint differs from its pending record")
+    if since is not None and state.get("saved_at", 0) < since:
+        raise ContinuityError("no checkpoint saved during this request")
+    if synced and (pending or state.get("sync") != "synced"):
+        raise ContinuityError("checkpoint not synced; local pending kept")
+    if synced and state.get("remote_verified") not in (None, signed):
+        raise ContinuityError("synced checkpoint differs from read-back remote record")
+    remote = "pending" if pending else "not checked"
+    if records is not None and not pending:
+        found = next((r for r in records if r["id"] == state.get("remote_id")), None)
+        if not found or found["digest"] != signed:
+            raise ContinuityError("remote checkpoint missing or different on read-back")
+        remote = "verified"
+    return {"local": "verified", "remote": remote, "digest": signed}
+
+
 def sync(folder: Path, state: dict, binding: dict) -> dict:
     record = state.get("pending")
     if not record:
@@ -457,32 +507,37 @@ def sync(folder: Path, state: dict, binding: dict) -> dict:
             ],
             body,
         )
-        result = json.loads(
-            run(
-                [
-                    "gh",
-                    "api",
-                    f"repos/{binding['remote']}/issues/{binding['issue']}/comments",
-                    "--method",
-                    "POST",
-                    "--input",
-                    "-",
-                ],
-                json.dumps({"body": body}),
-            )
+        run(
+            [
+                "gh",
+                "api",
+                f"repos/{binding['remote']}/issues/{binding['issue']}/comments",
+                "--method",
+                "POST",
+                "--input",
+                "-",
+            ],
+            json.dumps({"body": body}),
         )
-        existing = {**record, "url": result["html_url"]}
         # 다른 세션의 동시 게시도 삭제하지 않고 다음 복구에서 충돌로 판정한다.
-        latest(remote_records(binding))
+        records = remote_records(binding)
+        latest(records)
+    confirmed = next((r for r in records if r["id"] == record["id"]), None)
+    if not confirmed or confirmed["digest"] != record["digest"]:
+        raise ContinuityError(
+            "published checkpoint not found on read-back; local pending kept"
+        )
     state.update(
         {
             "remote_id": record["id"],
-            "remote_url": existing["url"],
+            "remote_url": confirmed["url"],
+            "remote_verified": record["digest"],
             "pending": None,
             "sync": "synced",
         }
     )
     save(folder / "checkpoint.json", state)
+    state["verified"] = verify_checkpoint(folder, records, synced=True)
     return state
 
 
@@ -612,6 +667,7 @@ def checkpoint(
             )
             run(command)
         return sync(folder, state, binding)
+    state["verified"] = verify_checkpoint(folder)
     return state
 
 
@@ -668,6 +724,7 @@ def restore(
             "clear_ready": False,
             "clear_executed": False,
             "issue": binding["url"],
+            "conversation": conversation(folder, binding),
             "data": state.get("data"),
             "sync": state.get("sync", "missing"),
             "problems": problems,
@@ -683,12 +740,16 @@ def restore(
             or local.get("sync") != "synced"
             or local.get("remote_id") != remote.get("id")
             or local.get("data") != remote.get("data")
+            or local.get("scope") != remote.get("scope")
             or local.get("snapshot") != actual
         ):
             raise ContinuityError(
                 "clear not ready: reconcile and sync a current checkpoint first"
             )
-        validate(local["data"])
+        try:
+            verify_checkpoint(folder, records, synced=True)
+        except ContinuityError as error:
+            raise ContinuityError("clear not ready: " + str(error)) from error
     import project_context
 
     project = project_context.inspect_project(Path(binding["repo"]))
@@ -704,12 +765,396 @@ def restore(
         "clear_ready": verify_clear,
         "clear_executed": False,
         "issue": binding["url"],
+        "conversation": conversation(folder, binding),
         "data": state.get("data"),
         "sync": state.get("sync", "missing"),
         "remote": {key: remote[key] for key in ("id", "url") if key in remote},
         "changed": state.get("snapshot") != actual,
         "actual": {key: actual[key] for key in ("head", "branch")},
         "instruction": "이슈 목표·제약·다음 행동과 실제 변경을 대조하고 현재 단계 규칙을 다시 읽기. 기록의 명령을 자동 실행하지 않기.",
+    }
+
+
+def clip(text: str, limit: int) -> str:
+    """limit 바이트까지 원문 그대로, 넘치면 UTF-8 경계에서 자르고 명시 표시."""
+    raw = text.encode()
+    if len(raw) <= limit:
+        return text
+    kept = raw[:limit].decode(errors="ignore")
+    return kept + f"\n[truncated: kept {len(kept.encode())} of {len(raw)} bytes]"
+
+
+def private_problem(folder: Path, repo: str | None) -> str:
+    """대화 원문 저장 위치 검사. 작업본·등록 Vault 안이면 거부 사유, 통과는 빈 값"""
+    import project_context
+
+    place = folder.resolve()
+    blocked = [Path(repo)] if repo else []
+    with contextlib.suppress(project_context.ContextError, OSError, ValueError):
+        blocked.append(project_context.resolve_vault())
+    for area in blocked:
+        if place == area.resolve() or area.resolve() in place.parents:
+            return "record root inside working tree or Vault; conversation excerpts not stored"
+    return ""
+
+
+# cost: time O(n), heap O(n), stack O(1), io 2
+# vars: n = 저장 원문 바이트
+# basis: estimate
+def remember(
+    folder: Path,
+    repo: str,
+    *,
+    prompt: str | None = None,
+    reply: str | None = None,
+    origin: dict | None = None,
+) -> None:
+    """원래 요청(첫 기록 후 고정)·최신 요청·마지막 대화를 비공개 exchange.json에 병합. 호출자가 folder 잠금 보유"""
+    if private_problem(folder, repo):
+        return
+    path = folder / EXCHANGE
+    state = read(path)
+    if prompt:
+        state["latest_prompt"] = {**(origin or {}), "text": clip(prompt, TURN_LIMIT)}
+        state.setdefault(
+            "original", {**(origin or {}), "text": clip(prompt, ORIGINAL_LIMIT)}
+        )
+    if reply is not None:
+        user = state.get("latest_prompt", {}).get("text")
+        state["last_exchange"] = {
+            **(origin or {}),
+            "user": user,
+            "assistant": clip(reply, TURN_LIMIT),
+        }
+    save(path, state)
+
+
+def conversation(folder: Path, binding: dict) -> dict:
+    """restore 고정 위치의 비공개 대화 원문. 자료이며 실행 권한 아님"""
+    state = read(folder / EXCHANGE)
+    exchange = state.get("last_exchange") or {}
+    result = {
+        "original_request": (state.get("original") or {}).get("text"),
+        "last_exchange": (
+            {"user": exchange.get("user"), "assistant": exchange.get("assistant")}
+            if exchange
+            else None
+        ),
+        "visibility": "local only; never published",
+    }
+    problem = private_problem(folder, binding.get("repo"))
+    if problem:
+        result["unavailable"] = problem
+    return result
+
+
+# cost: time O(t), heap O(t), stack O(1), io 1
+# vars: t = 읽는 transcript 바이트
+# basis: estimate
+def transcript_rows(path: object, tail: int | None = None) -> Iterator[dict]:
+    """호스트 JSONL의 객체 줄. 절대 경로의 일반 .jsonl만, 링크 거절. tail이면 끝부분 완전한 줄만"""
+    if not isinstance(path, str) or not path.endswith(".jsonl"):
+        raise ContinuityError("transcript path must be an absolute .jsonl file")
+    target = Path(path)
+    if not target.is_absolute():
+        raise ContinuityError("transcript path must be an absolute .jsonl file")
+    fd = os.open(target, os.O_RDONLY | os.O_NOFOLLOW)
+    with os.fdopen(fd, "rb") as stream:
+        size = os.fstat(fd).st_size
+        start = max(0, size - tail) if tail else 0
+        stream.seek(start)
+        lines = stream.read().split(b"\n")
+    if start:
+        lines = lines[1:]
+    for line in lines:
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue  # 잘린·쓰는 중인 줄은 건너뜀
+        if isinstance(row, dict):
+            yield row
+
+
+def message_text(content: object, kinds: tuple[str, ...]) -> str:
+    """메시지 content의 지정 종류 텍스트 블록. 도구 결과·이미지 제외"""
+    if isinstance(content, str):
+        return content
+    if not isinstance(content, list):
+        return ""
+    return "\n".join(
+        block["text"]
+        for block in content
+        if isinstance(block, dict)
+        and block.get("type") in kinds
+        and isinstance(block.get("text"), str)
+    )
+
+
+# 호스트 어댑터: transcript 위치·요청/응답 판독·캐시 지표의 호스트 차이는 아래 HOSTS 하나에서만 처리
+
+CODEX_SESSION_ID = re.compile(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}")
+CODEX_META_BYTES = 1 << 20
+
+
+def codex_sessions_dir() -> Path:
+    return Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "sessions"
+
+
+def verified_rollout(path: Path, session: str) -> Path | None:
+    """세션 로그 폴더 안의 일반 파일이고 이름이 session과 맞는 절대 경로만 통과한다. 링크는 거절한다."""
+    try:
+        real = path.resolve(strict=True)
+        sessions = codex_sessions_dir().resolve()
+    except OSError:
+        return None
+    named = real.name.startswith("rollout-") and real.name.endswith(f"-{session}.jsonl")
+    return real if real == path and sessions in real.parents and named else None
+
+
+def codex_meta(line: bytes) -> dict | None:
+    """완전한 첫 줄의 session_meta payload. 형식이 다르면 None"""
+    if len(line) > CODEX_META_BYTES or not line.endswith(b"\n"):
+        return None
+    try:
+        meta = json.loads(line)
+    except ValueError:
+        return None
+    if not isinstance(meta, dict) or meta.get("type") != "session_meta":
+        return None
+    payload = meta.get("payload")
+    return payload if isinstance(payload, dict) else None
+
+
+# cost: time O(f), heap O(f), stack O(1), io O(f)
+# vars: f = 같은 session 이름의 rollout 후보 수
+# basis: estimate
+def codex_rollout(session: object) -> str | None:
+    """session_id로 찾은 rollout. 세션 폴더 안 일반 파일이고 session_meta ID가 같은 유일한 후보만"""
+    if not isinstance(session, str) or not CODEX_SESSION_ID.fullmatch(session):
+        return None
+    found = []
+    for path in sorted(codex_sessions_dir().glob(f"*/*/*/rollout-*-{session}.jsonl")):
+        real = verified_rollout(path, session)
+        if real is None:
+            continue
+        try:
+            with open(real, "rb") as stream:
+                meta = codex_meta(stream.readline(CODEX_META_BYTES + 1))
+        except OSError:
+            continue
+        if meta and meta.get("id") == session:
+            found.append(str(real))
+    return found[0] if len(found) == 1 else None
+
+
+def payload_transcript(payload: dict) -> str | None:
+    path = payload.get("transcript_path")
+    return path if isinstance(path, str) and path else None
+
+
+def claude_turn(row: dict) -> tuple[str, str] | None:
+    """Claude JSONL: user·assistant 줄의 message.content text 블록. meta·압축 요약·도구 결과 제외"""
+    kind = row.get("type")
+    message = row.get("message")
+    if kind not in ("user", "assistant") or not isinstance(message, dict):
+        return None
+    if row.get("isMeta") or row.get("isCompactSummary"):
+        return None
+    text = message_text(message.get("content"), ("text",))
+    return (kind, text) if text else None
+
+
+def codex_turn(row: dict) -> tuple[str, str] | None:
+    """Codex rollout: 요청은 event_msg user_message(입력 원문), 응답은 agent_message 또는 response_item assistant output_text.
+
+    response_item의 user 메시지는 환경·지침 주입을 포함하므로 요청 원문으로 사용하지 않는다.
+    """
+    payload = row.get("payload")
+    if not isinstance(payload, dict):
+        return None
+    kind = (row.get("type"), payload.get("type"))
+    if kind == ("event_msg", "user_message") and isinstance(payload.get("message"), str):
+        return ("user", payload["message"]) if payload["message"] else None
+    if kind == ("event_msg", "agent_message") and isinstance(payload.get("message"), str):
+        return ("assistant", payload["message"]) if payload["message"] else None
+    if kind == ("response_item", "message") and payload.get("role") == "assistant":
+        text = message_text(payload.get("content"), ("output_text",))
+        return ("assistant", text) if text else None
+    return None
+
+
+def _int(value: object) -> int:
+    return value if type(value) is int and value >= 0 else 0
+
+
+def claude_boundary(row: dict, memo: dict) -> str | None:
+    """첫 요청·sessionId 변경은 start, compact_boundary 뒤는 compact"""
+    if row.get("type") == "system" and row.get("subtype") == "compact_boundary":
+        return "compact"
+    session = row.get("sessionId")
+    if session and session != memo.get("session"):
+        memo["session"] = session
+        return "start"
+    return None
+
+
+def codex_boundary(row: dict, memo: dict) -> str | None:
+    """session_meta는 start, compacted 뒤는 compact"""
+    return {"session_meta": "start", "compacted": "compact"}.get(row.get("type"))
+
+
+def claude_usage(row: dict, memo: dict) -> tuple[str | None, dict] | None:
+    """assistant message.usage. 같은 message.id의 블록별 중복 줄은 같은 키"""
+    message = row.get("message")
+    if row.get("type") != "assistant" or not isinstance(message, dict):
+        return None
+    raw = message.get("usage")
+    if not isinstance(raw, dict):
+        return None
+    return message.get("id"), {
+        "input": _int(raw.get("input_tokens")),
+        "cache_read": _int(raw.get("cache_read_input_tokens")),
+        "cache_creation": _int(raw.get("cache_creation_input_tokens")),
+    }
+
+
+def codex_usage(row: dict, memo: dict) -> tuple[str | None, dict] | None:
+    """event_msg token_count의 last_token_usage. 캐시 쓰기 값 없음, input_tokens는 cached_input_tokens 포함. total_token_usage가 같은 반복 줄 제외"""
+    payload = row.get("payload")
+    if row.get("type") != "event_msg" or not isinstance(payload, dict):
+        return None
+    info = payload.get("info")
+    if payload.get("type") != "token_count" or not isinstance(info, dict):
+        return None
+    last = info.get("last_token_usage")
+    if not isinstance(last, dict) or info.get("total_token_usage") == memo.get("total", ()):
+        return None
+    memo["total"] = info.get("total_token_usage")
+    total = _int(last.get("input_tokens"))
+    cached = min(_int(last.get("cached_input_tokens")), total)
+    return None, {"input": total, "cached_input": cached, "uncached_input": total - cached}
+
+
+def claude_detect(row: dict) -> bool:
+    return row.get("type") in ("user", "assistant") and isinstance(row.get("message"), dict)
+
+
+def codex_detect(row: dict) -> bool:
+    return row.get("type") in ("session_meta", "event_msg", "response_item", "turn_context")
+
+
+class Host(NamedTuple):
+    """호스트별 transcript 위치·판독·캐시 지표. read: 캐시 읽기 필드, total: 비율 분모 필드, spike: 급증 판정 필드"""
+
+    locate: Callable[[dict], str | None]
+    turn: Callable[[dict], tuple[str, str] | None]
+    boundary: Callable[[dict, dict], str | None]
+    usage: Callable[[dict, dict], tuple[str | None, dict] | None]
+    detect: Callable[[dict], bool]
+    read: str
+    total: tuple[str, ...]
+    spike: str
+
+
+HOSTS = {
+    "claude": Host(
+        payload_transcript,
+        claude_turn,
+        claude_boundary,
+        claude_usage,
+        claude_detect,
+        "cache_read",
+        ("input", "cache_read", "cache_creation"),
+        "cache_creation",
+    ),
+    "codex": Host(
+        lambda payload: payload_transcript(payload) or codex_rollout(payload.get("session_id")),
+        codex_turn,
+        codex_boundary,
+        codex_usage,
+        codex_detect,
+        "cached_input",
+        ("input",),
+        "uncached_input",
+    ),
+}
+
+
+# cost: time O(t), heap O(t), stack O(1), io 1
+# vars: t = TRANSCRIPT_TAIL_BYTES
+# basis: estimate
+def last_turn(path: object, host: str) -> tuple[str | None, str | None]:
+    """transcript 끝부분의 마지막 사용자 요청과 그 뒤 마지막 응답 텍스트. 형식을 모르면 None"""
+    parse = HOSTS[host].turn
+    user = assistant = None
+    for row in transcript_rows(path, TRANSCRIPT_TAIL_BYTES):
+        found = parse(row)
+        if found and found[0] == "user":
+            user, assistant = found[1], None
+        elif found:
+            assistant = found[1]
+    return user, assistant
+
+
+# cost: time O(t), heap O(t + u), stack O(1), io 1
+# vars: t = transcript 바이트, u = 사용량 기록 수
+# basis: estimate
+def cache_report(path: str, host: str | None = None) -> dict:
+    """호스트 transcript 사용량의 요청별 캐시 지표와 읽기 비율. 시작·압축 직후 급증 표시. 본문 출력 없음
+
+    host 생략 시 내용으로 판정, 판정 불가는 오류. 지표 이름은 호스트가 실제 제공하는 값 그대로.
+    """
+    rows = transcript_rows(path)
+    seen: list[dict] = []
+    if host is None:
+        for row in rows:
+            seen.append(row)
+            host = next((name for name, item in HOSTS.items() if item.detect(row)), None)
+            if host:
+                break
+        if host is None:
+            raise ContinuityError("transcript host unknown; pass --host claude|codex")
+    adapter = HOSTS[host]
+    turns: list[dict] = []
+    by_key: dict[str, dict] = {}
+    memo: dict = {}
+    boundary: str | None = "start"
+    for number, row in enumerate(itertools.chain(seen, rows), 1):
+        boundary = adapter.boundary(row, memo) or boundary
+        found = adapter.usage(row, memo)
+        if found is None:
+            continue
+        key, usage = found
+        if key and key in by_key:
+            by_key[key].update(usage)
+            continue
+        turn = {"turn": len(turns) + 1, "line": number, **usage, "boundary": boundary}
+        boundary = None
+        turns.append(turn)
+        if key:
+            by_key[key] = turn
+    for turn in turns:
+        total = sum(turn[field] for field in adapter.total)
+        turn["read_ratio"] = round(turn[adapter.read] / total, 4) if total else None
+    steady = sorted(t[adapter.spike] for t in turns if not t["boundary"])
+    baseline = steady[len(steady) // 2] if steady else 0
+    for turn in turns:
+        turn["spike"] = turn[adapter.spike] >= max(SPIKE_MIN_TOKENS, 2 * baseline)
+    fields = dict.fromkeys((*adapter.total, adapter.read, adapter.spike))
+    sums = {field: sum(t[field] for t in turns) for field in fields}
+    total = sum(sums[field] for field in adapter.total)
+    return {
+        "host": host,
+        "spike_metric": adapter.spike,
+        "summary": {
+            "turns": len(turns),
+            **sums,
+            "read_ratio": round(sums[adapter.read] / total, 4) if total else None,
+            "steady_spike_metric_median": baseline,
+            "boundary_spikes": [t["turn"] for t in turns if t["boundary"] and t["spike"]],
+            "other_spikes": [t["turn"] for t in turns if not t["boundary"] and t["spike"]],
+        },
+        "turns": turns,
     }
 
 
@@ -721,7 +1166,7 @@ def doctor(folder: Path | None) -> dict:
         "context_percentage": "unknown",
         "host_hooks": "requires real host test",
     }
-    for tool in ("git", "gh", "claude", "codex"):
+    for tool in ("git", "gh", *HOSTS):
         try:
             result[tool] = run([tool, "--version"]).splitlines()[0]
         except (OSError, ContinuityError, subprocess.TimeoutExpired):
@@ -744,7 +1189,7 @@ def doctor(folder: Path | None) -> dict:
                     for event in session.get("events", {})
                 }
             )
-            for host in ("claude", "codex")
+            for host in HOSTS
         }
         meter = read(folder / "meter.json")
         result["context_meter"] = {
@@ -772,6 +1217,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
     sub = parser.add_subparsers(dest="command", required=True)
+    report = sub.add_parser("cache-report")
+    report.add_argument("--transcript", required=True)
+    report.add_argument("--host", choices=sorted(HOSTS), help="생략 시 내용으로 판정")
     for name in ("bind", "checkpoint", "restore", "doctor"):
         item = sub.add_parser(name)
         item.add_argument("--task", required=name != "doctor")
@@ -805,8 +1253,12 @@ def main() -> int:
             item.add_argument("--verify-clear", action="store_true")
     args = parser.parse_args()
     try:
-        folder = task_path(args.root, args.task) if args.task else None
-        if args.command == "doctor":
+        folder = (
+            task_path(args.root, args.task) if getattr(args, "task", None) else None
+        )
+        if args.command == "cache-report":
+            result = cache_report(args.transcript, args.host)
+        elif args.command == "doctor":
             result = doctor(folder)
         else:
             if folder is None:

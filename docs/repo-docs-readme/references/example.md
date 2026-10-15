@@ -1,6 +1,6 @@
 # 표본
 
-설계 단계 영어 원본의 절 구성. 글자 복사 대상 아님(repo-docs references/writing.md 절 구성 7)
+설계 단계 영어 원본의 절 구성. 글자 복사 금지(repo-docs references/writing.md 절 구성 7)
 
 ````text
 <p align="center">

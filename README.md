@@ -46,7 +46,7 @@ $git-pull-request 현재 diff와 테스트 결과로 PR 본문을 작성해 줘.
 
 ### 압축 후 작업 복구
 
-Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continuity`를 유지합니다. 연결한 이슈에 작업 기록을 저장하고 새 세션·압축 후 복구 명령을 안내합니다. [판 상태](git/git-issue/references/project-status.md), [기록·복구](git/git-issue/references/continuity.md), [설치·호스트 연결](git/git-issue/references/continuity-hosts.md)은 해당 작업 때만 읽습니다. 판단은 소유 스킬, 저장·복구는 플러그인 코드가 담당합니다.
+Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continuity`를 유지합니다. 연결한 이슈에 작업 기록을 저장하고 새 세션·압축 후 복구 명령을 안내합니다. 저장 완료는 실제 기록을 다시 읽어 판정하고, 원래 요청과 마지막 대화는 로컬 작업 기록에만 보관합니다. [판 상태](git/git-issue/references/project-status.md), [기록·복구](git/git-issue/references/continuity.md), [설치·호스트 연결](git/git-issue/references/continuity-hosts.md)은 해당 작업 때만 읽습니다. 판단은 소유 스킬, 저장·복구는 플러그인 코드가 담당합니다.
 
 기존 `issue-continuity`는 이전 설치 ID다. 중복 활성화 여부를 먼저 확인하고, 활성 갱신은 설치·호스트 연결의 안정된 진입점 절차를 따릅니다.
 

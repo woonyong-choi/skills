@@ -39,7 +39,7 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 `type/이슈번호-scope-설명`
 
 - 작은 후속 정리도 기존 이슈 번호 (git-issue 과업 연결과 기록)
-- type, scope: 커밋과 같은 단어 (git-commit type, scope). 브랜치 type은 커밋 type, 이슈 라벨 아님(`build` 이슈의 기능 추가 → `feat`)
+- type, scope: 커밋과 같은 단어 (git-commit type, scope). 브랜치 type은 커밋 type, 이슈 라벨과 별개(`build` 이슈의 기능 추가 → `feat`)
 - 설명: 영어 소문자 kebab-case, 2~5단어
 
 예 → 뜻:
