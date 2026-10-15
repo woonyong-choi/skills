@@ -74,6 +74,10 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
     if not paths:
         return {}
     try:
+        # 지원 문서는 프로젝트가 아니라 등록 Vault의 career 영역에 둔다(career 스킬).
+        career = project_context.resolve_vault() / "career"
+        if all(path.is_relative_to(career) for path in paths):
+            return {}
         project = project_context.check_project(project_path or Path(payload["cwd"]))
         for path in paths:
             project_context.check_write(project, path)

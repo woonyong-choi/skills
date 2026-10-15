@@ -93,7 +93,8 @@ Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continu
 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 문서 색인 생성 |
 | [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 비공개 판단 기록 |
 | [repo-docs-promo](docs/repo-docs-promo/SKILL.md) | 홍보용 촬영 순서와 데모 준비 |
-| [html-report](docs/html-report/SKILL.md) | 그림·코드·실행 결과 비교 HTML 보고서 |
+| [html-report](docs/html-report/SKILL.md) | 블로그 틀 설명 페이지와 시각 비교 HTML 보고서 |
+| [career](docs/career/SKILL.md) | JD 맞춤 이력서·포트폴리오와 Vault 지원 폴더 |
 
 ### 디자인
 
