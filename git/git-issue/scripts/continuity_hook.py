@@ -179,13 +179,7 @@ CODEX_CLI_VERSION = "0.158.0"
 CODEX_RECORD_MAX_AGE_SECONDS = 6 * 60 * 60
 CODEX_METRIC_MAX_AGE_SECONDS = 6 * 60 * 60
 CODEX_CLOCK_SKEW_SECONDS = 60
-ROLLOUT_HEAD_BYTES = 1 << 20
-ROLLOUT_TAIL_BYTES = 4 << 20
-SESSION_ID = re.compile(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}")
-
-
-def codex_sessions_dir() -> Path:
-    return Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "sessions"
+ROLLOUT_TAIL_BYTES = 4 << 20  # rollout 위치·session_meta 판독 정본: continuity의 호스트 어댑터
 
 
 # cost: time O(1), heap O(1), stack O(1), io 3
@@ -233,7 +227,7 @@ def codex_record(home: Path, now: float) -> tuple[str, Path] | None:
     )
     if meter.get("host") != "codex" or not isinstance(path, str) or not path:
         return None
-    if not isinstance(session, str) or not SESSION_ID.fullmatch(session):
+    if not isinstance(session, str) or not core.CODEX_SESSION_ID.fullmatch(session):
         return None
     if not isinstance(at, (int, float)) or isinstance(at, bool):
         return None
@@ -241,32 +235,13 @@ def codex_record(home: Path, now: float) -> tuple[str, Path] | None:
     return (session, Path(path)) if fresh else None
 
 
-def verified_rollout(path: Path, session: str) -> Path | None:
-    """세션 로그 폴더 안의 일반 파일이고 이름이 session과 맞는 절대 경로만 통과한다. 링크는 거절한다."""
-    try:
-        real = path.resolve(strict=True)
-        sessions = codex_sessions_dir().resolve()
-    except OSError:
-        return None
-    named = real.name.startswith("rollout-") and real.name.endswith(f"-{session}.jsonl")
-    return real if real == path and sessions in real.parents and named else None
-
-
 def session_meta_matches(line: bytes, session: str) -> bool:
-    if len(line) > ROLLOUT_HEAD_BYTES or not line.endswith(b"\n"):
-        return False
-    try:
-        meta = json.loads(line)
-    except ValueError:
-        return False
-    if not isinstance(meta, dict):
-        return False  # 최상위가 객체가 아니면 알려진 session_meta가 아니다
-    payload = meta.get("payload")
+    """사용량 계산용 session_meta: ID와 관측한 cli_version 모두 일치"""
+    meta = core.codex_meta(line)
     return (
-        meta.get("type") == "session_meta"
-        and isinstance(payload, dict)
-        and payload.get("id") == session
-        and payload.get("cli_version") == CODEX_CLI_VERSION
+        meta is not None
+        and meta.get("id") == session
+        and meta.get("cli_version") == CODEX_CLI_VERSION
     )
 
 
@@ -332,14 +307,14 @@ def codex_usage(
     """
     now = time.time() if now is None else now
     record = codex_record(home, now)
-    real = verified_rollout(record[1], record[0]) if record else None
+    real = core.verified_rollout(record[1], record[0]) if record else None
     if record is None or real is None:
         return None, None
     try:
         fd = os.open(real, os.O_RDONLY | os.O_NOFOLLOW)
         with os.fdopen(fd, "rb") as stream:
             info = os.fstat(fd)
-            head = stream.readline(ROLLOUT_HEAD_BYTES + 1)
+            head = stream.readline(core.CODEX_META_BYTES + 1)
             if not stat.S_ISREG(info.st_mode) or not session_meta_matches(
                 head, record[0]
             ):
@@ -357,6 +332,66 @@ def response(event: str, text: str) -> dict[str, Any]:
         {"hookSpecificOutput": {"hookEventName": event, "additionalContext": text}}
         if text
         else {}
+    )
+
+
+CHECKPOINT_COMMAND = re.compile(r"continuity\.py\b[^\n;&|]*?\scheckpoint\b")
+
+
+def tool_command(payload: dict[str, Any]) -> str:
+    """Bash·exec_command·shell 입력의 명령 문자열. Codex 배열 명령은 공백 결합"""
+    value = payload.get("tool_input")
+    if isinstance(value, dict):
+        value = value.get("command", value.get("cmd"))
+    if isinstance(value, list):
+        value = " ".join(str(part) for part in value)
+    return value if isinstance(value, str) else ""
+
+
+def pending_prompt_path(root: Path, host: str, session: str) -> Path:
+    """bind 전 요청의 비공개 임시 보관 위치. 세션당 최신 하나"""
+    return root / ".prompts" / (
+        hashlib.sha256((host + session).encode()).hexdigest()[:20] + ".json"
+    )
+
+
+def hold_prompt(root: Path, host: str, payload: dict[str, Any]) -> None:
+    """명시 bind 전 요청의 비공개 임시 보관. 같은 턴의 bind 뒤 원래 요청으로 승계"""
+    prompt, session = payload.get("prompt"), payload.get("session_id")
+    if (
+        payload.get("hook_event_name") != "UserPromptSubmit"
+        or not isinstance(prompt, str)
+        or not prompt
+        or not isinstance(session, str)
+        or not session
+        or not _in_git(payload.get("cwd"))
+    ):
+        return
+    top = core.run(["git", "rev-parse", "--show-toplevel"], cwd=payload["cwd"]).strip()
+    if not core.private_problem(root, top):
+        core.save(
+            pending_prompt_path(root, host, session),
+            {"text": core.clip(prompt, core.ORIGINAL_LIMIT)},
+        )
+
+
+def persisted_notice(folder: Path, state: dict[str, Any]) -> str:
+    """실제 checkpoint 파일 대조 결과 안내. 같은 상태면 같은 문장(시각·순서 변동 없음)"""
+    if not core.read(folder / "checkpoint.json"):
+        return ""
+    problems = []
+    try:
+        core.verify_checkpoint(folder, synced=True)
+    except core.ContinuityError as error:
+        problems.append(str(error))
+    if state.get("sync_error"):
+        problems.append("pre-compact: " + state["sync_error"])
+    return (
+        " 저장 상태 대조 실패: "
+        + "; ".join(problems)
+        + ". 저장됨으로 간주 금지, checkpoint --sync 재실행 또는 실패 보고."
+        if problems
+        else ""
     )
 
 
@@ -407,6 +442,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
     if folder is not None and host == "codex":
         record_codex_session(root, folder, payload)
     if folder is None:
+        hold_prompt(root, host, payload)
         if event in ("SessionStart", "UserPromptSubmit") and _in_git(payload.get("cwd")):
             if len(session_tasks(root, payload.get("session_id"))) > 1:
                 return response(
@@ -451,6 +487,16 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
             core.save(state_path, state)
             return {}
         state.pop("missing_reported", None)
+        origin = {"host": host, "session_id": session}
+        explicit = session in binding.get("session_ids", [])
+        pending_prompt = pending_prompt_path(root, host, session)
+        if explicit and pending_prompt.is_file():
+            earlier = core.read(pending_prompt).get("text")
+            if isinstance(earlier, str) and earlier:
+                core.remember(folder, binding["repo"], prompt=earlier, origin=origin)
+                state["prompt_captured"] = True
+                state["prompt_at"] = time.time_ns()
+            pending_prompt.unlink()
         if event == "SessionStart":
             state.update(
                 {
@@ -462,11 +508,18 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
             text = (
                 "개발 작업은 developer-thinking 본문과 현재 단계의 필수 원문 확인. "
                 + context(folder, binding)
+                + persisted_notice(folder, state)
             )
             if link_error:
                 text += f" 새 session을 현재 task에 연결하지 못했습니다: {link_error}. 자동 연결·재개 입력을 하지 말고 bind 상태를 확인하세요."
         elif event == "UserPromptSubmit":
             state["prompt_at"] = time.time_ns()
+            prompt = payload.get("prompt")
+            state["prompt_captured"] = isinstance(prompt, str) and bool(prompt)
+            if not explicit:
+                hold_prompt(root, host, payload)  # 저장소 추정 연결: bind 전까지 과업 기록과 분리
+            elif state["prompt_captured"]:
+                core.remember(folder, binding["repo"], prompt=prompt, origin=origin)
             paths = checkpoint.get("watch_paths")
             state["turn_task_snapshot"] = (
                 core.digest(core.snapshot(binding["repo"], paths)) if paths else None
@@ -476,6 +529,8 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
                 text = (_developer_rules() if needs_restore else "") + context(
                     folder, binding
                 )
+                if needs_restore:
+                    text += persisted_notice(folder, state)
             else:
                 text = f"현재 연결: {folder.name}, {binding['url']}. developer-thinking의 현재 단계 적용. git-issue의 과업 판정에 따라 goal 유지·scope.outcomes 대조. 독립 결과 전환은 기존 기록 저장 후 bind --session-id {session} --from-task {folder.name}. 작업 경계는 checkpoint --sync --status 진행|검토|보류. 단순 질문은 추가 기록 불필요."
             if not paths:
@@ -493,6 +548,13 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
             )
             state.update({"needs_restore": True, "notified": 0})
         elif event == "PostToolUse":
+            command = tool_command(payload)
+            if CHECKPOINT_COMMAND.search(command):
+                # 명령 실행·출력은 저장 주장일 뿐, Stop에서 실제 파일과 대조
+                state["checkpoint_claim"] = {
+                    "at": time.time_ns(),
+                    "sync": "--sync" in command.split(),
+                }
             window = managed_window(root, host)
             meter = core.read((window[0] if window else folder) / "meter.json")
             percent = (
@@ -515,6 +577,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
             if payload.get("permission_mode") not in ("plan", "planMode"):
                 try:
                     core.sync(folder, checkpoint, binding)
+                    core.verify_checkpoint(folder, synced=True)
                     state.pop("sync_error", None)
                 except (
                     core.ContinuityError,
@@ -525,12 +588,35 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
                     state["sync_error"] = str(error)
             state["needs_restore"] = True
         elif event == "Stop":
+            if explicit:
+                record_exchange(host, folder, binding, payload, state, origin)
             if payload.get("permission_mode") in ("plan", "planMode"):
                 core.save(state_path, state)
                 return {}
             if session not in binding.get("session_ids", []):
                 core.save(state_path, state)
                 return {}
+            claim = state.get("checkpoint_claim") or {}
+            if claim.get("at", 0) >= state.get("prompt_at", 0) > 0:
+                try:
+                    core.verify_checkpoint(
+                        folder, synced=claim.get("sync", False), since=state["prompt_at"]
+                    )
+                    problem = ""
+                except core.ContinuityError as error:
+                    problem = str(error)
+                mark = core.digest([claim, problem])
+                if (
+                    problem
+                    and not payload.get("stop_hook_active")
+                    and state.get("last_claim_block") != mark
+                ):
+                    state["last_claim_block"] = mark
+                    core.save(state_path, state)
+                    return {
+                        "decision": "block",
+                        "reason": f"이 요청에서 checkpoint를 실행했지만 실제 저장 상태 대조 실패: {problem}. 저장·동기화 완료로 보고하지 말고 checkpoint를 다시 실행하거나 실패와 미전송 상태를 그대로 보고하세요.",
+                    }
             paths = checkpoint.get("watch_paths")
             if not paths:
                 core.save(state_path, state)
@@ -565,8 +651,41 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
                 }
         elif event == "SessionEnd":
             state["ended"] = True
+            try:
+                core.verify_checkpoint(folder)
+                state["end_check"] = "verified"
+            except core.ContinuityError as error:
+                state["end_check"] = str(error)
         core.save(state_path, state)
         return response(event, text)
+
+
+# cost: time O(t), heap O(t), stack O(1), io 2
+# vars: t = transcript 끝부분 바이트
+# basis: estimate
+def record_exchange(
+    host: str,
+    folder: Path,
+    binding: dict[str, Any],
+    payload: dict[str, Any],
+    state: dict[str, Any],
+    origin: dict[str, Any],
+) -> None:
+    """마지막 요청·응답의 비공개 저장. payload의 last_assistant_message 우선, 없거나 요청 미수신이면 호스트 어댑터의 transcript"""
+    reply = payload.get("last_assistant_message")
+    prompt = None
+    if not isinstance(reply, str) or not state.get("prompt_captured"):
+        try:
+            prompt, logged = core.last_turn(core.HOSTS[host].locate(payload), host)
+        except (core.ContinuityError, OSError):
+            prompt, logged = None, None  # 경로 없음·형식 불명은 있는 값만 저장
+        reply = reply if isinstance(reply, str) else logged
+        if state.get("prompt_captured"):
+            prompt = None
+    if prompt:
+        core.remember(folder, binding["repo"], prompt=prompt, origin=origin)
+    if isinstance(reply, str):
+        core.remember(folder, binding["repo"], reply=reply, origin=origin)
 
 
 # cost: time O(n), heap O(n), stack O(1), io O(n + 1)
@@ -575,7 +694,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
 def main() -> int:
     try:
         host = sys.argv[1]
-        if host not in ("claude", "codex"):
+        if host not in core.HOSTS:
             raise core.ContinuityError("unknown host")
         payload = json.load(sys.stdin)
         if not isinstance(payload, dict):

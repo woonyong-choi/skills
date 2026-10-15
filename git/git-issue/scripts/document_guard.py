@@ -28,7 +28,8 @@ NON_DOCUMENT_NAME = re.compile(r"(?:requirements|constraints)(?:[-_.][\w.-]*)?\.
 REDIRECT = re.compile(r"(?:>>?|>\||<>|>&)$")
 SHELL_INTERPRETERS = {"sh", "bash", "zsh", "dash"}
 COMMAND_PREFIXES = {"sudo", "env", "xargs", "command", "time", "git", "if", "then", "else", "elif", "do", "while", "until", "!"}
-DOCUMENT_LITERAL = re.compile(r"\.(?:md|mdx|rst|adoc|txt|docx|pdf)(?=$|[^\w])", re.IGNORECASE)
+# 마지막 확장자만 문서 판정: 뒤가 끝·공백·따옴표·셸 구분·경로 구분일 때. `a.txt-bak`·`notes.md.orig` 제외
+DOCUMENT_LITERAL = re.compile(r"\.(?:md|mdx|rst|adoc|txt|docx|pdf)(?=$|[\s'\"`;&|<>(){}\[\],=:\\/])", re.IGNORECASE)
 SHELL_PUNCTUATION = ";&|<>(){}\n"
 # 따옴표·역슬래시로 인용한 구분 문자: 연산자 판정 제외용 사용자 영역 문자로 치환 후 복원.
 QUOTED_PUNCTUATION = {ord(char): 0xE000 + offset for offset, char in enumerate(SHELL_PUNCTUATION)}

@@ -66,7 +66,7 @@ Vault 미등록: 쓰기 전 사용자에게 Vault 절대 경로 요청 → 훅 �
 
 - `assets/typst/career.typ`를 지원 폴더에 그대로 복사, 수정 금지(색·글꼴·크기·간격·helper 포함)
 - `resume.typ`→`이력서.typ`, `portfolio.typ`→`포트폴리오.typ`로 복사 후 `{}` 자리, 근거 없는 칸·줄 삭제, 절·항목·사례 반복 수만 변경. 새 helper·직접 스타일 금지
-- 인쇄 문서 양식이라 design-tokens 대상 아님
+- 인쇄 문서 양식이라 design-tokens 적용 제외
 
 ## 그림
 
