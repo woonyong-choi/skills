@@ -20,7 +20,7 @@ import uuid
 from typing import Any
 
 import continuity as core
-from continuity_hook import codex_usage, link_session, session_tasks
+from continuity_hook import codex_meter, link_session, session_tasks
 
 _CONTROLLER_LOCKS: list[Any] = []
 
@@ -77,7 +77,7 @@ def usage(text: str, host: str, folder: Path) -> tuple[float | None, str | None]
             return None, None
         return percent, meter.get("session_id")
     # Codex: rollout의 마지막 token_count로 계산한 비율이며 footer의 남은 %와 같다고 주장하지 않는다.
-    return codex_usage(folder)
+    return codex_meter(folder)
 
 
 def send(pane: str, message: str, lead: str | None = None) -> None:
