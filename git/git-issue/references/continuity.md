@@ -70,7 +70,7 @@ python3 <이 스킬 폴더>/scripts/continuity.py doctor --task 작업명
 
 ## 로컬 산출물
 
-- `binding.json` 작업 연결, `checkpoint.json` 최신 복구·미전송 기록, `session-*.json` 세션별 훅 중복 방지, `meter.json` 최근 사용량, `window*.json` 관리 창 제어·복구, `exchange.json` 비공개 대화 원문, 기록 루트 `.prompts/` bind 전 요청 임시 보관(승계 후 삭제). 실행 중 삭제 금지
+- `binding.json` 작업 연결, `checkpoint.json` 최신 복구·미전송 기록, `session-*.json` 세션별 훅 중복 방지, `meter.json` 최근 사용량, `window*.json` 관리 창 제어·복구, `exchange.json` 비공개 대화 원문, 기록 루트 `.prompts/` bind 전 요청 임시 보관(세션당 하나. bind 승계·SessionEnd 때 삭제, 24시간 지난 파일은 다음 보관 때 삭제). 실행 중 삭제 금지
 - `history/`: 충돌 때 보존한 미전송 원본. 병합·원격 반영 확인 전 삭제 금지. 시험 출력·검증 기록은 유일한 완료 근거인지 확인 후 정리
 - 완료 작업의 로컬 기록 정리: 실행기 종료·원격 동기화·참조 확인 후 저장소 정책 적용. 삭제 요청 처리 기준은 (repo-docs 작성 규칙). 사용자가 삭제한 시험 산출물은 요청 없이 재생성 금지
 - 훅·사용량·호스트 제어·설치·진단 변경 시 [호스트 연결](continuity-hosts.md)의 해당 절 필수 확인. 일반 기록 갱신에는 불필요

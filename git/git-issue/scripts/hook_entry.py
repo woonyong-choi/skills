@@ -8,13 +8,48 @@ from __future__ import annotations
 
 import fcntl
 import json
+import os
 from pathlib import Path
+import re
 import shlex
 import subprocess
 import sys
+import time
 
 
 FALLBACK_REPAIR = "python3 tools/skill-sync/scripts/install.py in the skills source repo"
+# hooks/{host}.json의 이벤트별 timeout(초). 시험이 두 파일과 같은지 검사한다.
+HOOK_TIMEOUTS = {
+    "claude": {"SessionStart": 5, "UserPromptSubmit": 5, "PostToolUse": 5, "PreCompact": 20, "PostCompact": 5, "Stop": 5, "SessionEnd": 5, "PreToolUse": 5},
+    "codex": {"SessionStart": 5, "UserPromptSubmit": 5, "PostToolUse": 5, "PreCompact": 20, "PostCompact": 5, "Stop": 5, "SessionEnd": 3, "PreToolUse": 5},
+}
+# 진입점 기동·출력에 남기는 시간, 런타임 내부 마감과 런타임 종료 사이 여유(초)
+START_MARGIN = 1.0
+DEADLINE_MARGIN = 0.5
+# project_context.DEADLINE_ENV와 같은 이름. 진입점은 런타임 모듈을 불러오지 않는다.
+DEADLINE_ENV = "WORK_CONTINUITY_DEADLINE"
+SHELL_PATCH = re.compile(r"\bapply_?patch\b")
+FILE_TOOLS = {"Write", "Edit", "MultiEdit", "apply_patch"}
+
+
+def budget(host: str, event: object) -> tuple[float, float]:
+    """(런타임 대기 상한, 런타임 내부 마감까지 남은 시간). 호스트가 훅을 끊기 전에 진입점이 거부를 출력한다."""
+    limits = HOOK_TIMEOUTS.get(host, {})
+    limit = limits.get(event) if isinstance(event, str) else None
+    limit = limit or min(limits.values(), default=5)
+    child = limit - START_MARGIN
+    return child, child - DEADLINE_MARGIN
+
+
+def guarded_write(request: dict) -> bool:
+    """런타임 없이 판정하는 거부 대상: 구조화 파일 도구, apply_patch를 부르는 셸 명령(안전 쪽으로 넓게)."""
+    if request.get("tool_name") in FILE_TOOLS:
+        return True
+    value = request.get("tool_input")
+    command = value.get("command", value.get("cmd")) if isinstance(value, dict) else value
+    if isinstance(command, list):
+        command = " ".join(str(part) for part in command)
+    return request.get("tool_name") in {"Bash", "exec_command"} and isinstance(command, str) and bool(SHELL_PATCH.search(command))
 
 
 # cost: time O(1), heap O(1), stack O(1), io O(2)
@@ -34,9 +69,16 @@ def repair_command(configuration: Path) -> str:
 # vars: n = hook input and output bytes
 # basis: estimate
 def main() -> int:
+    started = time.time()
     payload = sys.stdin.read()
     configuration = Path(__file__).resolve().parent
     host = sys.argv[1] if len(sys.argv) == 2 else ""
+    try:
+        request = json.loads(payload)
+    except ValueError:
+        request = None
+    request = request if isinstance(request, dict) else {}
+    wait, deadline = budget(host, request.get("hook_event_name"))
     try:
         if host not in {"claude", "codex"}:
             raise ValueError("unknown hook host")
@@ -44,7 +86,9 @@ def main() -> int:
         target = home / (".claude" if host == "claude" else ".codex") / "skills/git-issue/scripts/continuity_hook.py"
         with (configuration / "runtime.lock").open("a") as lock:
             fcntl.flock(lock, fcntl.LOCK_SH)
-            result = subprocess.run([sys.executable, str(target), host], input=payload, text=True, capture_output=True, timeout=25)
+            remaining = wait - (time.time() - started)
+            environment = {**os.environ, DEADLINE_ENV: str(started + deadline)}
+            result = subprocess.run([sys.executable, str(target), host], input=payload, text=True, capture_output=True, timeout=max(remaining, 0.1), env=environment)
         if result.returncode or not result.stdout.strip():
             raise ValueError("installed hook runtime did not return a result")
         json.loads(result.stdout)
@@ -53,14 +97,7 @@ def main() -> int:
         return 0
     except (OSError, ValueError, subprocess.TimeoutExpired) as error:
         print(f"Work Continuity unavailable: {error}", file=sys.stderr)
-        try:
-            request = json.loads(payload)
-            event = request.get("hook_event_name")
-            is_file_write = request.get("tool_name") in {"Write", "Edit", "MultiEdit", "apply_patch"}
-        except (ValueError, AttributeError):
-            event = None
-            is_file_write = False
-        failure = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": f"Work Continuity document guard unavailable; repair: run {repair_command(configuration)} (skill-sync install), then retry"}} if event == "PreToolUse" and is_file_write else {}
+        failure = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": f"Work Continuity document guard unavailable; repair: run {repair_command(configuration)} (skill-sync install), then retry"}} if request.get("hook_event_name") == "PreToolUse" and guarded_write(request) else {}
         print(json.dumps(failure))
         return 0
 
