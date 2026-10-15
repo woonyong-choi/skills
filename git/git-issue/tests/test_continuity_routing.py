@@ -645,7 +645,7 @@ class AttachAndResumeTest(RoutingCase):
             mock.patch.object(window, "tmux", return_value="t"),
             mock.patch.object(window, "screen", return_value=""),
             mock.patch.object(window, "confirm_new_session", return_value=new_session),
-            mock.patch.object(window, "wait_idle"),
+            mock.patch.object(window, "finish_resume"),
             mock.patch.object(time, "sleep"),
             mock.patch.object(window, "send", send),
             contextlib.redirect_stdout(io.StringIO()),
