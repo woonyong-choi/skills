@@ -80,6 +80,10 @@ def test_declarative_and_nominal_endings_fail(line: str, word: str) -> None:
     ('- 결과가 *강조된다*', '강조된다'),
     ('- 결과가 **기록됨**', '기록됨'),
     ('- 결과가 _바뀜_', '바뀜'),
+    # #68: 아님은 않음과 같은 서술 끝(아니다)이라 금지
+    ('- 이 단계 대상 아님. 다음 줄', '아님'),
+    ('- 스크립트 대상 아님', '아님'),
+    ('- 기본값 아님', '아님'),
 ])
 def test_nominal_endings_fail_at_line_end_and_mid_line(line: str, word: str) -> None:
     assert word in flagged(line)
@@ -92,7 +96,6 @@ def test_nominal_endings_fail_at_line_end_and_mid_line(line: str, word: str) -> 
     '- 국가: 캐나다. 다음 줄',
     '- 신호 잡음. 다음 줄',
     '- 상태 없음. 다음 줄',
-    '- 이 단계 대상 아님. 다음 줄',
     '- 사용자 홈',
     '- 검사 순서: I/O·잠금',
 ])

@@ -48,7 +48,7 @@ python3 <이 스킬 폴더>/scripts/continuity.py doctor --task 작업명
 - bind: `--project` 필수. 보드가 없으면 project-status의 새 저장소 절차 후 연결, 이슈 단독 bind 금지. 권한·도구 부족이면 입력 보존·미완료 보고. 보드 등록·불일치만 보정하고 유효 상태 보존. 역할 이름이 다르면 `--status-map 역할=이름` 반복, 스크립트 함수 임시 교체 우회 금지
 - 같은 작업 경로의 여러 채팅: bind에 `--session-id 현재채팅ID`(Codex는 `CODEX_THREAD_ID` 기본값). 한 채팅은 한 작업에만 연결. 전환은 기존 기록 저장 후 `--from-task 이전작업`, 미전송 기록이면 거부. 훅은 명시된 채팅 연결 우선, 없을 때만 저장소 경로로 탐색
 - `checkpoint --sync`: 지정 보드의 현재 이슈 등록·빈 상태·열림/완료 불일치 보정 후 기록 동기화. 다른 이슈·보드 수정 금지. 실패 시 로컬 보존·오류 반환. `--sync` 없으면 로컬 저장만
-- `--status 진행|검토|보류`: 착수·재개·단계 전환에 명시, 연결 보드와 `--sync` 필요. 생략하면 현재 상태 보존. 전체 완료는 project-status의 근거 확인·닫기·재조회 순서. 자동 압축 훅의 기록 전송은 단계 판단·상태 변경의 대체 아님
+- `--status 진행|검토|보류`: 착수·재개·단계 전환에 명시, 연결 보드와 `--sync` 필요. 생략하면 현재 상태 보존. 전체 완료는 project-status의 근거 확인·닫기·재조회 순서. 자동 압축 훅의 기록 전송으로 단계 판단·상태 변경 대체 금지
 - 입력: 일곱 문자열과 아래 scope 객체, 로컬 경로·스냅샷은 명령이 수집. 기존 기록은 그대로 복구 가능, 다음 저장부터 scope 필수. goal 변경·독립 결과·완료 조건 불일치·조건 연결 누락은 저장 거부. `--reconcile`도 범위 검사 유지
 - scope.criteria: 이슈 본문 `## 완료 조건`의 체크 항목 문구 전체를 순서대로 복사. covers: 현재 단계가 진전시키는 항목의 1부터 시작하는 번호, outcomes의 criterion 집합과 일치
 - scope.outcomes: 요청 결과별 result·criterion(조건 번호)·criterion_result(기존 관측 결과)·verification(대조 방법)·independent(bool)·counterfactual(기존 조건 충족 뒤에도 별도 결과가 남는지와 이유) 필수. 도구는 구조·원문 일치만 검사, 의미 진위는 실행자가 원래 요청과 대조
@@ -61,7 +61,7 @@ python3 <이 스킬 폴더>/scripts/continuity.py doctor --task 작업명
 ```
 
 - 출력: stdout JSON, 실패 stderr와 종료 2
-- restore: 읽기 전용. `ready`는 이슈·작업본 복구 판정, `context_ready`는 등록 Vault 진입 판정. 등록 Vault 작업은 둘 다 true인 뒤 필수 문서 실제 조회. `ready:false`면 원인 해결 전 구현 재개 금지. `changed`는 저장 이후 변경 신호이며 검사 실패 아님. `context_reads`는 조회 당시 해시, 압축 후 재조회 면제·이해 증명 금지
+- restore: 읽기 전용. `ready`는 이슈·작업본 복구 판정, `context_ready`는 등록 Vault 진입 판정. 등록 Vault 작업은 둘 다 true인 뒤 필수 문서 실제 조회. `ready:false`면 원인 해결 전 구현 재개 금지. `changed`는 저장 이후 변경 신호, 검사 실패와 별개. `context_reads`는 조회 당시 해시, 압축 후 재조회 면제·이해 증명 금지
 - `restore --offline`: 원격 미확인(이슈 열림 포함)으로 로컬 기록 조회. 충돌 반환 시 양쪽 내용을 읽고 `checkpoint --reconcile --sync`로 병합, 미전송 원본은 로컬 history 보존. 다른 이슈·작업본으로 같은 작업 이름 재연결 금지
 - 통과 근거의 입력·HEAD·환경이 달라지면 영향 검사 재실행. 압축 전 읽기 표시로 규칙 확인 대체 금지
 - 첫 커밋 전: HEAD 빈 값, staged·unstaged·비추적 변경 모두 대조. 첫 커밋 생성도 변경. 기록용 빈 커밋 금지
