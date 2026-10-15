@@ -35,7 +35,6 @@ nav{position:sticky;top:0;z-index:1;display:flex;flex-wrap:nowrap;gap:var(--spac
 """
 
 # ThinkFlow 테마의 글 캡션 색은 다크 값이 없어 어두운 배경에서 안 보인다. 다크에서 바뀌는 보조 글자 색으로 덮는다.
-EXPLAIN_CSS = ".app-prose .app-figure figcaption{color:var(--color-ui-muted)}"
 
 THEME_SCRIPT = """
 const THEME_KEY = 'thinkflow-theme';
@@ -651,7 +650,7 @@ def build_explain(spec: dict[str, Any], renderer: FigureRenderer, output: Path, 
             )
             body += f"<ul>{links}</ul>"
         parts.append(f'<section id="s{number}"><h2>{_inline(section["title"])}</h2>{body}</section>')
-    return _page(spec["title"], spec["lead"], f'<article class="app-prose">{"".join(parts)}</article>', head=head, styles=EXPLAIN_CSS)
+    return _page(spec["title"], spec["lead"], f'<article class="app-prose">{"".join(parts)}</article>', head=head)
 
 
 # cost: time O(b), heap O(1), stack O(1), io 2
