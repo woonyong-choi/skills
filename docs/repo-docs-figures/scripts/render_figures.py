@@ -59,7 +59,7 @@ def main(argv: list[str]) -> int:
 # basis: estimate
 def _tracked_sources() -> list[str]:
     result = subprocess.run(
-        ["git", "ls-files", "-z", "--", "*.thinkflow", "*.dap", "*.tape", "*.d2", "*.vl.json"],
+        ["git", "ls-files", "-z", "--", "*.thinkflow", "*.tape"],
         capture_output=True,
         check=True,
     )

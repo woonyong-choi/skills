@@ -33,7 +33,7 @@ REPORT = load_script("build_report", "docs/html-report/scripts/build_report.py")
 
 
 class ThinkflowCliTest(unittest.TestCase):
-    # 명시 옵션이 환경 변수보다 우선하고 옛 이름 별칭은 받지 않는다.
+    # 명시 옵션이 환경 변수보다 우선한다.
     def test_option_precedes_environment(self) -> None:
         for options, environment, selected in (
             (["--thinkflow", "new.js"], {"THINKFLOW_PATH": "env.js"}, "new.js"),
@@ -47,10 +47,8 @@ class ThinkflowCliTest(unittest.TestCase):
             ):
                 self.assertEqual(FIGURES.main([*options, "sample.thinkflow"]), 0)
                 self.assertEqual(Path(run.call_args_list[-1].args[0][1]).name, selected)
-        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
-            FIGURES.main(["--daphnis", "old.js", "sample.thinkflow"])
 
-    # PATH의 thinkflow와 git 추적 원본 탐색. 옛 .dap는 이전 안내로 실패한다.
+    # PATH의 thinkflow와 git 추적 원본 탐색. 다른 확장자는 이전 안내로 실패한다.
     def test_tracked_sources_use_thinkflow_on_path(self) -> None:
         with (
             patch.dict(os.environ, {}, clear=True),
@@ -68,7 +66,7 @@ class ThinkflowCliTest(unittest.TestCase):
             ["thinkflow", "render", "diagram with spaces.thinkflow", "--strict"],
         )
         with contextlib.redirect_stderr(io.StringIO()) as stderr:
-            self.assertEqual(FIGURES.main(["old.dap"]), 1)
+            self.assertEqual(FIGURES.main(["old.svg"]), 1)
         self.assertIn("migrate to .thinkflow", stderr.getvalue())
 
     # strict 실패 원본은 렌더를 시작하지 않는 공개 계약.
@@ -84,7 +82,7 @@ class ThinkflowCliTest(unittest.TestCase):
             self.assertEqual(FIGURES.main(["invalid.thinkflow"]), 1)
         self.assertEqual(run.call_count, 1)
 
-    # 이전 보고서 키를 조용히 누락하지 않고 새 키를 안내한다.
+    # 모르는 그림 키와 확장자는 출력 전에 실패한다.
     def test_old_report_key_fails_before_output_write(self) -> None:
         spec = {
             "title": "test",
@@ -93,7 +91,7 @@ class ThinkflowCliTest(unittest.TestCase):
                 {
                     "title": "test",
                     "what": "test",
-                    "options": [{"label": "test", "images": [{"dap": "old.dap"}]}],
+                    "options": [{"label": "test", "images": [{"figure": "old.svg"}]}],
                     "effect": [["test", "test", "test"]],
                     "rec": ["test", "test"],
                 }
@@ -102,7 +100,7 @@ class ThinkflowCliTest(unittest.TestCase):
         renderer = REPORT.FigureRenderer(base=ROOT, thinkflow=None, static=False)
         with self.assertRaisesRegex(REPORT.ReportError, "src, thinkflow, inline"):
             REPORT.build(spec, renderer, "")
-        spec["questions"][0]["options"][0]["images"] = [{"thinkflow": "old.dap"}]
+        spec["questions"][0]["options"][0]["images"] = [{"thinkflow": "old.svg"}]
         with self.assertRaisesRegex(REPORT.ReportError, "must end with .thinkflow"):
             REPORT.build(spec, renderer, "")
 

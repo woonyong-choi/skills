@@ -81,8 +81,9 @@ class InlineThinkflowReportTest(unittest.TestCase):
             "questions": questions,
         }
         renderer = module.FigureRenderer(base=FIXTURE, thinkflow=None, static=False)
-        tokens_css = (self.thinkflow / "src" / "vendor" / "theme" / "tokens.css").read_text(encoding="utf-8")
-        return module.build(report, renderer, tokens_css)
+        theme = self.thinkflow / "src" / "vendor" / "theme"
+        head = "<style>" + (theme / "tokens.css").read_text(encoding="utf-8") + (theme / "styles.css").read_text(encoding="utf-8") + "</style>"
+        return module.build(report, renderer, head)
 
     def _playwright_root(self) -> Path | None:
         candidates = (*PLAYWRIGHT_ROOTS, self.thinkflow / "node_modules")
@@ -138,9 +139,10 @@ class InlineThinkflowReportTest(unittest.TestCase):
             parser = ReportParser()
             parser.feed(page)
             self.assertEqual([frame["src"] for frame in parser.frames], ["figures/flow-a.html", "figures/flow-b.html"])
-            self.assertIn("bindDiagramHost()", page)
+            self.assertIn('src="theme/diagram-host.js"', page)
+            self.assertIn("bindDiagramHost()", (folder / "theme" / "diagram-host.js").read_text(encoding="utf-8"))
             self.assertIn('class="app-blog-post"', page)
-            for name in ("theme/tokens.css", "theme/styles.css", "figures/flow-a.html", "figures/flow-b.html"):
+            for name in ("theme/tokens.css", "theme/styles.css", "theme/assets/fonts/pretendard-variable.woff2", "figures/flow-a.html", "figures/flow-b.html"):
                 self.assertTrue((folder / name).is_file(), name)
         finally:
             shutil.rmtree(folder)

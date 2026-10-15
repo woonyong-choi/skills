@@ -7,6 +7,7 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 범위: 브라우저로 보는 HTML 한 장. 설명 페이지(`explain`)와 비교 보고서(`decision`·`result`)의 구성, 생성 스크립트, 확인 절차
+- 공통 틀: 두 종류 모두 woonyong.com 블로그 틀(제목·요약·테마 전환·글꼴·색)을 같은 생성 함수로 출력. 설명은 본문 폭, 비교는 넓은 폭. 종류별 별도 디자인 금지
 - 필요할 때만 읽기: 저장소 문서 그림 → repo-docs-figures; 저장·사실 상태·자리표시 → repo-docs
 
 ## 사용 조건
@@ -18,11 +19,11 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 
 ## 설명 페이지
 
-woonyong.com 블로그 글과 같은 테마의 한 편. ThinkFlow 공통 테마(`src/vendor/theme`)와 기본 재생기 호스트를 그대로 사용, 스타일·높이 조정·테마 전환 재구현 금지
+ThinkFlow 공통 테마(`src/vendor/theme`)와 기본 재생기 호스트를 그대로 사용, 스타일·높이 조정·테마 전환 재구현 금지. 그림 폭은 자기 캔버스 폭까지 본문 밖으로 확장
 
 1. 의미 단위로 나누기: 맨 앞 전체 흐름, 이어서 단계·분기·실패 처리 등 한 절에 한 의미
 2. 절마다 제목, 핵심 문단 1~3개(한 문단 2문장 이내), ThinkFlow 그림 하나. 쉬운 말, 전문 낱말은 처음에 풀이. 그림이 말하는 것을 글로 반복 금지
-3. 그림 원본 `.thinkflow`: 가로 배치 기본(`view graph` 생략). 한 줄 흐름 카드 4개 이하, 선 라벨 2~4자. 넘치면 ThinkFlow가 세로로 돌리므로 그림을 나눔. `view graph down`은 위아래 의미가 있을 때만
+3. 그림 원본 `.thinkflow`: 가로로 화면을 채우는 배치 기본(`view graph` 생략). 한 줄 카드 4개 이하는 기본 캔버스(폭 약 970px 화면부터 전체), 5~6개는 머리에 `width wide`(5개 약 1230px, 6개 약 1490px 화면부터 전체, 좁으면 그림 안 가로 스크롤). 7개 이상은 ThinkFlow가 세로로 돌리므로 의미 단위로 나눔. 선 라벨 2~4자, `view graph down`은 위아래 의미가 있을 때만
 4. 순서·변화가 이해를 돕는 그림만 `scene` 추가. 문법: ThinkFlow `docs/usage.md`, `docs/reference/`
 5. 생성 뒤 확인 절차 2·3 실행, 사용자에게 `index.html` 경로 전달
 
@@ -53,7 +54,7 @@ woonyong.com 블로그 글과 같은 테마의 한 편. ThinkFlow 공통 테마(
 
 - 프로젝트: repo-docs 문서 목록의 `.local/reports/{YYYY-MM-DD}-{주제}/` 위치·비공개 규칙(등록 Vault 위치, git 제외 확인)
 - 프로젝트 밖: 사용자·워크스페이스 지정 폴더, 없으면 현재 폴더의 git 제외된 `.local/reports/`. 제외를 확인할 수 없으면 저장 중단
-- 폴더 내용: `index.html`, 입력 JSON, 그림 원본, `explain`의 `theme/`·`figures/`, 비교 보고서의 `index.png`(테마 명시 캡처)
+- 폴더 내용: `index.html`, 입력 JSON, 그림 원본, `theme/`, `explain`의 `figures/`, 비교 보고서의 `index.png`(테마 명시 캡처)
 
 ## 생성
 
@@ -61,7 +62,7 @@ woonyong.com 블로그 글과 같은 테마의 한 편. ThinkFlow 공통 테마(
 python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html] --thinkflow <ThinkFlow 경로>
 ```
 
-- `--thinkflow`: 체크아웃 루트 또는 `src/cli.js`. 없으면 `THINKFLOW_PATH`, PATH의 `thinkflow`. `explain`은 필수
+- `--thinkflow`: 체크아웃 루트 또는 `src/cli.js`. 없으면 `THINKFLOW_PATH`, PATH의 `thinkflow`. 공통 테마 출처라 필수
 - 출력은 입력 JSON과 같은 폴더만, 기본 `index.html`. 그림 경로는 입력 폴더 기준
 - `--static`: 비교 보고서의 `.thinkflow`를 멈춘 SVG로
 - 입력 JSON 작성 전 [입력 형식](references/input-format.md) 필수 확인
