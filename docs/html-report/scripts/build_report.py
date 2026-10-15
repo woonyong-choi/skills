@@ -203,7 +203,7 @@ class ReportError(Exception):
 
 @dataclass(frozen=True)
 class Thinkflow:
-    """ThinkFlow 체크아웃의 렌더 CLI와 공통 테마 폴더."""
+    """ThinkFlow 렌더 CLI와 design-tokens 패키지의 공통 테마 폴더(dist)."""
 
     cli: Path
     theme: Path
@@ -570,6 +570,7 @@ def _question(
 
 
 IMAGE_SUFFIXES = {".png", ".gif", ".jpg", ".jpeg", ".webp", ".svg"}
+DESIGN_TOKENS = Path("@woonyong-choi") / "design-tokens"
 EXPLAIN_FONTS = ("pretendard-variable.woff2", "jetbrains-mono-regular.woff2")
 THEME_BUTTONS = (
     '<div class="theme app-tablist is-segmented" role="group" aria-label="테마">'
@@ -768,10 +769,15 @@ def _thinkflow(value: str | None) -> Thinkflow | None:
         return None
     path = Path(configured).expanduser().resolve()
     root = path if path.is_dir() else next((p for p in path.parents if (p / "src" / "cli.js").is_file()), path)
-    cli, theme = root / "src" / "cli.js", root / "src" / "vendor" / "theme"
-    if not cli.is_file() or not (theme / "tokens.css").is_file():
+    cli = root / "src" / "cli.js"
+    if not cli.is_file():
         raise ReportError(f"invalid thinkflow path: {path}")
-    return Thinkflow(cli=cli, theme=theme)
+    # Node 모듈 탐색 순서: 체크아웃은 자기 node_modules, npm 설치본은 상위 node_modules에 peer 의존성이 있다.
+    for folder in (root, *root.parents):
+        theme = folder / "node_modules" / DESIGN_TOKENS / "dist"
+        if (theme / "tokens.css").is_file():
+            return Thinkflow(cli=cli, theme=theme)
+    raise ReportError(f"thinkflow theme not found: install {DESIGN_TOKENS} next to {root} (npm ci)")
 
 
 # cost: time O(1), heap O(1), stack O(1)

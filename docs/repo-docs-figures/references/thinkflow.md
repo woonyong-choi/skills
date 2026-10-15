@@ -8,5 +8,5 @@
 
 - `.thinkflow` 하나에 그림 하나. 실험 차트 입력: [실험 차트](charts.md)
 - 문법 정본: [figure-syntax](https://github.com/woonyong-choi/thinkflow/blob/main/docs/design/figure-syntax.md)와 [reference](https://github.com/woonyong-choi/thinkflow/blob/main/docs/reference). 문법·기본값 복제 금지
-- 테마·토큰: ThinkFlow `src/vendor/theme`(design-tokens 사본). 색 역할·대비: [docs-integration](https://github.com/woonyong-choi/thinkflow/blob/main/docs/design/docs-integration.md)
+- 테마·토큰: ThinkFlow가 의존하는 `@woonyong-choi/design-tokens` 패키지(`node_modules/@woonyong-choi/design-tokens/dist`). 색 역할·대비: [docs-integration](https://github.com/woonyong-choi/thinkflow/blob/main/docs/design/docs-integration.md)
 - 문서 안 원본: `thinkflow` 블록과 생성 이미지 줄 보존
