@@ -2,6 +2,7 @@
 
 import contextlib
 import io
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -110,6 +111,26 @@ class DocumentStyleTest(unittest.TestCase):
                     check_doc.main([name])
                 messages = [line.split(": ", 1)[1] for line in output.getvalue().splitlines()]
                 self.assertEqual([message for message in messages if message.startswith("문체")], expected)
+
+
+class CommandLineTest(unittest.TestCase):
+    """#81: 인자 오류와 없는 파일은 traceback 없이 종료 2."""
+
+    def run_cli(self, *args: str) -> "subprocess.CompletedProcess[str]":
+        script = Path(__file__).resolve().parents[1] / "scripts" / "check_doc.py"
+        return subprocess.run([sys.executable, str(script), *args], capture_output=True, text=True, timeout=30)
+
+    def test_help_prints_usage(self) -> None:
+        result = self.run_cli("--help")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("usage:", result.stdout)
+
+    def test_bad_arguments_exit_two_without_traceback(self) -> None:
+        for args in ((), ("--unknown", "a.md"), ("--project",), ("/nonexistent/a.md",)):
+            result = self.run_cli(*args)
+            self.assertEqual(result.returncode, 2, args)
+            self.assertNotIn("Traceback", result.stderr, args)
+            self.assertTrue(result.stderr.strip(), args)
 
 
 if __name__ == "__main__":
