@@ -18,7 +18,7 @@ python3 tools/skill-sync/scripts/deploy.py --login
 
 ## 영수증과 인증
 
-- 계정 영수증: `~/.config/skills/claude-account.json`, 권한 600, 원자 교체. 형식: `{"version":1,"skills":{"이름":{"sourceHash":"sha256","skillHash":"sha256","description":"설명","accountUpdatedAt":"계정 시각","verifiedAt":"UTC 시각"}}}}`
+- 계정 영수증: `~/.config/skills/claude-account.json`, 권한 600, 원자 교체. 형식: `{"version":1,"skills":{"이름":{"sourceHash":"sha256","skillHash":"sha256","description":"설명","accountUpdatedAt":"계정 시각","verifiedAt":"UTC 시각"}}}`
 - `sourceHash`: 설치 제외 규칙을 적용한 원본 상대 경로·내용 해시. `skillHash`: 원본 `SKILL.md` SHA-256. 업로드 뒤 목록에서 이름·description 재확인한 항목만 저장, 실패한 교체의 이전 영수증 무효화
 - 계정 파일 내용 해시의 원격 재측정은 미지원. 영수증은 업로드한 원본과 목록 확인의 기록이며 계정 이름·description·갱신 시각은 매 실행 재조회
 - 로그인 프로필: `~/.config/skills/browser-profile`(700). 다른 프로필 복사, 비밀번호·쿠키·토큰 출력과 저장소 저장 금지

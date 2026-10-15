@@ -26,8 +26,8 @@
 - bool 반환 함수 → `is`·`has`·`can`으로 시작, 또는 3인칭 동사 → `is_empty`, `has_token`, `contains`, `starts_with`
 - bool 변수·필드 → `is`·`has`·`can`·`should`로 시작 → `is_ready`, `should_retry`
 - 컬렉션 → 복수형 → `sessions`, `pending_jobs`
-- 약어 → 한 단어처럼 표기 → `HttpClient`, `http_client` (`HTTPClient` X)
-- 단위 → 단위를 담는 타입(시간 간격 타입 등) 우선. 숫자 타입이면 단위 접미사 → `timeout_ms`, `size_bytes`
+- 약어 → 한 단어처럼 표기(언어 관례 우선) → `HttpClient`, `http_client`
+- 단위 → 단위 타입(시간 간격 등) 우선, 숫자면 단위 접미사 → `timeout_ms`, `size_bytes`
 - 파일·모듈 → 역할 명사와 금지 이름: (folder-naming 모듈 이름, 금지) → `paths`, `retry`
 
 - 한 개념에 한 단어. `fetch`·`get`·`retrieve` 혼용 금지, 저장소에서 이미 쓰는 단어 사용

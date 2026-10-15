@@ -22,7 +22,7 @@ description: "시각적 후보를 비교·선택하거나 화면 결과를 판�
 - 글로 고를 수 있는 결정 → 채팅 또는 질문 선택지
 - 별도 비교·판정 구성이 필요 없는 그림 → 채팅에 바로
 - 저장소에 커밋할 문서 → (repo-docs 문서 목록)
-- 데모 GIF, 홍보 영상 → ([repo-docs-figures 도구와 파일](../repo-docs-figures/SKILL.md#도구와-파일)), (repo-docs-promo 촬영 순서)
+- 데모 GIF, 홍보 영상 → repo-docs-figures, repo-docs-promo
 
 ## 구성
 
@@ -55,7 +55,7 @@ description: "시각적 후보를 비교·선택하거나 화면 결과를 판�
 
 ## 그림
 
-- 렌더러 입력: 저장소 그림 원본 또는 미리 생성한 SVG·HTML. 실패 시 보고서 생성 실패, 이전 산출물을 새 성공으로 간주 금지
+- 렌더러 입력: 저장소 그림 원본, 미리 생성한 SVG·HTML, 스크린샷. 실패 시 보고서 생성 실패, 이전 산출물을 새 성공으로 간주 금지
 - 인라인 그림은 독립 문서로 격리해 id·스타일·재생 상태 충돌 방지. 스크린샷은 검증 대상 테마 고정 후 테마명 표시
 - 색 변경 금지. 색·글꼴·아이콘·대비 정본: (repo-docs-figures 도구와 파일)
 - 보고서 틀은 정본 역할 토큰 참조. 기본 테마는 시스템, 시스템·라이트·다크 선택값을 기억하고 보고서와 그림에 함께 적용
@@ -69,9 +69,8 @@ description: "시각적 후보를 비교·선택하거나 화면 결과를 판�
 
 ## 저장 위치
 
-프로젝트 보고서는 저장소가 지정한 비공개 보고서 경로에 둔다. 기본값은 `.local/reports/{YYYY-MM-DD}-{주제}/`다. 저장 전 해당 경로의 git 제외를 확인하고 제외되지 않으면 저장 중단
-
-프로젝트가 없는 보고서: 워크스페이스 규칙의 작업 기록 폴더. 없으면 현재 작업 폴더의 git 제외된 `.local/reports/`를 사용한다. git 제외를 확인할 수 없으면 저장을 중단한다. 임시 폴더 금지
+- 프로젝트 보고서: repo-docs 문서 목록의 `.local/reports/{YYYY-MM-DD}-{주제}/` 위치·비공개 규칙(등록 Vault 위치, git 제외 확인) 적용
+- 프로젝트가 없는 보고서: 사용자·워크스페이스 규칙이 지정한 보고서 폴더, 없으면 현재 작업 폴더의 git 제외된 `.local/reports/`. git 제외를 확인할 수 없으면 저장 중단
 
 `index.html`(결과), `choices.json`(입력), `index.png`(테마를 명시한 전체 캡처), 그림 원본·중간 산출물(선택 어댑터의 기본 폴더명 적용), `sources/`(그림을 만든 시험 코드와 원본 입력)
 
@@ -88,12 +87,11 @@ description: "시각적 후보를 비교·선택하거나 화면 결과를 판�
 
 ### 그림
 - `.dap` 선택 시: `node <daphnis 경로>/src/cli.js render ... --strict --html`로 만든 HTML 재생기를 보고서의 `iframe srcdoc`에 넣기. 외부 파일 참조와 `<img>` 사용 금지
-- `inline`: 미리 만든 SVG 또는 HTML 조각 경로. 같은 `iframe srcdoc`에 넣기. 그림마다 독립 문서라 SVG id·`<style>`·재생기 스크립트 충돌 없음
+- `inline`: 미리 만든 SVG 또는 HTML 조각 경로. 같은 `iframe srcdoc`에 넣기
 - `dap`: `<daphnis 경로>`는 `--daphnis` 인자 또는 `DAPHNIS_PATH` 환경 변수. 렌더 실패는 보고서 생성 실패. `--static`은 움직임 없는 SVG를 같은 방식으로 넣기
-- `src`: 실제 스크린샷·실행 화면 캡처. 검증 대상 테마를 고정해 캡처하고 테마명 표시
-- 색·글꼴·아이콘과 대비 기준: (repo-docs-figures 도구와 파일)
+- `src`: 실제 스크린샷·실행 화면 캡처
 - 보고서 틀은 daphnis `src/tokens.css`를 읽어 역할 토큰만 사용. 토큰 색 값 복사 금지
-- 보고서 기본 테마: 시스템. 맨 위 `시스템 / 라이트 / 다크` 선택. 선택값은 `daphnis-theme` localStorage에 기억하고, 루트 `data-theme`·`color-scheme`과 모든 인라인 재생기에 함께 적용
+- 테마 선택값: `daphnis-theme` localStorage에 기억, 루트 `data-theme`·`color-scheme`과 모든 인라인 재생기에 적용
 
 - 원본·중간 산출물 기본 폴더: `dap/`, `.dap-rendered/`
 
@@ -104,7 +102,7 @@ python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html] 
 ```
 
 - 출력 기본값: 입력 파일 옆 `index.html`. 출력 파일은 입력 JSON과 같은 폴더만 허용
-- `--daphnis`: 작업본 루트 또는 `src/cli.js` 경로. `DAPHNIS_PATH` 환경 변수로 대체 가능, 둘 다 없으면 PATH의 `daphnis` 탐색. 도구가 없고 `.dap`도 없으면 시스템 색으로 보고서 생성
+- `--daphnis`: 작업본 루트 또는 `src/cli.js` 경로. `DAPHNIS_PATH` 환경 변수로 대체 가능, 둘 다 없으면 PATH의 `daphnis` 탐색
 - 옛 옵션·환경 변수의 호환과 우선순위: (repo-docs-figures references/conversion.md 변환)
 - `--static`: `.dap`를 멈춘 SVG로 렌더. 기본은 상호작용 가능한 HTML 재생기
 - 결과 보고서의 `effect`는 `[["후", "좋은 점", "남은 문제"]]`, `rec`는 `["수용 조건에 따른 판단", "이유"]`

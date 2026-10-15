@@ -7,10 +7,10 @@ description: "모집단·표본·판정 기준을 정한 측정·비교 실험�
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 실험 대상, 폴더, 흐름, 템플릿, 통계 규칙, 검사
-- 필요할 때만 읽기: 결과 차트를 만들거나 바꿀 때 → repo-docs-figures; 완료 조건의 범위·시간 추정 변경 → git-issue; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit
+- 필요할 때만 읽기: 결과 차트를 만들거나 바꿀 때 → repo-docs-figures; 완료 조건의 범위·시간 추정 변경 → git-issue 범위 변경 절; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit
 
 - 실험 하나 = 폴더 하나. 수집 전 설계 커밋 → 수집 → 결과 보고
-- 진행 상태: `experiment` 이슈. 문서에 기록 금지. 완료 조건의 범위·시간 추정 변경: (git-issue 범위 변경)
+- 진행 상태: 흐름 1의 추적 항목. 문서에 기록 금지
 
 ## 대상
 

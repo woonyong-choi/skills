@@ -30,14 +30,12 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 
 ## CLAUDE.md
 
-- 이 진입 파일을 사용하는 경우 `AGENTS.md`를 가리키는 심볼릭 링크 하나: `ln -s AGENTS.md CLAUDE.md`. 등록 Vault 프로젝트에서 링크를 쓸 수 없으면 `@AGENTS.md` 한 줄 import, 실제 도구 읽기 확인 필수
+- 이 진입 파일을 사용하는 경우 `AGENTS.md`를 가리키는 심볼릭 링크 하나: `ln -s AGENTS.md CLAUDE.md`. 링크를 쓸 수 없으면 `@AGENTS.md` 한 줄 import, 실제 도구 읽기 확인 필수
 - 별도 내용 금지. 에이전트 지침의 원본은 `AGENTS.md` 하나
 
 ## AGENTS.md
 
-- 등록 Vault 프로젝트: repo-docs `references/project-context.md` 필수 확인. 루트는 짧은 진입 연결, 상세 지침은 등록 Vault의 agent 정본. 기존 지침 의미·상위 적용 범위 대조 후 이전, 승인 문서 임의 제거 금지
-
-`AGENTS.md` 작성·갱신·검토 전 [agents.md](references/agents.md) 필수 확인
+`AGENTS.md` 작성·갱신·검토 전 [agents.md](references/agents.md) 필수 확인. 등록 Vault 프로젝트는 repo-docs `references/project-context.md`의 진입과 이전 절 우선, 승인 문서 임의 제거 금지
 
 ## .github/CONTRIBUTING.md
 

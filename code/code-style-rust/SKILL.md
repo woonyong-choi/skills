@@ -46,11 +46,10 @@ description: "Rust 코드를 작성·검토·리팩터링하거나 rustfmt·Clip
 - 테스트 → `unwrap`·`expect`·`panic!` 허용
 
 - 테스트 밖에서 `unwrap`, `panic!`, `todo!`, `unimplemented!` 금지
-- 초안 PR의 미완성 자리표시 예외: code-style 오류와 로그 절
 - `expect` 메시지는 성립해야 하는 이유를 `should`로: `expect("config should be loaded before start")`
 - 오류·로그 메시지는 소문자로 시작, 마침표 없음: `invalid digit found in string`
-- 무시하는 오류는 이유를 주석으로: `let _ = tx.send(event); // 받는 쪽이 이미 종료됨`
-- `println!`·`eprintln!`은 프로그램 결과 출력에만. 진단은 `tracing`
+- 오류 무시 예: `let _ = tx.send(event); // 받는 쪽이 이미 종료됨`
+- `println!`은 프로그램 결과에만. 진단은 `eprintln!` 대신 `tracing`
 
 라이브러리. 저장소에 이미 정한 다른 라이브러리가 있으면 그것 우선
 
@@ -66,7 +65,7 @@ crate → 쓰는 곳 → 역할:
 
 `thiserror` 코드 예를 대조할 때 [오류·로그 예](references/error-examples.md#thiserror) 필수 확인
 
-- 공개 오류 enum은 모듈마다 하나, 이름은 `<대상>Error`. 공개 함수는 `Result<T, <대상>Error>` 반환
+- 라이브러리 crate: 공개 오류 enum은 모듈마다 하나, 이름은 `<대상>Error`. 공개 함수는 `Result<T, <대상>Error>` 반환
 - variant 이름은 실패한 내용: `NotFound`, `Parse`. `Error` 접미사 금지
 - 하위 오류는 `#[from]`이나 `#[source]`로 원인에 보존. 메시지에 하위 오류 내용 재기재 금지
 - 같은 하위 오류가 여러 상황에서 생기면 `#[from]` 대신 `map_err`로 상황별 variant 사용
@@ -82,7 +81,6 @@ crate → 쓰는 곳 → 역할:
 
 - 값은 메시지에 넣지 않고 필드로: `info!(session_id = %id, "session started")`. `%`는 Display, `?`는 Debug
 - 세션·요청처럼 흐름 단위 함수에 `#[instrument]`. 큰 인자와 비밀값은 `skip`
-- 레벨: code-style 로그 레벨 표
 
 `tracing-subscriber` 코드 예를 대조할 때 [오류·로그 예](references/error-examples.md#tracing-subscriber) 필수 확인
 
@@ -93,7 +91,7 @@ crate → 쓰는 곳 → 역할:
 
 - 비공개 → `pub(crate)` → `pub` 순서로 필요한 만큼만 확대
 - 필드는 비공개로 두고 메서드로 접근. 검증 규칙 없는 단순 데이터 묶음만 `pub` 필드 허용
-- 주석 기준은 code-style 공개 범위와 주석 절. 문서 주석은 `///`, 파일·모듈 설명은 `//!`
+- 문서 주석은 `///`, 파일·모듈 설명은 `//!`
 - 문서 주석에 실패 조건을 쓸 때 `# Errors`, panic 조건을 쓸 때 `# Panics`, unsafe 제약을 쓸 때 `# Safety`
 
 ## 테스트
@@ -107,7 +105,7 @@ Cargo·Clippy 설정 생성·변경·감사 전 [lint.md](references/lint.md) �
 
 - clippy가 못 잡는 것은 직접 확인: 이름, 비교 순서, `&&`·`||` 개수와 섞기, 선언 순서, 로그 레벨
 - 중첩 깊이 (code-style 수치 기준) 계산에 `match`·`loop`·`if let`·`while let` 포함
-- impl 밖 함수의 중첩은 clippy 허용값과 별도로 code-style 절대 최대 직접 확인
+- impl 밖 함수의 중첩, self 없는 함수의 매개변수 수: clippy 허용값이 1 커서 code-style 절대 최대 직접 확인
 
 ## 검사 명령
 

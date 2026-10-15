@@ -7,7 +7,7 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 JavaScript 규칙. 그 밖에서 code-style과 다르면 code-style 우선
-- 필요할 때만 읽기: CSS 문자열, 인라인 style, SVG 속성 값 작성 → design-tokens; 파일 이름 결정 → folder-naming
+- 필요할 때만 읽기: CSS 문자열·인라인 style 작성 → code-style-css; SVG 속성 값 작성 → design-tokens; 파일 이름 결정 → folder-naming
 
 ## 이름
 
@@ -51,7 +51,7 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 3. `constructor`
 4. 이후는 code-style 타입 순서의 5~10 (팩토리 → 접근자 → 생명주기 → 공개 → 비공개 헬퍼 → 검증)
 
-- 함수 선언문은 끌어올려지므로 호출보다 뒤에 선언 허용. `const` 화살표 함수는 끌어올려지지 않아 사용 전 선언 필수
+- 함수 선언문은 호출 뒤 선언 허용, `const` 화살표 함수는 사용 전 선언 필수
 - 모듈 최상위 함수는 함수 선언문. 화살표 함수는 콜백과 한 줄 식에만
 
 ## 오류와 로그
@@ -77,8 +77,8 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 
 ## 공개 범위와 주석
 
-- 문서 주석: JSDoc `/** */`. 실패 조건은 `@throws`
-- 타입은 JSDoc `@param`·`@returns`로. 저장소가 checkJs를 사용하거나 공개 JSDoc 타입을 변경하면 `// @ts-check`와 `tsc --noEmit --checkJs`
+- 문서 주석: 필요할 때만 JSDoc `/** */`. 실패 조건 `@throws`, 타입 `@param`·`@returns`
+- checkJs 사용 저장소나 공개 JSDoc 타입 변경: `// @ts-check`와 `tsc --noEmit --checkJs`
 
 ## 테스트
 

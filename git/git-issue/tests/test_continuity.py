@@ -63,6 +63,8 @@ def test_hook_records_without_reset_or_read_only_stop(host: str) -> None:
         / ".local/orchestration/issue-continuity/test-runtime"
         / ("hook-policy-" + host)
     )
+    # 원격 조회 실패가 고정 경로를 남기지 않도록 생성 전에 조회한다.
+    issue = json.loads(subprocess.run(["gh", "api", "repos/woonyong-choi/skills/issues/43"], capture_output=True, text=True, check=True).stdout)
     assert not root.exists()
     folder = root / "policy"
     folder.mkdir(parents=True)
@@ -87,7 +89,6 @@ def test_hook_records_without_reset_or_read_only_stop(host: str) -> None:
             "next",
         )
     }
-    issue = json.loads(subprocess.run(["gh", "api", "repos/woonyong-choi/skills/issues/43"], capture_output=True, text=True, check=True).stdout)
     import re
     section = issue["body"].split("## 완료 조건\n", 1)[1].split("\n## ", 1)[0]
     criteria = re.findall(r"^- \[[ xX]\] (.+)$", section, re.M)

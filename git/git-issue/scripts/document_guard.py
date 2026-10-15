@@ -79,7 +79,8 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
             project_context.check_write(project, path)
         return {}
     except (project_context.ContextError, OSError, ValueError, IndexError, KeyError) as error:
-        return deny(str(error) + "; register the correct project or use its Vault document area; do not bypass this check")
+        hint = "" if str(error).startswith("vault unregistered") else "; register the correct project or use its Vault document area"
+        return deny(str(error) + hint + "; do not bypass this check")
 
 
 def writes_document(tokens: list[str]) -> bool:

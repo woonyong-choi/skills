@@ -18,7 +18,7 @@ from pathlib import Path
 
 OPTIONAL_PREFIXES = ("experiments/", "decisions/")
 ROW = re.compile(r"\| \[(.+?)\]\((.+?)\) \| (.+?) \|$")
-LANGUAGE_LINE = re.compile(r"^(English|\[English\])[^\n]*\|")
+LANGUAGE_LINE = re.compile(r"\|.*README[\w.-]*\.md|README[\w.-]*\.md.*\|")
 
 
 # cost: time O(n), heap O(n), stack O(1), io 2
@@ -111,8 +111,8 @@ def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url:
     for block in blocks:
         if re.match(r"<h1|# ", block):
             continue
-        lines = [re.sub(r"<[^>]+>", "", line).strip() for line in block.splitlines()]
-        lines = [line for line in lines if line and not LANGUAGE_LINE.match(line) and " · " not in line]
+        lines = [re.sub(r"<[^>]+>", "", line).strip() for line in block.splitlines() if not LANGUAGE_LINE.search(line)]
+        lines = [line for line in lines if line and " · " not in line]
         if lines:
             texts.append(" ".join(lines))
     tagline, intro = texts[0], texts[1]

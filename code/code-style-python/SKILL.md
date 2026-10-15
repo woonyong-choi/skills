@@ -11,7 +11,7 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 ## 이름
 
 - 대소문자 표기: PEP 8. 포맷: `ruff format`
-- 모든 함수 시그니처에 타입 힌트 필수
+- 함수 시그니처 타입 힌트 필수
 
 대상 → 규칙 → 예:
 
@@ -43,7 +43,7 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 2. 클래스 속성
 3. `__init__`. 인스턴스 속성은 여기서만 정의. 공개 → 비공개
 4. 특수 메서드 (`__repr__`, `__eq__` 등)
-5. 이후는 code-style 타입 순서의 6~10 (프로퍼티 → 생명주기 → 공개 → 비공개 헬퍼 → 검증)
+5. 이후는 code-style 타입 순서의 5~10 (`from_*` 팩토리 → 프로퍼티 → 생명주기 → 공개 → 비공개 헬퍼 → 검증)
 
 - `dataclass` 필드는 기본값 없는 필드 → 기본값 있는 필드 (문법 제약). 같은 안에서 공개 → 비공개
 - 불변 필드는 `@dataclass(frozen=True)`나 `Final`로 표시
@@ -60,10 +60,10 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 - `NotImplementedError`는 추상 메서드에만. 본문이 `pass`·`...`뿐인 미완성 함수 금지
 - 라이브러리 패키지는 기준 예외 `class <패키지>Error(Exception)`를 두고 구체 예외는 이를 상속. 이름은 `...Error`
 - 원인 보존: `raise ConfigError("failed to read config") from err`
-- `except Exception:`·`except:`는 실행 스크립트 최상위 처리기에서만. `except ...: pass` 금지
+- `except Exception:`·`except:`는 실행 스크립트 최상위 처리기에서만
+- 예외 무시는 `contextlib.suppress(<구체 예외>)`와 이유 주석. `except ...: pass` 금지
 - 실행 스크립트의 `main()`에서 기준 예외를 한 번 잡아 로그 기록 후 종료 코드 1로 종료
 - 오류·로그 메시지는 소문자로 시작, 마침표 없음: `invalid literal for int()`
-- 예외 무시 시 처리: (code-style 오류와 로그)
 
 로그:
 
@@ -79,8 +79,7 @@ description: "Python 코드를 작성·검토하거나 Ruff·mypy·pytest 설정
 
 - 비공개가 기본. 모듈 밖에서 쓸 것만 `_` 없이 이름 짓고 `__all__`에 기재
 - 필드 접근은 공개 속성과 `@property`로 (PEP 8)
-- docstring은 code-style 주석 기준대로 필요할 때만. 쓰면 한 줄 요약 (PEP 257)
-- docstring 형식은 Google 스타일. 발생하는 예외는 `Raises:` 절
+- docstring은 필요할 때만 한 줄 요약(PEP 257), Google 스타일. 발생 예외는 `Raises:` 절
 
 ## 테스트
 
