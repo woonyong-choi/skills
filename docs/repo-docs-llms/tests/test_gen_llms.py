@@ -81,6 +81,41 @@ class GenerateIndexTest(unittest.TestCase):
                 self.assertIn("intro paragraph", str(code))
                 self.assertFalse(Path("llms.txt").exists())
 
+    # cost: time O(c), heap O(c), stack O(1), io O(1)
+    # vars: c = README 글자 수
+    # basis: estimate
+    # 소개 문단 대신 알림 인용·하위 제목이 들어가는 회귀
+    def test_quote_or_section_is_not_intro(self) -> None:
+        cases = [
+            "# Tool\n\nShort tagline.\n\n> [!NOTE]\n> Beta only.\n",
+            "# Tool\n\nShort tagline.\n\n## How it works\n\nEngine stores input.\n",
+            "# Tool\n\nShort tagline.\n\n### Notes\n",
+        ]
+        for readme in cases:
+            with self.subTest(readme=readme):
+                Path("llms.txt").unlink(missing_ok=True)
+                code, _ = self.run_main(readme)
+                self.assertNotIn(code, (0, None))
+                self.assertIn("intro paragraph", str(code))
+                self.assertFalse(Path("llms.txt").exists())
+
+    # cost: time O(c), heap O(c), stack O(1), io O(1)
+    # vars: c = README 글자 수
+    # basis: estimate
+    # 가운뎃점이 든 한 줄 소개 보존, 가운뎃점 이동 줄 제외
+    def test_middle_dot_tagline_is_kept(self) -> None:
+        navigation = [
+            "[Install](#install) · [Usage](#usage)",
+            '<p align="center"><a href="#install">Install</a> · <a href="#usage">Usage</a></p>',
+        ]
+        for line in navigation:
+            with self.subTest(navigation=line):
+                code, _ = self.run_main(f"# Tool\n\n{line}\n\nLine counter · CLI\n\nIntro paragraph.\n\n## Usage\n\nRun it.\n")
+                self.assertEqual(code, 0)
+                text = Path("llms.txt").read_text(encoding="utf-8")
+                self.assertIn("> Line counter · CLI\n\nIntro paragraph.\n", text)
+                self.assertNotIn("Install", text)
+
     # cost: time O(1), heap O(1), stack O(1), io O(1)
     # vars: 없음
     # basis: estimate

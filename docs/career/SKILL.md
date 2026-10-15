@@ -71,6 +71,6 @@ Vault 미등록: 쓰기 전 사용자에게 Vault 절대 경로 요청 → 훅 �
 ## 그림
 
 - 포트폴리오 아키텍처·흐름 그림: ThinkFlow 정지 그림, 실제 관계만. 장식 금지
-- 가로 배치, 기본 캔버스, 한 줄 카드 4개 이하, 짧은 선 이름. `width wide` 금지(A4에서 글자 축소). 세로로 돌면 이름 축약·그림 분리
+- 가로 배치, 기본 캔버스, 짧은 선 이름. `width wide` 금지(A4에서 글자 축소). 세로 전환은 배치 폭 기준(repo-docs-figures 그림 작성): 생성 뒤 PNG 확인, 세로로 돌았으면 이름 축약·그림 분리
 - 생성: `python3 <이 스킬 폴더>/scripts/figures.py <지원 폴더>/figures --thinkflow <ThinkFlow 경로>`. Python 3.9+·Node.js·ThinkFlow 체크아웃·playwright-core Chrome 필요(`CHROME_PATH` 선택). 원본마다 SVG와 2배 PNG, 실패 종료 1
 - 삽입: `#diagram("figures/{사례}-{그림}.png", [{결론 한 문장}])`. SVG 직접 삽입 금지(Typst CSS 변수 미지원)

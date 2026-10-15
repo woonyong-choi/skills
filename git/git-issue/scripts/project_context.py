@@ -14,7 +14,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 
 class ContextError(ValueError):
@@ -49,7 +49,15 @@ def resolve_vault() -> Path:
     return path.resolve()
 
 
-def normalize_remote(value: str) -> str:
+def normalize_remote(value: str, base: Path | None = None) -> str:
+    """원격 URL의 host/path identity. 로컬 경로·file:// 원격은 base 기준 절대 경로의 file: identity."""
+    if value.startswith("file://"):
+        parsed = urlsplit(value)
+        if parsed.netloc not in {"", "localhost"} or not parsed.path:
+            raise ContextError("unsupported remote identity")
+        return "file:" + str(Path(unquote(parsed.path)).resolve())
+    if value and "://" not in value and ":" not in value.split("/", 1)[0]:
+        return "file:" + str(((base or Path.cwd()) / Path(value).expanduser()).resolve())
     if re.match(r"^[^/@]+@[^:]+:", value):
         value = "ssh://" + value.replace(":", "/", 1)
     parsed = urlsplit(value)
@@ -78,8 +86,9 @@ def identify_project(path: Path) -> dict:
     if common.returncode:
         raise ContextError("cannot resolve Git common directory")
     common_path = (path / common.stdout.strip()).resolve()
-    identity = normalize_remote(remote.stdout.strip()) if remote.returncode == 0 else "git:" + str(common_path)
-    return {"identity": identity, "path": str(root), "common": str(common_path), "name": identity.split("/")[-1] if remote.returncode == 0 else root.name}
+    identity = normalize_remote(remote.stdout.strip(), root) if remote.returncode == 0 else "git:" + str(common_path)
+    name = identity.split("/")[-1].removesuffix(".git") if remote.returncode == 0 else root.name
+    return {"identity": identity, "path": str(root), "common": str(common_path), "name": name or root.name}
 
 
 def read_registration(index: Path) -> dict:

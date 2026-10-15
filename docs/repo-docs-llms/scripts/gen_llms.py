@@ -122,11 +122,13 @@ def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url:
     heading = re.search(r"<h1[^>]*>(.*?)</h1>|^# (.+)$", readme, re.MULTILINE)
     texts = []
     for block in blocks:
-        if re.match(r"<h1|# ", block):
+        if block.startswith("## "):
+            break
+        if re.match(r"<h1|[#>]", block):
             continue
         lines = [line.strip() for line in block.splitlines() if not LANGUAGE_LINE.search(line) and not link_only(line)]
         lines = [re.sub(r"<[^>]+>", "", line).strip() for line in lines]
-        lines = [line for line in lines if line and " · " not in line]
+        lines = [line for line in lines if line]
         if lines:
             texts.append(" ".join(lines))
     if not heading or len(texts) < 2:

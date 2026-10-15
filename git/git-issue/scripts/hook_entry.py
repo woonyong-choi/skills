@@ -9,8 +9,25 @@ from __future__ import annotations
 import fcntl
 import json
 from pathlib import Path
+import shlex
 import subprocess
 import sys
+
+
+FALLBACK_REPAIR = "python3 tools/skill-sync/scripts/install.py in the skills source repo"
+
+
+# cost: time O(1), heap O(1), stack O(1), io O(2)
+# vars: none
+# basis: estimate
+def repair_command(configuration: Path) -> str:
+    """install.py가 기록한 원본 포인터(source)로 만든 절대 경로 복구 명령. 포인터 무효 시 상대 안내."""
+    try:
+        source = Path((configuration / "source").read_text(encoding="utf-8").strip()).expanduser()
+    except (OSError, UnicodeDecodeError):
+        return FALLBACK_REPAIR
+    installer = source / "tools/skill-sync/scripts/install.py"
+    return f"python3 {shlex.quote(str(installer))}" if source.is_absolute() and installer.is_file() else FALLBACK_REPAIR
 
 
 # cost: time O(n), heap O(n), stack O(1), io O(1)
@@ -43,7 +60,7 @@ def main() -> int:
         except (ValueError, AttributeError):
             event = None
             is_file_write = False
-        failure = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Work Continuity document guard unavailable; repair: run python3 tools/skill-sync/scripts/install.py in the skills source repo (skill-sync install), then retry"}} if event == "PreToolUse" and is_file_write else {}
+        failure = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": f"Work Continuity document guard unavailable; repair: run {repair_command(configuration)} (skill-sync install), then retry"}} if event == "PreToolUse" and is_file_write else {}
         print(json.dumps(failure))
         return 0
 

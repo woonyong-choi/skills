@@ -15,6 +15,7 @@ FORMAL_FILES = {"README.md", "README.ko.md"}
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 FENCE_CLOSE = re.compile(r"^ {0,3}(?:`+|~+)[ \t]*$")
 NOT_PARAGRAPH = re.compile(r"^(\||- |[0-9]+\. |#|!\[|\[!|---|<)|^[a-z_]+: ")
+LIST_SENTENCE = re.compile(r"^(?:- |[0-9]+\. )(?=.*\.$)")
 PARAGRAPH_ENDING = re.compile(r"(해요|십시오| 것이다|게 된다|함|음|임)\.$")
 QUOTE_ALERT = re.compile(r"^> \[!(NOTE|WARNING)\]$")
 KO_BANNED = re.compile(r"(TBD|TODO|미측정|더미 데이터|목업|강력한|혁신적|쉽게|간단히|간단하게|다양한|효율적|원활|최적의|완벽한|매끄러운|차세대|것 같다|로 보인다|유저|리포지토리|레포지토리|커맨드|컨피그|구동)")
@@ -167,18 +168,30 @@ def has_bad_cell_ending(cell: str) -> bool:
     )
 
 
+# cost: time O(w), heap O(1), stack O(1), alloc ≈ 3
+# vars: w = 문장 글자 수
+# basis: estimate
+def sentence_errors(text: str, is_formal: bool) -> list[str]:
+    errors = []
+    if is_formal and text.endswith("다.") and not text.endswith("니다."):
+        errors.append("문체(합쇼)")
+    if not is_formal and ((text.endswith("니다.") and not text.endswith("아니다.")) or text.endswith("세요.")):
+        errors.append("문체(평서)")
+    if PARAGRAPH_ENDING.search(text):
+        errors.append("문체")
+    return errors
+
+
 # cost: time O(w), heap O(w), stack O(1), alloc ≈ 6 + 2k
 # vars: w = 줄 글자 수, k = 표 칸 수
 # basis: estimate
+# 마침표로 끝나는 목록 항목은 표식을 떼고 문장으로 검사
 def korean_errors(text: str, is_formal: bool) -> list[str]:
     errors = []
     if not NOT_PARAGRAPH.match(text):
-        if is_formal and text.endswith("다.") and not text.endswith("니다."):
-            errors.append("문체(합쇼)")
-        if not is_formal and ((text.endswith("니다.") and not text.endswith("아니다.")) or text.endswith("세요.")):
-            errors.append("문체(평서)")
-        if PARAGRAPH_ENDING.search(text):
-            errors.append("문체")
+        errors += sentence_errors(text, is_formal)
+    elif LIST_SENTENCE.match(text):
+        errors += sentence_errors(LIST_SENTENCE.sub("", text, count=1), is_formal)
     elif text.startswith("|"):
         errors += ["문체" for cell in text.split("|") if has_bad_cell_ending(re.sub(r"[ .]+$", "", cell))]
     errors += ["쓰지 않는 말"] if KO_BANNED.search(text) else []

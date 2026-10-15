@@ -152,6 +152,76 @@ class InlineThinkflowReportTest(unittest.TestCase):
         finally:
             shutil.rmtree(folder)
 
+    def test_raster_image_links_to_full_size(self) -> None:
+        # 높이 상한으로 줄어든 캡처는 원본 링크로 열 수 있다.
+        module_spec = importlib.util.spec_from_file_location("build_report", BUILD)
+        module = importlib.util.module_from_spec(module_spec)
+        sys.modules[module_spec.name] = module
+        module_spec.loader.exec_module(module)
+        renderer = module.FigureRenderer(base=FIXTURE, thinkflow=None, static=False)
+        figure = module._picture({"src": "flow-a.thinkflow", "alt": "전체 화면"}, renderer)
+        self.assertIn('<a href="flow-a.thinkflow" target="_blank"><img src="flow-a.thinkflow"', figure)
+        self.assertIn(".frame>a{display:block", module.CSS)
+
+    def test_explain_captions_keep_contrast_in_both_themes(self) -> None:
+        # 테마 캡션 색은 다크 값이 없어 생성 CSS가 보조 글자 색으로 덮는다.
+        playwright_root = self._playwright_root()
+        if playwright_root is None or shutil.which("node") is None:
+            self.skipTest("installed Playwright browser is unavailable")
+        folder = FIXTURE / "explain-caption"
+        folder.mkdir(exist_ok=True)
+        spec = {"kind": "explain", "title": "캡션", "lead": "캡션 대비", "sections": [
+            {"title": "흐름", "text": ["요청"], "figure": "../flow-a.thinkflow", "caption": "그림 캡션"},
+            {"title": "화면", "text": ["화면"], "image": "shot.svg", "caption": "이미지 캡션"},
+        ]}
+        (folder / "shot.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>', encoding="utf-8")
+        (folder / "input.json").write_text(json.dumps(spec, ensure_ascii=False), encoding="utf-8")
+        script = r"""
+const { createRequire } = await import('node:module');
+const { chromium } = createRequire(`${process.env.PLAYWRIGHT_REQUIRE_ROOT}/`)('playwright-core');
+const browser = await chromium.launch();
+const result = {};
+for (const mode of ['light', 'dark']) {
+  const page = await browser.newPage({ colorScheme: mode });
+  await page.goto(process.env.REPORT_URL);
+  await page.locator(`.theme button[data-mode="${mode}"]`).click();
+  result[mode] = await page.evaluate(() => {
+    const rgba = (value) => { const v = value.match(/[\d.]+/g).map(Number); return [v[0], v[1], v[2], v.length > 3 ? v[3] : 1]; };
+    const lum = (c) => c.slice(0, 3).map((x) => { x /= 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }).reduce((s, x, i) => s + x * [0.2126, 0.7152, 0.0722][i], 0);
+    return [...document.querySelectorAll('.app-prose .app-figure figcaption')].map((caption) => {
+      let node = caption, bg = [0, 0, 0, 0];
+      while (node && bg[3] === 0) { bg = rgba(getComputedStyle(node).backgroundColor); node = node.parentElement; }
+      const fg = rgba(getComputedStyle(caption).color);
+      const mixed = fg.slice(0, 3).map((x, i) => x * fg[3] + bg[i] * (1 - fg[3]));
+      const [a, b] = [lum(mixed), lum(bg)].sort((x, y) => y - x);
+      return (a + 0.05) / (b + 0.05);
+    });
+  });
+  await page.close();
+}
+await browser.close();
+process.stdout.write(JSON.stringify(result));
+"""
+        try:
+            command = [sys.executable, str(BUILD), str(folder / "input.json"), "--thinkflow", str(self.thinkflow)]
+            completed = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            completed = subprocess.run(
+                ["node", "--input-type=module", "-e", script],
+                capture_output=True,
+                check=False,
+                env=os.environ | {"PLAYWRIGHT_REQUIRE_ROOT": str(playwright_root), "REPORT_URL": (folder / "index.html").as_uri()},
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            ratios = json.loads(completed.stdout)
+            for mode in ("light", "dark"):
+                self.assertEqual(len(ratios[mode]), 2)
+                for ratio in ratios[mode]:
+                    self.assertGreaterEqual(ratio, 4.5, mode)
+        finally:
+            shutil.rmtree(folder)
+
     def test_navigation_chips_use_state_tokens_and_single_row_css(self) -> None:
         report = self._build_navigation_report()
 

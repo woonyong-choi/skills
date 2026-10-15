@@ -7,7 +7,7 @@ python3 <이 스킬 폴더>/scripts/render_figures.py --thinkflow <ThinkFlow 경
 ```
 
 - `--thinkflow`: 작업본 루트 또는 `src/cli.js`. 생략 시 `THINKFLOW_PATH`, 없으면 PATH의 `thinkflow`. `--static`은 ThinkFlow에 전달. 옛 이름 별칭 없음
-- 원본 인자 생략: 저장소 루트에서 실행, `docs/assets/` 아래 git 추적 원본만 탐색. 공백 포함 경로 지원. 새 원본은 경로 지정 또는 git 추가 후 실행
+- 원본 인자 생략: 하위 폴더에서도 저장소 루트의 `docs/assets/` 아래 git 추적 원본만 탐색. 공백 포함 경로 지원. 새 원본은 경로 지정 또는 git 추가 후 실행. 추적 원본 없음·git 밖·git 오류는 stderr 출력 후 종료 1
 - 실험 녹화: 실험 폴더에서 `results/terminal.tape` 경로 지정 실행
 - 옛 형식(`.dap`) 원본은 인자·탐색 모두 목록 출력 후 변환 전 실패. `.thinkflow`로 문법 이전 필요, 확장자만 변경 금지
 - `.tape`가 있고 PATH에 `vhs`가 없으면 렌더 전 실패

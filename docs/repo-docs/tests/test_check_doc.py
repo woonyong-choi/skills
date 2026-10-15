@@ -82,5 +82,29 @@ class DocumentStyleTest(unittest.TestCase):
                 self.assertEqual(check_doc.main([name]), expected)
 
 
+    # cost: time O(Σw), heap O(c), stack O(1)
+    # vars: c = 표본 글자 수, w = 표본의 줄별 글자 수
+    # basis: estimate
+    # 목록 항목 문장의 종결 검사 누락 회귀
+    def test_list_item_sentences_use_paragraph_endings(self) -> None:
+        cases = [
+            ("guide.md", "1. 엔진이 입력을 저장해요.\n", ["문체"]),
+            ("guide.md", "- 입력을 저장함.\n", ["문체"]),
+            ("guide.md", "2. 엔진이 입력을 저장합니다.\n", ["문체(평서)"]),
+            ("README.ko.md", "1. 엔진이 입력을 저장한다.\n", ["문체(합쇼)"]),
+            ("guide.md", "1. 엔진이 입력을 저장한다.\n", []),
+            ("README.ko.md", "1. 다음 명령으로 설치하세요.\n", []),
+            ("guide.md", "- 입력 기록 보존\n", []),
+            ("guide.md", "- 기본값: 없음\n", []),
+        ]
+        for name, source, expected in cases:
+            with self.subTest(name=name, source=source):
+                output = io.StringIO()
+                with patch("builtins.open", mock_open(read_data=source)), contextlib.redirect_stdout(output):
+                    check_doc.main([name])
+                messages = [line.split(": ", 1)[1] for line in output.getvalue().splitlines()]
+                self.assertEqual([message for message in messages if message.startswith("문체")], expected)
+
+
 if __name__ == "__main__":
     unittest.main()

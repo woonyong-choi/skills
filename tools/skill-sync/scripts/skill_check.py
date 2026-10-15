@@ -13,12 +13,16 @@ from pathlib import Path
 from install import source_skills
 from consistency import PRIORITY, check_consistency
 
-NOUN_OK = ('흐름', '알림', '없음', '다음', '포함', '결함', '마음', '처음', '이름', '모음', '요금', '그림', '묶음', '느낌', '믿음', '물음', '걸음', '기본값', '보관함', '수신함', '책임')
+NOUN_OK = ('흐름', '알림', '없음', '다음', '포함', '결함', '마음', '처음', '이름', '모음', '요금', '그림', '묶음', '느낌', '믿음', '물음', '걸음', '기본값', '보관함', '수신함', '책임',
+           '지침', '방침', '아침', '도움', '스트림', '크림', '프레임', '타임', '게임', '네임', '스킴', '리듬', '여름', '기름', '소음', '녹음', '발음', '얼음', '덧셈', '뺄셈', '곱셈', '나눗셈', '바다', '판다', '아젠다', '베란다')
+NOUN_WORD = ('힘', '꿈', '짐', '봄', '줌', '셈', '김', '삶', '춤', '숨', '룸', '침')  # 앞이 붙으면 동사 명사형(막힘·바꿈)이라 낱말 전체 일치만
 NAME_OK = ('안 함', '막힘')  # 상태 이름
-BAD_END = re.compile(r'(다|함|음|임|됨|봄|름|룸|듦|눔|힘|움|씀|셈|뺌|김|춤|침|줌|둠|꿈|옮|듬|숨|엶|앎|삶|짐|킴|림|핌|닮)$')
-# 줄 중간 평서형 끝: 문장부호 앞 `-다`, 공백 앞은 `-ㄴ다`·`-는다`·`이다`·`있다`·`없다`. `마다`·`보다` 조사 제외
+BAD_END = re.compile(r'(함|음|임|됨|봄|름|룸|듦|눔|힘|움|씀|셈|뺌|김|춤|침|줌|둠|꿈|옮|듬|숨|엶|앎|삶|짐|킴|림|핌|닮)$')
+# 줄 중간 평서형 끝: 문장부호 앞은 `verb_end`, 공백 앞은 `-ㄴ다`·`-는다`·`이다`·`있다`·`없다`. `마다`·`보다` 조사 제외
 CLAUSE = re.compile(r'([가-힣]+다)(?:([.,;:!?)\]])|(?=\s))')
 PARTICLE = ('마다', '보다')
+# 받침 ㅁ·ㅇ 뒤 `다`는 서술격 조사 축약(결과다)이 될 수 없어 명사(람다)로 보되, 이 동사 끝은 평서형
+NASAL_VERB_END = ('남다', '담다', '삼다', '넘다', '참다', '숨다', '심다', '감다')
 
 # cost: time O(n·k), heap O(n), stack O(1), io 1
 # vars: n = SKILL.md 줄 수, k = 다른 스킬 이름 수
@@ -112,15 +116,26 @@ def bad_endings(lines, skip):
             if not c or set(c) <= set('-: ') or c in NAME_OK:
                 continue
             w = c.split()[-1]
-            if BAD_END.search(w) and not w.endswith(NOUN_OK):
+            if verb_end(w) or (BAD_END.search(w) and not w.endswith(NOUN_OK) and w not in NOUN_WORD):
                 words.append(w)
         for m in CLAUSE.finditer(re.sub(r'\]\([^)]*\)', ']', t)):
             w = m.group(1)
-            if w.endswith(PARTICLE) or not (m.group(2) or declarative(w)):
-                continue
-            words.append(w)
+            flagged = verb_end(w) if m.group(2) else declarative(w) and not w.endswith(PARTICLE)
+            if flagged:
+                words.append(w)
         found.extend((i, w) for w in dict.fromkeys(words))
     return found
+
+# cost: time O(1), heap O(1), stack O(1)
+# vars: 없음
+# basis: estimate
+def verb_end(word):
+    """평서형 `-다` 끝인지. 조사(마다), 예외 명사(바다), 받침 ㅁ·ㅇ 뒤 명사(람다) 제외."""
+    if not word.endswith('다') or len(word) < 2 or word.endswith(PARTICLE + NOUN_OK):
+        return False
+    prev = word[-2]
+    final = (ord(prev) - 0xAC00) % 28 if '가' <= prev <= '힣' else 0
+    return final not in (16, 21) or word.endswith(NASAL_VERB_END)
 
 # cost: time O(1), heap O(1), stack O(1)
 # vars: 없음

@@ -11,8 +11,21 @@ import project_context
 
 DOCUMENT_SUFFIXES = {".md", ".mdx", ".rst", ".adoc", ".txt", ".docx", ".pdf"}
 PATCH_PATH = re.compile(r"^\*\*\* (?:Add File|Update File|Delete File|Move to): (.+)$", re.MULTILINE)
-SHELL_WRITER = re.compile(r"\.write_(?:text|bytes)\s*\(|\bwriteFile(?:Sync)?\s*\(|\bopen\([^\n]*[,=]\s*['\"][wax]")
+SHELL_WRITER = re.compile(r"\.write_(?:text|bytes)\s*\(|\bwriteFile(?:Sync)?\s*\(|\bopen\([^\n]*[,=]\s*\\?['\"][wax]")
 SHELL_FILE_COMMANDS = {"tee", "cp", "mv", "install", "touch"}
+COPY_COMMANDS = {"cp", "mv", "install"}
+# 값을 따로 받는 옵션: 값을 명령 이름·피연산자로 오인하지 않도록 건너뜀.
+OPTION_VALUES = {
+    "sudo": {"-u", "-g", "-h", "-p", "-C", "-D", "-r", "-t", "-U", "-T", "--user", "--group", "--host", "--prompt", "--chdir"},
+    "env": {"-u", "-C", "--unset", "--chdir"},
+    "git": {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--config-env"},
+    "xargs": {"-I", "-n", "-L", "-P", "-d", "-E", "-s", "-a"},
+    "time": {"-f", "-o"},
+}
+COPY_OPTION_VALUES = {"-m", "-o", "-g", "-S", "--mode", "--owner", "--group", "--suffix"}
+# .txt 설정·빌드 파일: 문서 아님. llms.txt·llms-full.txt는 문서 유지.
+NON_DOCUMENT_NAME = re.compile(r"(?:requirements|constraints)(?:[-_.][\w.-]*)?\.txt|CMakeLists\.txt", re.IGNORECASE)
+REDIRECT = re.compile(r"(?:>>?|>\||<>|>&)$")
 SHELL_INTERPRETERS = {"sh", "bash", "zsh", "dash"}
 COMMAND_PREFIXES = {"sudo", "env", "xargs", "command", "time", "git", "if", "then", "else", "elif", "do", "while", "until", "!"}
 DOCUMENT_LITERAL = re.compile(r"\.(?:md|mdx|rst|adoc|txt|docx|pdf)(?=$|[^\w])", re.IGNORECASE)
@@ -35,7 +48,20 @@ def document_paths(payload: dict) -> list[Path]:
     else:
         return []
     cwd = Path(value.get("workdir") or payload.get("cwd") or Path.cwd())
-    return [(cwd / path).resolve() for path in paths if path and Path(path).suffix.lower() in DOCUMENT_SUFFIXES]
+    return [(cwd / path).resolve() for path in paths if path and is_document_name(Path(path).name)]
+
+
+def is_document_name(name: str) -> bool:
+    return Path(name).suffix.lower() in DOCUMENT_SUFFIXES and not NON_DOCUMENT_NAME.fullmatch(name)
+
+
+def mentions_document(text: str) -> bool:
+    """문서 확장자로 끝나는 단어 존재 여부. 설정용 .txt 이름 제외."""
+    for match in DOCUMENT_LITERAL.finditer(text):
+        name = re.split(r"[\s/\\'\"=(),;:<>|&]", text[:match.end()])[-1]
+        if not NON_DOCUMENT_NAME.fullmatch(name):
+            return True
+    return False
 
 
 # cost: time O(n²), heap O(n), stack O(1), io O(p)
@@ -46,6 +72,7 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
     value = payload.get("tool_input", {})
     if name in {"Bash", "exec_command"} and isinstance(value, dict):
         commands = [str(value.get("command", value.get("cmd")) or "")]
+        cwd = Path(value.get("workdir") or payload.get("cwd") or Path.cwd())
         try:
             while commands:
                 command = commands.pop()
@@ -59,14 +86,14 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
                     if Path(token).name in SHELL_INTERPRETERS and re.fullmatch(r"-[a-z]*c[a-z]*", tokens[index + 1])
                 )
                 redirected_document = any(
-                    token in {">", ">>"} and DOCUMENT_LITERAL.search(tokens[index + 1])
+                    set(token) <= set(";&|<>(){}\n") and REDIRECT.search(token) and mentions_document(tokens[index + 1])
                     for index, token in enumerate(tokens[:-1])
                 )
                 inline_document_write = any(
-                    SHELL_WRITER.search(line) and DOCUMENT_LITERAL.search(line)
+                    SHELL_WRITER.search(line) and mentions_document(line)
                     for line in command.splitlines()
                 )
-                if redirected_document or inline_document_write or writes_document(tokens):
+                if redirected_document or inline_document_write or writes_document(tokens, cwd):
                     return deny("document writes through shell commands require a structured Write/Edit/apply_patch call; do not retry through another shell command")
         except ValueError:
             return deny("cannot inspect malformed shell command; use a structured file tool")
@@ -74,6 +101,7 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
     paths = document_paths(payload)
     if not paths:
         return {}
+    project = None
     try:
         # 지원 문서는 프로젝트가 아니라 등록 Vault의 career 영역에 둔다(career 스킬).
         career = project_context.resolve_vault() / "career"
@@ -87,6 +115,9 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
         message = str(error)
         if message.startswith("vault unregistered"):
             hint = ""
+        elif message.startswith("document path is outside") and project:
+            area = Path(project["area"])
+            hint = f"; write inside {area / 'docs'} (documents) or {area / 'agent'} (agent context); a project-root document needs explicit user approval recorded in approved_documents of {project['index']}"
         elif message.startswith("document path is outside"):
             hint = "; write inside the project's Vault area or an approved path"
         else:
@@ -95,39 +126,96 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
         return deny(message + hint + "; do not bypass this check")
 
 
-def writes_document(tokens: list[str]) -> bool:
+def writes_document(tokens: list[str], cwd: Path) -> bool:
     start = 0
     for index, token in enumerate([*tokens, ";"]):
         if token and set(token) <= set(";&|(){}\n"):
             part = tokens[start:index]
-            if part and is_document_command(part):
+            if part and is_document_command(part, cwd):
                 return True
             start = index + 1
     return False
 
 
-def command_names(part: list[str]) -> list[str]:
-    """명령 위치 단어: 할당과 COMMAND_PREFIXES·그 옵션 뒤 첫 단어(git은 하위 명령)."""
-    names: list[str] = []
-    for arg in part:
-        if names and names[-1] not in COMMAND_PREFIXES:
-            break
-        if re.fullmatch(r"[A-Za-z_]\w*=.*", arg) and (not names or names[-1] == "env") or names and arg.startswith("-"):
+def command_names(part: list[str]) -> list[tuple[str, int]]:
+    """명령 위치 단어와 위치: 할당과 COMMAND_PREFIXES·그 옵션(값 포함) 뒤 첫 단어(git은 하위 명령)."""
+    names: list[tuple[str, int]] = []
+    skip = False
+    for index, arg in enumerate(part):
+        if skip:
+            skip = False
             continue
-        names.append(Path(arg).name)
+        if names and names[-1][0] not in COMMAND_PREFIXES:
+            break
+        if re.fullmatch(r"[A-Za-z_]\w*=.*", arg) and (not names or names[-1][0] == "env"):
+            continue
+        if names and arg.startswith("-"):
+            skip = arg in OPTION_VALUES.get(names[-1][0], set())
+            continue
+        names.append((Path(arg).name, index))
     return names
 
 
-def is_document_command(part: list[str]) -> bool:
-    names = command_names(part)
-    has_document = any(DOCUMENT_LITERAL.search(arg) for arg in part)
-    file_command = bool(SHELL_FILE_COMMANDS.intersection(names))
-    dd_output = "dd" in names and any(arg.startswith("of=") and DOCUMENT_LITERAL.search(arg[3:]) for arg in part)
+def copy_destinations(args: list[str], cwd: Path) -> list[str]:
+    """cp·mv·install이 쓰는 이름: -d는 전체 피연산자, 그 외 대상과 디렉터리 대상(-t, 끝 /, 기존 폴더)이면 원본 이름."""
+    operands: list[str] = []
+    targets: list[str] = []
+    directories = False
+    options = True
+    skip = None
+    for arg in args:
+        if skip is not None:
+            if skip:
+                targets.append(arg)
+            skip = None
+        elif options and arg == "--":
+            options = False
+        elif options and arg.startswith("--"):
+            if arg.startswith("--target-directory="):
+                targets.append(arg.split("=", 1)[1])
+            elif arg == "--target-directory":
+                skip = True
+            elif arg == "--directory":
+                directories = True
+            elif arg in COPY_OPTION_VALUES:
+                skip = False
+        elif options and arg.startswith("-") and arg != "-":
+            flags = arg[1:]
+            for position, flag in enumerate(flags):
+                if flag == "d":
+                    directories = True
+                if flag == "t" or "-" + flag in COPY_OPTION_VALUES:
+                    value = flags[position + 1:]
+                    if flag == "t" and value:
+                        targets.append(value)
+                    elif not value:
+                        skip = flag == "t"
+                    break
+        else:
+            operands.append(arg)
+    if directories:
+        return operands + targets
+    if not targets and operands:
+        targets = [operands.pop()]
+        if not (targets[0].endswith("/") or (cwd / targets[0]).expanduser().is_dir()):
+            return targets
+    return targets + [Path(source.rstrip("/")).name for source in operands]
+
+
+def is_document_command(part: list[str], cwd: Path) -> bool:
+    positions = command_names(part)
+    names = [name for name, _ in positions]
+    command, start = positions[-1] if positions else ("", 0)
+    if command in COPY_COMMANDS:
+        file_write = any(mentions_document(arg) for arg in copy_destinations(part[start + 1:], cwd))
+    else:
+        file_write = command in SHELL_FILE_COMMANDS and any(mentions_document(arg) for arg in part)
+    dd_output = "dd" in names and any(arg.startswith("of=") and mentions_document(arg[3:]) for arg in part)
     in_place = bool({"sed", "perl"}.intersection(names)) and any(
         arg.startswith("--in-place") or re.match(r"^-[npEw]*i", arg)
         for arg in part
-    )
-    return dd_output or (has_document and (file_command or in_place))
+    ) and any(mentions_document(arg) for arg in part)
+    return dd_output or file_write or in_place
 
 
 def shell_syntax(command: str) -> str:
