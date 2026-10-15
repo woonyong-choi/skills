@@ -7,7 +7,7 @@ description: "모집단·표본·판정 기준을 정한 측정·비교 실험�
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 실험 대상, 폴더, 흐름, 템플릿, 통계 규칙, 검사
-- 필요할 때만 읽기: 결과 차트를 만들거나 바꿀 때 → repo-docs-figures; 완료 조건의 범위·시간 추정 변경 → git-issue 범위 변경 절; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit
+- 필요할 때만 읽기: 결과 차트·터미널 녹화 → repo-docs-figures; 블로그 글 → html-report `explain`; 완료 조건의 범위·시간 추정 변경 → git-issue 범위 변경 절; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit
 
 - 실험 하나 = 폴더 하나. 수집 전 설계 커밋 → 수집 → 결과 보고
 - 진행 상태: 흐름 1의 추적 항목. 문서에 기록 금지
@@ -30,6 +30,7 @@ docs/experiments/
     report.md
     run.sh
     env.json
+    logs/{명령}-{실행 id}.log
     data/
       README.md
       SHA256SUMS
@@ -42,6 +43,9 @@ docs/experiments/
     results/
       summary.json
       tables/{이름}.csv
+      terminal.tape
+      terminal.gif
+      terminal.png
 ```
 
 이름 → 규칙:
@@ -54,8 +58,17 @@ docs/experiments/
 - `results/summary.json` → 보고서의 모든 수치. 보고서 수치는 이 파일에서만
 - 결과 차트 → 원본·산출물 위치, JSON 입력과 변환·검사(repo-docs-figures references/charts.md 실험 차트)
 - `run.sh` → `collect`, `process`, `analyze`, `verify`, `all` 다섯 명령. `./run.sh analyze`는 `raw/`를 입력으로 전처리를 다시 실행한 뒤 분석을 실행해 결과 재생성
+- `logs/` → `run.sh` 명령마다 실행 출력 전부. 수정 금지, 홈 경로는 `~`로. 아래 `log` 함수로만 기록
+- `results/terminal.*` → 보고한 실행 id의 `verify`·`analyze` 로그를 `cat`으로 보이는 VHS 녹화(repo-docs-figures references/vhs.md 기본 설정). 재실행 녹화 금지
 - `env.json` → 실행 환경: 운영체제, CPU, 메모리, 도구와 버전, 모델 이름(미사용 시 해당 없음), 실행 날짜, 커밋
 - 파일 크기 → 저장소의 파일 크기 정책 적용. 외부 저장 시 접근 경로·SHA-256·재현 방법 기록
+
+`run.sh` 기록 함수(명령마다 `log 명령 실행할 것`):
+
+```sh
+id=${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$(git rev-parse --short=7 HEAD)}
+log() { mkdir -p logs; { printf '$ ./run.sh %s  # %s\n' "$1" "$id"; "${@:2}"; } 2>&1 | sed "s|$HOME|~|g" | tee "logs/$1-$id.log"; }
+```
 
 ## 흐름
 
@@ -64,9 +77,10 @@ docs/experiments/
 3. 일반 실측: 2번 설계 커밋을 같은 PR의 첫 기준점으로 두고, 수집·결과를 더해 함께 머지
 4. 수집 전 승인해야 할 데이터 접근·판정 조건이 있는 실험만 2번을 저장소 승인 절차로 먼저 확정. PR 사용 시 사전 등록 PR 머지. 이슈 연결은 git-issue 닫기 절
 5. `./run.sh collect`로 수집. 사전 열람 데이터는 설계에 기록하고 확인 분석용 자료와 구분
-6. `./run.sh verify`, `./run.sh analyze` 후 결과 차트 변환(repo-docs-figures references/conversion.md 변환)
+6. `./run.sh verify`, `./run.sh analyze` 후 결과 차트와 `results/terminal.tape` 변환(repo-docs-figures references/conversion.md 변환)
 7. `report.md`, `data/README.md` 작성, `docs/experiments/README.md` 결론 칸 기입
 8. 결론이 설계를 바꾸면 같은 PR에서 설계 문서 수정
+9. 블로그 글: [report.md](references/report.md) 블로그 글 절의 고정 구성으로 html-report `explain` 생성. 요청 없이도 실행, 커밋 금지
 
 - 수집 시작 뒤 `design.md`의 가설·판정 기준 수정 금지
 - 결과를 본 뒤 설계·가설·판정 기준을 바꾸면 보고서 `설계와 다른 점`에 기록. 바뀐 부분의 분석은 `탐색 분석`으로 구분하고 확인 분석 판정에 사용 금지
@@ -121,3 +135,5 @@ docs/experiments/
 6. 실패, 제외한 실행 전부 흐름 표에
 7. `docs/experiments/README.md` 결론 칸과 보고서 결론 일치
 8. 관련 설계 문서에 이 보고서 링크
+9. `logs/`에 보고한 실행 id의 명령별 로그 존재, `results/terminal.gif`·`.png`가 그 로그와 같은 출력
+10. 블로그 글 6개 절과 첨부 존재, html-report 확인 절차 통과
