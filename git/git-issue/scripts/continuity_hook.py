@@ -694,6 +694,11 @@ def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]
         "Stop",
     }:
         return {}
+    try:
+        # 셸 apply_patch는 구조화 편집과 같은 필수 원문 확인. 판정 정본: document_guard.shell_patch
+        edit = payload if payload.get("tool_name") in EDIT_TOOLS else document_guard.shell_patch(payload)
+    except ValueError:
+        edit = None  # 잘못된 셸은 document_guard가 거부
     skill = Path(__file__).resolve().parents[1]
     source = skill.parent / "developer-thinking/scripts/read_rules.py"
     if not source.is_file():
@@ -726,9 +731,9 @@ def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]
             repo = Path(core.read(folder / "binding.json")["repo"])
             scope = state.setdefault("rule_scope", {})
             is_query = reader.select_query(payload, scope)
-            # 읽기·실행 명령은 조회 강제 대상이 아니다. 실제 편집만 규칙 하한을 선택한다.
-            if payload.get("tool_name") in EDIT_TOOLS:
-                reader.select_for_tool(payload, repo, scope)
+            # 읽기·실행 명령은 조회 강제 대상이 아니다. 실제 편집(셸 apply_patch 포함)만 규칙 하한을 선택한다.
+            if edit is not None:
+                reader.select_for_tool(edit, repo, scope)
         try:
             pending = reader.pending_rules(state)
         except (OSError, ValueError) as error:
@@ -771,7 +776,7 @@ def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]
             }
         if event not in {"PreToolUse", "Stop"} or not pending:
             return {}
-        if event == "PreToolUse" and payload.get("tool_name") not in EDIT_TOOLS:
+        if event == "PreToolUse" and edit is None:
             return {}
         reason = f"필수 원문 {len(pending)}개가 아직 도구 결과로 전달되지 않았습니다. 먼저 `{command}`를 실행하세요. 출력은 자르거나 요약하지 말고, 남은 원문 안내가 있으면 같은 명령을 이어 실행하세요. 이미 전달된 원문은 자동 제외합니다. 원문을 적용한 뒤 원래 작업을 다시 실행할 수 있습니다. 사용자 승인이나 기록 작성 요청은 불필요합니다."
         if event == "PreToolUse":

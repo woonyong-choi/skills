@@ -80,15 +80,11 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
         source = str(value.get("command", value.get("cmd")) or "")
         commands = [source]
         cwd = Path(value.get("workdir") or payload.get("cwd") or Path.cwd())
-        patch_directory = None
         try:
             while commands:
                 command = commands.pop()
                 tokens, operators = shell_tokens(command)
-                commands.extend(
-                    tokens[index + 2] for index, token in enumerate(tokens[:-2])
-                    if Path(token).name in SHELL_INTERPRETERS and re.fullmatch(r"-[a-z]*c[a-z]*", tokens[index + 1])
-                )
+                commands.extend(nested_commands(tokens))
                 redirected_document = any(
                     index in operators and REDIRECT.search(token) and mentions_document(tokens[index + 1])
                     for index, token in enumerate(tokens[:-1])
@@ -99,15 +95,14 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
                 )
                 if redirected_document or inline_document_write or writes_document(tokens, operators, cwd):
                     return deny("document writes through shell commands require a structured Write/Edit/apply_patch call; redirect command output to a .log file; do not retry through another shell command")
-                patch_directory = patch_directory or patch_workdir(tokens, operators, cwd)
+            patched = shell_patch(payload)
         except ValueError:
             return deny("cannot inspect malformed shell command; use a structured file tool")
-        if patch_directory is None:
+        if patched is None:
             return {}
-        # Codex 셸 apply_patch(heredoc 포함)는 구조화 apply_patch와 같은 경로 검사.
         if "*** Begin Patch" not in source:
             return deny("cannot inspect apply_patch input; pass the patch inline")
-        payload = {**payload, "tool_name": "apply_patch", "tool_input": {"command": source, "workdir": str(patch_directory)}}
+        payload = patched
     paths = document_paths(payload)
     if not paths:
         return {}
@@ -196,6 +191,37 @@ def writes_document(tokens: list[str], operators: set[int], cwd: Path) -> bool:
                 return True
             start = index + 1
     return False
+
+
+def nested_commands(tokens: list[str]) -> list[str]:
+    """`sh -c`·`bash -lc` 등 셸 인터프리터에 넘긴 명령 문자열."""
+    return [
+        tokens[index + 2] for index, token in enumerate(tokens[:-2])
+        if Path(token).name in SHELL_INTERPRETERS and re.fullmatch(r"-[a-z]*c[a-z]*", tokens[index + 1])
+    ]
+
+
+# cost: time O(n), heap O(n), stack O(1), io O(1)
+# vars: n = command bytes
+# basis: estimate
+def shell_patch(payload: dict) -> dict | None:
+    """셸 apply_patch·applypatch 호출(heredoc 포함)을 같은 입력의 구조화 apply_patch payload로 변환. 호출이 없으면 None, 잘못된 셸은 ValueError.
+
+    문서 경로 검사와 필수 원문 확인(continuity_hook)이 공유하는 판정 정본.
+    """
+    value = payload.get("tool_input")
+    if payload.get("tool_name") not in {"Bash", "exec_command"} or not isinstance(value, dict):
+        return None
+    source = str(value.get("command", value.get("cmd")) or "")
+    cwd = Path(value.get("workdir") or payload.get("cwd") or Path.cwd())
+    commands = [source]
+    while commands:
+        tokens, operators = shell_tokens(commands.pop())
+        commands.extend(nested_commands(tokens))
+        directory = patch_workdir(tokens, operators, cwd)
+        if directory is not None:
+            return {**payload, "tool_name": "apply_patch", "tool_input": {"command": source, "workdir": str(directory)}}
+    return None
 
 
 def patch_workdir(tokens: list[str], operators: set[int], cwd: Path) -> Path | None:
