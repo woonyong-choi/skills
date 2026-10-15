@@ -63,8 +63,8 @@
 ## 재현
 
 ```sh
-RUN_ID={실행 id} ./run.sh verify
-RUN_ID={실행 id} ./run.sh analyze
+RUN_ID={실행 id}-check ./run.sh verify
+RUN_ID={실행 id}-check ./run.sh analyze
 ```
 
 | 파일 | SHA-256 |
