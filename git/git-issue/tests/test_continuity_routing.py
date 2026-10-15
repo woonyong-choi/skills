@@ -1212,6 +1212,20 @@ class CodexUsageTest(RoutingCase):
         self.record(outside.resolve())
         self.assertEqual(hook.host_meter(self.home, "codex"), (None, None), "outside")
 
+    def test_codex_home_behind_link_is_accepted(self) -> None:
+        # macOS /var·홈 링크처럼 sessions 위쪽 링크는 허용, sessions 안 링크만 거절
+        real = self.rollout(meta_line(), token_line(10))
+        linked_home = self.root / "linked-codex-home"
+        os.symlink(self.codex_home.resolve(), linked_home)
+        os.environ["CODEX_HOME"] = str(linked_home)
+        through_link = linked_home / real.resolve().relative_to(self.codex_home.resolve())
+        self.assertEqual(core.codex_rollout(CODEX_SESSION), str(real.resolve()))
+        self.record(real.resolve())
+        expected = hook.host_meter(self.home, "codex")
+        self.assertEqual(expected[1], CODEX_SESSION)
+        self.record(through_link)
+        self.assertEqual(hook.host_meter(self.home, "codex"), expected)
+
     def test_codex_meter_rejects_stale_or_malformed_record(self) -> None:
         path = self.rollout(meta_line(), token_line(10))
         now = time.time()

@@ -34,7 +34,7 @@ SLOW = subprocess.TimeoutExpired(["git"], 3)
 
 class TemporaryCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.base = Path(tempfile.mkdtemp())
+        self.base = Path(tempfile.mkdtemp()).resolve()  # macOS /var 링크: 등록 경로는 실제 경로
         self.addCleanup(shutil.rmtree, self.base)
         environ = mock.patch.dict(os.environ, {"WORK_CONTINUITY_CONFIG_DIR": str(self.base / "configuration")})
         environ.start()
