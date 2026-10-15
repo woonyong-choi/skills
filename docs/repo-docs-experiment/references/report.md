@@ -88,3 +88,16 @@
 - 해석 → 결과·설계 영향·한계 포함
 - 타당성 위협 → 설계 위협 표 행 전부와 `이 실험에서` 칸 기입. 문장 열: `위협`, `이 실험에서`
 - 결론 반영한 문서 → 미반영이면 `없음`, 이유 문장은 해석 절에
+
+## 블로그 글
+
+절 → `report.md` 출처 → 첨부:
+
+1. 질문과 가설 → 요약, 설계 가설 표 → 없음
+2. 방법 → 방법 표, `env.json` → `env.json`
+3. 결과 → 확인 분석 → 결과 차트 `.thinkflow`(`figure`)
+4. 실행 로그 → 흐름 표 → `terminal.gif`(`image`), `logs/` 파일
+5. 데이터 → `data/README.md` 출처 → `data/README.md`, `results/summary.json`, `data/processed/*.csv`
+6. 한계와 결론 → 한계, 결론 표 → 없음
+
+- 절 이름·순서 고정, 빈 절도 생략 금지("해당 없음" 한 문장). 수치는 `results/summary.json`에서만. `lead`는 요약 첫 문장

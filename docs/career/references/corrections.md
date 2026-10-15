@@ -1,0 +1,32 @@
+# 교정 기록
+
+## 이번 작업
+
+교정마다 기록:
+
+- 고정 교정 키, 틀린 내용과 고친 내용
+- 종류 하나: `applicant-fact`, `personal-preference`, `workspace-convention`, `public-skill-candidate`, `run-only`
+- 출처(사용자·문서), 범위, 민감도, 영향받은 산출물, 이번 작업의 반복 횟수
+- 무효가 된 검증과 재실행 결과
+
+- 사실·근거 교정은 선택·문장·컴파일·추출·화면 검사·해시·완료 주장을 무효화. 끝내기 전 재실행
+- 교정이 있으면 `전략.md` VERIFY에 `## 교정과 기억 전달` 절: 저장 위치 또는 대체 출력, 누적 횟수, 승격 후보, 경력 원본 변경 여부
+
+## 저장 위치(호스트별)
+
+교정 기록 하나 = 파일 하나 `{YYYYMMDD-HHMMSS}-career-feedback.md`:
+
+- Codex: `${CODEX_HOME:-~/.codex}/memories/extensions/ad_hoc/notes/`. 생성된 `MEMORY.md`·요약 파일 직접 수정 금지
+- Claude: 호스트 메모리 쓰기 도구가 있으면 그 도구, 없으면 `<Vault>/career/corrections/`
+- 둘 다 불가: 최종 응답에 같은 블록 출력, 저장 안 됨 명시
+- 비밀·민감한 원값 저장 금지. 실수를 막을 규칙만 남김
+
+## 승격
+
+끝내기 전 같은 키의 기존 기록 검색. 한 작업 안 여러 번은 교차 승격에 1회로 세고 반복 수는 따로 기록:
+
+- 1회 작업: `observed`
+- 서로 다른 2회 이상: 선호·작업 방식은 `durable-memory-candidate`, 사실·근거는 `career-master-candidate`(반복은 증명 아님, 사용자 명시 승인과 출처가 있을 때만 원본 수정)
+- 한 작업에서 같은 키 2회 이상 교정: 횟수와 무관하게 `public-skill-candidate` 추가, 사적 정보 없는 일반 교훈을 따로 기록
+- 지원 작업 중 이 스킬 수정 금지(별도 요청 시만). 회사 한정·모순·근거 없는 항목은 `run-only` 또는 `needs-review`
+- 원본 수정 승인 시: 별도 작업으로 변경, 출처·개정 기록, 원본 전체 재읽기, 무효화된 단계 전부 재실행

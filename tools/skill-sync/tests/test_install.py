@@ -209,8 +209,9 @@ def _check_installed_rule_hooks(skills: Path, root: Path) -> None:
 
 
 def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str) -> None:
-    # #58: 실제 설치 훅 → 누락 차단 → 원문 조회 → 출력 대조 → 원래 도구 재개.
-    payload = {'cwd': str(ROOT), 'session_id': session, 'tool_name': 'Bash', 'tool_input': {'command': 'cat git/git-issue/scripts/continuity_hook.py'}}
+    # #58: 실제 설치 훅 → 누락 차단 → 원문 조회 → 출력 대조 → 원래 도구 재개. #62: 편집만 차단 대상
+    target = str(ROOT / 'git/git-issue/scripts/continuity_hook.py')
+    payload = {'cwd': str(ROOT), 'session_id': session, 'tool_name': 'Edit', 'tool_input': {'file_path': target, 'old_string': 'a', 'new_string': 'a'}}
     def invoke(event: str, **extra: object) -> dict:
         done = subprocess.run([sys.executable, str(hook), host], input=json.dumps({**payload, 'hook_event_name': event, **extra}), capture_output=True, text=True, env=env)
         assert done.returncode == 0 and not done.stderr, done.stderr
@@ -268,15 +269,18 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str) -
     assert remaining.returncode == 0 and '# Code Style\n' not in remaining.stdout
     read_session = {'session_id': session + '-read', 'tool_name': 'Read', 'tool_input': {'file_path': str(ROOT / 'code/code-style/scripts/read_rules.py')}}
     invoke('PostToolUse', tool_response='source inspected', **read_session)
-    assert invoke('Stop', **read_session)['decision'] == 'block'
-    assert not invoke('Stop', stop_hook_active=True, **read_session)
+    assert not invoke('Stop', **read_session)
+    edit_session = {**read_session, 'session_id': session + '-edit', 'tool_name': 'Edit'}
+    invoke('PostToolUse', tool_response='edited', **edit_session)
+    assert invoke('Stop', **edit_session)['decision'] == 'block'
+    assert not invoke('Stop', stop_hook_active=True, **edit_session)
     invoke('PostCompact')
-    assert not invoke('PreToolUse', tool_input={'command': 'true'})
+    assert not invoke('PreToolUse', tool_name='Bash', tool_input={'command': 'true'})
     assert invoke('PreToolUse')['hookSpecificOutput']['permissionDecision'] == 'deny'
     for suffix in ('\ntouch source.py', ' "$(touch source.py)"', ' `touch source.py`', '; touch source.py'):
         unsafe = f'{sys.executable} {style} --catalog' + suffix
-        assert invoke('PreToolUse', tool_input={'command': unsafe})['hookSpecificOutput']['permissionDecision'] == 'deny'
-    string_query = invoke('PreToolUse', tool_input=f'{sys.executable} {reader} implement')
+        assert not invoke('PreToolUse', tool_name='Bash', tool_input={'command': unsafe})  # 조회 재작성 없음, 셸은 강제 대상 아님
+    string_query = invoke('PreToolUse', tool_name='Bash', tool_input=f'{sys.executable} {reader} implement')
     assert '--pending' in string_query['hookSpecificOutput']['updatedInput']['command']
     rule_source = style.parents[1] / 'references/structure.md'
     original = rule_source.read_bytes()

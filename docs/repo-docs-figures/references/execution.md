@@ -1,18 +1,18 @@
 # 설치와 실행
 
-daphnis 직접 실행 전 [검사](validation.md) 필수 확인
+ThinkFlow 직접 실행 전 [검사](validation.md) 필수 확인
 
-- 실행 환경: Node.js 20 이상. 설치·배포 정본: [README](https://github.com/woonyong-choi/daphnis/blob/main/README.md#installation). 패키지 버전만으로 npm 배포 여부 판단 금지
-- `<daphnis 경로>`: 의존성이 설치된 기존 작업본의 절대 경로. 아래 명령은 문서 저장소 루트에서 실행
+- 실행 환경: Node.js 20 이상. 설치·배포 정본: [README](https://github.com/woonyong-choi/thinkflow/blob/main/README.md#installation). 패키지 버전만으로 npm 배포 여부 판단 금지
+- `<ThinkFlow 경로>`: 의존성이 설치된 기존 작업본의 절대 경로. 아래 명령은 문서 저장소 루트에서 실행
 
 ```sh
-node <daphnis 경로>/src/cli.js --help
+node <ThinkFlow 경로>/src/cli.js --help
 ```
 
 ```sh
-node <daphnis 경로>/src/cli.js check docs/assets/architecture.dap --strict
-node <daphnis 경로>/src/cli.js render docs/assets/architecture.dap --strict
-node <daphnis 경로>/src/cli.js render docs/assets/architecture.dap --strict --static
+node <ThinkFlow 경로>/src/cli.js check docs/assets/architecture.thinkflow --strict
+node <ThinkFlow 경로>/src/cli.js render docs/assets/architecture.thinkflow --strict
+node <ThinkFlow 경로>/src/cli.js render docs/assets/architecture.thinkflow --strict --static
 ```
 
 - 실행 전 사용할 버전의 도움말에서 명령 형식과 성공·실패 시 종료 코드를 확인·기록

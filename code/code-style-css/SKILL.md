@@ -6,7 +6,7 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 # Code Style: CSS
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
-- 기반: code-style, design-tokens 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 CSS 규칙(`.css`, `<style>`, 인라인 `style`, JavaScript 문자열 안 CSS). 그 밖에서 code-style과 다르면 code-style 우선
+- 기반: code-style, design-tokens 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 CSS 규칙(`.css`, `<style>`, 인라인 `style`, JavaScript 문자열 안 CSS). 그 밖에서 상충하면 화면 값·토큰은 design-tokens, 나머지는 code-style 우선
 - 필요할 때만 읽기: class·파일 이름의 금지 이름 확인 → folder-naming
 
 ## 이름
@@ -23,7 +23,6 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 - 사용자 정의 속성 → design-tokens 이름 규칙 → `--color-accent`
 - 애니메이션 `@keyframes` → 동작 이름 kebab-case → `fade-in`
 
-- class·파일의 금지 이름: folder-naming 적용
 - 모양을 뜻하는 이름 금지(`.blue-text`, `.mt-8`). 역할 이름만. 저장소가 유틸리티 CSS 프레임워크를 쓰면 그 규칙 우선
 
 ## 선언 순서
@@ -31,16 +30,15 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 파일:
 
 1. 파일 설명 주석
-2. `@import`, `@layer` 순서 선언
-3. 토큰 정의 (design-tokens 정본 파일에서만)
-4. 기본 요소 스타일 (`html`, `body`, 태그 선택자)
-5. 배치 (페이지 틀, grid·flex 컨테이너)
-6. 구성 요소. 구성 요소 하나를 한 덩어리로, 파일 안 등장 순서는 화면 위 → 아래
-7. 상태 class
-8. `@media`·`@container` 덮어쓰기. 해당 구성 요소 덩어리 바로 뒤에 배치 허용
+2. `@import`(생성 `tokens.css` 포함), `@layer` 순서 선언. 토큰 정의 직접 작성 금지
+3. 기본 요소 스타일 (`html`, `body`, 태그 선택자)
+4. 배치 (페이지 틀, grid·flex 컨테이너)
+5. 구성 요소. 구성 요소 하나를 한 덩어리로, 파일 안 등장 순서는 화면 위 → 아래
+6. 상태 class
+7. `@media`·`@container` 덮어쓰기. 해당 구성 요소 덩어리 바로 뒤에 배치 허용
 
 - 스타일을 적용하는 구성 요소, 다른 곳에서의 재사용 여부, 별도 로드 필요 여부가 다르면 파일 분리 검토
-- JavaScript 템플릿 문자열 안 CSS: 위 파일 구성 순서 적용. JavaScript와 별도로 변경하거나 다른 곳에서 재사용하거나 따로 로드해야 하면 `.css` 파일로 분리. 분리한 파일은 빌드에 포함하거나 실행 시 읽기
+- JavaScript 템플릿 문자열 안 CSS: 위 순서 적용. 위 분리 조건에 해당하면 `.css` 파일로 분리해 빌드에 포함하거나 실행 시 읽기
 
 규칙 안 속성:
 
@@ -68,10 +66,9 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 
 ## 값
 
-- 화면 값: 토큰만 (design-tokens 원칙)
+- 화면 값: 토큰만 (design-tokens 원칙). 색은 의미 토큰 `var()`만, 직접 색 표기 금지
 - 길이 단위: 글자 크기 `rem`, 테두리 `px` 토큰, 배치 비율 `%`·`fr`
 - `0`에 단위 금지(`0px` X)
-- 수기 CSS 토큰 정의의 색 표기: 소문자 6자리 hex나 `oklch()`. 생성 CSS는 design-tokens의 정본·생성물 규칙 적용
 
 ## 반응형과 접근성
 
@@ -90,7 +87,7 @@ description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자�
 
 ## 테스트
 
-- 화면 확인: Playwright로 밝은·어두운 테마, 저장소 지원표의 최소·최대 폭과 각 breakpoint 전후 스크린샷. 지원표가 없으면 수용 조건에 사용 폭 기록
+- 화면 확인: Playwright 스크린샷. 변경이 영향을 주는 테마, 저장소 지원표의 최소·최대 폭, 영향받는 breakpoint 전후. 지원표가 없으면 수용 조건에 사용 폭 기록. 저장소 테스트 추가 여부: (code-style 테스트)
 - 실제 배경 면 위의 최종 합성 색·불투명도·전환 상태 확인. 정지 화면과 움직이는 중간 상태의 규칙 적용 범위 구분
 - `prefers-reduced-motion: reduce` 에뮬레이션에서 움직임 정지 확인
 - 넘침 확인: 버튼·탭 글자가 상자를 넘지 않는지 `scrollWidth <= clientWidth`

@@ -88,6 +88,8 @@ def _private_links(raw: str) -> bool:
 def section_lists(name: str) -> list[list[str]]:
     if name in ("README.md", "README.ko.md"):
         return [README_KO, README_EN]
+    docs = re.search(r"(?:^|/)(docs/.+)$", name)
+    name = docs.group(1) if docs else name
     if name == "docs/architecture.md":
         return [ARCHITECTURE_KO, ARCHITECTURE_EN]
     if name.startswith("docs/design/"):

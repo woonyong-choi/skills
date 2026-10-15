@@ -1,6 +1,6 @@
 # AGENTS.md
 
-등록 Vault 프로젝트는 repo-docs `references/project-context.md`의 짧은 진입 안내 적용. 아래 템플릿은 등록 Vault를 사용하지 않는 저장소용이며 기존 지침 이전 때 조건·범위·예외 보존
+아래 템플릿은 등록 Vault를 사용하지 않는 저장소용. 기존 지침 이전 때 조건·범위·예외 보존
 
 ````text
 # {이름}

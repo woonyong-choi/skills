@@ -116,7 +116,9 @@ class ProjectContextWorkflow(unittest.TestCase):
             forbidden = project / "unapproved.md"
             approved = project / "README.md"
             for host in ["claude", "codex"]:
-                for target, is_allowed in [(allowed, True), (forbidden, False), (approved, True)]:
+                # #62: 지원 문서는 프로젝트 등록과 무관하게 Vault career 영역만 허용.
+                career = vault / "career" / "2026-11-30-회사-백엔드" / "전략.md"
+                for target, is_allowed in [(allowed, True), (forbidden, False), (approved, True), (career, True), (vault / "careers.md", False)]:
                     tool = "Write" if host == "claude" else "apply_patch"
                     value = {"file_path": str(target), "content": "verified"} if host == "claude" else {"command": f"*** Begin Patch\n*** Add File: {target}\n+verified\n*** End Patch"}
                     decision = hook(host, project, tool, value)
