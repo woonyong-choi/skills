@@ -255,6 +255,68 @@ process.stdout.write(JSON.stringify(result));
         finally:
             shutil.rmtree(folder)
 
+    def test_offscreen_figure_frames_match_content_height(self) -> None:
+        # #66: 화면 밖 sandbox iframe은 렌더링이 멈춰 재생기가 높이를 못 보내 240px에 머물렀다.
+        playwright_root = self._playwright_root()
+        if playwright_root is None or shutil.which("node") is None:
+            self.skipTest("installed Playwright browser is unavailable")
+        folder = FIXTURE / "frame-height"
+        (folder / "explain").mkdir(parents=True, exist_ok=True)
+        report = json.loads((FIXTURE / "input.json").read_text(encoding="utf-8"))
+        for option in report["questions"][0]["options"]:
+            for image in option["images"]:
+                image["thinkflow"] = f"../{image['thinkflow']}"
+        explain = {"kind": "explain", "title": "높이", "lead": "그림 높이", "sections": [
+            {"title": f"흐름 {name}", "text": ["설명 " * 400], "figure": f"../../flow-{name}.thinkflow"} for name in ("a", "b")
+        ]}
+        (folder / "input.json").write_text(json.dumps(report, ensure_ascii=False), encoding="utf-8")
+        (folder / "explain" / "input.json").write_text(json.dumps(explain, ensure_ascii=False), encoding="utf-8")
+        script = r"""
+const { createRequire } = await import('node:module');
+const { chromium } = createRequire(`${process.env.PLAYWRIGHT_REQUIRE_ROOT}/`)('playwright-core');
+const browser = await chromium.launch();
+const result = [];
+for (const url of JSON.parse(process.env.REPORT_URLS)) for (const width of [390, 1280]) for (const mode of ['light', 'dark']) {
+  const page = await browser.newPage({ viewport: { width, height: 800 }, colorScheme: mode });
+  await page.goto(url);
+  await page.locator(`.theme button[data-mode="${mode}"]`).click();
+  await page.waitForTimeout(1500);
+  const frames = await page.evaluate(() => [...document.querySelectorAll('iframe[data-diagram]')].map((frame) => {
+    const box = frame.getBoundingClientRect();
+    return { top: Math.round(box.top), height: Math.round(box.height) };
+  }));
+  const contents = [];
+  for (const frame of page.frames().slice(1)) contents.push(await frame.evaluate(() => Math.ceil(document.body.getBoundingClientRect().height)));
+  result.push({ url, width, mode, frames, contents });
+  await page.close();
+}
+await browser.close();
+process.stdout.write(JSON.stringify(result));
+"""
+        try:
+            for spec in (folder / "input.json", folder / "explain" / "input.json"):
+                command = [sys.executable, str(BUILD), str(spec), "--thinkflow", str(self.thinkflow)]
+                completed = subprocess.run(command, capture_output=True, text=True, check=False)
+                self.assertEqual(completed.returncode, 0, completed.stderr)
+            urls = [(folder / "index.html").as_uri(), (folder / "explain" / "index.html").as_uri()]
+            completed = subprocess.run(
+                ["node", "--input-type=module", "-e", script],
+                capture_output=True,
+                check=False,
+                env=os.environ | {"PLAYWRIGHT_REQUIRE_ROOT": str(playwright_root), "REPORT_URLS": json.dumps(urls)},
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            for run in json.loads(completed.stdout):
+                label = f"{run['url']} {run['width']} {run['mode']}"
+                self.assertEqual(len(run["frames"]), 2, label)
+                if run["width"] == 390:
+                    # 두 번째 그림이 첫 화면 밖에 있어야 이 회귀를 재현한다.
+                    self.assertGreater(run["frames"][1]["top"], 800, label)
+                self.assertEqual([frame["height"] for frame in run["frames"]], run["contents"], label)
+        finally:
+            shutil.rmtree(folder)
+
     def test_navigation_chips_use_state_tokens_and_single_row_css(self) -> None:
         report = self._build_navigation_report()
 

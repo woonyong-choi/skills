@@ -70,6 +70,25 @@ addEventListener('message', (event) => {
   if (event.data.themeRequest && frame) event.source.postMessage({ theme: savedTheme() }, '*');
   if (event.data.figureHeight && frame) frame.style.height = `${Math.ceil(event.data.figureHeight)}px`;
 });
+// iframe마다 로드가 끝나면 높이를 다시 묻는다. load는 버블링하지 않아 캡처 단계에서 받는다.
+document.addEventListener('load', (event) => {
+  if (event.target.matches?.('iframe[data-diagram]')) event.target.contentWindow?.postMessage({ figureHeightRequest: true }, '*');
+}, true);
+"""
+
+# 화면 밖의 sandbox iframe은 브라우저가 렌더링을 멈춰 requestAnimationFrame과 ResizeObserver가 돌지 않는다.
+# ThinkFlow 재생기는 그 두 경로로만 높이를 보내므로, 로드 직후와 부모가 물을 때 레이아웃을 직접 재서 보낸다.
+FIGURE_HEIGHT_BRIDGE = """
+<script>
+(() => {
+  if (window.self === window.top) return;
+  const report = () => document.body && parent.postMessage({ figureHeight: Math.ceil(document.body.getBoundingClientRect().height) }, '*');
+  addEventListener('message', (event) => {
+    if (event.source === parent && event.data && (event.data.figureHeightRequest === true || 'theme' in event.data)) setTimeout(report);
+  });
+  addEventListener('load', () => setTimeout(report));
+})();
+</script>
 """
 
 SVG_THEME_BRIDGE = """
@@ -234,6 +253,9 @@ class FigureRenderer:
         document = output.read_text(encoding="utf-8")
         if static:
             document = _svg_document(document)
+        else:
+            document = document.replace("</head>", f"{FIGURE_HEIGHT_BRIDGE}</head>", 1)
+            output.write_text(document, encoding="utf-8")
         self.rendered[source] = document
         return document
 
