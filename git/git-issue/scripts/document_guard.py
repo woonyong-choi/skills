@@ -77,8 +77,10 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
     name = payload.get("tool_name", "")
     value = payload.get("tool_input", {})
     if name in {"Bash", "exec_command"} and isinstance(value, dict):
-        commands = [str(value.get("command", value.get("cmd")) or "")]
+        source = str(value.get("command", value.get("cmd")) or "")
+        commands = [source]
         cwd = Path(value.get("workdir") or payload.get("cwd") or Path.cwd())
+        patch_directory = None
         try:
             while commands:
                 command = commands.pop()
@@ -97,9 +99,15 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
                 )
                 if redirected_document or inline_document_write or writes_document(tokens, operators, cwd):
                     return deny("document writes through shell commands require a structured Write/Edit/apply_patch call; redirect command output to a .log file; do not retry through another shell command")
+                patch_directory = patch_directory or patch_workdir(tokens, operators, cwd)
         except ValueError:
             return deny("cannot inspect malformed shell command; use a structured file tool")
-        return {}
+        if patch_directory is None:
+            return {}
+        # Codex 셸 apply_patch(heredoc 포함)는 구조화 apply_patch와 같은 경로 검사.
+        if "*** Begin Patch" not in source:
+            return deny("cannot inspect apply_patch input; pass the patch inline")
+        payload = {**payload, "tool_name": "apply_patch", "tool_input": {"command": source, "workdir": str(patch_directory)}}
     paths = document_paths(payload)
     if not paths:
         return {}
@@ -188,6 +196,21 @@ def writes_document(tokens: list[str], operators: set[int], cwd: Path) -> bool:
                 return True
             start = index + 1
     return False
+
+
+def patch_workdir(tokens: list[str], operators: set[int], cwd: Path) -> Path | None:
+    """apply_patch·applypatch 호출 시 패치 기준 폴더(앞선 단일 인자 `cd` 반영), 없으면 None."""
+    start = 0
+    for index, token in enumerate([*tokens, ";"]):
+        if index == len(tokens) or (index in operators and not set(token) & set("<>")):
+            part = tokens[start:index]
+            names = [name for name, _ in command_names(part)]
+            if names[-1:] in (["apply_patch"], ["applypatch"]):
+                return cwd
+            if part[:1] == ["cd"] and len(part) == 2:
+                cwd = cwd / Path(part[1]).expanduser()
+            start = index + 1
+    return None
 
 
 def command_names(part: list[str]) -> list[tuple[str, int]]:
