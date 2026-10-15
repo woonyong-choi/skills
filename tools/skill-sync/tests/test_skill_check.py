@@ -101,3 +101,18 @@ def test_nominal_endings_fail_at_line_end_and_mid_line(line: str, word: str) -> 
 ])
 def test_nominal_nouns_pass(line: str) -> None:
     assert flagged(line) == []
+
+
+@pytest.mark.parametrize('description, expected', [
+    ('작업할 때 사용.', []),
+    ('작업할 때 사용. 다른 작업 제외.', ['description 사용. 뒤 글자']),
+])
+def test_description_ends_with_use(tmp_path: Path, description: str, expected: list[str]) -> None:
+    skill = tmp_path / 'sample'
+    (skill / 'agents').mkdir(parents=True)
+    (skill / 'agents' / 'openai.yaml').write_text(
+        'interface:\n  display_name: "S"\n  short_description: "s"\n  default_prompt: "$sample 처리"\n', encoding='utf-8')
+    (skill / 'SKILL.md').write_text(
+        f'---\nname: sample\ndescription: "{description}"\n---\n\n# Sample\n', encoding='utf-8')
+    errors = [e for e in skill_check.check(str(skill / 'SKILL.md'), ['sample']) if e.startswith('description')]
+    assert errors == expected

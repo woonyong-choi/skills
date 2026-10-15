@@ -89,6 +89,25 @@ class ShellGuardTest(TemporaryCase):
         for command in ("grep '>' a.md > b.md", "echo 'a;b' ; tee x.md", "bash -c 'echo > a.md'"):
             self.assertEqual(self.decide(command)["hookSpecificOutput"]["permissionDecision"], "deny", command)
 
+    def test_shell_apply_patch_uses_structured_path_check(self) -> None:
+        """#72: Codex 0.162 실제 PreToolUse 형식. 셸 apply_patch heredoc을 구조화 apply_patch로 판정."""
+        patch = "*** Begin Patch\n*** Add File: docs/x.md\n+# x\n*** End Patch\n"
+        seen = []
+        with mock.patch.object(guard.project_context, "resolve_vault", return_value=self.root / "vault"), \
+                mock.patch.object(guard.project_context, "check_project", return_value={"area": str(self.root)}), \
+                mock.patch.object(guard.project_context, "check_write", side_effect=lambda project, path: seen.append(path)):
+            for command, expected in (
+                ("apply_patch <<'EOF'\n" + patch + "EOF", self.root / "docs/x.md"),
+                ("cd sub && applypatch <<'EOF'\n" + patch + "EOF", self.root / "sub/docs/x.md"),
+            ):
+                self.assertEqual(self.decide(command), {}, command)
+                self.assertEqual(seen.pop(), expected.resolve())
+            self.assertEqual(self.decide("apply_patch <<'EOF'\n" + patch.replace("docs/x.md", "a.py") + "EOF"), {})
+            self.assertEqual(seen, [])
+        for command in ("apply_patch < change.patch", "cat change.patch | apply_patch"):
+            self.assertIn("cannot inspect apply_patch", self.decide(command)["hookSpecificOutput"]["permissionDecisionReason"], command)
+        self.assertEqual(self.decide("which apply_patch"), {})
+
     def test_brace_placeholder_does_not_split_command(self) -> None:
         for command in ("find . -name a.md -exec cp {} out.md \\;", "find . -execdir mv {} out.md +", "xargs -I{} cp {} out.md", "xargs -I {} cp {} out.md"):
             self.assertEqual(self.decide(command)["hookSpecificOutput"]["permissionDecision"], "deny", command)

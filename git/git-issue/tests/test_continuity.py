@@ -279,3 +279,32 @@ def test_rule_gate_blocks_edits_not_reads(tmp_path: Path) -> None:
     denied = continuity_hook._rule_gate("claude", edit, root)
     assert denied["hookSpecificOutput"]["permissionDecision"] == "deny"
     assert continuity_hook._rule_gate("claude", read, root) == {}
+
+
+def test_rule_gate_covers_shell_apply_patch(tmp_path: Path) -> None:
+    """#72: Codex 0.162 셸 apply_patch(tool_name Bash)도 구조화 편집과 같은 필수 원문 확인·Stop 차단."""
+    import subprocess
+    import sys
+
+    scripts = Path(__file__).resolve().parents[1] / "scripts"
+    sys.path.insert(0, str(scripts))
+    import continuity_hook
+
+    repo = tmp_path / "repo"
+    (repo / "src").mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    root = tmp_path / "tasks"
+    (root / "t").mkdir(parents=True)
+    session = "00000000-0000-4000-8000-000000000072"
+    (root / "t/binding.json").write_text(json.dumps({"repo": str(repo), "session_ids": [session]}))
+    base = {"session_id": session, "cwd": str(repo)}
+    patch = "*** Begin Patch\n*** Add File: src/a.py\n+def f():\n+    return 1\n*** End Patch\n"
+    shell = {**base, "hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "apply_patch <<'EOF'\n" + patch + "EOF"}}
+    assert continuity_hook._rule_gate("codex", {**shell, "tool_input": {"command": "cat src/a.py"}}, root) == {}
+    denied = continuity_hook._rule_gate("codex", shell, root)["hookSpecificOutput"]
+    assert denied["permissionDecision"] == "deny"
+    assert "--pending" in denied["permissionDecisionReason"]
+    other = {**shell, "tool_name": "exec_command", "tool_input": {"cmd": "cd . && applypatch <<'EOF'\n" + patch + "EOF"}}
+    assert continuity_hook._rule_gate("codex", other, root)["hookSpecificOutput"]["permissionDecision"] == "deny"
+    stop = {**base, "hook_event_name": "Stop", "stop_hook_active": False}
+    assert continuity_hook._rule_gate("codex", stop, root)["decision"] == "block"

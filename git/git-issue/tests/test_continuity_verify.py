@@ -211,6 +211,15 @@ class ExchangeTest(Case):
         with self.assertRaises(core.ContinuityError):
             core.last_turn("relative.jsonl", "claude")
 
+    def test_codex_0162_rollout_turn(self) -> None:
+        """#72: Codex 0.162.1 실제 rollout(개인 값 제거). 요청은 UserMessage, AGENTS 주입 user 메시지 제외"""
+        path = str(FIXTURES / "codex-0.162-rollout.jsonl")
+        self.assertEqual(core.last_turn(path, "codex"), ("heredoc bypass check", "MOCK-FINAL: done with 3 tool results"))
+        rows = [json.loads(line) for line in (FIXTURES / "codex-0.162-rollout.jsonl").read_text().splitlines()]
+        found = [core.codex_turn(row) for row in rows]
+        self.assertEqual([turn for turn in found if turn and turn[0] == "user"], [("user", "heredoc bypass check")])
+        self.assertEqual(sum(1 for turn in found if turn and turn[0] == "assistant"), 3)  # AgentMessage·output_text·task_complete
+
     def test_claude_stop_uses_transcript_path(self) -> None:
         self.event("Stop", transcript_path=str(FIXTURES / "claude-transcript.jsonl"))
         result = core.conversation(self.folder, self.binding)
@@ -351,6 +360,18 @@ class CacheReportTest(Case):
             self.assertEqual(report["summary"]["boundary_spikes"], [1, 3])
             self.assertEqual(report["summary"]["read_ratio"], round(9000 / 22500, 4))
             self.assertNotIn("세션 만료", result.stdout)
+
+    def test_codex_0162_reports_cache_write(self) -> None:
+        """#72: cache_write_input_tokens가 있으면 cache_write 보고, uncached_input 생략"""
+        report = json.loads(self.cli("--transcript", str(FIXTURES / "codex-0.162-rollout.jsonl")).stdout)
+        self.assertEqual(report["host"], "codex")
+        self.assertEqual(report["spike_metric"], "cache_write")
+        self.assertEqual(
+            [(t["input"], t["cached_input"], t["cache_write"]) for t in report["turns"]],
+            [(2000, 1024, 0)] * 4,
+        )
+        self.assertNotIn("uncached_input", json.dumps(report))
+        self.assertEqual(report["summary"]["read_ratio"], round(4096 / 8000, 4))
 
     def test_explicit_host_and_unknown_content(self) -> None:
         mismatched = self.cli("--transcript", str(FIXTURES / "codex-rollout.jsonl"), "--host", "claude")

@@ -43,6 +43,8 @@ def check(path, names):
         d = m.group(1)
         if not re.search(r"때 [^.]*?사용\.", d):
             errs.append("description 사용 조건 형식")
+        elif not d.endswith("사용."):
+            errs.append("description 사용. 뒤 글자")
         for n in names:
             if n != me and re.search(r'(?<![\w-])' + re.escape(n) + r'(?![a-z-])', d):
                 errs.append('description에 다른 스킬 이름: ' + n)
