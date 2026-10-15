@@ -4,7 +4,7 @@ bind --task 이름 --repo 경로 --issue 번호 --project 번호 [--session-id �
 checkpoint --task 이름 --input JSON파일 [--sync]
 restore --task 이름 [--offline] [--verify-clear]
 doctor [--task 이름]
-cache-report --transcript 호스트 JSONL
+cache-report --transcript 호스트 JSONL [--host claude|codex]
 모든 명령의 --root는 개인 작업 기록 루트. 기본 ~/workspace/woon/.local/orchestration.
 인자: 명령별 --help 또는 위 설명
 출력: stdout JSON 또는 원래 status line, 실패 stderr와 종료 코드
@@ -16,6 +16,7 @@ import argparse
 import contextlib
 import fcntl
 import hashlib
+import itertools
 import json
 import os
 from pathlib import Path
@@ -24,7 +25,7 @@ import subprocess
 import sys
 import time
 import uuid
-from typing import Any, Iterator
+from typing import Any, Callable, Iterator, NamedTuple
 
 import task_scope
 
@@ -331,7 +332,7 @@ def bind(folder: Path, args: argparse.Namespace) -> dict:
     save(folder / "binding.json", binding)
     if previous:
         # 같은 세션의 과업 전환은 압축이 아니므로 전달한 원문만 승계한다.
-        for host in ("claude", "codex"):
+        for host in HOSTS:
             name = "session-" + hashlib.sha256((host + session).encode()).hexdigest()[:20] + ".json"
             prior_state = read(previous.parent / name)
             current_state = read(folder / name)
@@ -874,8 +875,8 @@ def transcript_rows(path: object, tail: int | None = None) -> Iterator[dict]:
             yield row
 
 
-def message_text(content: object) -> str:
-    """Claude·Codex 메시지 content의 텍스트 블록. 도구 결과·이미지 제외"""
+def message_text(content: object, kinds: tuple[str, ...]) -> str:
+    """메시지 content의 지정 종류 텍스트 블록. 도구 결과·이미지 제외"""
     if isinstance(content, str):
         return content
     if not isinstance(content, list):
@@ -884,126 +885,274 @@ def message_text(content: object) -> str:
         block["text"]
         for block in content
         if isinstance(block, dict)
-        and block.get("type") in ("text", "input_text", "output_text")
+        and block.get("type") in kinds
         and isinstance(block.get("text"), str)
     )
 
 
-# cost: time O(t), heap O(t), stack O(1), io 1
-# vars: t = TRANSCRIPT_TAIL_BYTES
+# 호스트 어댑터: transcript 위치·요청/응답 판독·캐시 지표의 호스트 차이는 아래 HOSTS 하나에서만 처리
+
+CODEX_SESSION_ID = re.compile(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}")
+CODEX_META_BYTES = 1 << 20
+
+
+def codex_sessions_dir() -> Path:
+    return Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "sessions"
+
+
+def verified_rollout(path: Path, session: str) -> Path | None:
+    """세션 로그 폴더 안의 일반 파일이고 이름이 session과 맞는 절대 경로만 통과한다. 링크는 거절한다."""
+    try:
+        real = path.resolve(strict=True)
+        sessions = codex_sessions_dir().resolve()
+    except OSError:
+        return None
+    named = real.name.startswith("rollout-") and real.name.endswith(f"-{session}.jsonl")
+    return real if real == path and sessions in real.parents and named else None
+
+
+def codex_meta(line: bytes) -> dict | None:
+    """완전한 첫 줄의 session_meta payload. 형식이 다르면 None"""
+    if len(line) > CODEX_META_BYTES or not line.endswith(b"\n"):
+        return None
+    try:
+        meta = json.loads(line)
+    except ValueError:
+        return None
+    if not isinstance(meta, dict) or meta.get("type") != "session_meta":
+        return None
+    payload = meta.get("payload")
+    return payload if isinstance(payload, dict) else None
+
+
+# cost: time O(f), heap O(f), stack O(1), io O(f)
+# vars: f = 같은 session 이름의 rollout 후보 수
 # basis: estimate
-def last_turn(path: object) -> tuple[str | None, str | None]:
-    """transcript 끝부분의 마지막 사용자 요청과 마지막 응답 텍스트. 형식을 모르면 None"""
-    user = assistant = None
-    for row in transcript_rows(path, TRANSCRIPT_TAIL_BYTES):
-        kind, payload = row.get("type"), row.get("payload")
-        message = row.get("message") if isinstance(row.get("message"), dict) else {}
-        if kind in ("user", "assistant") and not row.get("isMeta") and not row.get(
-            "isCompactSummary"
-        ):
-            text = message_text(message.get("content"))
-            if text and kind == "user":
-                user, assistant = text, None
-            elif text:
-                assistant = text
-        elif kind == "event_msg" and isinstance(payload, dict):
-            text = payload.get("message")
-            if isinstance(text, str) and payload.get("type") == "user_message":
-                user, assistant = text, None
-            elif isinstance(text, str) and payload.get("type") == "agent_message":
-                assistant = text
-    return user, assistant
+def codex_rollout(session: object) -> str | None:
+    """session_id로 찾은 rollout. 세션 폴더 안 일반 파일이고 session_meta ID가 같은 유일한 후보만"""
+    if not isinstance(session, str) or not CODEX_SESSION_ID.fullmatch(session):
+        return None
+    found = []
+    for path in sorted(codex_sessions_dir().glob(f"*/*/*/rollout-*-{session}.jsonl")):
+        real = verified_rollout(path, session)
+        if real is None:
+            continue
+        try:
+            with open(real, "rb") as stream:
+                meta = codex_meta(stream.readline(CODEX_META_BYTES + 1))
+        except OSError:
+            continue
+        if meta and meta.get("id") == session:
+            found.append(str(real))
+    return found[0] if len(found) == 1 else None
+
+
+def payload_transcript(payload: dict) -> str | None:
+    path = payload.get("transcript_path")
+    return path if isinstance(path, str) and path else None
+
+
+def claude_turn(row: dict) -> tuple[str, str] | None:
+    """Claude JSONL: user·assistant 줄의 message.content text 블록. meta·압축 요약·도구 결과 제외"""
+    kind = row.get("type")
+    message = row.get("message")
+    if kind not in ("user", "assistant") or not isinstance(message, dict):
+        return None
+    if row.get("isMeta") or row.get("isCompactSummary"):
+        return None
+    text = message_text(message.get("content"), ("text",))
+    return (kind, text) if text else None
+
+
+def codex_turn(row: dict) -> tuple[str, str] | None:
+    """Codex rollout: 요청은 event_msg user_message(입력 원문), 응답은 agent_message 또는 response_item assistant output_text.
+
+    response_item의 user 메시지는 환경·지침 주입을 포함하므로 요청 원문으로 사용하지 않는다.
+    """
+    payload = row.get("payload")
+    if not isinstance(payload, dict):
+        return None
+    kind = (row.get("type"), payload.get("type"))
+    if kind == ("event_msg", "user_message") and isinstance(payload.get("message"), str):
+        return ("user", payload["message"]) if payload["message"] else None
+    if kind == ("event_msg", "agent_message") and isinstance(payload.get("message"), str):
+        return ("assistant", payload["message"]) if payload["message"] else None
+    if kind == ("response_item", "message") and payload.get("role") == "assistant":
+        text = message_text(payload.get("content"), ("output_text",))
+        return ("assistant", text) if text else None
+    return None
 
 
 def _int(value: object) -> int:
     return value if type(value) is int and value >= 0 else 0
 
 
-# cost: time O(t), heap O(u), stack O(1), io 1
+def claude_boundary(row: dict, memo: dict) -> str | None:
+    """첫 요청·sessionId 변경은 start, compact_boundary 뒤는 compact"""
+    if row.get("type") == "system" and row.get("subtype") == "compact_boundary":
+        return "compact"
+    session = row.get("sessionId")
+    if session and session != memo.get("session"):
+        memo["session"] = session
+        return "start"
+    return None
+
+
+def codex_boundary(row: dict, memo: dict) -> str | None:
+    """session_meta는 start, compacted 뒤는 compact"""
+    return {"session_meta": "start", "compacted": "compact"}.get(row.get("type"))
+
+
+def claude_usage(row: dict, memo: dict) -> tuple[str | None, dict] | None:
+    """assistant message.usage. 같은 message.id의 블록별 중복 줄은 같은 키"""
+    message = row.get("message")
+    if row.get("type") != "assistant" or not isinstance(message, dict):
+        return None
+    raw = message.get("usage")
+    if not isinstance(raw, dict):
+        return None
+    return message.get("id"), {
+        "input": _int(raw.get("input_tokens")),
+        "cache_read": _int(raw.get("cache_read_input_tokens")),
+        "cache_creation": _int(raw.get("cache_creation_input_tokens")),
+    }
+
+
+def codex_usage(row: dict, memo: dict) -> tuple[str | None, dict] | None:
+    """event_msg token_count의 last_token_usage. 캐시 쓰기 값 없음, input_tokens는 cached_input_tokens 포함. total_token_usage가 같은 반복 줄 제외"""
+    payload = row.get("payload")
+    if row.get("type") != "event_msg" or not isinstance(payload, dict):
+        return None
+    info = payload.get("info")
+    if payload.get("type") != "token_count" or not isinstance(info, dict):
+        return None
+    last = info.get("last_token_usage")
+    if not isinstance(last, dict) or info.get("total_token_usage") == memo.get("total", ()):
+        return None
+    memo["total"] = info.get("total_token_usage")
+    total = _int(last.get("input_tokens"))
+    cached = min(_int(last.get("cached_input_tokens")), total)
+    return None, {"input": total, "cached_input": cached, "uncached_input": total - cached}
+
+
+def claude_detect(row: dict) -> bool:
+    return row.get("type") in ("user", "assistant") and isinstance(row.get("message"), dict)
+
+
+def codex_detect(row: dict) -> bool:
+    return row.get("type") in ("session_meta", "event_msg", "response_item", "turn_context")
+
+
+class Host(NamedTuple):
+    """호스트별 transcript 위치·판독·캐시 지표. read: 캐시 읽기 필드, total: 비율 분모 필드, spike: 급증 판정 필드"""
+
+    locate: Callable[[dict], str | None]
+    turn: Callable[[dict], tuple[str, str] | None]
+    boundary: Callable[[dict, dict], str | None]
+    usage: Callable[[dict, dict], tuple[str | None, dict] | None]
+    detect: Callable[[dict], bool]
+    read: str
+    total: tuple[str, ...]
+    spike: str
+
+
+HOSTS = {
+    "claude": Host(
+        payload_transcript,
+        claude_turn,
+        claude_boundary,
+        claude_usage,
+        claude_detect,
+        "cache_read",
+        ("input", "cache_read", "cache_creation"),
+        "cache_creation",
+    ),
+    "codex": Host(
+        lambda payload: payload_transcript(payload) or codex_rollout(payload.get("session_id")),
+        codex_turn,
+        codex_boundary,
+        codex_usage,
+        codex_detect,
+        "cached_input",
+        ("input",),
+        "uncached_input",
+    ),
+}
+
+
+# cost: time O(t), heap O(t), stack O(1), io 1
+# vars: t = TRANSCRIPT_TAIL_BYTES
+# basis: estimate
+def last_turn(path: object, host: str) -> tuple[str | None, str | None]:
+    """transcript 끝부분의 마지막 사용자 요청과 그 뒤 마지막 응답 텍스트. 형식을 모르면 None"""
+    parse = HOSTS[host].turn
+    user = assistant = None
+    for row in transcript_rows(path, TRANSCRIPT_TAIL_BYTES):
+        found = parse(row)
+        if found and found[0] == "user":
+            user, assistant = found[1], None
+        elif found:
+            assistant = found[1]
+    return user, assistant
+
+
+# cost: time O(t), heap O(t + u), stack O(1), io 1
 # vars: t = transcript 바이트, u = 사용량 기록 수
 # basis: estimate
-def cache_report(path: str) -> dict:
-    """호스트 transcript 사용량의 요청별 캐시 읽기·생성과 비율. 시작·압축 직후 생성 급증 표시. 본문 출력 없음"""
+def cache_report(path: str, host: str | None = None) -> dict:
+    """호스트 transcript 사용량의 요청별 캐시 지표와 읽기 비율. 시작·압축 직후 급증 표시. 본문 출력 없음
+
+    host 생략 시 내용으로 판정, 판정 불가는 오류. 지표 이름은 호스트가 실제 제공하는 값 그대로.
+    """
+    rows = transcript_rows(path)
+    seen: list[dict] = []
+    if host is None:
+        for row in rows:
+            seen.append(row)
+            host = next((name for name, item in HOSTS.items() if item.detect(row)), None)
+            if host:
+                break
+        if host is None:
+            raise ContinuityError("transcript host unknown; pass --host claude|codex")
+    adapter = HOSTS[host]
     turns: list[dict] = []
-    by_message: dict[str, dict] = {}
+    by_key: dict[str, dict] = {}
+    memo: dict = {}
     boundary: str | None = "start"
-    host = "unknown"
-    session = None
-    previous_total = None
-    for number, row in enumerate(transcript_rows(path), 1):
-        kind = row.get("type")
-        payload = row.get("payload") if isinstance(row.get("payload"), dict) else {}
-        if kind == "session_meta":
-            host, boundary = "codex", "start"
-        elif kind == "compacted" or (
-            kind == "system" and row.get("subtype") == "compact_boundary"
-        ):
-            boundary = "compact"
-        if row.get("sessionId") and row.get("sessionId") != session:
-            session, boundary = row["sessionId"], "start"
-        usage = None
-        message = row.get("message") if isinstance(row.get("message"), dict) else {}
-        if kind == "assistant" and isinstance(message.get("usage"), dict):
-            host = "claude"
-            raw = message["usage"]
-            usage = {
-                "input": _int(raw.get("input_tokens")),
-                "cache_read": _int(raw.get("cache_read_input_tokens")),
-                "cache_creation": _int(raw.get("cache_creation_input_tokens")),
-            }
-            key = message.get("id")
-            if key in by_message:
-                by_message[key].update(usage)  # 같은 응답의 블록별 중복 줄
-                continue
-        elif kind == "event_msg" and payload.get("type") == "token_count":
-            info = payload.get("info") if isinstance(payload.get("info"), dict) else {}
-            last = info.get("last_token_usage")
-            if not isinstance(last, dict) or info.get("total_token_usage") == previous_total:
-                continue
-            previous_total = info.get("total_token_usage")
-            cached = _int(last.get("cached_input_tokens"))
-            usage = {
-                "input": max(_int(last.get("input_tokens")) - cached, 0),
-                "cache_read": cached,
-                "cache_creation": None,
-            }
-            key = None
-        if usage is None:
+    for number, row in enumerate(itertools.chain(seen, rows), 1):
+        boundary = adapter.boundary(row, memo) or boundary
+        found = adapter.usage(row, memo)
+        if found is None:
+            continue
+        key, usage = found
+        if key and key in by_key:
+            by_key[key].update(usage)
             continue
         turn = {"turn": len(turns) + 1, "line": number, **usage, "boundary": boundary}
         boundary = None
         turns.append(turn)
         if key:
-            by_message[key] = turn
+            by_key[key] = turn
     for turn in turns:
-        written = turn["cache_creation"] or 0
-        total = turn["input"] + turn["cache_read"] + written
-        turn["read_ratio"] = round(turn["cache_read"] / total, 4) if total else None
-        turn["written"] = written if turn["cache_creation"] is not None else turn["input"]
-    steady = sorted(t["written"] for t in turns if not t["boundary"])
+        total = sum(turn[field] for field in adapter.total)
+        turn["read_ratio"] = round(turn[adapter.read] / total, 4) if total else None
+    steady = sorted(t[adapter.spike] for t in turns if not t["boundary"])
     baseline = steady[len(steady) // 2] if steady else 0
     for turn in turns:
-        turn["spike"] = turn["written"] >= max(SPIKE_MIN_TOKENS, 2 * baseline)
-    read = sum(t["cache_read"] for t in turns)
-    written = sum(t["written"] for t in turns)
-    uncached = sum(t["input"] for t in turns)
+        turn["spike"] = turn[adapter.spike] >= max(SPIKE_MIN_TOKENS, 2 * baseline)
+    fields = dict.fromkeys((*adapter.total, adapter.read, adapter.spike))
+    sums = {field: sum(t[field] for t in turns) for field in fields}
+    total = sum(sums[field] for field in adapter.total)
     return {
         "host": host,
-        "written_field": "cache_creation" if host == "claude" else "uncached input",
+        "spike_metric": adapter.spike,
         "summary": {
             "turns": len(turns),
-            "cache_read": read,
-            "written": written,
-            "read_ratio": round(read / (read + written + (uncached if host == "claude" else 0)), 4)
-            if turns and read + written
-            else None,
-            "steady_written_median": baseline,
-            "boundary_spikes": [
-                t["turn"] for t in turns if t["boundary"] and t["spike"]
-            ],
-            "other_spikes": [
-                t["turn"] for t in turns if not t["boundary"] and t["spike"]
-            ],
+            **sums,
+            "read_ratio": round(sums[adapter.read] / total, 4) if total else None,
+            "steady_spike_metric_median": baseline,
+            "boundary_spikes": [t["turn"] for t in turns if t["boundary"] and t["spike"]],
+            "other_spikes": [t["turn"] for t in turns if not t["boundary"] and t["spike"]],
         },
         "turns": turns,
     }
@@ -1017,7 +1166,7 @@ def doctor(folder: Path | None) -> dict:
         "context_percentage": "unknown",
         "host_hooks": "requires real host test",
     }
-    for tool in ("git", "gh", "claude", "codex"):
+    for tool in ("git", "gh", *HOSTS):
         try:
             result[tool] = run([tool, "--version"]).splitlines()[0]
         except (OSError, ContinuityError, subprocess.TimeoutExpired):
@@ -1040,7 +1189,7 @@ def doctor(folder: Path | None) -> dict:
                     for event in session.get("events", {})
                 }
             )
-            for host in ("claude", "codex")
+            for host in HOSTS
         }
         meter = read(folder / "meter.json")
         result["context_meter"] = {
@@ -1070,6 +1219,7 @@ def main() -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     report = sub.add_parser("cache-report")
     report.add_argument("--transcript", required=True)
+    report.add_argument("--host", choices=sorted(HOSTS), help="생략 시 내용으로 판정")
     for name in ("bind", "checkpoint", "restore", "doctor"):
         item = sub.add_parser(name)
         item.add_argument("--task", required=name != "doctor")
@@ -1107,7 +1257,7 @@ def main() -> int:
             task_path(args.root, args.task) if getattr(args, "task", None) else None
         )
         if args.command == "cache-report":
-            result = cache_report(args.transcript)
+            result = cache_report(args.transcript, args.host)
         elif args.command == "doctor":
             result = doctor(folder)
         else:

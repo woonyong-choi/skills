@@ -45,7 +45,7 @@ python3 <이 스킬 폴더>/scripts/continuity.py bind --task 작업명 --repo �
 python3 <이 스킬 폴더>/scripts/continuity.py checkpoint --task 작업명 --input 기록.json --sync --status 진행
 python3 <이 스킬 폴더>/scripts/continuity.py restore --task 작업명
 python3 <이 스킬 폴더>/scripts/continuity.py doctor --task 작업명
-python3 <이 스킬 폴더>/scripts/continuity.py cache-report --transcript 호스트기록.jsonl
+python3 <이 스킬 폴더>/scripts/continuity.py cache-report --transcript 호스트기록.jsonl [--host claude|codex]
 ```
 
 - bind: `--project` 필수. 보드가 없으면 project-status의 새 저장소 절차 후 연결, 이슈 단독 bind 금지. 권한·도구 부족이면 입력 보존·미완료 보고. 보드 등록·불일치만 보정하고 유효 상태 보존. 역할 이름이 다르면 `--status-map 역할=이름` 반복, 스크립트 함수 임시 교체 우회 금지

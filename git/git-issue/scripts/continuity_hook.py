@@ -179,13 +179,7 @@ CODEX_CLI_VERSION = "0.158.0"
 CODEX_RECORD_MAX_AGE_SECONDS = 6 * 60 * 60
 CODEX_METRIC_MAX_AGE_SECONDS = 6 * 60 * 60
 CODEX_CLOCK_SKEW_SECONDS = 60
-ROLLOUT_HEAD_BYTES = 1 << 20
-ROLLOUT_TAIL_BYTES = 4 << 20
-SESSION_ID = re.compile(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}")
-
-
-def codex_sessions_dir() -> Path:
-    return Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "sessions"
+ROLLOUT_TAIL_BYTES = 4 << 20  # rollout 위치·session_meta 판독 정본: continuity의 호스트 어댑터
 
 
 # cost: time O(1), heap O(1), stack O(1), io 3
@@ -233,7 +227,7 @@ def codex_record(home: Path, now: float) -> tuple[str, Path] | None:
     )
     if meter.get("host") != "codex" or not isinstance(path, str) or not path:
         return None
-    if not isinstance(session, str) or not SESSION_ID.fullmatch(session):
+    if not isinstance(session, str) or not core.CODEX_SESSION_ID.fullmatch(session):
         return None
     if not isinstance(at, (int, float)) or isinstance(at, bool):
         return None
@@ -241,32 +235,13 @@ def codex_record(home: Path, now: float) -> tuple[str, Path] | None:
     return (session, Path(path)) if fresh else None
 
 
-def verified_rollout(path: Path, session: str) -> Path | None:
-    """세션 로그 폴더 안의 일반 파일이고 이름이 session과 맞는 절대 경로만 통과한다. 링크는 거절한다."""
-    try:
-        real = path.resolve(strict=True)
-        sessions = codex_sessions_dir().resolve()
-    except OSError:
-        return None
-    named = real.name.startswith("rollout-") and real.name.endswith(f"-{session}.jsonl")
-    return real if real == path and sessions in real.parents and named else None
-
-
 def session_meta_matches(line: bytes, session: str) -> bool:
-    if len(line) > ROLLOUT_HEAD_BYTES or not line.endswith(b"\n"):
-        return False
-    try:
-        meta = json.loads(line)
-    except ValueError:
-        return False
-    if not isinstance(meta, dict):
-        return False  # 최상위가 객체가 아니면 알려진 session_meta가 아니다
-    payload = meta.get("payload")
+    """사용량 계산용 session_meta: ID와 관측한 cli_version 모두 일치"""
+    meta = core.codex_meta(line)
     return (
-        meta.get("type") == "session_meta"
-        and isinstance(payload, dict)
-        and payload.get("id") == session
-        and payload.get("cli_version") == CODEX_CLI_VERSION
+        meta is not None
+        and meta.get("id") == session
+        and meta.get("cli_version") == CODEX_CLI_VERSION
     )
 
 
@@ -332,14 +307,14 @@ def codex_usage(
     """
     now = time.time() if now is None else now
     record = codex_record(home, now)
-    real = verified_rollout(record[1], record[0]) if record else None
+    real = core.verified_rollout(record[1], record[0]) if record else None
     if record is None or real is None:
         return None, None
     try:
         fd = os.open(real, os.O_RDONLY | os.O_NOFOLLOW)
         with os.fdopen(fd, "rb") as stream:
             info = os.fstat(fd)
-            head = stream.readline(ROLLOUT_HEAD_BYTES + 1)
+            head = stream.readline(core.CODEX_META_BYTES + 1)
             if not stat.S_ISREG(info.st_mode) or not session_meta_matches(
                 head, record[0]
             ):
@@ -614,7 +589,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
             state["needs_restore"] = True
         elif event == "Stop":
             if explicit:
-                record_exchange(folder, binding, payload, state, origin)
+                record_exchange(host, folder, binding, payload, state, origin)
             if payload.get("permission_mode") in ("plan", "planMode"):
                 core.save(state_path, state)
                 return {}
@@ -689,18 +664,19 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
 # vars: t = transcript 끝부분 바이트
 # basis: estimate
 def record_exchange(
+    host: str,
     folder: Path,
     binding: dict[str, Any],
     payload: dict[str, Any],
     state: dict[str, Any],
     origin: dict[str, Any],
 ) -> None:
-    """마지막 요청·응답의 비공개 저장. payload의 last_assistant_message 우선, 없거나 요청 미수신이면 transcript"""
+    """마지막 요청·응답의 비공개 저장. payload의 last_assistant_message 우선, 없거나 요청 미수신이면 호스트 어댑터의 transcript"""
     reply = payload.get("last_assistant_message")
     prompt = None
     if not isinstance(reply, str) or not state.get("prompt_captured"):
         try:
-            prompt, logged = core.last_turn(payload.get("transcript_path"))
+            prompt, logged = core.last_turn(core.HOSTS[host].locate(payload), host)
         except (core.ContinuityError, OSError):
             prompt, logged = None, None  # 경로 없음·형식 불명은 있는 값만 저장
         reply = reply if isinstance(reply, str) else logged
@@ -718,7 +694,7 @@ def record_exchange(
 def main() -> int:
     try:
         host = sys.argv[1]
-        if host not in ("claude", "codex"):
+        if host not in core.HOSTS:
             raise core.ContinuityError("unknown host")
         payload = json.load(sys.stdin)
         if not isinstance(payload, dict):

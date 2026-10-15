@@ -14,6 +14,7 @@ import unittest
 from unittest import mock
 
 PLUGIN = Path(__file__).resolve().parents[1]
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
 sys.path.insert(0, str(PLUGIN / "scripts"))
 
 import continuity as core  # noqa: E402
@@ -201,30 +202,57 @@ class ExchangeTest(Case):
         self.assertEqual(core.read(self.folder / core.EXCHANGE)["original"]["text"], text)
         self.assertEqual(core.clip("가" * 3000, core.ORIGINAL_LIMIT), "가" * 2666 + "\n[truncated: kept 7998 of 9000 bytes]")
 
-    def test_transcript_fallback_for_both_hosts(self) -> None:
-        claude = self.base / "claude.jsonl"
-        claude.write_text("\n".join(json.dumps(row, ensure_ascii=False) for row in (
-            {"type": "user", "message": {"role": "user", "content": "첫 요청"}},
-            {"type": "assistant", "message": {"content": [{"type": "text", "text": "중간"}]}},
-            {"type": "user", "message": {"role": "user", "content": [{"type": "tool_result", "content": "x"}]}},
-            {"type": "user", "isMeta": True, "message": {"content": "meta"}},
-            {"type": "assistant", "message": {"content": [{"type": "text", "text": "마지막 응답"}, {"type": "tool_use"}]}},
-        )) + "\n")
-        self.assertEqual(core.last_turn(str(claude)), ("첫 요청", "마지막 응답"))
-        codex = self.base / "codex.jsonl"
-        codex.write_text("\n".join(json.dumps(row, ensure_ascii=False) for row in (
-            {"type": "session_meta", "payload": {"id": SESSION}},
-            {"type": "event_msg", "payload": {"type": "user_message", "message": "코덱스 요청"}},
-            {"type": "event_msg", "payload": {"type": "agent_message", "message": "코덱스 응답"}},
-        )) + "\n")
-        self.event("Stop", "codex", transcript_path=str(codex))
-        result = core.conversation(self.folder, self.binding)
-        self.assertEqual(result["original_request"], "코덱스 요청")
-        self.assertEqual(result["last_exchange"], {"user": "코덱스 요청", "assistant": "코덱스 응답"})
-        self.event("Stop", "codex")  # 경로·응답 없음: 기존 기록 보존, 오류 없음
-        self.assertEqual(core.conversation(self.folder, self.binding)["last_exchange"]["assistant"], "코덱스 응답")
+    def test_last_turn_per_host_adapter(self) -> None:
+        last = ("고쳐줘", "수정했습니다. 테스트 통과.")
+        self.assertEqual(core.last_turn(str(FIXTURES / "claude-transcript.jsonl"), "claude"), last)
+        self.assertEqual(core.last_turn(str(FIXTURES / "codex-rollout.jsonl"), "codex"), last)
+        # 호스트가 다르면 다른 형식의 줄을 해석하지 않는다
+        self.assertEqual(core.last_turn(str(FIXTURES / "codex-rollout.jsonl"), "claude"), (None, None))
         with self.assertRaises(core.ContinuityError):
-            core.last_turn("relative.jsonl")
+            core.last_turn("relative.jsonl", "claude")
+
+    def test_claude_stop_uses_transcript_path(self) -> None:
+        self.event("Stop", transcript_path=str(FIXTURES / "claude-transcript.jsonl"))
+        result = core.conversation(self.folder, self.binding)
+        self.assertEqual(result["last_exchange"], {"user": "고쳐줘", "assistant": "수정했습니다. 테스트 통과."})
+
+    def test_codex_stop_with_and_without_transcript_path(self) -> None:
+        self.event("Stop", "codex", transcript_path=str(FIXTURES / "codex-rollout.jsonl"))
+        self.assertEqual(core.conversation(self.folder, self.binding)["original_request"], "고쳐줘")
+        (self.folder / core.EXCHANGE).unlink()
+        os.environ["CODEX_HOME"] = str(self.base / "codex")
+        self.addCleanup(os.environ.pop, "CODEX_HOME", None)
+        day = self.base / "codex/sessions/2026/10/15"
+        day.mkdir(parents=True)
+        self.event("Stop", "codex")  # rollout 없음: 오류 없이 저장 생략
+        self.assertFalse((self.folder / core.EXCHANGE).exists())
+        rollout = day / f"rollout-2026-10-15T01-00-00-{SESSION}.jsonl"
+        shutil.copy(FIXTURES / "codex-rollout.jsonl", rollout)
+        self.assertEqual(core.HOSTS["codex"].locate({"session_id": SESSION}), str(rollout.resolve()))
+        self.assertIsNone(core.HOSTS["claude"].locate({"session_id": SESSION}))
+        self.event("Stop", "codex")
+        result = core.conversation(self.folder, self.binding)
+        self.assertEqual(result["last_exchange"], {"user": "고쳐줘", "assistant": "수정했습니다. 테스트 통과."})
+        self.event("Stop", "codex", last_assistant_message="훅 응답")  # payload 응답 우선
+        self.assertEqual(core.conversation(self.folder, self.binding)["last_exchange"]["assistant"], "훅 응답")
+
+    def test_codex_rollout_lookup_rejects_unverified_candidates(self) -> None:
+        os.environ["CODEX_HOME"] = str(self.base / "codex")
+        self.addCleanup(os.environ.pop, "CODEX_HOME", None)
+        day = self.base / "codex/sessions/2026/10/15"
+        day.mkdir(parents=True)
+        other = "55555555-5555-4555-8555-555555555555"
+        (day / f"rollout-a-{SESSION}.jsonl").write_text(
+            (FIXTURES / "codex-rollout.jsonl").read_text().replace(SESSION, other)
+        )
+        self.assertIsNone(core.codex_rollout(SESSION), "session_meta ID mismatch")
+        (day / f"rollout-a-{SESSION}.jsonl").unlink()
+        (day / f"rollout-b-{SESSION}.jsonl").symlink_to(FIXTURES / "codex-rollout.jsonl")
+        self.assertIsNone(core.codex_rollout(SESSION), "symlink")
+        for name in ("c", "d"):
+            shutil.copy(FIXTURES / "codex-rollout.jsonl", day / f"rollout-{name}-{SESSION}.jsonl")
+        self.assertIsNone(core.codex_rollout(SESSION), "ambiguous")
+        self.assertIsNone(core.codex_rollout("../" + SESSION))
 
     def test_prompt_before_bind_becomes_original(self) -> None:
         core.save(self.folder / "binding.json", {**self.binding, "session_ids": []})
@@ -275,48 +303,62 @@ def claude_turn(message: str, read: int, created: int, uncached: int = 10) -> di
     return {"type": "assistant", "sessionId": "s1", "message": {"id": message, "usage": usage, "content": [{"type": "text", "text": "본문"}]}}
 
 
-def codex_count(total: int, inputs: int, cached: int) -> dict:
-    return {"type": "event_msg", "payload": {"type": "token_count", "info": {"total_token_usage": {"total_tokens": total}, "last_token_usage": {"input_tokens": inputs, "cached_input_tokens": cached}}}}
-
-
 class CacheReportTest(Case):
     def write(self, name: str, rows: list[dict]) -> str:
         path = self.base / name
         path.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
         return str(path)
 
-    def test_claude_boundaries_dedupe_and_spikes(self) -> None:
-        path = self.write("c.jsonl", [
-            {"type": "user", "sessionId": "s1", "message": {"content": "요청"}},
-            claude_turn("m1", 0, 20000), claude_turn("m1", 0, 20000),
-            claude_turn("m2", 20000, 300), claude_turn("m3", 20300, 200),
-            {"type": "system", "subtype": "compact_boundary", "sessionId": "s1"},
-            claude_turn("m4", 3000, 15000),
-        ])
-        report = core.cache_report(path)
+    def cli(self, *args: str) -> subprocess.CompletedProcess:
+        return subprocess.run([sys.executable, str(PLUGIN / "scripts/continuity.py"), "cache-report", *args], capture_output=True, text=True, timeout=30)
+
+    def test_claude_fixture_boundaries_dedupe_and_spikes(self) -> None:
+        report = core.cache_report(str(FIXTURES / "claude-transcript.jsonl"))
         self.assertEqual(report["host"], "claude")
-        self.assertEqual([t["boundary"] for t in report["turns"]], ["start", None, None, "compact"])
+        self.assertEqual(report["spike_metric"], "cache_creation")
+        self.assertEqual(
+            [(t["input"], t["cache_read"], t["cache_creation"], t["boundary"]) for t in report["turns"]],
+            [(3, 0, 18000, "start"), (4, 18000, 600, None), (4, 18600, 400, None), (4, 3000, 15000, "compact")],
+        )
         self.assertEqual(report["summary"]["boundary_spikes"], [1, 4])
         self.assertEqual(report["summary"]["other_spikes"], [])
-        self.assertEqual(report["turns"][1]["read_ratio"], round(20000 / 20310, 4))
+        self.assertEqual(report["turns"][1]["read_ratio"], round(18000 / 18604, 4))
+        self.assertEqual(report["summary"]["cache_creation"], 34000)
         self.assertNotIn("본문", json.dumps(report, ensure_ascii=False))
+        self.assertNotIn("cached_input", report["summary"])
 
-    def test_codex_uncached_input_and_cli(self) -> None:
-        path = self.write("x.jsonl", [
-            {"type": "session_meta", "payload": {"id": SESSION}},
-            codex_count(100, 9000, 0), codex_count(100, 9000, 0),
-            codex_count(200, 9500, 9000), {"type": "compacted", "payload": {}},
-            codex_count(300, 4000, 0),
+    def test_claude_session_change_is_start(self) -> None:
+        path = self.write("c.jsonl", [
+            claude_turn("m1", 0, 20000), claude_turn("m2", 20000, 300),
+            {**claude_turn("m3", 0, 20000), "sessionId": "s2"},
         ])
-        result = subprocess.run([sys.executable, str(PLUGIN / "scripts/continuity.py"), "cache-report", "--transcript", path], capture_output=True, text=True, timeout=30)
-        self.assertEqual(result.returncode, 0, result.stderr)
-        report = json.loads(result.stdout)
-        self.assertEqual(report["host"], "codex")
-        self.assertEqual([(t["input"], t["cache_read"], t["boundary"]) for t in report["turns"]], [(9000, 0, "start"), (500, 9000, None), (4000, 0, "compact")])
-        self.assertEqual(report["summary"]["boundary_spikes"], [1, 3])
-        missing = subprocess.run([sys.executable, str(PLUGIN / "scripts/continuity.py"), "cache-report", "--transcript", str(self.base / "absent.jsonl")], capture_output=True, text=True, timeout=30)
-        self.assertEqual(missing.returncode, 2)
+        self.assertEqual([t["boundary"] for t in core.cache_report(path)["turns"]], ["start", None, "start"])
 
+    def test_codex_fixture_reports_codex_metrics(self) -> None:
+        path = str(FIXTURES / "codex-rollout.jsonl")
+        for args in (("--transcript", path), ("--transcript", path, "--host", "codex")):
+            result = self.cli(*args)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads(result.stdout)
+            self.assertEqual(report["host"], "codex")
+            self.assertEqual(report["spike_metric"], "uncached_input")
+            self.assertEqual(
+                [(t["input"], t["cached_input"], t["uncached_input"], t["boundary"]) for t in report["turns"]],
+                [(9000, 0, 9000, "start"), (9500, 9000, 500, None), (4000, 0, 4000, "compact")],
+            )
+            self.assertNotIn("cache_creation", json.dumps(report))
+            self.assertEqual(report["turns"][1]["read_ratio"], round(9000 / 9500, 4))
+            self.assertEqual(report["summary"]["boundary_spikes"], [1, 3])
+            self.assertEqual(report["summary"]["read_ratio"], round(9000 / 22500, 4))
+            self.assertNotIn("세션 만료", result.stdout)
+
+    def test_explicit_host_and_unknown_content(self) -> None:
+        mismatched = self.cli("--transcript", str(FIXTURES / "codex-rollout.jsonl"), "--host", "claude")
+        self.assertEqual(json.loads(mismatched.stdout)["summary"]["turns"], 0)
+        unknown = self.write("u.jsonl", [{"type": "other"}])
+        self.assertEqual(self.cli("--transcript", unknown).returncode, 2)
+        self.assertEqual(self.cli("--transcript", str(self.base / "absent.jsonl")).returncode, 2)
+        self.assertEqual(self.cli("--transcript", unknown, "--host", "other").returncode, 2)
 
 if __name__ == "__main__":
     unittest.main()
