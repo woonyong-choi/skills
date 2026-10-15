@@ -120,6 +120,8 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
         message = str(error)
         if message.startswith("vault unregistered"):
             hint = ""
+        elif message.startswith("document path is outside") and (owner := owning_project(paths, project)):
+            hint = f"; the path belongs to registered project {owner}; start the session with that project's working directory as cwd and retry"
         elif message.startswith("document path is outside") and project:
             area = Path(project["area"])
             hint = f"; write inside {area / 'docs'} (documents) or {area / 'agent'} (agent context); a project-root document needs explicit user approval recorded in approved_documents of {project['index']}"
@@ -128,6 +130,26 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
         else:
             hint = setup_hint(message, project_path or payload.get("cwd") or Path.cwd())
         return deny(message + hint + "; do not bypass this check")
+
+
+def owning_project(paths: list[Path], current: dict | None) -> str | None:
+    """대상 경로가 다른 등록 프로젝트의 Vault 영역·작업 경로에 있으면 그 프로젝트 작업 경로."""
+    try:
+        vault = project_context.resolve_vault()
+        indexes = list((vault / "worktree").glob("*/agent/index.md"))
+    except (project_context.ContextError, OSError):
+        return None
+    for index in indexes:
+        if current and Path(current["index"]) == index:
+            continue
+        try:
+            registration = project_context.read_registration(index)
+        except (project_context.ContextError, OSError, ValueError):
+            continue
+        roots = [index.parent.parent, *(Path(p) for p in registration.get("paths", []))]
+        if all(any(path.is_relative_to(root.resolve()) for root in roots) for path in paths):
+            return next(iter(registration.get("paths", [])), str(index.parent.parent))
+    return None
 
 
 def setup_hint(message: str, project_path: Path | str) -> str:

@@ -147,6 +147,25 @@ class LocalRemoteTest(TemporaryCase):
             self.assertIn(ready["index"], reason)
             self.assertEqual(guard.check_tool({"tool_name": "Write", "cwd": str(project), "tool_input": {"file_path": str(area / "docs/guide.md")}}), {})
 
+    def test_other_project_area_hint_names_owner(self) -> None:
+        vault = self.root / "vault"
+        vault.mkdir()
+        alpha, beta = self.root / "alpha", self.root / "beta"
+        for name, clone in (("alpha", alpha), ("beta", beta)):
+            self.run_git("init", "-q", str(clone), cwd=self.root)
+            self.run_git("remote", "add", "origin", f"https://example.org/owner/{name}.git", cwd=clone)
+        with mock.patch.dict(os.environ, {"WORK_CONTINUITY_CONFIG_DIR": str(self.root / "configuration")}):
+            os.environ.pop("WOON_KNOWLEDGE_ROOT", None)
+            context.register_vault(vault)
+            import project_registration
+            project_registration.register_project(alpha, None, False)
+            beta_index = Path(project_registration.register_project(beta, None, False)["index"])
+            target = beta_index.parent / "notes.md"
+            reason = guard.check_tool({"tool_name": "Write", "cwd": str(alpha), "tool_input": {"file_path": str(target)}})["hookSpecificOutput"]["permissionDecisionReason"]
+            self.assertIn(f"registered project {beta.resolve()}", reason)
+            self.assertIn("working directory as cwd", reason)
+            self.assertEqual(guard.check_tool({"tool_name": "Write", "cwd": str(beta), "tool_input": {"file_path": str(target)}}), {})
+
     def test_second_clone_registers_with_hint_command(self) -> None:
         vault = self.root / "vault"
         vault.mkdir()
