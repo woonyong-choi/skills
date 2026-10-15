@@ -3,7 +3,7 @@
 사용: python3 check_doc.py [--project 작업 경로] 파일 [파일 ...] (저장소 루트에서 실행)
 
 인자: 선택 --project 작업 경로(등록 Vault 프로젝트, project_context.py 쓰기 경로 검사), Markdown 파일 하나 이상
-출력: stdout 경로·줄별 위반, stderr 사용법·연결/경로 실패 JSON, 종료 0 통과·1 위반·2 인자 누락·검사기 없음·경로 실패(문체 검사 전)
+출력: stdout 경로·줄별 위반, stderr 사용법·연결/경로 실패 JSON, 종료 0 통과·`--help`, 1 위반, 2 인자 오류·검사기 없음·경로 실패(문체 검사 전)·파일 읽기 실패
 """
 import os
 import html
@@ -363,10 +363,16 @@ def check(path: str) -> int:
 # basis: estimate
 # 파일마다 줄 검사와 문서 구조 검사
 def main(paths: list[str]) -> int:
-    if paths and paths[0] == "--project":
-        if len(paths) < 3:
-            print("usage: check_doc.py --project PROJECT FILE [FILE ...]", file=sys.stderr)
-            return 2
+    import argparse
+    parser = argparse.ArgumentParser(prog="check_doc.py", description="repo-docs 규칙으로 저장소 Markdown 파일 검사 (저장소 루트에서 실행)")
+    parser.add_argument("--project", help="등록 Vault 프로젝트의 작업 경로. project_context.py 쓰기 경로 검사")
+    parser.add_argument("files", nargs="+", metavar="FILE", help="Markdown 파일")
+    try:
+        arguments = parser.parse_args(paths)
+    except SystemExit as stop:
+        return int(stop.code or 0)
+    paths = arguments.files
+    if arguments.project is not None:
         from pathlib import Path
         import subprocess
         root = Path(__file__).resolve().parents[2]
@@ -376,17 +382,19 @@ def main(paths: list[str]) -> int:
         if not checker.is_file():
             print("project context checker missing", file=sys.stderr)
             return 2
-        project, paths = paths[1], paths[2:]
         for path in paths:
-            result = subprocess.run([sys.executable, str(checker), "--project", project, "--write", str(Path(path).resolve())], capture_output=True, text=True)
+            result = subprocess.run([sys.executable, str(checker), "--project", arguments.project, "--write", str(Path(path).resolve())], capture_output=True, text=True)
             if result.returncode:
                 print(result.stdout or result.stderr, file=sys.stderr)
                 return 2
-    if not paths:
-        print("usage: check_doc.py FILE [FILE ...]", file=sys.stderr)
-        return 2
-    return 1 if sum(check(path) for path in paths) else 0
-
+    count = 0
+    for path in paths:
+        try:
+            count += check(path)
+        except (OSError, UnicodeDecodeError) as error:
+            print(f"check_doc.py: cannot read {path}: {error}", file=sys.stderr)
+            return 2
+    return 1 if count else 0
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
