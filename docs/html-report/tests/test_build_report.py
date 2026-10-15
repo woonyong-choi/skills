@@ -152,6 +152,39 @@ class InlineThinkflowReportTest(unittest.TestCase):
         finally:
             shutil.rmtree(folder)
 
+    def test_capture_step_sets_viewport_to_scroll_height(self) -> None:
+        # #64: 전체 페이지 캡처는 화면 밖 srcdoc iframe이 빈칸으로 남아 뷰포트를 문서 높이로 키운 뒤 찍는다.
+        skill = (ROOT / "docs" / "html-report" / "SKILL.md").read_text(encoding="utf-8")
+        step = next(line for line in skill.splitlines() if line.startswith("5. ") and "index.png" in line)
+        self.assertIn("scrollHeight", step)
+
+    def test_explain_rebuild_after_attachment_change(self) -> None:
+        # #64: 첨부를 바꾼 뒤 다시 만들면 이전 사본을 덮어쓰고, 한 실행 안의 이름 겹침만 실패한다.
+        folder = FIXTURE / "explain-rebuild"
+        folder.mkdir(exist_ok=True)
+        (folder / "sub").mkdir(exist_ok=True)
+        spec = {"kind": "explain", "title": "재생성", "lead": "첨부 변경", "sections": [
+            {"title": "로그", "text": ["실행 화면"], "files": ["data.txt"]},
+        ]}
+        (folder / "input.json").write_text(json.dumps(spec, ensure_ascii=False), encoding="utf-8")
+        command = [sys.executable, str(BUILD), str(folder / "input.json"), "--thinkflow", str(self.thinkflow)]
+        try:
+            (folder / "data.txt").write_text("v1", encoding="utf-8")
+            first = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual(first.returncode, 0, first.stderr)
+            (folder / "data.txt").write_text("v2", encoding="utf-8")
+            second = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual(second.returncode, 0, second.stderr)
+            self.assertEqual((folder / "attachments" / "data.txt").read_text(encoding="utf-8"), "v2")
+            (folder / "sub" / "data.txt").write_text("other", encoding="utf-8")
+            spec["sections"][0]["files"].append("sub/data.txt")
+            (folder / "input.json").write_text(json.dumps(spec, ensure_ascii=False), encoding="utf-8")
+            clash = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertNotEqual(clash.returncode, 0)
+            self.assertIn("attachment name repeats", clash.stderr)
+        finally:
+            shutil.rmtree(folder)
+
     def test_raster_image_links_to_full_size(self) -> None:
         # 높이 상한으로 줄어든 캡처는 원본 링크로 열 수 있다.
         module_spec = importlib.util.spec_from_file_location("build_report", BUILD)

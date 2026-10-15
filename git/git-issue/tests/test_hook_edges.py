@@ -67,6 +67,17 @@ class ShellGuardTest(TemporaryCase):
         for name in ("llms.txt", "llms-full.txt", "notes.txt"):
             self.assertEqual(len(guard.document_paths({"tool_name": "Write", "cwd": "/", "tool_input": {"file_path": f"/x/{name}"}})), 1, name)
 
+    def test_quoted_redirect_characters_are_arguments(self) -> None:
+        for command in ("grep '>' README.md", 'grep -n ">" docs/a.md', "rg '>' README.md", "echo a \\> b.md", "grep 'a;tee' x.md"):
+            self.assertEqual(self.decide(command), {}, command)
+        for command in ("grep '>' a.md > b.md", "echo 'a;b' ; tee x.md", "bash -c 'echo > a.md'"):
+            self.assertEqual(self.decide(command)["hookSpecificOutput"]["permissionDecision"], "deny", command)
+
+    def test_brace_placeholder_does_not_split_command(self) -> None:
+        for command in ("find . -name a.md -exec cp {} out.md \\;", "find . -execdir mv {} out.md +", "xargs -I{} cp {} out.md", "xargs -I {} cp {} out.md"):
+            self.assertEqual(self.decide(command)["hookSpecificOutput"]["permissionDecision"], "deny", command)
+        self.assertEqual(self.decide("find . -name a.md -exec grep x {} \\;"), {})
+
 
 class LocalRemoteTest(TemporaryCase):
     def test_local_and_file_remotes_get_stable_identity(self) -> None:
@@ -100,6 +111,46 @@ class LocalRemoteTest(TemporaryCase):
             self.assertIn("approved_documents", reason)
             self.assertIn(ready["index"], reason)
             self.assertEqual(guard.check_tool({"tool_name": "Write", "cwd": str(project), "tool_input": {"file_path": str(area / "docs/guide.md")}}), {})
+
+    def test_second_clone_registers_with_hint_command(self) -> None:
+        vault = self.root / "vault"
+        vault.mkdir()
+        origin = self.root / "origin.git"
+        first, second = self.root / "first", self.root / "second"
+        self.run_git("init", "-q", "--bare", str(origin), cwd=self.root)
+        for clone in (first, second):
+            self.run_git("init", "-q", str(clone), cwd=self.root)
+            self.run_git("remote", "add", "origin", str(origin), cwd=clone)
+        with mock.patch.dict(os.environ, {"WORK_CONTINUITY_CONFIG_DIR": str(self.root / "configuration")}):
+            os.environ.pop("WOON_KNOWLEDGE_ROOT", None)
+            context.register_vault(vault)
+            import project_registration
+            index = Path(project_registration.register_project(first, None, False)["index"])
+            stored = context.read_registration(index)["common"]
+            reason = guard.check_tool({"tool_name": "Write", "cwd": str(second), "tool_input": {"file_path": str(second / "x.md")}})["hookSpecificOutput"]["permissionDecisionReason"]
+            self.assertIn("--register-project", reason)
+            command = reason.split("then run ", 1)[1].split("; do not bypass", 1)[0]
+            result = subprocess.run(["sh", "-c", command], capture_output=True, text=True, timeout=15)
+            self.assertEqual(result.returncode, 0, result.stdout)
+            registration = context.read_registration(index)
+            self.assertEqual(registration["common"], stored)
+            self.assertEqual(registration["paths"], sorted([str(first.resolve()), str(second.resolve())]))
+            self.assertTrue(context.check_project(second)["ready"])
+            self.assertTrue(context.check_project(first)["ready"])
+
+    def test_session_notice_carries_register_command(self) -> None:
+        import continuity_hook
+        vault = self.root / "vault"
+        vault.mkdir()
+        project = self.root / "unregistered"
+        self.run_git("init", "-q", str(project), cwd=self.root)
+        with mock.patch.dict(os.environ, {"WORK_CONTINUITY_CONFIG_DIR": str(self.root / "configuration")}):
+            os.environ.pop("WOON_KNOWLEDGE_ROOT", None)
+            context.register_vault(vault)
+            with mock.patch.object(continuity_hook, "handle_continuity", return_value={}), mock.patch.object(continuity_hook, "_rule_gate", return_value={}):
+                result = continuity_hook.handle("claude", {"hook_event_name": "SessionStart", "cwd": str(project)}, self.root / "state")
+        notice = result["hookSpecificOutput"]["additionalContext"]
+        self.assertIn(guard.setup_hint("project is unregistered", project), notice)
 
 
 class RepairCommandTest(TemporaryCase):

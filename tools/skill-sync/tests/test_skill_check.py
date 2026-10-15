@@ -66,3 +66,35 @@ def test_noun_and_particle_endings_pass(line: str) -> None:
 ])
 def test_declarative_and_nominal_endings_fail(line: str, word: str) -> None:
     assert word in flagged(line)
+
+
+# #64: authoring.md의 `-ㅁ`형 금지를 줄 끝·줄 중간에 같게 적용, 강조 표시 안 끝말 검사
+@pytest.mark.parametrize('line, word', [
+    ('- 설정이 바뀜', '바뀜'),
+    ('- 목록에 들어감', '들어감'),
+    ('- 작업이 끝남', '끝남'),
+    ('- 결과를 보냄', '보냄'),
+    ('- 두 칸으로 나뉨', '나뉨'),
+    ('- 결과를 기록함. 다음 단계 진행', '기록함'),
+    ('- 값이 바뀜; 이어서 저장', '바뀜'),
+    ('- 결과가 *강조된다*', '강조된다'),
+    ('- 결과가 **기록됨**', '기록됨'),
+    ('- 결과가 _바뀜_', '바뀜'),
+])
+def test_nominal_endings_fail_at_line_end_and_mid_line(line: str, word: str) -> None:
+    assert word in flagged(line)
+
+
+@pytest.mark.parametrize('line', [
+    '- 원인: 잡음',
+    '- 촬영 재료: 필름',
+    '- 국가: 캐나다',
+    '- 국가: 캐나다. 다음 줄',
+    '- 신호 잡음. 다음 줄',
+    '- 상태 없음. 다음 줄',
+    '- 이 단계 대상 아님. 다음 줄',
+    '- 사용자 홈',
+    '- 검사 순서: I/O·잠금',
+])
+def test_nominal_nouns_pass(line: str) -> None:
+    assert flagged(line) == []

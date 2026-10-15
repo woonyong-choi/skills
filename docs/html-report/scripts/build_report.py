@@ -598,6 +598,9 @@ def _check_explain(spec: dict[str, Any]) -> None:
 def build_explain(spec: dict[str, Any], renderer: FigureRenderer, output: Path, head: str) -> str:
     """블로그 테마 글 한 편: 절마다 짧은 글과 ThinkFlow 재생기 iframe."""
     _check_explain(spec)
+    # attachments/는 스크립트 소유라 다시 만들 때 이전 사본을 비우고 이번 실행의 이름만 겹침 검사
+    shutil.rmtree(output.parent / "attachments", ignore_errors=True)
+    attached: dict[str, Path] = {}
     parts = []
     for number, section in enumerate(spec["sections"], 1):
         body = "".join(f"<p>{_inline(line)}</p>" for line in section["text"])
@@ -616,13 +619,13 @@ def build_explain(spec: dict[str, Any], renderer: FigureRenderer, output: Path, 
                 f'{f"<figcaption>{_inline(caption)}</figcaption>" if caption else ""}</figure>'
             )
         if "image" in section:
-            name = _attach(renderer.base, section["image"], output.parent)
+            name = _attach(renderer.base, section["image"], output.parent, attached)
             alt = html.escape(section.get("caption", section["title"]), quote=True)
             body += f'<figure class="app-figure"><img src="attachments/{html.escape(name)}" alt="{alt}" loading="lazy"><figcaption>{_inline(section.get("caption", ""))}</figcaption></figure>'
         if section.get("files"):
             links = "".join(
                 f'<li><a href="attachments/{html.escape(name)}" download><code>{html.escape(name)}</code></a></li>'
-                for name in (_attach(renderer.base, item, output.parent) for item in section["files"])
+                for name in (_attach(renderer.base, item, output.parent, attached) for item in section["files"])
             )
             body += f"<ul>{links}</ul>"
         parts.append(f'<section id="s{number}"><h2>{_inline(section["title"])}</h2>{body}</section>')
@@ -632,13 +635,16 @@ def build_explain(spec: dict[str, Any], renderer: FigureRenderer, output: Path, 
 # cost: time O(b), heap O(1), stack O(1), io 2
 # vars: b = 첨부 파일 바이트
 # basis: estimate
-def _attach(base: Path, relative: str, folder: Path) -> str:
-    """설명 페이지가 혼자 열리도록 첨부를 `attachments/`에 복사하고 이름을 돌려준다. 이름이 겹치면 실패한다."""
-    source = _existing_file(base, relative, "attachment")
+def _attach(base: Path, relative: str, folder: Path, attached: dict[str, Path]) -> str:
+    """설명 페이지가 혼자 열리도록 첨부를 `attachments/`에 복사하고 이름을 돌려준다.
+
+    같은 실행에서 다른 원본이 같은 이름을 쓰면 실패한다. 이전 실행의 사본은 덮어쓴다.
+    """
+    source = _existing_file(base, relative, "attachment").resolve()
+    if attached.setdefault(source.name, source) != source:
+        raise ReportError(f"attachment name repeats: {source.name}")
     target = folder / "attachments" / source.name
     target.parent.mkdir(exist_ok=True)
-    if target.exists() and target.read_bytes() != source.read_bytes():
-        raise ReportError(f"attachment name repeats: {source.name}")
     shutil.copyfile(source, target)
     return source.name
 

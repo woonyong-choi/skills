@@ -96,6 +96,12 @@ class DocumentStyleTest(unittest.TestCase):
             ("README.ko.md", "1. 다음 명령으로 설치하세요.\n", []),
             ("guide.md", "- 입력 기록 보존\n", []),
             ("guide.md", "- 기본값: 없음\n", []),
+            # #64: 끝 괄호 보충 앞 종결
+            ("guide.md", "엔진이 입력을 저장합니다(기본값).\n", ["문체(평서)"]),
+            ("guide.md", "- 엔진이 입력을 저장합니다 (기본값).\n", ["문체(평서)"]),
+            ("guide.md", "- 입력을 저장함(기본값).\n", ["문체"]),
+            ("README.ko.md", "엔진이 입력을 저장한다(기본값).\n", ["문체(합쇼)"]),
+            ("guide.md", "엔진이 입력을 저장한다(기본값).\n", []),
         ]
         for name, source, expected in cases:
             with self.subTest(name=name, source=source):

@@ -116,6 +116,26 @@ class GenerateIndexTest(unittest.TestCase):
                 self.assertIn("> Line counter · CLI\n\nIntro paragraph.\n", text)
                 self.assertNotIn("Install", text)
 
+    # cost: time O(c), heap O(c), stack O(1), io O(1)
+    # vars: c = README 글자 수
+    # basis: estimate
+    # #64: 제목과 같은 블록의 소개, 일반 인용 소개, 코드 블록, 제목 안 태그 처리
+    def test_title_block_quote_fence_and_tagged_title(self) -> None:
+        cases = [
+            ("# Widget\nShort tagline.\n\nIntro paragraph.\n", "Widget"),
+            ("<h1>Widget</h1>\n<p>Short tagline.</p>\n\nIntro paragraph.\n", "Widget"),
+            ("# Widget\n\n> Short tagline.\n\nIntro paragraph.\n", "Widget"),
+            ("# Widget\n\nShort tagline.\n\n```sh\nwidget run\n```\n\nIntro paragraph.\n\n## Usage\n", "Widget"),
+            ('<h1><img src="logo.svg" alt=""><br>Widget</h1>\n\nShort tagline.\n\nIntro paragraph.\n', "Widget"),
+        ]
+        for readme, name in cases:
+            with self.subTest(readme=readme):
+                code, _ = self.run_main(readme)
+                self.assertEqual(code, 0)
+                text = Path("llms.txt").read_text(encoding="utf-8")
+                self.assertTrue(text.startswith(f"# {name}\n\n> Short tagline.\n\nIntro paragraph.\n"), text)
+                self.assertNotIn("widget run", text)
+
     # cost: time O(1), heap O(1), stack O(1), io O(1)
     # vars: 없음
     # basis: estimate

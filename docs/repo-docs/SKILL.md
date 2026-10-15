@@ -21,7 +21,7 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 
 등록 Vault 프로젝트: [프로젝트 맥락과 문서 위치](references/project-context.md) 필수 적용. 신규 문서는 아래 경로의 `docs/`·`.local/` 아래 구조를 같은 영역 `docs/`에 두고 git 제외 확인 대신 쓰기 경로 검사. 등록 판정: git-issue `scripts/project_context.py --project .` 종료 0. 루트·`.github/` 파일, 실행 필수 소스·설정은 index 메타데이터 `approved_documents`·`source_document_roots`에 사용자 승인으로 기록된 경로만 저장소 위치 유지. `--register-project`는 승인 미추가, 승인 기록 명령 없음 → 승인 안 된 경로(`check_doc.py --project` 종료 2)는 보고 후 사용자에게 승인 요청. repo-docs-llms는 저장소 안에 `docs/`를 둔 저장소만 적용
 
-새 문서는 사용자 요청·승인 범위에서만 생성. 아래 생성 조건·템플릿은 허락을 대신하지 않음. 기존 정본 수정 우선, 적합한 절이 없으면 채팅 보고
+새 문서는 사용자 요청·승인 범위에서만 생성. 아래 생성 조건·템플릿은 허락 대체 불가. 기존 정본 수정 우선, 적합한 절이 없으면 채팅 보고
 
 위치 → 독자 → 답할 질문 → 만드는 조건 → 스킬 `repo-docs-*`:
 

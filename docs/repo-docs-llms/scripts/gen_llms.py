@@ -19,6 +19,7 @@ from pathlib import Path
 OPTIONAL_PREFIXES = ("experiments/", "decisions/")
 ROW = re.compile(r"\| \[(.+?)\]\((.+?)\) \| (.+?) \|$")
 LANGUAGE_LINE = re.compile(r"\|.*README[\w.-]*\.md|README[\w.-]*\.md.*\|")
+FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,}).*?^[ \t]*\1[ \t]*$\n?", re.MULTILINE | re.DOTALL)
 LINK = re.compile(r"\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)|!?\[[^\]]*\]\([^)]*\)|<a\b[^>]*>.*?</a>", re.IGNORECASE)
 
 
@@ -117,15 +118,19 @@ def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url:
     for relative in inputs:
         if not is_public(root, relative, private_dirs):
             raise SystemExit("공개 문서 경로 아님: " + relative)
-    readme = open("README.md", encoding="utf-8").read()
+    readme = FENCE.sub("", open("README.md", encoding="utf-8").read())
     blocks = [block.strip() for block in re.split(r"\n\s*\n", readme) if block.strip()]
-    heading = re.search(r"<h1[^>]*>(.*?)</h1>|^# (.+)$", readme, re.MULTILINE)
+    heading = re.search(r"<h1[^>]*>(.*?)</h1>|^# ([^\n]+)$", readme, re.MULTILINE | re.DOTALL)
     texts = []
     for block in blocks:
         if block.startswith("## "):
             break
-        if re.match(r"<h1|[#>]", block):
-            continue
+        # 제목 줄만 지우고 같은 블록의 한 줄 소개는 유지
+        block = re.sub(r"<h1[^>]*>.*?</h1>|^#{1,6} [^\n]*$", "", block, flags=re.MULTILINE | re.DOTALL).strip()
+        if block.startswith(">"):
+            if re.match(r">\s*\[!", block):
+                continue
+            block = re.sub(r"^>[ \t]?", "", block, flags=re.MULTILINE)
         lines = [line.strip() for line in block.splitlines() if not LANGUAGE_LINE.search(line) and not link_only(line)]
         lines = [re.sub(r"<[^>]+>", "", line).strip() for line in lines]
         lines = [line for line in lines if line]
@@ -134,7 +139,9 @@ def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url:
     if not heading or len(texts) < 2:
         raise SystemExit("README.md needs a title, a tagline paragraph and an intro paragraph")
     tagline, intro = texts[0], texts[1]
-    name = (heading.group(1) or heading.group(2)).strip()
+    name = html.unescape(" ".join(re.sub(r"<[^>]+>", " ", heading.group(1) or heading.group(2)).split())) if heading else ""
+    if not name:
+        raise SystemExit("README.md needs a title, a tagline paragraph and an intro paragraph")
     main_rows = [row for row in rows if not row[1].startswith(OPTIONAL_PREFIXES)]
     optional_rows = [row for row in rows if row[1].startswith(OPTIONAL_PREFIXES)]
     index = [f"# {name}", "", f"> {tagline}", "", intro, "", "## Docs", ""]

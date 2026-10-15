@@ -29,6 +29,11 @@ REDIRECT = re.compile(r"(?:>>?|>\||<>|>&)$")
 SHELL_INTERPRETERS = {"sh", "bash", "zsh", "dash"}
 COMMAND_PREFIXES = {"sudo", "env", "xargs", "command", "time", "git", "if", "then", "else", "elif", "do", "while", "until", "!"}
 DOCUMENT_LITERAL = re.compile(r"\.(?:md|mdx|rst|adoc|txt|docx|pdf)(?=$|[^\w])", re.IGNORECASE)
+SHELL_PUNCTUATION = ";&|<>(){}\n"
+# 따옴표·역슬래시로 인용한 구분 문자: 연산자 판정 제외용 사용자 영역 문자로 치환 후 복원.
+QUOTED_PUNCTUATION = {ord(char): 0xE000 + offset for offset, char in enumerate(SHELL_PUNCTUATION)}
+UNQUOTED_PUNCTUATION = {value: key for key, value in QUOTED_PUNCTUATION.items()}
+FIND_EXEC = {"-exec", "-execdir", "-ok", "-okdir"}
 HEREDOC = re.compile(r"""'[^']*'|"(?:\\.|[^"\\])*"|\\.|(?P<comment>(?<!\S)\#.*)|(?<!<)<<(?P<tabs>-?)(?!<)[ \t]*(?P<delimiter>'[^']+'|"(?:\\.|[^"\\])+"|\\?[A-Za-z_][\w.-]*)""")
 
 
@@ -76,24 +81,20 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
         try:
             while commands:
                 command = commands.pop()
-                lexer = shlex.shlex(shell_syntax(command), posix=True, punctuation_chars=";&|<>(){}\n")
-                lexer.whitespace_split = True
-                lexer.whitespace = " \t\r"
-                lexer.commenters = ""
-                tokens = list(lexer)
+                tokens, operators = shell_tokens(command)
                 commands.extend(
                     tokens[index + 2] for index, token in enumerate(tokens[:-2])
                     if Path(token).name in SHELL_INTERPRETERS and re.fullmatch(r"-[a-z]*c[a-z]*", tokens[index + 1])
                 )
                 redirected_document = any(
-                    set(token) <= set(";&|<>(){}\n") and REDIRECT.search(token) and mentions_document(tokens[index + 1])
+                    index in operators and REDIRECT.search(token) and mentions_document(tokens[index + 1])
                     for index, token in enumerate(tokens[:-1])
                 )
                 inline_document_write = any(
                     SHELL_WRITER.search(line) and mentions_document(line)
                     for line in command.splitlines()
                 )
-                if redirected_document or inline_document_write or writes_document(tokens, cwd):
+                if redirected_document or inline_document_write or writes_document(tokens, operators, cwd):
                     return deny("document writes through shell commands require a structured Write/Edit/apply_patch call; do not retry through another shell command")
         except ValueError:
             return deny("cannot inspect malformed shell command; use a structured file tool")
@@ -121,15 +122,66 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
         elif message.startswith("document path is outside"):
             hint = "; write inside the project's Vault area or an approved path"
         else:
-            project = shlex.quote(str(project_path or payload.get("cwd") or Path.cwd()))
-            hint = f"; ask the user first (registration writes AGENTS.md/CLAUDE.md into the repo), then run python3 {Path(project_context.__file__).resolve()} --project {project} --register-project"
+            hint = setup_hint(message, project_path or payload.get("cwd") or Path.cwd())
         return deny(message + hint + "; do not bypass this check")
 
 
-def writes_document(tokens: list[str], cwd: Path) -> bool:
+def setup_hint(message: str, project_path: Path | str) -> str:
+    """프로젝트 맥락 오류의 등록 안내. Vault 미등록 오류는 자체 절차 포함이라 빈 값."""
+    if message.startswith("vault unregistered"):
+        return ""
+    project = shlex.quote(str(project_path))
+    return f"; ask the user first (registration writes AGENTS.md/CLAUDE.md into the repo), then run python3 {Path(project_context.__file__).resolve()} --project {project} --register-project"
+
+
+# cost: time O(n), heap O(n), stack O(1), io O(1)
+# vars: n = command bytes
+# basis: estimate
+def shell_tokens(command: str) -> tuple[list[str], set[int]]:
+    """셸 단어와 인용하지 않은 연산자 위치. 단독 `{}`는 find·xargs 인자."""
+    lexer = shlex.shlex(mark_quoted(shell_syntax(command)), posix=True, punctuation_chars=SHELL_PUNCTUATION)
+    lexer.whitespace_split = True
+    lexer.whitespace = " \t\r"
+    lexer.commenters = ""
+    tokens = list(lexer)
+    operators = {index for index, token in enumerate(tokens) if token[:1] in set(SHELL_PUNCTUATION) and token != "{}"}
+    return [token.translate(UNQUOTED_PUNCTUATION) for token in tokens], operators
+
+
+# cost: time O(n), heap O(n), stack O(1), io O(1)
+# vars: n = command bytes
+# basis: estimate
+def mark_quoted(command: str) -> str:
+    """작은따옴표·큰따옴표·역슬래시로 인용한 구분 문자를 치환. 따옴표는 shlex 처리용으로 유지."""
+    marked = []
+    quote = ""
+    index = 0
+    while index < len(command):
+        char = command[index]
+        if char == "\\" and quote != "'" and index + 1 < len(command):
+            following = command[index + 1]
+            if following in SHELL_PUNCTUATION and not quote:
+                marked.append(following.translate(QUOTED_PUNCTUATION))
+            else:
+                marked.append(char + following.translate(QUOTED_PUNCTUATION if quote else {}))
+            index += 2
+            continue
+        if quote:
+            if char == quote:
+                quote = ""
+            else:
+                char = char.translate(QUOTED_PUNCTUATION)
+        elif char in "'\"":
+            quote = char
+        marked.append(char)
+        index += 1
+    return "".join(marked)
+
+
+def writes_document(tokens: list[str], operators: set[int], cwd: Path) -> bool:
     start = 0
     for index, token in enumerate([*tokens, ";"]):
-        if token and set(token) <= set(";&|(){}\n"):
+        if index == len(tokens) or (index in operators and not set(token) & set("<>")):
             part = tokens[start:index]
             if part and is_document_command(part, cwd):
                 return True
@@ -215,7 +267,10 @@ def is_document_command(part: list[str], cwd: Path) -> bool:
         arg.startswith("--in-place") or re.match(r"^-[npEw]*i", arg)
         for arg in part
     ) and any(mentions_document(arg) for arg in part)
-    return dd_output or file_write or in_place
+    return dd_output or file_write or in_place or any(
+        is_document_command(part[index + 1:next((end for end in range(index + 1, len(part)) if part[end] in {";", "+"}), len(part))], cwd)
+        for index, arg in enumerate(part) if command == "find" and arg in FIND_EXEC
+    )
 
 
 def shell_syntax(command: str) -> str:

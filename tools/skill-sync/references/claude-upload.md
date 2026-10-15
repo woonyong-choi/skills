@@ -30,4 +30,4 @@ python3 tools/skill-sync/scripts/deploy.py --login
 
 2026-10-05 확인: [API 문서](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview#cross-surface-availability) API 업로드와 claude.ai 분리, [계정 도움말](https://support.claude.com/en/articles/12512180-use-skills-in-claude) ZIP UI 업로드, [Claude Code 문서](https://code.claude.com/docs/en/skills) 로컬 폴더·플러그인 배포. 개인 계정용 공식 API·CLI 미확인이라 UI 어댑터 사용
 
-- headless·일반 창 모두 인증 성공을 가정하지 않음. 보안 확인이 나타나면 위 인증 절차 적용
+- headless·일반 창 모두 인증 성공 가정 금지. 보안 확인이 나타나면 위 인증 절차 적용

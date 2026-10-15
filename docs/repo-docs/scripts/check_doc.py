@@ -16,6 +16,7 @@ FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 FENCE_CLOSE = re.compile(r"^ {0,3}(?:`+|~+)[ \t]*$")
 NOT_PARAGRAPH = re.compile(r"^(\||- |[0-9]+\. |#|!\[|\[!|---|<)|^[a-z_]+: ")
 LIST_SENTENCE = re.compile(r"^(?:- |[0-9]+\. )(?=.*\.$)")
+TRAILING_NOTE = re.compile(r"\s*\([^()]*\)(?=\.$)")
 PARAGRAPH_ENDING = re.compile(r"(해요|십시오| 것이다|게 된다|함|음|임)\.$")
 QUOTE_ALERT = re.compile(r"^> \[!(NOTE|WARNING)\]$")
 KO_BANNED = re.compile(r"(TBD|TODO|미측정|더미 데이터|목업|강력한|혁신적|쉽게|간단히|간단하게|다양한|효율적|원활|최적의|완벽한|매끄러운|차세대|것 같다|로 보인다|유저|리포지토리|레포지토리|커맨드|컨피그|구동)")
@@ -173,6 +174,8 @@ def has_bad_cell_ending(cell: str) -> bool:
 # basis: estimate
 def sentence_errors(text: str, is_formal: bool) -> list[str]:
     errors = []
+    # 끝 괄호 보충(`저장합니다(기본값).`)은 떼고 그 앞 종결 검사
+    text = TRAILING_NOTE.sub("", text)
     if is_formal and text.endswith("다.") and not text.endswith("니다."):
         errors.append("문체(합쇼)")
     if not is_formal and ((text.endswith("니다.") and not text.endswith("아니다.")) or text.endswith("세요.")):

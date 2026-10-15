@@ -60,7 +60,12 @@ def main(argv: list[str]) -> int:
             render_flags = ["--strict"] + (["--static"] if args.static else [])
             subprocess.run(command + ["render", *figures, *render_flags], check=True)
         for source in tapes:
-            subprocess.run(["vhs", source], check=True)
+            # 찾은 녹화의 Output은 저장소 루트 기준이라 루트에서 실행. 경로 지정 녹화(실험)는 현재 위치 유지
+            if args.sources:
+                subprocess.run(["vhs", source], check=True)
+            else:
+                root = _repository_root()
+                subprocess.run(["vhs", os.path.relpath(source, root)], check=True, cwd=root)
         return 0
     except SourceError:
         return 1
@@ -77,12 +82,20 @@ def main(argv: list[str]) -> int:
 def _tracked_sources() -> list[str]:
     """저장소 루트의 docs/assets/ 아래 추적 원본. 옛 형식도 넣어 변환 전 실패시킨다.
     하위 폴더에서 실행해도 루트 기준으로 찾고, 경로는 현재 위치 기준으로 돌려준다."""
-    root = Path(_git("rev-parse", "--show-toplevel").decode("utf-8").strip())
+    root = _repository_root()
     patterns = [f"docs/assets/*{suffix}" for suffix in SOURCE_SUFFIXES + OLD_SUFFIXES]
     listed = _git("-C", str(root), "ls-files", "-z", "--", *patterns)
     return [
         os.path.relpath(root / p.decode("utf-8")) for p in listed.split(b"\0") if p
     ]
+
+
+# cost: time O(s), heap O(s), stack O(1), io 1
+# vars: s = git 출력 크기
+# basis: estimate
+def _repository_root() -> Path:
+    """현재 위치가 속한 저장소 루트."""
+    return Path(_git("rev-parse", "--show-toplevel").decode("utf-8").strip())
 
 
 # cost: time O(s), heap O(s), stack O(1), io 1

@@ -386,7 +386,8 @@ def handle(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
     if context_result["ready"]:
         notice = f"작업 전 필수 맥락: {context_result['index']}. 필요한 자료만 조회하고 실제 읽은 경로·버전을 기존 로컬 작업 기록에 반영. 검사 성공은 읽음 증거가 아님. 신규 문서 쓰기 전 project_context.py --write 검사 필수."
     else:
-        notice = f"프로젝트 맥락 미확인: {context_result['error']}. 문서 쓰기는 거부됨. 위 오류의 등록 절차로 해결, 임의 문서 위치 대체 금지. 단순 질문 제외."
+        error = context_result["error"]
+        notice = f"프로젝트 맥락 미확인: {error}{document_guard.setup_hint(error, payload['cwd'])}. 문서 쓰기는 거부됨. 위 오류의 안내 절차로 해결, 임의 문서 위치 대체 금지. 단순 질문 제외."
     output = result.setdefault("hookSpecificOutput", {"hookEventName": event})
     output["additionalContext"] = (
         _developer_rules() + output.get("additionalContext", "") + "\n" + notice

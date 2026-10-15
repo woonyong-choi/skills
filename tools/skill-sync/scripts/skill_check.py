@@ -14,10 +14,15 @@ from install import source_skills
 from consistency import PRIORITY, check_consistency
 
 NOUN_OK = ('흐름', '알림', '없음', '다음', '포함', '결함', '마음', '처음', '이름', '모음', '요금', '그림', '묶음', '느낌', '믿음', '물음', '걸음', '기본값', '보관함', '수신함', '책임',
-           '지침', '방침', '아침', '도움', '스트림', '크림', '프레임', '타임', '게임', '네임', '스킴', '리듬', '여름', '기름', '소음', '녹음', '발음', '얼음', '덧셈', '뺄셈', '곱셈', '나눗셈', '바다', '판다', '아젠다', '베란다')
+           '지침', '방침', '아침', '도움', '스트림', '크림', '프레임', '타임', '게임', '네임', '스킴', '리듬', '여름', '기름', '소음', '녹음', '발음', '얼음', '덧셈', '뺄셈', '곱셈', '나눗셈', '바다', '판다', '아젠다', '베란다', '캐나다', '잡음', '필름',
+           '아님',  # 아님: 없음과 같은 부정 상태 표지(기존 문서 관례)
+           '잠금', '사람', '바람', '팀', '시스템', '아이템', '점', '홈', '그램', '알고리즘', '메커니즘', '폼', '플랫폼')
 NOUN_WORD = ('힘', '꿈', '짐', '봄', '줌', '셈', '김', '삶', '춤', '숨', '룸', '침')  # 앞이 붙으면 동사 명사형(막힘·바꿈)이라 낱말 전체 일치만
 NAME_OK = ('안 함', '막힘')  # 상태 이름
-BAD_END = re.compile(r'(함|음|임|됨|봄|름|룸|듦|눔|힘|움|씀|셈|뺌|김|춤|침|줌|둠|꿈|옮|듬|숨|엶|앎|삶|짐|킴|림|핌|닮)$')
+# authoring.md `-ㅁ`형 금지: 끝 음절 받침 ㅁ·ㄻ 전체(바뀜·들어감·삶). 명사는 NOUN_OK·NOUN_WORD로 제외
+M_FINALS = (16, 10)
+# 줄 중간 문장 끝: 문장부호와 공백 앞 명사형
+MID_SENTENCE = re.compile(r'([가-힣]+)[.;!?](?=\s)')
 # 줄 중간 평서형 끝: 문장부호 앞은 `verb_end`, 공백 앞은 `-ㄴ다`·`-는다`·`이다`·`있다`·`없다`. `마다`·`보다` 조사 제외
 CLAUSE = re.compile(r'([가-힣]+다)(?:([.,;:!?)\]])|(?=\s))')
 PARTICLE = ('마다', '보다')
@@ -107,7 +112,7 @@ def bad_endings(lines, skip):
             continue
         if fl or i <= skip or not l.strip() or l.startswith('#') or l.startswith('name:') or l.startswith('description:') or l == '---':
             continue
-        t = re.sub(r'`[^`]*`', '', l)
+        t = re.sub(r'[*_]', '', re.sub(r'`[^`]*`', '', l))  # 강조 표시(`*`·`_`) 제거 후 낱말 검사
         words = []
         cells = [c.strip() for c in t.split('|')] if t.startswith('|') else [t]
         for c in cells:
@@ -116,15 +121,27 @@ def bad_endings(lines, skip):
             if not c or set(c) <= set('-: ') or c in NAME_OK:
                 continue
             w = c.split()[-1]
-            if verb_end(w) or (BAD_END.search(w) and not w.endswith(NOUN_OK) and w not in NOUN_WORD):
+            if verb_end(w) or nominal_end(w):
                 words.append(w)
         for m in CLAUSE.finditer(re.sub(r'\]\([^)]*\)', ']', t)):
             w = m.group(1)
             flagged = verb_end(w) if m.group(2) else declarative(w) and not w.endswith(PARTICLE)
             if flagged:
                 words.append(w)
+        words.extend(m.group(1) for m in MID_SENTENCE.finditer(t) if nominal_end(m.group(1)))
         found.extend((i, w) for w in dict.fromkeys(words))
     return found
+
+# cost: time O(1), heap O(1), stack O(1)
+# vars: 없음
+# basis: estimate
+def nominal_end(word):
+    """`-ㅁ`형 끝(받침 ㅁ·ㄻ)인지. 예외 명사(없음·이름·잡음)와 단독 명사(힘·꿈) 제외."""
+    last = word[-1:] or ' '
+    if not '가' <= last <= '힣' or (ord(last) - 0xAC00) % 28 not in M_FINALS:
+        return False
+    return not word.endswith(NOUN_OK) and word not in NOUN_WORD and word not in NAME_OK
+
 
 # cost: time O(1), heap O(1), stack O(1)
 # vars: 없음
