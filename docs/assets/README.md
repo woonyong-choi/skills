@@ -11,7 +11,7 @@ python3 experiments/skill-exposure/scripts/03-analyze.py
 python3 scripts/render_readme.py <ThinkFlow 경로>/src/cli.js
 ```
 
-확인한 도구는 ThinkFlow `a562019726020c6991355abec0d4543c06c78ec8`, Node.js `v22.22.0`이다. CI는 같은 커밋과 Node.js 22를 사용한다. `check --strict` 통과 뒤 `render --strict --static`으로 생성한다. 정상 종료 코드는 0이며 검사 실패 시 렌더를 시작하지 않는다.
+확인한 도구는 ThinkFlow `97e1fe1c429ed496d504a9be4a2698cf2e9fd3fd`, Node.js `v22.22.0`이다. CI는 같은 커밋과 Node.js 22를 사용한다. `check --strict` 통과 뒤 `render --strict --static`으로 생성한다. 정상 종료 코드는 0이며 검사 실패 시 렌더를 시작하지 않는다.
 
 렌더 스크립트는 SVG 루트의 `data-theme`만 light 또는 dark로 고정한다. 색·글꼴·배치는 ThinkFlow 산출물을 유지한다. 생성 파일을 손으로 수정하지 않는다. 같은 원본과 집계, 도구 커밋으로 두 번 생성한 바이트가 같은지 확인한다.
 
