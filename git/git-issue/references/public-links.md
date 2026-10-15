@@ -16,7 +16,7 @@ python3 <이 스킬 폴더>/scripts/public_links.py --repo <게시 대상 저장
 - 실행 조건: Python 3.9 이상, 표준 라이브러리, Git, 인증된 `gh`. 원격 `--remote`(기본 origin)의 공개 여부와 기본 브랜치는 `gh repo view` 조회
 - 입력: 표준 입력(`-`·생략) 또는 UTF-8 파일. `--repo` 기본은 현재 디렉터리, 저장소 상대 경로는 이 루트 기준
 - 출력: 검사 결과는 표준 출력에 줄 번호 포함. `--fix`는 수정한 본문만 표준 출력, 남은 위반은 표준 오류. 원본 파일 덮어쓰기 금지
-- 수정 결과: 게시 도구의 본문 인자로 전달하거나 구조화된 파일 도구로 승인 경로에 저장. 셸 문서 리디렉션 금지
+- 수정 결과: 게시 도구의 본문 인자로 전달하거나 구조화된 파일 도구로 승인 경로에 저장. `>` 파일 리디렉션 금지
 - 링크 규칙 진단: `relative repository link: replace with a public web link` 또는 `repository path in code text: replace with a public web link`. HEAD에 있는 저장소 파일의 상대 링크·코드 표기는 공개 웹 링크로 변환 대상, 상대 경로 자체는 게시 금지 대상에서 제외
 - 게시 금지 규칙 진단: `private path`, `path outside repository`, `unpublished file` 뒤 `do not publish; summarize without its location`. 비공개 위치는 공개 링크 변환 없이 위치를 뺀 내용만 요약 대상. 다른 비공개 저장소는 `private repository: do not publish; summarize without its address`
 - 자동 수정: HEAD에 포함된 저장소 파일만 웹 링크로 변환, 줄 번호가 있으면 현재 HEAD SHA 고정. 비공개 경로·다른 비공개 저장소 주소는 원문 유지와 위반 보고만 수행

@@ -57,6 +57,8 @@ description: "UI·아이콘의 시각 변경을 검수하거나 공통 토큰·�
 python3 <이 스킬 폴더>/scripts/build_tokens.py tokens.json --out <생성 폴더>
 ```
 
+- 실행 조건: Python 3.9+·표준 라이브러리
+
 - 위치: 저장소에 화면 코드가 한 곳이면 그 소스 루트, 여럿이면 공유 폴더 하나. 생성물은 커밋
 - 생성물 첫 줄: 정본 경로와 `생성물, 손으로 고치지 않음` 주석
 - 생성물은 실제 생성 파일 경로로 포매터·린터 제외: `.prettierignore`, ESLint `ignores`, Stylelint `ignoreFiles`
@@ -98,9 +100,11 @@ python3 <이 스킬 폴더>/scripts/build_tokens.py tokens.json --out <생성 �
 python3 <이 스킬 폴더>/scripts/check_tokens.py <검사할 폴더>
 ```
 
+- 실행 조건: Python 3.9+·표준 라이브러리
+
 - 찾는 것: hex 색, 색 함수(`rgb()`, `oklch()` 등), 단위 붙은 길이·시간, 단위 없는 굵기·줄 높이·투명도·z-index·자간, 크기 표현 속성 숫자(`rx`, `stroke-width` 등), 글꼴 이름, 토큰 파일 밖 사용자 정의 속성 값, breakpoint 토큰에 없는 `@media`·`@container` 숫자, 색·그림자 기본 토큰 직접 참조, 토큰 파일 밖 테마 분기(`prefers-color-scheme`, `[data-theme`), 스타일 객체 숫자(`{ fontWeight: 600 }`)
 - CSS 계열: 주석 밖 전체. 마크업 계열(`.html`, `.svg`, `.vue`, `.svelte`): `<style>`, `style` 속성, 표현 속성만. JavaScript 계열: 주석 밖 모든 문자열의 색, CSS·마크업 모양 문자열과 값 하나뿐인 문자열(`'12px'`)의 나머지 규칙, 코드의 토큰 경로(`tokens.color.blue['600']`), 스타일 객체(`style`, `sx`, `css`) 안 숫자
 - 제외: `tokens.json`, `tokens.dark.json`, 첫 줄에 생성물 표시가 있는 파일, `node_modules`, `dist`, `build`, `coverage`, `.git`, 비어 있지 않은 이유를 가진 `tokens-allow:` 줄
 - 출력 `total 0`까지 수정. 0이 아니면 종료 코드 1
-- 직접 확인: 토큰 이름이 용도를 드러내는지, 구성 요소 토큰이 다른 구성 요소의 값을 유지한 채 그 구성 요소의 값만 바꾸는 데 필요한지, `style`·`sx`·`css` 밖 이름의 스타일 객체 숫자
+- 직접 확인: 이징 함수(`cubic-bezier()`, `ease` 등), 토큰 이름이 용도를 드러내는지, 구성 요소 토큰이 다른 구성 요소의 값을 유지한 채 그 구성 요소의 값만 바꾸는 데 필요한지, `style`·`sx`·`css` 밖 이름의 스타일 객체 숫자
 - 화면 구현값의 하드코딩과 테스트 기대값 구분

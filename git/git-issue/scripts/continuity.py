@@ -223,9 +223,15 @@ def bind(folder: Path, args: argparse.Namespace) -> dict:
     repo = run(
         ["git", "rev-parse", "--show-toplevel"], cwd=str(Path(args.repo).resolve())
     ).strip()
-    remote = json.loads(
-        run(["gh", "repo", "view", "--json", "nameWithOwner"], cwd=repo)
-    )["nameWithOwner"]
+    skip = "; without a GitHub remote skip issue linking, report it, and continue the work"
+    if not run(["git", "remote"], cwd=repo).strip():
+        raise ContinuityError("no Git remote" + skip)
+    try:
+        remote = json.loads(
+            run(["gh", "repo", "view", "--json", "nameWithOwner"], cwd=repo)
+        )["nameWithOwner"]
+    except ContinuityError as error:
+        raise ContinuityError(str(error) + skip) from error
     issue = json.loads(run(["gh", "api", f"repos/{remote}/issues/{args.issue}"]))
     if issue.get("pull_request") or issue.get("state") != "open":
         raise ContinuityError("bind requires an open issue")

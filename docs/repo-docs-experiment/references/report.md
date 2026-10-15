@@ -63,8 +63,8 @@
 ## 재현
 
 ```sh
-./run.sh verify
-./run.sh analyze
+RUN_ID={실행 id} ./run.sh verify
+RUN_ID={실행 id} ./run.sh analyze
 ```
 
 | 파일 | SHA-256 |
@@ -95,7 +95,7 @@
 
 1. 질문과 가설 → 요약, 설계 가설 표 → 없음
 2. 방법 → 방법 표, `env.json` → `env.json`
-3. 결과 → 확인 분석 → 결과 차트 `.thinkflow`(`figure`)
+3. 결과 → 확인 분석 → 결과 차트 `docs/assets/{이름}.thinkflow`(`figure`, 입력 폴더 기준 상대 경로로 제자리 참조, 복사 금지)
 4. 실행 로그 → 흐름 표 → `terminal.gif`(`image`), `logs/` 파일
 5. 데이터 → `data/README.md` 출처 → `data/README.md`, `results/summary.json`, `data/processed/*.csv`
 6. 한계와 결론 → 한계, 결론 표 → 없음

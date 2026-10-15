@@ -22,7 +22,7 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 - 반복자 → 제너레이터 `*iter*`나 `[Symbol.iterator]` → `*iterSessions()`
 - 상수 → 모듈 최상위의 바뀌지 않는 값만 UPPER_SNAKE_CASE. 객체 상수는 `Object.freeze` → `MAX_RETRY`, `DEFAULTS`
 - 약어 → 한 단어처럼 camelCase·PascalCase → `httpClient`, `parseUrl`, `HttpError`
-- 비공개 → 모듈: export 안 함. 클래스: `#` 필드·메서드. `_` 접두사 금지 → `#cache`
+- 비공개 → 모듈: export 금지. 클래스: `#` 필드·메서드. `_` 접두사 금지 → `#cache`
 - 단위 → 시간 타입이 없어 접미사 필수 → `timeoutMs`, `sizeBytes`
 
 ## 선언 순서
@@ -105,3 +105,5 @@ npx prettier --check .
 npx eslint --max-warnings 0 .
 node --test
 ```
+
+- 실행 조건: Node.js 18+와 개발 의존성 `npm install --save-dev prettier eslint @eslint/js globals eslint-plugin-sonarjs`

@@ -21,7 +21,7 @@ llmstxt.org 형식(2026-09-30 확인)
 자리 → 원본:
 
 - 이름 → README `#` 제목
-- 한 줄 소개 → README 제목 다음 첫 문단. 언어 전환 줄·절 이동 링크 제외
+- 한 줄 소개 → README 제목 다음 첫 문단. 언어 전환 줄·링크만 있는 줄(절 이동·배지) 제외
 - 소개 문단 → 한 줄 소개 다음 문단
 - 문서 → `docs/README.md` 표의 행 중 `experiments/`, `decisions/`가 아닌 행. 같은 순서
 - Optional → `docs/README.md` 표의 `experiments/`, `decisions/` 행과 `CHANGELOG.md`(링크 글자는 그 파일의 `#` 제목, 설명 없음)

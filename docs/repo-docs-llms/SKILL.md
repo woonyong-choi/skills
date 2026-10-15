@@ -32,13 +32,14 @@ python3 <이 스킬 폴더>/scripts/gen_llms.py
 ```
 
 - `llms-full.txt`도 만들 때: `--full`
+- 실행 조건: Python 3.9 이상, 표준 라이브러리, Git. 실패하면 stderr 이유, 종료 1(인자 오류 2)
 
 - 스크립트 실행 전 skill-sync `references/execution.md` 필수 확인
 - 원격: `--remote` 기본 origin, 기본 브랜치는 원격 HEAD 조회. 조회할 수 없으면 `--branch`로 확인한 값 지정. main 고정 대체 금지
 - 자동 URL 구성은 github.com 전용. 다른 호스트는 `--raw-base-url`로 원문 루트 URL 지정
 - 입력 위치: `README.md`, `docs/README.md`, 표의 모든 문서는 저장소 안 `.md` 파일만 허용. 심볼릭 링크는 실제로 가리키는 경로로 판정
 - 공개 여부: 저장소 비공개 경로 정책 적용. `--private-dir` 반복으로 차단 폴더 이름 지정, 생략 시 `.local`·`archive`. 대소문자·중첩 URL 인코딩·심볼릭 링크의 실제 경로·git 제외 검사 유지
-- 입력 검사에 하나라도 실패하면 파일을 쓰지 않고 중단
+- 입력 검사에 하나라도 실패하면 파일을 쓰지 않고 중단. README 제목·한 줄 소개·소개 문단 누락 포함
 - 코드 블록 안 표 행: 목록에서 제외
 
 - 실행 뒤 확인: `llms.txt` 링크 수 = `docs/README.md` 표 행 수 + `CHANGELOG.md`가 있으면 1
