@@ -95,7 +95,7 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
                     for line in command.splitlines()
                 )
                 if redirected_document or inline_document_write or writes_document(tokens, operators, cwd):
-                    return deny("document writes through shell commands require a structured Write/Edit/apply_patch call; do not retry through another shell command")
+                    return deny("document writes through shell commands require a structured Write/Edit/apply_patch call; redirect command output to a .log file; do not retry through another shell command")
         except ValueError:
             return deny("cannot inspect malformed shell command; use a structured file tool")
         return {}

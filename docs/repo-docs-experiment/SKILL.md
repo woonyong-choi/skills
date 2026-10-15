@@ -11,6 +11,7 @@ description: "모집단·표본·판정 기준을 정한 측정·비교 실험�
 
 - 실험 하나 = 폴더 하나. 수집 전 설계 커밋 → 수집 → 결과 보고
 - 진행 상태: 흐름 1의 추적 항목. 문서에 기록 금지
+- 등록 프로젝트(Vault 문서 영역 사용): 실험 폴더는 Vault `docs/experiments/`, `run.sh` 실행 시 `PROJECT_DIR=<작업 저장소 절대 경로>` 지정. 설계 고정은 커밋 대신 수집 전 `design.md` SHA-256을 이슈에 기록, 흐름 3·8과 검사 1은 저장소에 승인된 실험 문서일 때만
 
 ## 대상
 
@@ -70,7 +71,7 @@ docs/experiments/
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
-id=${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$(git rev-parse --short=7 HEAD)}
+id=${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$(git -C "${PROJECT_DIR:-.}" rev-parse --short=7 HEAD)}
 log() { mkdir -p logs; { printf '$ RUN_ID=%s ./run.sh %s\n' "$id" "$1"; "${@:2}"; } 2>&1 | sed "s|$HOME|~|g" | tee "logs/$1-$id.log"; }
 ```
 
