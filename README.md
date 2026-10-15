@@ -5,7 +5,7 @@
   <a href="#설치">설치</a> · <a href="#사용법">사용법</a> · <a href="#스킬-목록">스킬 목록</a> · <a href="#측정-결과">측정 결과</a>
 </p>
 
-개발 작업은 [Developer Thinking](code/developer-thinking/SKILL.md)에서 연결·결정·실행·검증·기록 순서로 진행합니다. 각 단계는 기존 소유 스킬의 해당 규칙만 읽습니다. 원본은 역할별 폴더에 두고, Claude Code와 Codex에는 같은 이름과 내용으로 설치합니다.
+개발 작업은 [Developer Thinking](code/developer-thinking/SKILL.md)에서 연결·조회·결정·구현·검증·종료 순서로 진행합니다. 각 단계는 기존 소유 스킬의 해당 규칙만 읽습니다. 원본은 역할별 폴더에 두고, Claude Code와 Codex에는 같은 이름과 내용으로 설치합니다.
 
 ## 작동 방식
 
