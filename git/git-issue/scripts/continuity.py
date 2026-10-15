@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+from datetime import datetime
 import fcntl
 import hashlib
 import itertools
@@ -21,11 +22,12 @@ import json
 import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import sys
 import time
 import uuid
-from typing import Any, Callable, Iterator, NamedTuple
+from typing import Any, BinaryIO, Callable, Iterator, NamedTuple
 
 import task_scope
 
@@ -947,6 +949,83 @@ def codex_rollout(session: object) -> str | None:
     return found[0] if len(found) == 1 else None
 
 
+# 사용량 meter: 관측·검증한 rollout 형식의 cli_version만 계산, 다른 버전은 unknown
+CODEX_METER_VERSIONS = frozenset({"0.158.0", "0.162.1"})
+CODEX_METRIC_MAX_AGE_SECONDS = 6 * 60 * 60
+CODEX_CLOCK_SKEW_SECONDS = 60
+
+
+def codex_meter_session(line: bytes, session: str) -> bool:
+    """사용량 계산용 session_meta: ID 일치와 검증한 cli_version"""
+    meta = codex_meta(line)
+    return meta is not None and meta.get("id") == session and meta.get("cli_version") in CODEX_METER_VERSIONS
+
+
+# cost: time O(t), heap O(t), stack O(1), io 1
+# vars: t = TRANSCRIPT_TAIL_BYTES
+# basis: estimate
+def codex_tail(stream: BinaryIO, size: int) -> tuple[list[bytes], bool]:
+    """끝부분의 완전한 줄과, 줄바꿈 없이 쓰는 중인 마지막 조각 여부. 잘린 첫 줄 제외"""
+    start = max(0, size - TRANSCRIPT_TAIL_BYTES)
+    stream.seek(start)
+    lines = stream.read(size - start).split(b"\n")
+    return (lines[1:-1] if start > 0 else lines[:-1]), bool(lines[-1])
+
+
+def codex_token_metric(line: bytes, now: float) -> float | None:
+    """token_count 줄의 last_token_usage.total_tokens / model_context_window(%). 값이 틀리면 None"""
+    try:
+        record = json.loads(line)
+        info = record["payload"]["info"]
+        used, window = info["last_token_usage"]["total_tokens"], info["model_context_window"]
+        stamp = datetime.fromisoformat(record["timestamp"].replace("Z", "+00:00"))
+    except (ValueError, KeyError, TypeError, AttributeError):
+        return None  # 알려진 형식이 아니면 사용량 없음
+    if type(used) is not int or type(window) is not int or used < 0 or window <= 0 or used > window:
+        return None
+    if stamp.tzinfo is None:
+        return None  # 시간대 없는 시각은 현재와 비교 불가
+    if not -CODEX_CLOCK_SKEW_SECONDS <= now - stamp.timestamp() <= CODEX_METRIC_MAX_AGE_SECONDS:
+        return None  # 오래됐거나 미래인 사용량으로 자동 초기화 금지
+    return round(used * 100 / window, 1)
+
+
+def codex_latest_metric(lines: list[bytes], now: float) -> float | None:
+    """마지막 token_count의 비율. 그 뒤 압축 기록이 있거나 값이 틀리면 None"""
+    metric = None
+    for line in lines:
+        head = line[:160]
+        if b'"type":"compacted"' in head:
+            metric = None
+        elif b'"type":"token_count"' in head:
+            metric = codex_token_metric(line, now)
+    return metric
+
+
+# cost: time O(t), heap O(t), stack O(1), io 3
+# vars: t = TRANSCRIPT_TAIL_BYTES
+# basis: estimate
+def codex_context(path: Path, session: str, now: float) -> tuple[float | None, str | None]:
+    """(사용량 %, 검증한 session ID). 경로·session·cli_version 실패는 둘 다 None, token_count 부재·압축 뒤·잘못된 값은 사용량만 None.
+
+    footer의 남은 %와 같다고 주장하지 않음.
+    """
+    real = verified_rollout(path, session)
+    if real is None:
+        return None, None
+    try:
+        fd = os.open(real, os.O_RDONLY | os.O_NOFOLLOW)
+        with os.fdopen(fd, "rb") as stream:
+            info = os.fstat(fd)
+            if not stat.S_ISREG(info.st_mode) or not codex_meter_session(stream.readline(CODEX_META_BYTES + 1), session):
+                return None, None
+            lines, is_unfinished = codex_tail(stream, info.st_size)
+            # 쓰는 중인 마지막 줄이 token_count·compacted일 수 있어 다음 읽기까지 unknown
+            return (None if is_unfinished else codex_latest_metric(lines, now)), session
+    except (OSError, ValueError):
+        return None, None  # 읽는 중 바뀐 파일은 미검증
+
+
 def payload_transcript(payload: dict) -> str | None:
     path = payload.get("transcript_path")
     return path if isinstance(path, str) and path else None
@@ -965,7 +1044,7 @@ def claude_turn(row: dict) -> tuple[str, str] | None:
 
 
 def codex_turn(row: dict) -> tuple[str, str] | None:
-    """Codex rollout: 요청은 event_msg user_message(입력 원문), 응답은 agent_message 또는 response_item assistant output_text.
+    """Codex rollout: 요청은 입력 원문 event_msg(`user_message`, 0.162 `item_completed` UserMessage), 응답은 agent_message·AgentMessage·task_complete last_agent_message·response_item assistant output_text.
 
     response_item의 user 메시지는 환경·지침 주입을 포함하므로 요청 원문으로 사용하지 않는다.
     """
@@ -977,6 +1056,13 @@ def codex_turn(row: dict) -> tuple[str, str] | None:
         return ("user", payload["message"]) if payload["message"] else None
     if kind == ("event_msg", "agent_message") and isinstance(payload.get("message"), str):
         return ("assistant", payload["message"]) if payload["message"] else None
+    if kind == ("event_msg", "task_complete") and isinstance(payload.get("last_agent_message"), str):
+        return ("assistant", payload["last_agent_message"]) if payload["last_agent_message"] else None
+    item = payload.get("item")
+    if kind == ("event_msg", "item_completed") and isinstance(item, dict):
+        role = {"UserMessage": ("user", ("text",)), "AgentMessage": ("assistant", ("Text", "text"))}.get(item.get("type"))
+        text = message_text(item.get("content"), role[1]) if role else ""
+        return (role[0], text) if text else None
     if kind == ("response_item", "message") and payload.get("role") == "assistant":
         text = message_text(payload.get("content"), ("output_text",))
         return ("assistant", text) if text else None
@@ -1019,7 +1105,7 @@ def claude_usage(row: dict, memo: dict) -> tuple[str | None, dict] | None:
 
 
 def codex_usage(row: dict, memo: dict) -> tuple[str | None, dict] | None:
-    """event_msg token_count의 last_token_usage. 캐시 쓰기 값 없음, input_tokens는 cached_input_tokens 포함. total_token_usage가 같은 반복 줄 제외"""
+    """event_msg token_count의 last_token_usage. input_tokens는 cached_input_tokens 포함. 캐시 쓰기는 cache_write_input_tokens가 있을 때만, 없으면 uncached_input(차이). total_token_usage가 같은 반복 줄 제외"""
     payload = row.get("payload")
     if row.get("type") != "event_msg" or not isinstance(payload, dict):
         return None
@@ -1032,6 +1118,8 @@ def codex_usage(row: dict, memo: dict) -> tuple[str | None, dict] | None:
     memo["total"] = info.get("total_token_usage")
     total = _int(last.get("input_tokens"))
     cached = min(_int(last.get("cached_input_tokens")), total)
+    if "cache_write_input_tokens" in last:
+        return None, {"input": total, "cached_input": cached, "cache_write": _int(last["cache_write_input_tokens"])}
     return None, {"input": total, "cached_input": cached, "uncached_input": total - cached}
 
 
@@ -1044,7 +1132,7 @@ def codex_detect(row: dict) -> bool:
 
 
 class Host(NamedTuple):
-    """호스트별 transcript 위치·판독·캐시 지표. read: 캐시 읽기 필드, total: 비율 분모 필드, spike: 급증 판정 필드"""
+    """호스트별 transcript 위치·판독·캐시 지표·사용량. read: 캐시 읽기 필드, total: 비율 분모 필드, spike: 급증 판정 필드(앞의 것 우선), context: rollout 사용량(meter), 없으면 None"""
 
     locate: Callable[[dict], str | None]
     turn: Callable[[dict], tuple[str, str] | None]
@@ -1053,7 +1141,8 @@ class Host(NamedTuple):
     detect: Callable[[dict], bool]
     read: str
     total: tuple[str, ...]
-    spike: str
+    spike: tuple[str, ...]
+    context: Callable[[Path, str, float], tuple[float | None, str | None]] | None
 
 
 HOSTS = {
@@ -1065,7 +1154,8 @@ HOSTS = {
         claude_detect,
         "cache_read",
         ("input", "cache_read", "cache_creation"),
-        "cache_creation",
+        ("cache_creation",),
+        None,
     ),
     "codex": Host(
         lambda payload: payload_transcript(payload) or codex_rollout(payload.get("session_id")),
@@ -1075,7 +1165,8 @@ HOSTS = {
         codex_detect,
         "cached_input",
         ("input",),
-        "uncached_input",
+        ("cache_write", "uncached_input"),
+        codex_context,
     ),
 }
 
@@ -1136,16 +1227,17 @@ def cache_report(path: str, host: str | None = None) -> dict:
     for turn in turns:
         total = sum(turn[field] for field in adapter.total)
         turn["read_ratio"] = round(turn[adapter.read] / total, 4) if total else None
-    steady = sorted(t[adapter.spike] for t in turns if not t["boundary"])
+    spike = next((field for field in adapter.spike if any(field in t for t in turns)), adapter.spike[-1])
+    steady = sorted(t.get(spike, 0) for t in turns if not t["boundary"])
     baseline = steady[len(steady) // 2] if steady else 0
     for turn in turns:
-        turn["spike"] = turn[adapter.spike] >= max(SPIKE_MIN_TOKENS, 2 * baseline)
-    fields = dict.fromkeys((*adapter.total, adapter.read, adapter.spike))
-    sums = {field: sum(t[field] for t in turns) for field in fields}
+        turn["spike"] = turn.get(spike, 0) >= max(SPIKE_MIN_TOKENS, 2 * baseline)
+    fields = dict.fromkeys((*adapter.total, adapter.read, spike))
+    sums = {field: sum(t.get(field, 0) for t in turns) for field in fields}
     total = sum(sums[field] for field in adapter.total)
     return {
         "host": host,
-        "spike_metric": adapter.spike,
+        "spike_metric": spike,
         "summary": {
             "turns": len(turns),
             **sums,

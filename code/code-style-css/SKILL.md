@@ -1,6 +1,6 @@
 ---
 name: code-style-css
-description: "CSS와 인라인 style을 작성·검토할 때 사용. 선택자·배치·반응형·접근성 검사 포함."
+description: "CSS와 인라인 style을 작성·검토하거나 선택자·배치·반응형·접근성을 검사할 때 사용."
 ---
 
 # Code Style: CSS

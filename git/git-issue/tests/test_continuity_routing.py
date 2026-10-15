@@ -1069,55 +1069,55 @@ class CodexUsageTest(RoutingCase):
         }
         write(self.home / "meter.json", meter)
 
-    def test_codex_usage_computes_ratio_for_verified_session(self) -> None:
+    def test_codex_meter_computes_ratio_for_verified_session(self) -> None:
         self.record(self.rollout(meta_line(), token_line(129200)))
 
-        self.assertEqual(hook.codex_usage(self.home), (50.0, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (50.0, CODEX_SESSION))
 
-    def test_codex_usage_after_clear_returns_session_without_metric(self) -> None:
+    def test_codex_meter_after_clear_returns_session_without_metric(self) -> None:
         self.record(self.rollout(meta_line()))
 
-        self.assertEqual(hook.codex_usage(self.home), (None, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (None, CODEX_SESSION))
 
-    def test_codex_usage_is_unknown_between_compaction_and_next_token_count(
+    def test_codex_meter_is_unknown_between_compaction_and_next_token_count(
         self,
     ) -> None:
         self.record(self.rollout(meta_line(), token_line(240000), compacted_line()))
-        self.assertEqual(hook.codex_usage(self.home), (None, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (None, CODEX_SESSION))
 
         self.record(
             self.rollout(
                 meta_line(), token_line(240000), compacted_line(), token_line(25840)
             )
         )
-        self.assertEqual(hook.codex_usage(self.home), (10.0, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (10.0, CODEX_SESSION))
 
-    def test_codex_usage_is_unknown_while_last_line_is_unfinished(self) -> None:
+    def test_codex_meter_is_unknown_while_last_line_is_unfinished(self) -> None:
         partial = token_line(WINDOW_SIZE)[:-20]
         unterminated = token_line(WINDOW_SIZE)[:-1]  # 완전한 JSON이지만 줄바꿈 전
         self.record(self.rollout(meta_line(), token_line(129200), partial))
-        self.assertEqual(hook.codex_usage(self.home), (None, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (None, CODEX_SESSION))
 
         self.record(self.rollout(meta_line(), partial))
-        self.assertEqual(hook.codex_usage(self.home), (None, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (None, CODEX_SESSION))
 
         self.record(self.rollout(meta_line(), token_line(129200), partial + b"\n"))
-        self.assertEqual(hook.codex_usage(self.home), (None, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (None, CODEX_SESSION))
 
         self.record(self.rollout(meta_line(), token_line(129200), unterminated))
-        self.assertEqual(hook.codex_usage(self.home), (None, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (None, CODEX_SESSION))
 
         self.record(self.rollout(meta_line(), token_line(129200)))
-        self.assertEqual(hook.codex_usage(self.home), (50.0, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (50.0, CODEX_SESSION))
 
     def test_session_meta_of_other_json_types_is_rejected_without_error(self) -> None:
         for line in (b"[]\n", b"null\n", b"5\n", b'"text"\n'):
             with self.subTest(line=line):
-                self.assertFalse(hook.session_meta_matches(line, CODEX_SESSION))
+                self.assertFalse(core.codex_meter_session(line, CODEX_SESSION))
                 self.record(self.rollout(line, token_line(10)))
-                self.assertEqual(hook.codex_usage(self.home), (None, None))
+                self.assertEqual(hook.codex_meter(self.home), (None, None))
 
-    def test_codex_usage_rejects_old_or_untimed_metric_keeping_session(self) -> None:
+    def test_codex_meter_rejects_old_or_untimed_metric_keeping_session(self) -> None:
         cases = {
             "old": "2025-01-01T00:00:00Z",
             "over max age": fresh_stamp(seconds_ago=7 * 3600),
@@ -1129,20 +1129,20 @@ class CodexUsageTest(RoutingCase):
             with self.subTest(name):
                 line = token_line(900, 1000, stamp=stamp)  # type: ignore[arg-type]
                 self.record(self.rollout(meta_line(), line))
-                self.assertEqual(hook.codex_usage(self.home), (None, CODEX_SESSION))
+                self.assertEqual(hook.codex_meter(self.home), (None, CODEX_SESSION))
 
-    def test_codex_usage_accepts_fresh_metric_with_utc_offset(self) -> None:
+    def test_codex_meter_accepts_fresh_metric_with_utc_offset(self) -> None:
         line = token_line(900, 1000, stamp=fresh_stamp(offset_hours=9))
         self.record(self.rollout(meta_line(), line))
 
-        self.assertEqual(hook.codex_usage(self.home), (90.0, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (90.0, CODEX_SESSION))
 
-    def test_codex_usage_ignores_token_line_that_is_not_an_object(self) -> None:
+    def test_codex_meter_ignores_token_line_that_is_not_an_object(self) -> None:
         self.record(self.rollout(meta_line(), b'[{"type":"token_count"}]\n'))
 
-        self.assertEqual(hook.codex_usage(self.home), (None, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (None, CODEX_SESSION))
 
-    def test_codex_usage_rejects_invalid_numbers_keeping_session(self) -> None:
+    def test_codex_meter_rejects_invalid_numbers_keeping_session(self) -> None:
         cases = [
             (True, WINDOW_SIZE),
             (float("nan"), WINDOW_SIZE),
@@ -1157,50 +1157,62 @@ class CodexUsageTest(RoutingCase):
         for used, size in cases:
             with self.subTest(used=used, size=size):
                 self.record(self.rollout(meta_line(), token_line(used, size)))
-                self.assertEqual(hook.codex_usage(self.home), (None, CODEX_SESSION))
+                self.assertEqual(hook.codex_meter(self.home), (None, CODEX_SESSION))
 
-    def test_codex_usage_rejects_future_token_stamp_keeping_session(self) -> None:
+    def test_codex_meter_rejects_future_token_stamp_keeping_session(self) -> None:
         line = token_line(10, stamp="2099-01-01T00:00:00.000Z")
         self.record(self.rollout(meta_line(), line))
 
-        self.assertEqual(hook.codex_usage(self.home), (None, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (None, CODEX_SESSION))
 
-    def test_codex_usage_session_mismatch_is_unknown_for_both(self) -> None:
+    def test_codex_meter_session_mismatch_is_unknown_for_both(self) -> None:
         path = self.rollout(meta_line(OTHER_CODEX_SESSION), token_line(10))
         self.record(path)
-        self.assertEqual(hook.codex_usage(self.home), (None, None))
+        self.assertEqual(hook.codex_meter(self.home), (None, None))
 
         other = self.rollout(
             meta_line(OTHER_CODEX_SESSION), token_line(10), session=OTHER_CODEX_SESSION
         )
         self.record(other)
-        self.assertEqual(hook.codex_usage(self.home), (None, None))
+        self.assertEqual(hook.codex_meter(self.home), (None, None))
 
-    def test_codex_usage_rejects_other_cli_version(self) -> None:
+    def test_codex_meter_rejects_other_cli_version(self) -> None:
         self.record(self.rollout(meta_line(version="0.159.0"), token_line(10)))
 
-        self.assertEqual(hook.codex_usage(self.home), (None, None))
+        self.assertEqual(hook.codex_meter(self.home), (None, None))
 
-    def test_codex_usage_rejects_links_and_paths_outside_sessions(self) -> None:
+    def test_codex_meter_accepts_verified_0162_rollout(self) -> None:
+        """#72: 0.162.1 실제 rollout 형식(ordinal·cache_write_input_tokens·rate_limits)의 token_count 판독"""
+        fixture = (Path(__file__).parent / "fixtures/codex-0.162-rollout.jsonl").read_text().splitlines()
+        meta = json.loads(fixture[0])
+        meta["payload"]["id"] = CODEX_SESSION
+        token = json.loads(next(line for line in reversed(fixture) if '"type":"token_count"' in line))
+        token["timestamp"] = fresh_stamp()
+        token["payload"]["info"]["last_token_usage"]["total_tokens"] = 129200
+        token["payload"]["info"]["model_context_window"] = WINDOW_SIZE
+        self.record(self.rollout(jsonl(meta), jsonl(token)))
+        self.assertEqual(hook.codex_meter(self.home), (50.0, CODEX_SESSION))
+
+    def test_codex_meter_rejects_links_and_paths_outside_sessions(self) -> None:
         real = self.rollout(meta_line(), token_line(10))
         link = self.sessions / "rollout-link" / real.name
         link.parent.mkdir()
         os.symlink(real, link)
         self.record(link)
-        self.assertEqual(hook.codex_usage(self.home), (None, None), "file link")
+        self.assertEqual(hook.codex_meter(self.home), (None, None), "file link")
 
         linked_dir = self.sessions.parent / "linked"
         os.symlink(self.sessions, linked_dir)
         self.record(linked_dir / real.name)
-        self.assertEqual(hook.codex_usage(self.home), (None, None), "directory link")
+        self.assertEqual(hook.codex_meter(self.home), (None, None), "directory link")
 
         outside = self.root / "outside" / real.name
         outside.parent.mkdir()
         outside.write_bytes(real.read_bytes())
         self.record(outside.resolve())
-        self.assertEqual(hook.codex_usage(self.home), (None, None), "outside")
+        self.assertEqual(hook.codex_meter(self.home), (None, None), "outside")
 
-    def test_codex_usage_rejects_stale_or_malformed_record(self) -> None:
+    def test_codex_meter_rejects_stale_or_malformed_record(self) -> None:
         path = self.rollout(meta_line(), token_line(10))
         now = time.time()
         cases: dict[str, dict[str, Any]] = {
@@ -1215,11 +1227,11 @@ class CodexUsageTest(RoutingCase):
         for name, overrides in cases.items():
             with self.subTest(name):
                 self.record(path, **overrides)
-                self.assertEqual(hook.codex_usage(self.home), (None, None))
+                self.assertEqual(hook.codex_meter(self.home), (None, None))
         (self.home / "meter.json").unlink()
-        self.assertEqual(hook.codex_usage(self.home), (None, None), "missing record")
+        self.assertEqual(hook.codex_meter(self.home), (None, None), "missing record")
 
-    def test_codex_usage_reads_only_the_tail_of_a_large_file(self) -> None:
+    def test_codex_meter_reads_only_the_tail_of_a_large_file(self) -> None:
         filler = jsonl(
             {
                 "timestamp": META_STAMP,
@@ -1232,10 +1244,10 @@ class CodexUsageTest(RoutingCase):
         self.record(
             self.rollout(meta_line(), token_line(240000), *body, token_line(25840))
         )
-        self.assertEqual(hook.codex_usage(self.home), (10.0, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (10.0, CODEX_SESSION))
 
         self.record(self.rollout(meta_line(), token_line(240000), *body))
-        self.assertEqual(hook.codex_usage(self.home), (None, CODEX_SESSION))
+        self.assertEqual(hook.codex_meter(self.home), (None, CODEX_SESSION))
 
     def test_window_usage_for_codex_ignores_footer_text(self) -> None:
         self.record(self.rollout(meta_line(), token_line(129200)))

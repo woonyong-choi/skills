@@ -7,7 +7,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 import hashlib
 import importlib.util
 import json
@@ -15,11 +14,10 @@ import os
 from pathlib import Path
 import re
 import shlex
-import stat
 import subprocess
 import sys
 import time
-from typing import Any, BinaryIO
+from typing import Any
 
 import continuity as core
 import project_context
@@ -175,11 +173,7 @@ def adopt_new_session(
     return ""
 
 
-CODEX_CLI_VERSION = "0.158.0"
 CODEX_RECORD_MAX_AGE_SECONDS = 6 * 60 * 60
-CODEX_METRIC_MAX_AGE_SECONDS = 6 * 60 * 60
-CODEX_CLOCK_SKEW_SECONDS = 60
-ROLLOUT_TAIL_BYTES = 4 << 20  # rollout 위치·session_meta 판독 정본: continuity의 호스트 어댑터
 
 
 # cost: time O(1), heap O(1), stack O(1), io 3
@@ -231,100 +225,18 @@ def codex_record(home: Path, now: float) -> tuple[str, Path] | None:
         return None
     if not isinstance(at, (int, float)) or isinstance(at, bool):
         return None
-    fresh = -CODEX_CLOCK_SKEW_SECONDS <= now - at <= CODEX_RECORD_MAX_AGE_SECONDS
+    fresh = -core.CODEX_CLOCK_SKEW_SECONDS <= now - at <= CODEX_RECORD_MAX_AGE_SECONDS
     return (session, Path(path)) if fresh else None
 
 
-def session_meta_matches(line: bytes, session: str) -> bool:
-    """사용량 계산용 session_meta: ID와 관측한 cli_version 모두 일치"""
-    meta = core.codex_meta(line)
-    return (
-        meta is not None
-        and meta.get("id") == session
-        and meta.get("cli_version") == CODEX_CLI_VERSION
-    )
-
-
-# cost: time O(t), heap O(t), stack O(1), io 1
-# vars: t = ROLLOUT_TAIL_BYTES
+# cost: time O(t), heap O(t), stack O(1), io 4
+# vars: t = continuity.TRANSCRIPT_TAIL_BYTES
 # basis: estimate
-def tail_lines(stream: BinaryIO, size: int) -> tuple[list[bytes], bool]:
-    """끝부분의 완전한 줄과, 줄바꿈 없이 쓰는 중인 마지막 조각이 있는지. 잘린 첫 줄은 버린다."""
-    start = max(0, size - ROLLOUT_TAIL_BYTES)
-    stream.seek(start)
-    lines = stream.read(size - start).split(b"\n")
-    is_unfinished = bool(lines[-1])
-    return (lines[1:-1] if start > 0 else lines[:-1]), is_unfinished
-
-
-def token_metric(line: bytes, now: float) -> float | None:
-    """token_count 줄의 last_token_usage.total_tokens / model_context_window(%). 값이 틀리면 None"""
-    try:
-        record = json.loads(line)
-        info = record["payload"]["info"]
-        used, window = (
-            info["last_token_usage"]["total_tokens"],
-            info["model_context_window"],
-        )
-        stamp = datetime.fromisoformat(record["timestamp"].replace("Z", "+00:00"))
-    except (ValueError, KeyError, TypeError, AttributeError):
-        return None  # 알려진 형식이 아니면 사용량을 만들지 않는다
-    if type(used) is not int or type(window) is not int:
-        return None
-    if used < 0 or window <= 0 or used > window:
-        return None
-    if stamp.tzinfo is None:
-        return None  # 시간대 없는 시각은 현재와 비교할 수 없다
-    age = now - stamp.timestamp()
-    if not -CODEX_CLOCK_SKEW_SECONDS <= age <= CODEX_METRIC_MAX_AGE_SECONDS:
-        return None  # 오래됐거나 미래인 사용량으로 자동 초기화하지 않는다
-    return round(used * 100 / window, 1)
-
-
-def latest_metric(lines: list[bytes], now: float) -> float | None:
-    """마지막 token_count의 비율. 그 뒤에 압축 기록이 있거나 값이 틀리면 None"""
-    metric = None
-    for line in lines:
-        head = line[:160]
-        if b'"type":"compacted"' in head:
-            metric = None
-        elif b'"type":"token_count"' in head:
-            metric = token_metric(line, now)
-    return metric
-
-
-# cost: time O(t), heap O(t), stack O(1), io 3
-# vars: t = ROLLOUT_TAIL_BYTES
-# basis: estimate
-def codex_usage(
-    home: Path, now: float | None = None
-) -> tuple[float | None, str | None]:
-    """(사용량 %, 검증한 session ID). session 검증과 사용량 검증은 분리한다.
-
-    경로·session·cli_version 검증이 실패하면 둘 다 None. session만 확인되고 token_count가 없거나
-    압축 뒤이거나 값이 틀리면 사용량만 None이다. 사용량은 rollout의 last_token_usage.total_tokens를
-    model_context_window로 나눈 이 모듈의 계산값이며 Codex footer의 남은 %와 같다고 주장하지 않는다.
-    """
+def codex_meter(home: Path, now: float | None = None) -> tuple[float | None, str | None]:
+    """창 home meter.json의 최근 session으로 계산한 (사용량 %, 검증한 session ID). rollout 판독 정본: continuity HOSTS["codex"].context"""
     now = time.time() if now is None else now
     record = codex_record(home, now)
-    real = core.verified_rollout(record[1], record[0]) if record else None
-    if record is None or real is None:
-        return None, None
-    try:
-        fd = os.open(real, os.O_RDONLY | os.O_NOFOLLOW)
-        with os.fdopen(fd, "rb") as stream:
-            info = os.fstat(fd)
-            head = stream.readline(core.CODEX_META_BYTES + 1)
-            if not stat.S_ISREG(info.st_mode) or not session_meta_matches(
-                head, record[0]
-            ):
-                return None, None
-            lines, is_unfinished = tail_lines(stream, info.st_size)
-            # 쓰는 중인 마지막 줄이 token_count·compacted일 수 있어 다음 읽기까지 사용량은 unknown이다.
-            metric = None if is_unfinished else latest_metric(lines, now)
-            return metric, record[0]
-    except (OSError, ValueError):
-        return None, None  # 읽는 중 바뀐 파일은 검증하지 못한 것으로 둔다
+    return core.HOSTS["codex"].context(record[1], record[0], now) if record else (None, None)
 
 
 def response(event: str, text: str) -> dict[str, Any]:
@@ -506,7 +418,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
                 }
             )
             text = (
-                "개발 작업은 developer-thinking 본문과 현재 단계의 필수 원문 확인. "
+                "개발 작업은 developer-thinking 현재 단계의 필수 원문 확인. "
                 + context(folder, binding)
                 + persisted_notice(folder, state)
             )
@@ -532,7 +444,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
                 if needs_restore:
                     text += persisted_notice(folder, state)
             else:
-                text = f"현재 연결: {folder.name}, {binding['url']}. developer-thinking의 현재 단계 적용. git-issue의 과업 판정에 따라 goal 유지·scope.outcomes 대조. 독립 결과 전환은 기존 기록 저장 후 bind --session-id {session} --from-task {folder.name}. 작업 경계는 checkpoint --sync --status 진행|검토|보류. 단순 질문은 추가 기록 불필요."
+                text = f"현재 연결: {folder.name}, {binding['url']}. developer-thinking의 현재 단계 적용. git-issue의 과업 판정에 따라 goal 유지·scope.outcomes 대조. 독립 결과 전환은 기존 기록 저장 후 bind --session-id {session} --from-task {folder.name}. 작업 경계는 checkpoint --sync, 착수·재개·단계 전환만 --status 진행|검토|보류. 단순 질문은 추가 기록 불필요."
             if not paths:
                 text += " 파일 변경 전 실행자가 checkpoint --watch-path 상대경로를 반복 지정해 현재 과업의 파일 범위를 등록하세요. 사용자에게 목록 작성을 요구하지 마세요. 범위 미등록은 저장소 전체로 대체하지 않으며 종료 변경 감지는 미활성입니다."
         elif event == "PostCompact":
@@ -593,7 +505,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
             if payload.get("permission_mode") in ("plan", "planMode"):
                 core.save(state_path, state)
                 return {}
-            if session not in binding.get("session_ids", []):
+            if not explicit:
                 core.save(state_path, state)
                 return {}
             claim = state.get("checkpoint_claim") or {}
@@ -782,6 +694,11 @@ def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]
         "Stop",
     }:
         return {}
+    try:
+        # 셸 apply_patch는 구조화 편집과 같은 필수 원문 확인. 판정 정본: document_guard.shell_patch
+        edit = payload if payload.get("tool_name") in EDIT_TOOLS else document_guard.shell_patch(payload)
+    except ValueError:
+        edit = None  # 잘못된 셸은 document_guard가 거부
     skill = Path(__file__).resolve().parents[1]
     source = skill.parent / "developer-thinking/scripts/read_rules.py"
     if not source.is_file():
@@ -814,9 +731,9 @@ def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]
             repo = Path(core.read(folder / "binding.json")["repo"])
             scope = state.setdefault("rule_scope", {})
             is_query = reader.select_query(payload, scope)
-            # 읽기·실행 명령은 조회 강제 대상이 아니다. 실제 편집만 규칙 하한을 선택한다.
-            if payload.get("tool_name") in EDIT_TOOLS:
-                reader.select_for_tool(payload, repo, scope)
+            # 읽기·실행 명령은 조회 강제 대상이 아니다. 실제 편집(셸 apply_patch 포함)만 규칙 하한을 선택한다.
+            if edit is not None:
+                reader.select_for_tool(edit, repo, scope)
         try:
             pending = reader.pending_rules(state)
         except (OSError, ValueError) as error:
@@ -859,7 +776,7 @@ def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]
             }
         if event not in {"PreToolUse", "Stop"} or not pending:
             return {}
-        if event == "PreToolUse" and payload.get("tool_name") not in EDIT_TOOLS:
+        if event == "PreToolUse" and edit is None:
             return {}
         reason = f"필수 원문 {len(pending)}개가 아직 도구 결과로 전달되지 않았습니다. 먼저 `{command}`를 실행하세요. 출력은 자르거나 요약하지 말고, 남은 원문 안내가 있으면 같은 명령을 이어 실행하세요. 이미 전달된 원문은 자동 제외합니다. 원문을 적용한 뒤 원래 작업을 다시 실행할 수 있습니다. 사용자 승인이나 기록 작성 요청은 불필요합니다."
         if event == "PreToolUse":

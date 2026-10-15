@@ -7,7 +7,7 @@ description: "모집단·표본·판정 기준을 정한 측정·비교 실험�
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 실험 대상, 폴더, 흐름, 템플릿, 통계 규칙, 검사
-- 필요할 때만 읽기: 결과 차트·터미널 녹화 → repo-docs-figures; 블로그 글 → html-report `explain`; 완료 조건의 범위·시간 추정 변경 → git-issue 범위 변경 절; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit
+- 필요할 때만 읽기: 결과 차트·터미널 녹화 → repo-docs-figures; 완료 조건의 범위·시간 추정 변경 → git-issue 범위 변경 절; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit
 
 - 실험 하나 = 폴더 하나. 수집 전 설계 커밋 → 수집 → 결과 보고
 - 진행 상태: 흐름 1의 추적 항목. 문서에 기록 금지
@@ -59,7 +59,7 @@ docs/experiments/
 - `results/summary.json` → 보고서의 모든 수치. 보고서 수치는 이 파일에서만
 - 결과 차트 → 원본·산출물 위치, JSON 입력과 변환·검사(repo-docs-figures references/charts.md 실험 차트)
 - `run.sh` → `collect`, `process`, `analyze`, `verify`, `all` 다섯 명령. `./run.sh analyze`는 `raw/`를 입력으로 전처리를 다시 실행한 뒤 분석을 실행해 결과 재생성
-- `logs/` → `run.sh` 명령마다 실행 출력 전부. 수정 금지, 홈 경로는 `~`로. 아래 `log` 함수로만 기록
+- `logs/` → `run.sh` 명령마다 실행 출력 전부. 수정 금지, 홈 경로는 `~`로. 아래 `log` 함수로만 기록, 기존 로그면 거부. 검사·재현 재실행은 `RUN_ID={실행 id}-check`, 그 로그 커밋 제외
 - 실행 id 공유 → `collect`가 첫 줄에 출력한 id를 같은 실행의 이후 명령에 `RUN_ID={실행 id} ./run.sh {명령}`으로 전달. 생략하면 새 id
 - `results/terminal.*` → 보고한 실행 id의 `verify`·`analyze` 로그를 `cat`으로 보이는 VHS 녹화(repo-docs-figures references/vhs.md 기본 설정). 실행 위치·경로 기준은 실험 폴더. 재실행 녹화 금지
 - `env.json` → 실행 환경: 운영체제, CPU, 메모리, 도구와 버전, 모델 이름(미사용 시 해당 없음), 실행 날짜, 커밋
@@ -72,7 +72,7 @@ docs/experiments/
 set -euo pipefail
 cd "$(dirname "$0")"
 id=${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$(git -C "${PROJECT_DIR:-.}" rev-parse --short=7 HEAD)}
-log() { mkdir -p logs; { printf '$ RUN_ID=%s ./run.sh %s\n' "$id" "$1"; "${@:2}"; } 2>&1 | sed "s|$HOME|~|g" | tee "logs/$1-$id.log"; }
+log() { local f="logs/$1-$id.log"; [[ ! -e $f ]] || { echo "$f exists; use another RUN_ID" >&2; return 1; }; mkdir -p logs; { printf '$ RUN_ID=%s ./run.sh %s\n' "$id" "$1"; "${@:2}"; } 2>&1 | sed "s|$HOME|~|g" | tee "$f"; }
 ```
 
 ## 흐름
@@ -85,7 +85,7 @@ log() { mkdir -p logs; { printf '$ RUN_ID=%s ./run.sh %s\n' "$id" "$1"; "${@:2}"
 6. `RUN_ID={실행 id} ./run.sh verify`, `RUN_ID={실행 id} ./run.sh analyze` 후 결과 차트와 `results/terminal.tape` 변환(repo-docs-figures references/conversion.md 변환)
 7. `report.md`, `data/README.md` 작성, `docs/experiments/README.md` 결론 칸 기입
 8. 결론이 설계를 바꾸면 같은 PR에서 설계 문서 수정
-9. 블로그 글: [report.md](references/report.md) 블로그 글 절의 고정 구성으로 html-report `explain` 생성. 요청 없이도 실행, 커밋 금지
+9. 블로그 글: html-report `explain` 필수 확인 후 [report.md](references/report.md) 블로그 글 절의 고정 구성으로 생성. 요청 없이도 실행, 커밋 금지
 
 - 수집 시작 뒤 `design.md`의 가설·판정 기준 수정 금지
 - 결과를 본 뒤 설계·가설·판정 기준을 바꾸면 보고서 `설계와 다른 점`에 기록. 바뀐 부분의 분석은 `탐색 분석`으로 구분하고 확인 분석 판정에 사용 금지
@@ -133,8 +133,8 @@ log() { mkdir -p logs; { printf '$ RUN_ID=%s ./run.sh %s\n' "$id" "$1"; "${@:2}"
 보고서 머지 전 확인:
 
 1. 수집 전 설계 커밋이 첫 `raw/` 파일 커밋의 조상
-2. `RUN_ID={실행 id} ./run.sh verify` 통과
-3. `RUN_ID={실행 id} ./run.sh analyze` 두 번 실행 시 `results/` 같은 바이트, 차트 재현 검사(repo-docs-figures references/validation.md 검사)
+2. `RUN_ID={실행 id}-check ./run.sh verify` 통과
+3. `RUN_ID={실행 id}-check ./run.sh analyze` 뒤 `results/`가 커밋본과 같은 바이트, 차트 재현 검사(repo-docs-figures references/validation.md 검사)
 4. 보고서의 모든 수치가 `results/summary.json`에 존재
 5. `설계와 다른 점` 절 존재
 6. 실패, 제외한 실행 전부 흐름 표에

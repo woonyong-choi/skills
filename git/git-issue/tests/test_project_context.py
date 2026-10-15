@@ -126,6 +126,10 @@ class ProjectContextWorkflow(unittest.TestCase):
                     value = {"file_path": str(target), "content": "verified"} if host == "claude" else {"command": f"*** Begin Patch\n*** Add File: {target}\n+verified\n*** End Patch"}
                     decision = hook(host, project, tool, value)
                     self.assertEqual(decision == {}, is_allowed, decision)
+                    # Codex 0.162 셸 apply_patch heredoc: tool_name "Bash"로 도착, 구조화 apply_patch와 같은 판정.
+                    heredoc = {"command": f"apply_patch <<'EOF'\n*** Begin Patch\n*** Add File: {target}\n+verified\n*** End Patch\nEOF"}
+                    decision = hook(host, project, "Bash", heredoc)
+                    self.assertEqual(decision == {}, is_allowed, decision)
                     if is_allowed:
                         target.parent.mkdir(parents=True, exist_ok=True)
                         target.write_text("verified")
