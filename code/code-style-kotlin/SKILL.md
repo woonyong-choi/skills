@@ -1,6 +1,6 @@
 ---
 name: code-style-kotlin
-description: "Kotlin JVM 서버·CLI 코드를 작성·검토하거나 ktlint·detekt 설정을 고칠 때 사용. Android 제외."
+description: "Kotlin JVM 서버·CLI 코드(Android 제외)를 작성·검토하거나 ktlint·detekt 설정을 고칠 때 사용."
 ---
 
 # Code Style: Kotlin
