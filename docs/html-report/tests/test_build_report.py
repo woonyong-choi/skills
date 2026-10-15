@@ -82,7 +82,7 @@ class InlineThinkflowReportTest(unittest.TestCase):
             "questions": questions,
         }
         renderer = module.FigureRenderer(base=FIXTURE, thinkflow=None, static=False)
-        theme = self.thinkflow / "src" / "vendor" / "theme"
+        theme = module._thinkflow(str(self.thinkflow)).theme
         head = "<style>" + (theme / "tokens.css").read_text(encoding="utf-8") + (theme / "styles.css").read_text(encoding="utf-8") + "</style>"
         return module.build(report, renderer, head)
 
