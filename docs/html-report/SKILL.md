@@ -19,7 +19,7 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 
 ## 설명 페이지
 
-ThinkFlow 공통 테마(`src/vendor/theme`)와 기본 재생기 호스트를 그대로 사용, 스타일·높이 조정·테마 전환 재구현 금지. 그림 폭은 자기 캔버스 폭까지 본문 밖으로 확장
+공통 테마(ThinkFlow가 의존하는 `@woonyong-choi/design-tokens`의 `dist`)와 기본 재생기 호스트를 그대로 사용, 스타일·높이 조정·테마 전환 재구현 금지. 그림 폭은 자기 캔버스 폭까지 본문 밖으로 확장
 
 1. 의미 단위로 나누기: 맨 앞 전체 흐름, 이어서 단계·분기·실패 처리 등 한 절에 한 의미
 2. 절마다 제목, 핵심 문단 1~3개(한 문단 2문장 이내), 그림은 절마다 최대 하나. 쉬운 말, 전문 낱말은 처음에 풀이. 그림이 말하는 것을 글로 반복 금지
@@ -47,7 +47,7 @@ ThinkFlow 공통 테마(`src/vendor/theme`)와 기본 재생기 호스트를 그
 ## 그림과 모형 표시
 
 - 입력: `.thinkflow` 원본, 미리 만든 SVG·HTML(`inline`), 스크린샷(`src`). 렌더 실패는 생성 실패, 이전 산출물을 새 성공으로 간주 금지
-- 색·글꼴·아이콘 변경 금지. 정본은 ThinkFlow 공통 테마. 스크린샷은 검증 테마 고정 후 테마명을 비교 보고서 그림의 `alt`(캡션으로 표시), `explain`의 `caption`에 기재
+- 색·글꼴·아이콘 변경 금지. 정본은 design-tokens 공통 테마. 스크린샷은 검증 테마 고정 후 테마명을 비교 보고서 그림의 `alt`(캡션으로 표시), `explain`의 `caption`에 기재
 - 원본 위치: 입력 폴더 기준 상대 경로. `.thinkflow`·`src`·`inline`은 제자리 참조, `explain`의 `image`·`files`만 스크립트가 `attachments/`로 복사. 저장소 `.thinkflow`를 보고서 폴더로 복사 금지(`data` 상대 경로 깨짐)
 - 모형 표시: (repo-docs 자리표시). 흉내 낸 그림은 `"mock": true`와 그림 안 `모형`, 지어낸 경고·수치는 `[모형]`. 렌더 성공과 실제 구현 여부는 별도 판정
 
@@ -63,7 +63,7 @@ ThinkFlow 공통 테마(`src/vendor/theme`)와 기본 재생기 호스트를 그
 python3 <이 스킬 폴더>/scripts/build_report.py <입력.json> [출력.html] --thinkflow <ThinkFlow 경로>
 ```
 
-- ThinkFlow 경로 필수(공통 테마 출처): `--thinkflow`(체크아웃 루트 또는 `src/cli.js`), 없으면 `THINKFLOW_PATH`, PATH의 `thinkflow` 순
+- ThinkFlow 경로 필수(공통 테마 출처): `--thinkflow`(체크아웃 루트 또는 `src/cli.js`), 없으면 `THINKFLOW_PATH`, PATH의 `thinkflow` 순. 테마는 그 위치부터 상위 폴더 순으로 찾은 첫 `node_modules/@woonyong-choi/design-tokens/dist`(체크아웃은 `npm ci` 필요)
 - 출력은 입력 JSON과 같은 폴더만, 기본 `index.html`
 - `--static`: 비교 보고서의 `.thinkflow`를 멈춘 SVG로
 - 입력 JSON 작성 전 [입력 형식](references/input-format.md) 필수 확인

@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: woonyong-choi/thinkflow
-          ref: 97e1fe1c429ed496d504a9be4a2698cf2e9fd3fd
+          ref: 61c4a1a0252bdfb69ad745a67280365bcbed6db4
           path: .runtime/thinkflow
       - name: Install figure renderer and browser
         working-directory: .runtime/thinkflow
