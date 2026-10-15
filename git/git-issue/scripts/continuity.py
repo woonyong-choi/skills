@@ -911,14 +911,25 @@ def codex_sessions_dir() -> Path:
 
 
 def verified_rollout(path: Path, session: str) -> Path | None:
-    """세션 로그 폴더 안의 일반 파일이고 이름이 session과 맞는 절대 경로만 통과한다. 링크는 거절한다."""
+    """세션 로그 폴더 안의 일반 파일이고 이름이 session과 맞는 절대 경로의 실제 경로. 세션 폴더 안의 링크는 거절, 폴더 위쪽 링크(macOS /var, 링크 홈)는 허용."""
+    base = codex_sessions_dir()
     try:
         real = path.resolve(strict=True)
-        sessions = codex_sessions_dir().resolve()
+        sessions = base.resolve(strict=True)
     except OSError:
         return None
+    if not path.is_absolute():
+        return None
+    for root in (base, sessions):
+        if path.is_relative_to(root):
+            inside = path.relative_to(root)
+            break
+    else:
+        return None
+    if any((root / Path(*inside.parts[: depth + 1])).is_symlink() for depth in range(len(inside.parts))):
+        return None
     named = real.name.startswith("rollout-") and real.name.endswith(f"-{session}.jsonl")
-    return real if real == path and sessions in real.parents and named else None
+    return real if sessions in real.parents and named else None
 
 
 def codex_meta(line: bytes) -> dict | None:
