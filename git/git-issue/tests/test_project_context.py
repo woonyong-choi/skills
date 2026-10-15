@@ -47,10 +47,13 @@ class ProjectContextWorkflow(unittest.TestCase):
             vault.mkdir()
             project = RUNTIME / "catalog"
             project.mkdir()
-            self.assertFalse(cli(project, expected=2)["ready"])
+            self.assertIn(str(SCRIPT), cli(project, expected=2)["error"])
             cli(project, "--register-vault", str(vault))
             run(["git", "init", "-q", str(project)])
             run(["git", "remote", "add", "origin", "https://example.org/alpha/catalog.git"], project)
+            reason = hook("claude", project, "Write", {"file_path": str(project / "notes.md"), "content": "x"})["hookSpecificOutput"]["permissionDecisionReason"]
+            self.assertIn(f"python3 {SCRIPT} --project {project} --register-project", reason)
+            self.assertIn("ask the user first", reason)
             result = cli(project, "--register-project")
             index = Path(result["index"])
             self.assertEqual(index.parent.parent.name, "catalog")
@@ -144,6 +147,8 @@ class ProjectContextWorkflow(unittest.TestCase):
                     "perl -pe 's/a/b/' guide.md",
                     "perl -Mstrict -ne 'print' notes.txt",
                     "dd if=guide.md of=result.json",
+                    "grep -n touch notes.md", "rg install README.md",
+                    "git grep -n tee guide.md", "echo cp a > run.log",
                     "cat <<-MSG\n\tuser's rule\n\tMSG\npip install -r requirements.txt",
                 ):
                     self.assertEqual(hook(host, project, "Bash", {"command": command}), {}, command)
@@ -160,6 +165,7 @@ class ProjectContextWorkflow(unittest.TestCase):
                     "bash -c 'tee denied.md'", "sh -lc 'touch denied.md'",
                     "env cp a denied.md", "sudo cp a denied.md",
                     "X=1 cp a denied.md", "command cp a denied.md",
+                    "xargs -0 touch denied.md", "time mv a denied.md",
                     "(cp a denied.md)", "{ cp a denied.md; }",
                     "echo $(cp a denied.md)", "if true; then cp a denied.md; fi",
                     "git mv a.md denied.md", "env sed -i s/a/b/ denied.md",

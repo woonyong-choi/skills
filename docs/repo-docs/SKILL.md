@@ -19,7 +19,7 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 
 ## 문서 목록
 
-등록 Vault 프로젝트: [프로젝트 맥락과 문서 위치](references/project-context.md) 필수 적용. 신규 문서는 아래 경로의 `docs/`·`.local/` 아래 구조를 같은 영역 `docs/`에 두고 git 제외 확인 대신 쓰기 경로 검사. 루트·`.github/` 파일, 기존 승인 문서, 실행 필수 소스·설정은 저장소 위치 유지(`approved_documents`·`source_document_roots`)
+등록 Vault 프로젝트: [프로젝트 맥락과 문서 위치](references/project-context.md) 필수 적용. 신규 문서는 아래 경로의 `docs/`·`.local/` 아래 구조를 같은 영역 `docs/`에 두고 git 제외 확인 대신 쓰기 경로 검사. 등록 판정: git-issue `scripts/project_context.py --project .` 종료 0. 루트·`.github/` 파일, 실행 필수 소스·설정은 index 메타데이터 `approved_documents`·`source_document_roots`에 사용자 승인으로 기록된 경로만 저장소 위치 유지. `--register-project`는 승인 미추가, 승인 기록 명령 없음 → 승인 안 된 경로(`check_doc.py --project` 종료 2)는 보고 후 사용자에게 승인 요청. repo-docs-llms는 저장소 안에 `docs/`를 둔 저장소만 적용
 
 새 문서는 사용자 요청·승인 범위에서만 생성. 아래 생성 조건·템플릿은 허락을 대신하지 않음. 기존 정본 수정 우선, 적합한 절이 없으면 채팅 보고
 
@@ -30,7 +30,7 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 - `AGENTS.md`, `CLAUDE.md`(링크) → 코딩 에이전트 → 무엇이 어디에 있나, 무엇을 지켜야 하나 → 해당 지침 파일을 읽는 도구 사용 시 → root
 - `CHANGELOG.md`, `.github/CONTRIBUTING.md`, `.github/SECURITY.md` → 사용자, 기여자 → 무엇이 바뀌었나, 어떻게 기여하나, 취약점은 어디로 알리나 → README 단계별(repo-docs-root 파일 표) → root
 - `LICENSE` → 모두 → 어떤 조건으로 쓸 수 있나 → 라이선스를 정했을 때(repo-docs-root 파일 표) → root
-- `llms.txt` → LLM 도구 → 어떤 문서가 있나 → `docs/README.md`가 있을 때 → llms
+- `llms.txt` → LLM 도구 → 어떤 문서가 있나 → 저장소 안에 `docs/README.md`가 있을 때 → llms
 - `docs/README.md` → 기여자 → 어떤 문서를 어떤 순서로 읽나 → `docs/`에 문서가 둘 이상 → design
 - `docs/architecture.md` → 기여자 → 코드가 어떻게 나뉘나, 무엇이 어디서 일어나나, 깨면 안 되는 조건은 → 항상. 설계 단계 포함 → design
 - `docs/design/{주제}.md` → 기여자, 검토자 → 왜 필요한가, 어떻게 동작하나, 무엇이 아직 미정인가 → 기능이나 동작을 설계할 때, 주제마다 하나 → design
@@ -79,7 +79,7 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 
 ## 자리표시
 
-데이터 출처와 구현 여부는 별도 축이다. 실제 동작에 합성 입력을 쓰면 `합성 데이터`, 미구현 동작을 표현하면 `모형`을 표시한다. 둘 다 해당하면 두 표시 모두 필수다. 화면과 대체 글에 같은 상태 표시. 영어 접두사는 `Synthetic data:`·`Mock:`, 한국어는 `합성 데이터:`·`모형:`
+데이터 출처와 구현 여부는 별도 축. 실제 동작의 합성 입력 → `합성 데이터`, 미구현 동작 표현 → `모형` 표시, 둘 다 해당하면 두 표시 필수. 화면과 대체 글에 같은 표시. 접두사: 영어 `Synthetic data:`·`Mock:`, 한국어 `합성 데이터:`·`모형:`(다른 스킬도 이 글자 사용)
 
 아직 없는 것: 아래 표의 것으로만 대체. 가짜 수치, 가짜 화면을 실제처럼 제시 금지
 

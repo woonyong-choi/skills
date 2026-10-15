@@ -13,9 +13,12 @@ from pathlib import Path
 from install import source_skills
 from consistency import PRIORITY, check_consistency
 
-NOUN_OK = ('흐름', '알림', '없음', '다음', '포함', '결함', '마음', '처음', '이름', '모음', '요금', '그림', '묶음', '느낌', '믿음', '물음', '걸음', '기본값', '보관함', '수신함')
+NOUN_OK = ('흐름', '알림', '없음', '다음', '포함', '결함', '마음', '처음', '이름', '모음', '요금', '그림', '묶음', '느낌', '믿음', '물음', '걸음', '기본값', '보관함', '수신함', '책임')
 NAME_OK = ('안 함', '막힘')  # 상태 이름
 BAD_END = re.compile(r'(다|함|음|임|됨|봄|름|룸|듦|눔|힘|움|씀|셈|뺌|김|춤|침|줌|둠|꿈|옮|듬|숨|엶|앎|삶|짐|킴|림|핌|닮)$')
+# 줄 중간 평서형 끝: 문장부호 앞 `-다`, 공백 앞은 `-ㄴ다`·`-는다`·`이다`·`있다`·`없다`. `마다`·`보다` 조사 제외
+CLAUSE = re.compile(r'([가-힣]+다)(?:([.,;:!?)\]])|(?=\s))')
+PARTICLE = ('마다', '보다')
 
 # cost: time O(n·k), heap O(n), stack O(1), io 1
 # vars: n = SKILL.md 줄 수, k = 다른 스킬 이름 수
@@ -30,7 +33,7 @@ def check(path, names):
         errs.append('description 형식')
     else:
         d = m.group(1)
-        if not re.search(r"때 [^.]*?(?:사용|적용)\.", d):
+        if not re.search(r"때 [^.]*?사용\.", d):
             errs.append("description 사용 조건 형식")
         for n in names:
             if n != me and re.search(r'(?<![\w-])' + re.escape(n) + r'(?![a-z-])', d):
@@ -78,6 +81,18 @@ def check(path, names):
                 errs.append('agent 필드 없음: ' + key)
         if not re.search(r'\$' + re.escape(me) + r'(?![a-z0-9-])', metadata):
             errs.append('agent 호출 이름 불일치')
+    errs.extend(f'{i}: 끝말 {w}' for i, w in bad_endings(lines, 4))
+    for ref in sorted(Path(path).parent.glob('references/*.md')):
+        ref_lines = ref.read_text(encoding='utf-8').split('\n')
+        errs.extend(f'references/{ref.name}:{i}: 끝말 {w}' for i, w in bad_endings(ref_lines, 0))
+    return errs
+
+# cost: time O(n·w), heap O(n), stack O(1)
+# vars: n = 줄 수, w = 줄 길이
+# basis: estimate
+def bad_endings(lines, skip):
+    """코드 밖 줄 끝·칸 끝·줄 중간 평서형 끝의 금지 끝말을 (줄 번호, 낱말)로 돌려준다."""
+    found = []
     fl = 0
     for i, l in enumerate(lines, 1):
         if fl == 0 and l.startswith('```'):
@@ -86,21 +101,36 @@ def check(path, names):
         if fl and re.fullmatch('`{%d}' % fl, l.strip()):
             fl = 0
             continue
-        if fl or i <= 4 or not l.strip() or l.startswith('#') or l.startswith('name:') or l.startswith('description:') or l == '---':
+        if fl or i <= skip or not l.strip() or l.startswith('#') or l.startswith('name:') or l.startswith('description:') or l == '---':
             continue
         t = re.sub(r'`[^`]*`', '', l)
+        words = []
         cells = [c.strip() for c in t.split('|')] if t.startswith('|') else [t]
         for c in cells:
             c = re.sub(r'^[-0-9. ]+', '', c).strip().rstrip('.').strip()
             c = re.sub(r'\([^()]*\)$', '', c).strip()
-            if not c or set(c) <= set('-: '):
-                continue
-            if c in NAME_OK:
+            if not c or set(c) <= set('-: ') or c in NAME_OK:
                 continue
             w = c.split()[-1]
             if BAD_END.search(w) and not w.endswith(NOUN_OK):
-                errs.append(f'{i}: 끝말 {w}')
-    return errs
+                words.append(w)
+        for m in CLAUSE.finditer(re.sub(r'\]\([^)]*\)', ']', t)):
+            w = m.group(1)
+            if w.endswith(PARTICLE) or not (m.group(2) or declarative(w)):
+                continue
+            words.append(w)
+        found.extend((i, w) for w in dict.fromkeys(words))
+    return found
+
+# cost: time O(1), heap O(1), stack O(1)
+# vars: 없음
+# basis: estimate
+def declarative(word):
+    """공백 앞에서도 평서형으로 보는 `-ㄴ다`·`-는다`·`이다`·`있다`·`없다` 끝인지."""
+    if word.endswith(('는다', '이다', '있다', '없다')):
+        return True
+    prev = word[-2] if len(word) > 1 else ''
+    return '가' <= prev <= '힣' and (ord(prev) - 0xAC00) % 28 == 4
 
 # cost: time O(s·n·k), heap O(s + n), stack O(1), io O(s)
 # vars: s = 스킬 수, n = 스킬 줄 수, k = 스킬 이름 수

@@ -26,7 +26,7 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 - `LICENSE` 내용: SPDX 식별자의 공식 원문 그대로, 연도와 저작권자(기존 저작권 고지 또는 사용자가 지정한 권리자, git 이름으로 자동 추정 금지)만 기입
 - `.github/`에 둔 파일의 루트 중복 금지
 
-도구 지침 파일은 저장소에서 사용하는 도구의 진입 파일만 생성한다. 이름·링크 방식은 저장소 정책 우선
+도구 지침 파일: 저장소에서 사용하는 도구의 진입 파일만 생성. 이름·링크 방식은 저장소 정책 우선
 
 ## CLAUDE.md
 

@@ -1,7 +1,5 @@
 # 설치와 실행
 
-ThinkFlow 직접 실행 전 [검사](validation.md) 필수 확인
-
 - 실행 환경: Node.js 20 이상. 설치·배포 정본: [README](https://github.com/woonyong-choi/thinkflow/blob/main/README.md#installation). 패키지 버전만으로 npm 배포 여부 판단 금지
 - `<ThinkFlow 경로>`: 의존성이 설치된 기존 작업본의 절대 경로. 아래 명령은 문서 저장소 루트에서 실행
 

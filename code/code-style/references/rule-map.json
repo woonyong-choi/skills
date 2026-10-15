@@ -38,7 +38,7 @@
     {
       "title": "공개 범위와 주석",
       "path": "references/structure.md",
-      "sha256": "b6d56d1615c4585793a6c5eb31333727f84150ad782871862329f254a339a52e",
+      "sha256": "8b141068c7e3298dd05c57b99cf0e85345e4f51af232f3af448f69323985a869",
       "id": "CS-VISIBILITY",
       "condition": "공개 범위·필드·주석 추가·변경"
     },

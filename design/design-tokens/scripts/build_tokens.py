@@ -259,8 +259,9 @@ def main() -> int:
         dark_table = dict(table)
         dark_table.update({path: (value, token_type) for path, value, token_type in dark_tokens})
         check_references(dark_tokens, dark_table, "tokens.dark.json")
-        css = build_css(os.path.basename(args.source), tokens, dark_tokens)
-        js = build_js(os.path.basename(args.source), tokens, table)
+        source = os.path.relpath(args.source).replace(os.sep, "/")
+        css = build_css(source, tokens, dark_tokens)
+        js = build_js(source, tokens, table)
     except ValueError as error:
         print(error, file=sys.stderr)
         return 1

@@ -105,3 +105,5 @@ npx prettier --check .
 npx eslint --max-warnings 0 .
 node --test
 ```
+
+- 실행 조건: Node.js 18+와 개발 의존성 `npm install --save-dev prettier eslint @eslint/js globals eslint-plugin-sonarjs`

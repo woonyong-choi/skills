@@ -42,7 +42,7 @@ python3 <이 스킬 폴더>/scripts/project_status.py check [--number 번호] [-
 
 ## 새 저장소
 
-연결 보드가 없거나 자동화 초기 설정·복구가 필요하면 [새 저장소 보드 초기화](project-bootstrap.md) 필수 확인. 일반 상태 전환에서는 다시 읽지 않음
+연결 보드가 없거나 자동화 초기 설정·복구가 필요하면 [새 저장소 보드 초기화](project-bootstrap.md) 필수 확인. 일반 상태 전환: 재조회 불필요
 
 ## 상태 색상
 

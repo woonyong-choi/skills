@@ -1,9 +1,9 @@
 """repo-docs 규칙으로 저장소 Markdown 파일 검사.
 
-사용: python3 check_doc.py 파일 [파일 ...] (저장소 루트에서 실행)
+사용: python3 check_doc.py [--project 작업 경로] 파일 [파일 ...] (저장소 루트에서 실행)
 
-인자: Markdown 파일 하나 이상, 저장소 루트에서 실행
-출력: stdout 경로·줄별 위반, 인자 누락 시 stderr 사용법, 종료 0 통과·1 위반·2 인자 누락
+인자: 선택 --project 작업 경로(등록 Vault 프로젝트, project_context.py 쓰기 경로 검사), Markdown 파일 하나 이상
+출력: stdout 경로·줄별 위반, stderr 사용법·연결/경로 실패 JSON, 종료 0 통과·1 위반·2 인자 누락·검사기 없음·경로 실패(문체 검사 전)
 """
 import os
 import html

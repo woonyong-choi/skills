@@ -1,13 +1,13 @@
 ---
 name: code-style
-description: "코드를 작성·검토할 때 언어 공통의 이름·오류·주석·테스트 규칙을 적용."
+description: "언어 공통의 이름·오류·주석·테스트 규칙으로 코드를 작성·검토할 때 사용."
 ---
 
 # Code Style
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 범위: 코드 공통 규칙의 정본. 언어별 스킬은 언어별 스킬 절의 항목만 정하고, 그 밖에서 상충하면 이 스킬 우선
-- 필요할 때만 읽기: 결과가 다른 미확정 설계 선택 → repo-docs-design; 리팩터링 기법 선택 → code-refactoring; 파일·모듈 이름 결정 → folder-naming
+- 필요할 때만 읽기: 결과가 다른 미확정 설계 선택 → repo-docs-design; 리팩터링 기법 선택 → code-refactoring; 파일·모듈 이름 결정 → folder-naming; UI 시각·모션 변경 → design-tokens; CSS 변경 → code-style-css
 
 ## 조건별 읽기
 
@@ -32,7 +32,6 @@ ID → 적용 조건 → 정본:
 - 성능·자원·캐시·큐 변경: [resources.md](references/resources.md) 필수 확인
 - 화면·API 변경: [interfaces.md](references/interfaces.md) 필수 확인
 - 신뢰 경계·외부 입력·권한·의존·배포·복구 변경: [operations.md](references/operations.md) 필수 확인
-- UI 시각·모션 변경은 design-tokens, CSS 변경은 code-style-css 필수 확인. UI 없는 서버 작업은 제외
 
 ## 원칙
 

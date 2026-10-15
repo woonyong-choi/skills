@@ -2,10 +2,13 @@
 
 import contextlib
 import io
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import mock_open, patch
 
-import check_doc
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import check_doc  # noqa: E402
 
 
 class DocumentStyleTest(unittest.TestCase):

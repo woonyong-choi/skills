@@ -11,7 +11,7 @@ Python 3.9 이상, macOS/Linux, 표준 라이브러리, git, 인증된 gh. 기�
 - 이 스킬 폴더가 work-continuity 플러그인 루트. 플러그인은 훅만 제공(스킬은 skill-sync 설치), 두 제품이 같은 scripts 사용, 훅 JSON만 제품별
 - 사용량: Claude는 status line의 현재 context_window, Codex는 아래 세션 메타데이터 어댑터. 검증 불가 시 unknown, 계정 한도·누적 사용량으로 추정 금지
 - PostToolUse 75%: 다음 안전한 작업 경계에서 저장 요청. 80% 이상: 미저장 기록 정리를 새 작업보다 우선. 압축 주기마다 임계값별 한 번만. 작업 중단·강제 압축 없음
-- PreToolUse: 구조화된 파일 도구의 문서 경로 검사와 셸 문서 쓰기 거부(정본 repo-docs `references/project-context.md`). Vault·프로젝트 미등록, 영역 이탈은 거부. 편집 도구는 필수 원문 미전달 시 조회 명령 안내와 함께 거부, 읽기·실행 명령은 비대상. SessionStart 주입·bind 안내는 git 작업본에서만
+- PreToolUse: 구조화된 파일 도구의 문서 경로 검사와 셸 문서 쓰기 거부(정본 repo-docs `references/project-context.md`). 로그 리디렉션은 `.log`, `.txt`·`.md` 등 문서 확장자 리디렉션은 문서 쓰기로 거부. Vault·프로젝트 미등록, 영역 이탈은 거부. 편집 도구는 필수 원문 미전달 시 조회 명령 안내와 함께 거부, 읽기·실행 명령은 비대상. SessionStart 주입·bind 안내는 git 작업본에서만
 - PreCompact: 작성된 기록 동기화 시도, 실패는 로컬 보존. 새 의미 요약 생성 없음
 - PostCompact·SessionStart·UserPromptSubmit: 복구 필요 표시 또는 복구 명령 연결. 모든 요청에 전체 이슈 재주입 금지
 - SessionStart: 등록 Vault·프로젝트·두 진입점 검사 결과 안내. 미등록 환경은 자동 추정 대신 등록 오류 보고. 안내 훅이 임의 셸·외부 앱 쓰기를 차단한다고 표현 금지
@@ -40,7 +40,7 @@ python3 <이 스킬 폴더>/scripts/install_statusline.py install
 - Codex: CLI `/hooks`에서 훅 정의 검토·신뢰 필요. 신뢰 우회 옵션 금지
 - 실행 중 호스트의 새 훅 재로드는 별도 확인. 설치 성공을 현재 대화 활성화로 보고하거나 반복 재시작 요구 금지
 - Claude status line: `install_statusline.py install|remove [--home]`. 기존 설정 전체와 훅 보존, 원래 명령의 입력·출력·종료 코드 유지. remove는 원래 status line 복구, 이후 사용자가 바꾼 설정은 덮어쓰기 거부. 출력: 변경 여부와 종료 0, 실패 stderr·2
-- 누락 훅 종료 검증: `python3 -m pytest <이 스킬 폴더>/tests`(pytest 필요). 실제 셸 명령의 종료·진단만 확인, 호스트 초기화·복구는 아래 실제 창 합격 조건으로 별도 검증
+- 누락 훅 종료 검증: 스킬 원본 저장소에서 `python3 -m pytest git/git-issue/tests`(pytest 필요, 설치본에 tests 없음). 실제 셸 명령의 종료·진단만 확인, 호스트 초기화·복구는 아래 실제 창 합격 조건으로 별도 검증
 
 ## 같은 창·제목의 자동 재개 계약
 

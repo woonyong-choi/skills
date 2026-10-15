@@ -59,15 +59,19 @@ docs/experiments/
 - 결과 차트 → 원본·산출물 위치, JSON 입력과 변환·검사(repo-docs-figures references/charts.md 실험 차트)
 - `run.sh` → `collect`, `process`, `analyze`, `verify`, `all` 다섯 명령. `./run.sh analyze`는 `raw/`를 입력으로 전처리를 다시 실행한 뒤 분석을 실행해 결과 재생성
 - `logs/` → `run.sh` 명령마다 실행 출력 전부. 수정 금지, 홈 경로는 `~`로. 아래 `log` 함수로만 기록
-- `results/terminal.*` → 보고한 실행 id의 `verify`·`analyze` 로그를 `cat`으로 보이는 VHS 녹화(repo-docs-figures references/vhs.md 기본 설정). 재실행 녹화 금지
+- 실행 id 공유 → `collect`가 첫 줄에 출력한 id를 같은 실행의 이후 명령에 `RUN_ID={실행 id} ./run.sh {명령}`으로 전달. 생략하면 새 id
+- `results/terminal.*` → 보고한 실행 id의 `verify`·`analyze` 로그를 `cat`으로 보이는 VHS 녹화(repo-docs-figures references/vhs.md 기본 설정). 실행 위치·경로 기준은 실험 폴더. 재실행 녹화 금지
 - `env.json` → 실행 환경: 운영체제, CPU, 메모리, 도구와 버전, 모델 이름(미사용 시 해당 없음), 실행 날짜, 커밋
 - 파일 크기 → 저장소의 파일 크기 정책 적용. 외부 저장 시 접근 경로·SHA-256·재현 방법 기록
 
-`run.sh` 기록 함수(명령마다 `log 명령 실행할 것`):
+`run.sh` 머리(명령마다 `log 명령 실행할 것`). 실패한 명령은 비영 종료로 전달, 어느 폴더에서 실행해도 실험 폴더 기준:
 
 ```sh
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
 id=${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$(git rev-parse --short=7 HEAD)}
-log() { mkdir -p logs; { printf '$ ./run.sh %s  # %s\n' "$1" "$id"; "${@:2}"; } 2>&1 | sed "s|$HOME|~|g" | tee "logs/$1-$id.log"; }
+log() { mkdir -p logs; { printf '$ RUN_ID=%s ./run.sh %s\n' "$id" "$1"; "${@:2}"; } 2>&1 | sed "s|$HOME|~|g" | tee "logs/$1-$id.log"; }
 ```
 
 ## 흐름
@@ -76,8 +80,8 @@ log() { mkdir -p logs; { printf '$ ./run.sh %s  # %s\n' "$1" "$id"; "${@:2}"; } 
 2. `design.md`, `run.sh`, `scripts/` 작성, 수집 전 설계·가설·판정 기준을 커밋으로 고정
 3. 일반 실측: 2번 설계 커밋을 같은 PR의 첫 기준점으로 두고, 수집·결과를 더해 함께 머지
 4. 수집 전 승인해야 할 데이터 접근·판정 조건이 있는 실험만 2번을 저장소 승인 절차로 먼저 확정. PR 사용 시 사전 등록 PR 머지. 이슈 연결은 git-issue 닫기 절
-5. `./run.sh collect`로 수집. 사전 열람 데이터는 설계에 기록하고 확인 분석용 자료와 구분
-6. `./run.sh verify`, `./run.sh analyze` 후 결과 차트와 `results/terminal.tape` 변환(repo-docs-figures references/conversion.md 변환)
+5. `./run.sh collect`로 수집, 출력 첫 줄의 실행 id 기록. 사전 열람 데이터는 설계에 기록하고 확인 분석용 자료와 구분
+6. `RUN_ID={실행 id} ./run.sh verify`, `RUN_ID={실행 id} ./run.sh analyze` 후 결과 차트와 `results/terminal.tape` 변환(repo-docs-figures references/conversion.md 변환)
 7. `report.md`, `data/README.md` 작성, `docs/experiments/README.md` 결론 칸 기입
 8. 결론이 설계를 바꾸면 같은 PR에서 설계 문서 수정
 9. 블로그 글: [report.md](references/report.md) 블로그 글 절의 고정 구성으로 html-report `explain` 생성. 요청 없이도 실행, 커밋 금지
@@ -128,8 +132,8 @@ log() { mkdir -p logs; { printf '$ ./run.sh %s  # %s\n' "$1" "$id"; "${@:2}"; } 
 보고서 머지 전 확인:
 
 1. 수집 전 설계 커밋이 첫 `raw/` 파일 커밋의 조상
-2. `./run.sh verify` 통과
-3. `./run.sh analyze` 두 번 실행 시 `results/` 같은 바이트, 차트 재현 검사(repo-docs-figures references/validation.md 검사)
+2. `RUN_ID={실행 id} ./run.sh verify` 통과
+3. `RUN_ID={실행 id} ./run.sh analyze` 두 번 실행 시 `results/` 같은 바이트, 차트 재현 검사(repo-docs-figures references/validation.md 검사)
 4. 보고서의 모든 수치가 `results/summary.json`에 존재
 5. `설계와 다른 점` 절 존재
 6. 실패, 제외한 실행 전부 흐름 표에

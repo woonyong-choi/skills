@@ -23,12 +23,13 @@ typst compile 포트폴리오.typ 포트폴리오.pdf
 pdfinfo 이력서.pdf
 pdffonts 이력서.pdf
 pdftotext -layout 이력서.pdf 이력서.txt
+awk '/```/{c=!c; next} !c' 이력서.typ 포트폴리오.typ | grep -nE '\{|\}|·|‒|–|—|―|--'
 shasum -a 256 이력서.pdf 포트폴리오.pdf
 ```
 
 - `career.typ` 해시 불일치면 원본으로 다시 복사
 - 포트폴리오도 `pdfinfo`·`pdffonts`·`pdftotext` 같은 검사. A4, 쪽 수, 한국어 글꼴, 의미 있는 텍스트 추출 확인
-- 원본·추출 텍스트에서 `{`, `·`, 유니코드 대시 검색 0건
+- 자리 글·금지 문자 검사(`awk`): 출력 0줄. 코드 블록 안은 제외
 - 컴파일 성공만으로 완료 판정 금지. 추출 텍스트는 검사 뒤 삭제
 
 ## 화면 검사

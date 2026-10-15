@@ -15,7 +15,7 @@ description: "저장소 루트 README.md와 README.ko.md를 작성·갱신·번�
 
 ## 입력
 
-작성 전 읽을 입력. 없는 파일은 생략. 추적·배포 도구는 저장소 정책에 따른다. GitHub 명령은 GitHub 저장소에만 적용하고, 다른 환경에서는 저장소 설명·승인 기록·배포 목록의 대응 근거 사용
+작성 전 읽을 입력. 없는 파일은 생략. 추적·배포 도구는 저장소 정책 적용. GitHub 명령은 GitHub 저장소에만 적용하고, 다른 환경에서는 저장소 설명·승인 기록·배포 목록의 대응 근거 사용
 
 입력 → 쓰는 곳:
 
@@ -150,7 +150,7 @@ description: "저장소 루트 README.md와 README.ko.md를 작성·갱신·번�
 
 - `docs/README.md` 표의 행 중 독자의 시작 질문에 답하는 문서, 같은 순서, 끝에 `docs/README.md` 링크. 형식 `- [{문서 제목}]({경로}): {답하는 것}`
 - 문서 제목: 작업 언어가 README 언어와 같으면 같은 글자, 다르면 README 언어로 번역
-- 작업 언어가 영어가 아니면 절 첫 문장에 표시: `The design documents are written in Korean.`
+- 작업 언어가 영어가 아니면 영어 README 절 첫 문장에 표시: `The design documents are written in Korean.` 작업 언어로 쓴 번역본은 이 문장 생략(번역본 일대일 대응의 예외)
 
 ### 개발
 

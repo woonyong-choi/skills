@@ -43,7 +43,7 @@ def main() -> int:
         except (ValueError, AttributeError):
             event = None
             is_file_write = False
-        failure = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Work Continuity document guard unavailable; repair installation before writing"}} if event == "PreToolUse" and is_file_write else {}
+        failure = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Work Continuity document guard unavailable; repair: run python3 tools/skill-sync/scripts/install.py in the skills source repo (skill-sync install), then retry"}} if event == "PreToolUse" and is_file_write else {}
         print(json.dumps(failure))
         return 0
 

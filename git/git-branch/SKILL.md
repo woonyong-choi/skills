@@ -7,8 +7,7 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 범위: 브랜치 구조, 작업 단위, 브랜치 이름, PR 생성, 머지, 릴리스
-- 필요할 때만 읽기: 작업 선택, 시작 전 이슈 우선순위와 막힘 확인 → git-issue; 커밋 메시지, PR 제목, squash 메시지 작성 → git-commit; PR 본문 작성 → git-pull-request; 검사 범위·증거 확인 → code-style
-- PR 생성·머지 전 [판 상태 절차](../git-issue/references/project-status.md) 필수 확인
+- 필요할 때만 읽기: 작업 선택, 시작 전 이슈 우선순위와 막힘 확인 → git-issue; 커밋 메시지, PR 제목, squash 메시지 작성 → git-commit; PR 본문 작성 → git-pull-request; 검사 범위·증거 확인 → code-style; PR 생성·머지 → git-issue `references/project-status.md` 필수 확인
 
 ## 구조
 
@@ -21,7 +20,6 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 
 항목 → 혼자 → 팀:
 
-- 기본 브랜치 직접 push → 금지 → 금지
 - PR → 필수 → 필수
 - 머지 전 리뷰 승인 → 일반 변경은 없음, 계약 승인은 git-pull-request 검토 규칙 → 작성자가 아닌 사람 1명과 같은 계약 승인 규칙
 - 검증 → CI 있으면 CI 통과, 없으면 로컬 빌드·테스트·포맷·린트 통과 → 혼자와 동일
@@ -41,7 +39,7 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 `type/이슈번호-scope-설명`
 
 - 작은 후속 정리도 기존 이슈 번호 (git-issue 과업 연결과 기록)
-- type, scope: 커밋과 같은 단어 (git-commit type, scope)
+- type, scope: 커밋과 같은 단어 (git-commit type, scope). 브랜치 type은 커밋 type, 이슈 라벨 아님(`build` 이슈의 기능 추가 → `feat`)
 - 설명: 영어 소문자 kebab-case, 2~5단어
 
 예 → 뜻:
@@ -66,8 +64,8 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 
 ## 작업 중
 
-- 분기: 최신 기본 브랜치에서 `git switch -c {브랜치} {원격}/{기본 브랜치}`
-- 저장소 정책이 병렬 작업을 허용하고 병렬 실행을 요청받은 경우: 에이전트마다 이슈 하나, 브랜치 하나, worktree 하나. `git worktree add ../{저장소}.wt/{브랜치의 / 를 - 로} -b {브랜치} {원격}/{기본 브랜치}`
+- 분기: 최신 기본 브랜치에서 `git switch --no-track -c {브랜치} {원격}/{기본 브랜치}`
+- 저장소 정책이 병렬 작업을 허용하고 병렬 실행을 요청받은 경우: 에이전트마다 이슈 하나, 브랜치 하나, worktree 하나. `git worktree add --no-track ../{저장소}.wt/{브랜치의 / 를 - 로} -b {브랜치} {원격}/{기본 브랜치}`
 - 병렬 작업 시 같은 생성물·빌드 단위(crate, 패키지)의 검사 담당은 하나. 다른 에이전트는 자기 파일만 수정, 검사 실패 보고. 읽기 검토·독립 조사는 병행 허용
 - 검사 시작·종료 시 대상 HEAD 대조, 변경 여부 기록
 - 임시 폴더, 저장소 사본, 두 번째 clone 금지. 검사는 자기 worktree에서만
@@ -102,4 +100,4 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 - 같은 이슈 브랜치 중복 생성, 다른 이슈 작업 섞기
 - 다른 주체의 브랜치 작업(commit, push 포함)
 - 요청 없는 rebase·force push
-- 요청 없는 머지·태그·브랜치 보호 설정 변경
+- 요청 없는 태그·브랜치 보호 설정 변경

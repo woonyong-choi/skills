@@ -90,7 +90,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" claude; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Work Continuity document guard unavailable\"}}'; fi",
+            "command": "if [ -f \"$HOME/.config/skills/work-continuity.py\" ]; then python3 \"$HOME/.config/skills/work-continuity.py\" claude; else printf '%s\\n' 'continuity hook unavailable; automatic recovery paused; verify installation' >&2; printf '%s\\n' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Work Continuity document guard unavailable; repair: run python3 tools/skill-sync/scripts/install.py in the skills source repo (skill-sync install), then retry\"}}'; fi",
             "timeout": 5,
             "statusMessage": "Validate Document Destination"
           }

@@ -42,7 +42,7 @@ def resolve_vault() -> Path:
         if pointer.is_file():
             value = json.loads(pointer.read_text(encoding="utf-8")).get("path", "")
     if not isinstance(value, str) or not value:
-        raise ContextError("vault unregistered: ask the user for the Vault absolute path, then run project_context.py --register-vault <path>; never guess or create one")
+        raise ContextError(f"vault unregistered: ask the user for the Vault absolute path, then run python3 {Path(__file__).resolve()} --register-vault <path>; never guess or create one")
     path = Path(value).expanduser()
     if not path.is_absolute() or not path.is_dir():
         raise ContextError("registered vault is not an accessible absolute directory")

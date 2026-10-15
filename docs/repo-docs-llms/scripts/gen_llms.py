@@ -19,6 +19,7 @@ from pathlib import Path
 OPTIONAL_PREFIXES = ("experiments/", "decisions/")
 ROW = re.compile(r"\| \[(.+?)\]\((.+?)\) \| (.+?) \|$")
 LANGUAGE_LINE = re.compile(r"\|.*README[\w.-]*\.md|README[\w.-]*\.md.*\|")
+LINK = re.compile(r"\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)|!?\[[^\]]*\]\([^)]*\)|<a\b[^>]*>.*?</a>", re.IGNORECASE)
 
 
 # cost: time O(n), heap O(n), stack O(1), io 2
@@ -35,12 +36,25 @@ def raw_base_url(remote: str = "origin", branch: str | None = None, raw_url: str
     if not match:
         raise SystemExit(f"{remote}이 GitHub 저장소가 아님: {url}; --raw-base-url 지정 필요")
     if branch is None:
-        output = subprocess.run(["git", "ls-remote", "--symref", remote, "HEAD"], capture_output=True, text=True, check=True).stdout
-        heads = [line.split()[1].removeprefix("refs/heads/") for line in output.splitlines() if line.startswith("ref: refs/heads/") and line.split()[-1] == "HEAD"]
+        result = subprocess.run(["git", "ls-remote", "--symref", remote, "HEAD"], capture_output=True, text=True)
+        if result.returncode != 0:
+            raise SystemExit(f"cannot query {remote} HEAD: {result.stderr.strip()}; use --branch")
+        heads = [line.split()[1].removeprefix("refs/heads/") for line in result.stdout.splitlines() if line.startswith("ref: refs/heads/") and line.split()[-1] == "HEAD"]
         if len(heads) != 1:
             raise SystemExit("cannot determine default branch; use --branch")
         branch = heads[0]
     return f"https://raw.githubusercontent.com/{match.group(1)}/{urllib.parse.quote(branch, safe='/')}/"
+
+
+# cost: time O(n), heap O(n), stack O(1)
+# vars: n = 줄 글자 수
+# basis: estimate
+# 링크·태그·구분 기호를 지워 남는 글자가 없으면 이동 줄
+def link_only(line: str) -> bool:
+    if not LINK.search(line):
+        return False
+    rest = re.sub(r"<[^>]+>", "", LINK.sub("", line))
+    return not re.sub(r"[\s·|/•–-]", "", rest)
 
 
 # cost: time O(c), heap O(r), stack O(1), io 1
@@ -106,16 +120,19 @@ def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url:
     readme = open("README.md", encoding="utf-8").read()
     blocks = [block.strip() for block in re.split(r"\n\s*\n", readme) if block.strip()]
     heading = re.search(r"<h1[^>]*>(.*?)</h1>|^# (.+)$", readme, re.MULTILINE)
-    name = (heading.group(1) or heading.group(2)).strip()
     texts = []
     for block in blocks:
         if re.match(r"<h1|# ", block):
             continue
-        lines = [re.sub(r"<[^>]+>", "", line).strip() for line in block.splitlines() if not LANGUAGE_LINE.search(line)]
+        lines = [line.strip() for line in block.splitlines() if not LANGUAGE_LINE.search(line) and not link_only(line)]
+        lines = [re.sub(r"<[^>]+>", "", line).strip() for line in lines]
         lines = [line for line in lines if line and " · " not in line]
         if lines:
             texts.append(" ".join(lines))
+    if not heading or len(texts) < 2:
+        raise SystemExit("README.md needs a title, a tagline paragraph and an intro paragraph")
     tagline, intro = texts[0], texts[1]
+    name = (heading.group(1) or heading.group(2)).strip()
     main_rows = [row for row in rows if not row[1].startswith(OPTIONAL_PREFIXES)]
     optional_rows = [row for row in rows if row[1].startswith(OPTIONAL_PREFIXES)]
     index = [f"# {name}", "", f"> {tagline}", "", intro, "", "## Docs", ""]

@@ -56,6 +56,7 @@
 | `{경로}` | {내용} | {형식} |
 ````
 
+- 영어 작업 언어의 절 이름: `데이터` → `Data`, `저장소` → `Storage`, `관계` → `Relationships`, `테이블` → `Tables`, `불변 조건` → `Invariants`, `보존` → `Retention`, `스키마 변경` → `Schema changes`, `다른 파일` → `Other files`
 - 관계 그림: repo-docs-figures
 - 테이블 순서: 관계 그림에서 부모 먼저
 - 문장 열: `불변 조건`의 `조건`, `지키는 방법`

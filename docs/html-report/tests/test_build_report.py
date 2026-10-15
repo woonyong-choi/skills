@@ -55,7 +55,7 @@ class InlineThinkflowReportTest(unittest.TestCase):
             )
         cls.thinkflow = Path(thinkflow).resolve()
 
-    def _build_navigation_report(self) -> str:
+    def _build_navigation_report(self, options: int = 1) -> str:
         module_spec = importlib.util.spec_from_file_location("build_report", BUILD)
         self.assertIsNotNone(module_spec)
         self.assertIsNotNone(module_spec.loader)
@@ -67,7 +67,8 @@ class InlineThinkflowReportTest(unittest.TestCase):
                 "title": f"탐색 칩 {number}: 여러 섹션을 한 줄로 표시",
                 "what": "섹션이 많아도 탐색 칩은 한 줄로 남아야 합니다. 활성 섹션은 가로 스크롤로 보입니다.",
                 "options": [
-                    {"label": "확인", "text": "탐색 칩 대비와 스크롤을 확인합니다."}
+                    {"label": f"확인 {index}", "text": "탐색 칩 대비와 스크롤을 확인합니다."}
+                    for index in range(1, options + 1)
                 ],
                 "effect": [["칩", "한 줄 표시", "가로 공간이 더 필요함"]],
                 "rec": ["후", "활성 칩이 보이는 위치로 이동합니다."],
@@ -159,6 +160,37 @@ class InlineThinkflowReportTest(unittest.TestCase):
         self.assertIn("flex-wrap:nowrap", report)
         self.assertIn("overflow-x:auto", report)
         self.assertIn("activeLink.scrollIntoView", report)
+
+    def test_comparison_columns_collapse_to_one_on_narrow_screens(self) -> None:
+        playwright_root = self._playwright_root()
+        if playwright_root is None or shutil.which("node") is None:
+            self.skipTest("installed Playwright browser is unavailable")
+        script = r"""
+const { createRequire } = await import('node:module');
+const { chromium } = createRequire(`${process.env.PLAYWRIGHT_REQUIRE_ROOT}/`)('playwright-core');
+let html = '';
+for await (const chunk of process.stdin) html += chunk;
+const browser = await chromium.launch();
+const columns = {};
+for (const width of [390, 900]) {
+  const page = await browser.newPage({ viewport: { width, height: 700 } });
+  await page.setContent(html);
+  columns[width] = await page.evaluate(() => getComputedStyle(document.querySelector('.cols')).gridTemplateColumns.split(' ').length);
+  await page.close();
+}
+await browser.close();
+process.stdout.write(JSON.stringify(columns));
+"""
+        completed = subprocess.run(
+            ["node", "--input-type=module", "-e", script],
+            input=self._build_navigation_report(options=2),
+            capture_output=True,
+            check=False,
+            env=os.environ | {"PLAYWRIGHT_REQUIRE_ROOT": str(playwright_root)},
+            text=True,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(json.loads(completed.stdout), {"390": 1, "900": 2})
 
     def test_navigation_chips_have_aa_contrast_and_stay_in_one_row(self) -> None:
         playwright_root = self._playwright_root()

@@ -1,13 +1,18 @@
-"""추적 그림 원본을 ThinkFlow SVG와 VHS GIF로 변환.
-인자: 선택 원본 경로, --thinkflow 경로, --static, 저장소 루트에서 실행
+"""그림 원본을 ThinkFlow SVG와 VHS GIF로 변환.
+인자: 선택 원본 경로(생략 시 저장소 루트에서 docs/assets/ 아래 git 추적 원본), --thinkflow 경로, --static
 출력: SVG·GIF와 도구 출력, 종료 0 성공·비영 종료 실패
 """
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+SOURCE_SUFFIXES = (".thinkflow", ".tape")
+# 이전 그림 도구의 원본 확장자. 문법이 달라 이름만 바꿔서는 변환되지 않는다.
+OLD_SUFFIXES = (".dap",)
 
 
 # cost: time O(n + s) + 도구 실행 시간, heap O(n + s), stack O(1), io O(n)
@@ -24,7 +29,7 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     try:
         sources = args.sources or _tracked_sources()
-        invalid = [p for p in sources if not p.endswith((".thinkflow", ".tape"))]
+        invalid = [p for p in sources if not p.endswith(SOURCE_SUFFIXES)]
         if invalid:
             for source in invalid:
                 print(f"{source}: migrate to .thinkflow before rendering", file=sys.stderr)
@@ -33,6 +38,9 @@ def main(argv: list[str]) -> int:
         tapes = [p for p in sources if p.endswith(".tape")]
         if tapes and args.static:
             print("figure options cannot be applied to .tape files", file=sys.stderr)
+            return 1
+        if tapes and shutil.which("vhs") is None:
+            print("vhs not found on PATH; nothing rendered", file=sys.stderr)
             return 1
         configured = args.thinkflow or os.environ.get("THINKFLOW_PATH")
         command = ["thinkflow"]
@@ -58,8 +66,10 @@ def main(argv: list[str]) -> int:
 # vars: n = git이 출력한 경로 바이트 수
 # basis: estimate
 def _tracked_sources() -> list[str]:
+    """저장소 루트의 docs/assets/ 아래 추적 원본. 옛 형식도 넣어 변환 전 실패시킨다."""
+    patterns = [f"docs/assets/*{suffix}" for suffix in SOURCE_SUFFIXES + OLD_SUFFIXES]
     result = subprocess.run(
-        ["git", "ls-files", "-z", "--", "*.thinkflow", "*.tape"],
+        ["git", "ls-files", "-z", "--", *patterns],
         capture_output=True,
         check=True,
     )

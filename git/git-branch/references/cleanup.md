@@ -1,6 +1,6 @@
 # 정리
 
-머지 후 저장소 안에서 실행 전 skill-sync `references/execution.md` 필수 확인. 먼저 미리보기, 목록 확인 뒤 `--apply`
+머지 후 먼저 미리보기, 목록 확인 뒤 `--apply`
 
 ```sh
 python3 <이 스킬 폴더>/scripts/cleanup_merged.py <PR 번호 또는 브랜치>

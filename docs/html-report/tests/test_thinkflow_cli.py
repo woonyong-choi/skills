@@ -6,6 +6,7 @@ import io
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from types import ModuleType
@@ -56,7 +57,10 @@ class ThinkflowCliTest(unittest.TestCase):
         ):
             run.return_value.stdout = b"diagram with spaces.thinkflow\0"
             self.assertEqual(FIGURES.main([]), 0)
-        self.assertIn("*.thinkflow", run.call_args_list[0].args[0])
+        self.assertEqual(
+            run.call_args_list[0].args[0][4:],
+            ["docs/assets/*.thinkflow", "docs/assets/*.tape", "docs/assets/*.dap"],
+        )
         self.assertEqual(
             run.call_args_list[1].args[0],
             ["thinkflow", "check", "diagram with spaces.thinkflow", "--strict"],
@@ -68,6 +72,37 @@ class ThinkflowCliTest(unittest.TestCase):
         with contextlib.redirect_stderr(io.StringIO()) as stderr:
             self.assertEqual(FIGURES.main(["old.svg"]), 1)
         self.assertIn("migrate to .thinkflow", stderr.getvalue())
+
+    # 인자 생략: docs/assets/ 밖 원본 제외, 추적된 옛 형식은 렌더 전 실패.
+    def test_no_argument_run_reads_docs_assets_and_rejects_old_format(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            repo = Path(folder)
+            subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+            for path in ("docs/assets/a.thinkflow", "docs/assets/old.dap", "tests/b.thinkflow", "docs/experiments/x/results/terminal.tape"):
+                (repo / path).parent.mkdir(parents=True, exist_ok=True)
+                (repo / path).write_text("thinkflow\n", encoding="utf-8")
+            subprocess.run(["git", "add", "."], cwd=repo, check=True)
+            with contextlib.chdir(repo):
+                self.assertEqual(FIGURES._tracked_sources(), ["docs/assets/a.thinkflow", "docs/assets/old.dap"])
+                with (
+                    patch.object(FIGURES.subprocess, "run", wraps=subprocess.run) as run,
+                    contextlib.redirect_stderr(io.StringIO()) as stderr,
+                ):
+                    self.assertEqual(FIGURES.main([]), 1)
+        self.assertIn("docs/assets/old.dap: migrate to .thinkflow", stderr.getvalue())
+        self.assertEqual(run.call_count, 1)
+
+    # VHS가 없으면 그림 렌더 전에 실패한다.
+    def test_missing_vhs_fails_before_rendering(self) -> None:
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch.object(FIGURES.shutil, "which", return_value=None),
+            patch.object(FIGURES.subprocess, "run") as run,
+            contextlib.redirect_stderr(io.StringIO()) as stderr,
+        ):
+            self.assertEqual(FIGURES.main(["a.thinkflow", "results/terminal.tape"]), 1)
+        self.assertIn("vhs not found", stderr.getvalue())
+        run.assert_not_called()
 
     # strict 실패 원본은 렌더를 시작하지 않는 공개 계약.
     def test_failed_check_does_not_render(self) -> None:

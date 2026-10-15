@@ -14,6 +14,7 @@ PATCH_PATH = re.compile(r"^\*\*\* (?:Add File|Update File|Delete File|Move to): 
 SHELL_WRITER = re.compile(r"\.write_(?:text|bytes)\s*\(|\bwriteFile(?:Sync)?\s*\(|\bopen\([^\n]*[,=]\s*['\"][wax]")
 SHELL_FILE_COMMANDS = {"tee", "cp", "mv", "install", "touch"}
 SHELL_INTERPRETERS = {"sh", "bash", "zsh", "dash"}
+COMMAND_PREFIXES = {"sudo", "env", "xargs", "command", "time", "git", "if", "then", "else", "elif", "do", "while", "until", "!"}
 DOCUMENT_LITERAL = re.compile(r"\.(?:md|mdx|rst|adoc|txt|docx|pdf)(?=$|[^\w])", re.IGNORECASE)
 HEREDOC = re.compile(r"""'[^']*'|"(?:\\.|[^"\\])*"|\\.|(?P<comment>(?<!\S)\#.*)|(?<!<)<<(?P<tabs>-?)(?!<)[ \t]*(?P<delimiter>'[^']+'|"(?:\\.|[^"\\])+"|\\?[A-Za-z_][\w.-]*)""")
 
@@ -83,8 +84,15 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
             project_context.check_write(project, path)
         return {}
     except (project_context.ContextError, OSError, ValueError, IndexError, KeyError) as error:
-        hint = "" if str(error).startswith("vault unregistered") else "; register the correct project or use its Vault document area"
-        return deny(str(error) + hint + "; do not bypass this check")
+        message = str(error)
+        if message.startswith("vault unregistered"):
+            hint = ""
+        elif message.startswith("document path is outside"):
+            hint = "; write inside the project's Vault area or an approved path"
+        else:
+            project = shlex.quote(str(project_path or payload.get("cwd") or Path.cwd()))
+            hint = f"; ask the user first (registration writes AGENTS.md/CLAUDE.md into the repo), then run python3 {Path(project_context.__file__).resolve()} --project {project} --register-project"
+        return deny(message + hint + "; do not bypass this check")
 
 
 def writes_document(tokens: list[str]) -> bool:
@@ -98,14 +106,22 @@ def writes_document(tokens: list[str]) -> bool:
     return False
 
 
+def command_names(part: list[str]) -> list[str]:
+    """명령 위치 단어: 할당과 COMMAND_PREFIXES·그 옵션 뒤 첫 단어(git은 하위 명령)."""
+    names: list[str] = []
+    for arg in part:
+        if names and names[-1] not in COMMAND_PREFIXES:
+            break
+        if re.fullmatch(r"[A-Za-z_]\w*=.*", arg) and (not names or names[-1] == "env") or names and arg.startswith("-"):
+            continue
+        names.append(Path(arg).name)
+    return names
+
+
 def is_document_command(part: list[str]) -> bool:
-    names = [Path(arg).name for arg in part]
+    names = command_names(part)
     has_document = any(DOCUMENT_LITERAL.search(arg) for arg in part)
-    file_command = any(
-        name in SHELL_FILE_COMMANDS and not (
-            name == "install" and index > 0 and re.fullmatch(r"pip(?:\d+(?:\.\d+)?)?", names[index - 1])
-        ) for index, name in enumerate(names)
-    )
+    file_command = bool(SHELL_FILE_COMMANDS.intersection(names))
     dd_output = "dd" in names and any(arg.startswith("of=") and DOCUMENT_LITERAL.search(arg[3:]) for arg in part)
     in_place = bool({"sed", "perl"}.intersection(names)) and any(
         arg.startswith("--in-place") or re.match(r"^-[npEw]*i", arg)
