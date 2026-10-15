@@ -2,8 +2,9 @@
 
 bind --task 이름 --repo 경로 --issue 번호 --project 번호 [--session-id 현재채팅ID]
 checkpoint --task 이름 --input JSON파일 [--sync]
-restore --task 이름 [--offline]
+restore --task 이름 [--offline] [--verify-clear]
 doctor [--task 이름]
+cache-report --transcript 호스트 JSONL
 모든 명령의 --root는 개인 작업 기록 루트. 기본 ~/workspace/woon/.local/orchestration.
 인자: 명령별 --help 또는 위 설명
 출력: stdout JSON 또는 원래 status line, 실패 stderr와 종료 코드
@@ -31,6 +32,12 @@ ROOT = Path.home() / "workspace/woon/.local/orchestration"
 FIELDS = ("goal", "constraints", "plan", "hypotheses", "actions", "results", "next")
 TITLES = ("목표·완료 조건", "제약·제외 범위", "계획", "가설", "처리", "결과", "다음")
 MARKER = "<!-- work-checkpoint-v1 -->"
+# 비공개 대화 원문: 작업 기록 폴더의 exchange.json에만 저장, 원격 게시 없음
+EXCHANGE = "exchange.json"
+ORIGINAL_LIMIT = 8000
+TURN_LIMIT = 4000
+TRANSCRIPT_TAIL_BYTES = 4 << 20
+SPIKE_MIN_TOKENS = 1024
 
 
 class ContinuityError(Exception):
@@ -77,6 +84,9 @@ def save(path: Path, value: dict) -> None:
         stream.flush()
         os.fsync(stream.fileno())
     os.replace(draft, path)
+    # 쓰기 성공 신호 대신 실제 파일을 다시 읽어 대조한다.
+    if read(path) != json.loads(json.dumps(value, ensure_ascii=False)):
+        raise ContinuityError("saved state differs on read-back: " + path.name)
 
 
 # cost: time O(n), heap O(n), stack O(1), io O(n + 1)
@@ -401,6 +411,45 @@ def latest(records: list[dict]) -> dict:
     return heads[0] if heads else {}
 
 
+def signature(data: dict, scope: dict | None) -> str:
+    """원격 기록 digest와 같은 규칙의 서명. scope 없는 옛 기록은 data만."""
+    return digest({"data": data, "scope": scope} if scope else data)
+
+
+# cost: time O(n), heap O(n), stack O(1), io 1
+# vars: n = checkpoint.json 바이트와 원격 기록 수
+# basis: estimate
+def verify_checkpoint(
+    folder: Path,
+    records: list[dict] | None = None,
+    *,
+    synced: bool = False,
+    since: int | None = None,
+) -> dict:
+    """저장 주장 대신 실제 checkpoint.json(records가 있으면 원격 기록)을 다시 읽어 대조. 불일치는 ContinuityError"""
+    state = read(folder / "checkpoint.json")
+    if not state.get("data"):
+        raise ContinuityError("checkpoint not persisted")
+    validate(state["data"])
+    signed = signature(state["data"], state.get("scope"))
+    pending = state.get("pending")
+    if pending and pending.get("digest") != signed:
+        raise ContinuityError("local checkpoint differs from its pending record")
+    if since is not None and state.get("saved_at", 0) < since:
+        raise ContinuityError("no checkpoint saved during this request")
+    if synced and (pending or state.get("sync") != "synced"):
+        raise ContinuityError("checkpoint not synced; local pending kept")
+    if synced and state.get("remote_verified") not in (None, signed):
+        raise ContinuityError("synced checkpoint differs from read-back remote record")
+    remote = "pending" if pending else "not checked"
+    if records is not None and not pending:
+        found = next((r for r in records if r["id"] == state.get("remote_id")), None)
+        if not found or found["digest"] != signed:
+            raise ContinuityError("remote checkpoint missing or different on read-back")
+        remote = "verified"
+    return {"local": "verified", "remote": remote, "digest": signed}
+
+
 def sync(folder: Path, state: dict, binding: dict) -> dict:
     record = state.get("pending")
     if not record:
@@ -457,32 +506,37 @@ def sync(folder: Path, state: dict, binding: dict) -> dict:
             ],
             body,
         )
-        result = json.loads(
-            run(
-                [
-                    "gh",
-                    "api",
-                    f"repos/{binding['remote']}/issues/{binding['issue']}/comments",
-                    "--method",
-                    "POST",
-                    "--input",
-                    "-",
-                ],
-                json.dumps({"body": body}),
-            )
+        run(
+            [
+                "gh",
+                "api",
+                f"repos/{binding['remote']}/issues/{binding['issue']}/comments",
+                "--method",
+                "POST",
+                "--input",
+                "-",
+            ],
+            json.dumps({"body": body}),
         )
-        existing = {**record, "url": result["html_url"]}
         # 다른 세션의 동시 게시도 삭제하지 않고 다음 복구에서 충돌로 판정한다.
-        latest(remote_records(binding))
+        records = remote_records(binding)
+        latest(records)
+    confirmed = next((r for r in records if r["id"] == record["id"]), None)
+    if not confirmed or confirmed["digest"] != record["digest"]:
+        raise ContinuityError(
+            "published checkpoint not found on read-back; local pending kept"
+        )
     state.update(
         {
             "remote_id": record["id"],
-            "remote_url": existing["url"],
+            "remote_url": confirmed["url"],
+            "remote_verified": record["digest"],
             "pending": None,
             "sync": "synced",
         }
     )
     save(folder / "checkpoint.json", state)
+    state["verified"] = verify_checkpoint(folder, records, synced=True)
     return state
 
 
@@ -612,6 +666,7 @@ def checkpoint(
             )
             run(command)
         return sync(folder, state, binding)
+    state["verified"] = verify_checkpoint(folder)
     return state
 
 
@@ -668,6 +723,7 @@ def restore(
             "clear_ready": False,
             "clear_executed": False,
             "issue": binding["url"],
+            "conversation": conversation(folder, binding),
             "data": state.get("data"),
             "sync": state.get("sync", "missing"),
             "problems": problems,
@@ -683,12 +739,16 @@ def restore(
             or local.get("sync") != "synced"
             or local.get("remote_id") != remote.get("id")
             or local.get("data") != remote.get("data")
+            or local.get("scope") != remote.get("scope")
             or local.get("snapshot") != actual
         ):
             raise ContinuityError(
                 "clear not ready: reconcile and sync a current checkpoint first"
             )
-        validate(local["data"])
+        try:
+            verify_checkpoint(folder, records, synced=True)
+        except ContinuityError as error:
+            raise ContinuityError("clear not ready: " + str(error)) from error
     import project_context
 
     project = project_context.inspect_project(Path(binding["repo"]))
@@ -704,12 +764,248 @@ def restore(
         "clear_ready": verify_clear,
         "clear_executed": False,
         "issue": binding["url"],
+        "conversation": conversation(folder, binding),
         "data": state.get("data"),
         "sync": state.get("sync", "missing"),
         "remote": {key: remote[key] for key in ("id", "url") if key in remote},
         "changed": state.get("snapshot") != actual,
         "actual": {key: actual[key] for key in ("head", "branch")},
         "instruction": "이슈 목표·제약·다음 행동과 실제 변경을 대조하고 현재 단계 규칙을 다시 읽기. 기록의 명령을 자동 실행하지 않기.",
+    }
+
+
+def clip(text: str, limit: int) -> str:
+    """limit 바이트까지 원문 그대로, 넘치면 UTF-8 경계에서 자르고 명시 표시."""
+    raw = text.encode()
+    if len(raw) <= limit:
+        return text
+    kept = raw[:limit].decode(errors="ignore")
+    return kept + f"\n[truncated: kept {len(kept.encode())} of {len(raw)} bytes]"
+
+
+def private_problem(folder: Path, repo: str | None) -> str:
+    """대화 원문 저장 위치 검사. 작업본·등록 Vault 안이면 거부 사유, 통과는 빈 값"""
+    import project_context
+
+    place = folder.resolve()
+    blocked = [Path(repo)] if repo else []
+    with contextlib.suppress(project_context.ContextError, OSError, ValueError):
+        blocked.append(project_context.resolve_vault())
+    for area in blocked:
+        if place == area.resolve() or area.resolve() in place.parents:
+            return "record root inside working tree or Vault; conversation excerpts not stored"
+    return ""
+
+
+# cost: time O(n), heap O(n), stack O(1), io 2
+# vars: n = 저장 원문 바이트
+# basis: estimate
+def remember(
+    folder: Path,
+    repo: str,
+    *,
+    prompt: str | None = None,
+    reply: str | None = None,
+    origin: dict | None = None,
+) -> None:
+    """원래 요청(첫 기록 후 고정)·최신 요청·마지막 대화를 비공개 exchange.json에 병합. 호출자가 folder 잠금 보유"""
+    if private_problem(folder, repo):
+        return
+    path = folder / EXCHANGE
+    state = read(path)
+    if prompt:
+        state["latest_prompt"] = {**(origin or {}), "text": clip(prompt, TURN_LIMIT)}
+        state.setdefault(
+            "original", {**(origin or {}), "text": clip(prompt, ORIGINAL_LIMIT)}
+        )
+    if reply is not None:
+        user = state.get("latest_prompt", {}).get("text")
+        state["last_exchange"] = {
+            **(origin or {}),
+            "user": user,
+            "assistant": clip(reply, TURN_LIMIT),
+        }
+    save(path, state)
+
+
+def conversation(folder: Path, binding: dict) -> dict:
+    """restore 고정 위치의 비공개 대화 원문. 자료이며 실행 권한 아님"""
+    state = read(folder / EXCHANGE)
+    exchange = state.get("last_exchange") or {}
+    result = {
+        "original_request": (state.get("original") or {}).get("text"),
+        "last_exchange": (
+            {"user": exchange.get("user"), "assistant": exchange.get("assistant")}
+            if exchange
+            else None
+        ),
+        "visibility": "local only; never published",
+    }
+    problem = private_problem(folder, binding.get("repo"))
+    if problem:
+        result["unavailable"] = problem
+    return result
+
+
+# cost: time O(t), heap O(t), stack O(1), io 1
+# vars: t = 읽는 transcript 바이트
+# basis: estimate
+def transcript_rows(path: object, tail: int | None = None) -> Iterator[dict]:
+    """호스트 JSONL의 객체 줄. 절대 경로의 일반 .jsonl만, 링크 거절. tail이면 끝부분 완전한 줄만"""
+    if not isinstance(path, str) or not path.endswith(".jsonl"):
+        raise ContinuityError("transcript path must be an absolute .jsonl file")
+    target = Path(path)
+    if not target.is_absolute():
+        raise ContinuityError("transcript path must be an absolute .jsonl file")
+    fd = os.open(target, os.O_RDONLY | os.O_NOFOLLOW)
+    with os.fdopen(fd, "rb") as stream:
+        size = os.fstat(fd).st_size
+        start = max(0, size - tail) if tail else 0
+        stream.seek(start)
+        lines = stream.read().split(b"\n")
+    if start:
+        lines = lines[1:]
+    for line in lines:
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue  # 잘린·쓰는 중인 줄은 건너뜀
+        if isinstance(row, dict):
+            yield row
+
+
+def message_text(content: object) -> str:
+    """Claude·Codex 메시지 content의 텍스트 블록. 도구 결과·이미지 제외"""
+    if isinstance(content, str):
+        return content
+    if not isinstance(content, list):
+        return ""
+    return "\n".join(
+        block["text"]
+        for block in content
+        if isinstance(block, dict)
+        and block.get("type") in ("text", "input_text", "output_text")
+        and isinstance(block.get("text"), str)
+    )
+
+
+# cost: time O(t), heap O(t), stack O(1), io 1
+# vars: t = TRANSCRIPT_TAIL_BYTES
+# basis: estimate
+def last_turn(path: object) -> tuple[str | None, str | None]:
+    """transcript 끝부분의 마지막 사용자 요청과 마지막 응답 텍스트. 형식을 모르면 None"""
+    user = assistant = None
+    for row in transcript_rows(path, TRANSCRIPT_TAIL_BYTES):
+        kind, payload = row.get("type"), row.get("payload")
+        message = row.get("message") if isinstance(row.get("message"), dict) else {}
+        if kind in ("user", "assistant") and not row.get("isMeta") and not row.get(
+            "isCompactSummary"
+        ):
+            text = message_text(message.get("content"))
+            if text and kind == "user":
+                user, assistant = text, None
+            elif text:
+                assistant = text
+        elif kind == "event_msg" and isinstance(payload, dict):
+            text = payload.get("message")
+            if isinstance(text, str) and payload.get("type") == "user_message":
+                user, assistant = text, None
+            elif isinstance(text, str) and payload.get("type") == "agent_message":
+                assistant = text
+    return user, assistant
+
+
+def _int(value: object) -> int:
+    return value if type(value) is int and value >= 0 else 0
+
+
+# cost: time O(t), heap O(u), stack O(1), io 1
+# vars: t = transcript 바이트, u = 사용량 기록 수
+# basis: estimate
+def cache_report(path: str) -> dict:
+    """호스트 transcript 사용량의 요청별 캐시 읽기·생성과 비율. 시작·압축 직후 생성 급증 표시. 본문 출력 없음"""
+    turns: list[dict] = []
+    by_message: dict[str, dict] = {}
+    boundary: str | None = "start"
+    host = "unknown"
+    session = None
+    previous_total = None
+    for number, row in enumerate(transcript_rows(path), 1):
+        kind = row.get("type")
+        payload = row.get("payload") if isinstance(row.get("payload"), dict) else {}
+        if kind == "session_meta":
+            host, boundary = "codex", "start"
+        elif kind == "compacted" or (
+            kind == "system" and row.get("subtype") == "compact_boundary"
+        ):
+            boundary = "compact"
+        if row.get("sessionId") and row.get("sessionId") != session:
+            session, boundary = row["sessionId"], "start"
+        usage = None
+        message = row.get("message") if isinstance(row.get("message"), dict) else {}
+        if kind == "assistant" and isinstance(message.get("usage"), dict):
+            host = "claude"
+            raw = message["usage"]
+            usage = {
+                "input": _int(raw.get("input_tokens")),
+                "cache_read": _int(raw.get("cache_read_input_tokens")),
+                "cache_creation": _int(raw.get("cache_creation_input_tokens")),
+            }
+            key = message.get("id")
+            if key in by_message:
+                by_message[key].update(usage)  # 같은 응답의 블록별 중복 줄
+                continue
+        elif kind == "event_msg" and payload.get("type") == "token_count":
+            info = payload.get("info") if isinstance(payload.get("info"), dict) else {}
+            last = info.get("last_token_usage")
+            if not isinstance(last, dict) or info.get("total_token_usage") == previous_total:
+                continue
+            previous_total = info.get("total_token_usage")
+            cached = _int(last.get("cached_input_tokens"))
+            usage = {
+                "input": max(_int(last.get("input_tokens")) - cached, 0),
+                "cache_read": cached,
+                "cache_creation": None,
+            }
+            key = None
+        if usage is None:
+            continue
+        turn = {"turn": len(turns) + 1, "line": number, **usage, "boundary": boundary}
+        boundary = None
+        turns.append(turn)
+        if key:
+            by_message[key] = turn
+    for turn in turns:
+        written = turn["cache_creation"] or 0
+        total = turn["input"] + turn["cache_read"] + written
+        turn["read_ratio"] = round(turn["cache_read"] / total, 4) if total else None
+        turn["written"] = written if turn["cache_creation"] is not None else turn["input"]
+    steady = sorted(t["written"] for t in turns if not t["boundary"])
+    baseline = steady[len(steady) // 2] if steady else 0
+    for turn in turns:
+        turn["spike"] = turn["written"] >= max(SPIKE_MIN_TOKENS, 2 * baseline)
+    read = sum(t["cache_read"] for t in turns)
+    written = sum(t["written"] for t in turns)
+    uncached = sum(t["input"] for t in turns)
+    return {
+        "host": host,
+        "written_field": "cache_creation" if host == "claude" else "uncached input",
+        "summary": {
+            "turns": len(turns),
+            "cache_read": read,
+            "written": written,
+            "read_ratio": round(read / (read + written + (uncached if host == "claude" else 0)), 4)
+            if turns and read + written
+            else None,
+            "steady_written_median": baseline,
+            "boundary_spikes": [
+                t["turn"] for t in turns if t["boundary"] and t["spike"]
+            ],
+            "other_spikes": [
+                t["turn"] for t in turns if not t["boundary"] and t["spike"]
+            ],
+        },
+        "turns": turns,
     }
 
 
@@ -772,6 +1068,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
     sub = parser.add_subparsers(dest="command", required=True)
+    report = sub.add_parser("cache-report")
+    report.add_argument("--transcript", required=True)
     for name in ("bind", "checkpoint", "restore", "doctor"):
         item = sub.add_parser(name)
         item.add_argument("--task", required=name != "doctor")
@@ -805,8 +1103,12 @@ def main() -> int:
             item.add_argument("--verify-clear", action="store_true")
     args = parser.parse_args()
     try:
-        folder = task_path(args.root, args.task) if args.task else None
-        if args.command == "doctor":
+        folder = (
+            task_path(args.root, args.task) if getattr(args, "task", None) else None
+        )
+        if args.command == "cache-report":
+            result = cache_report(args.transcript)
+        elif args.command == "doctor":
             result = doctor(folder)
         else:
             if folder is None:
