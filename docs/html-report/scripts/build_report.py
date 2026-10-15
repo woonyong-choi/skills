@@ -542,6 +542,7 @@ def _question(
     )
 
 
+IMAGE_SUFFIXES = {".png", ".gif", ".jpg", ".jpeg", ".webp", ".svg"}
 EXPLAIN_FONTS = ("pretendard-variable.woff2", "jetbrains-mono-regular.woff2")
 THEME_BUTTONS = (
     '<div class="theme app-tablist is-segmented" role="group" aria-label="테마">'
@@ -578,6 +579,11 @@ def _check_explain(spec: dict[str, Any]) -> None:
             if stem in stems:
                 raise ReportError(f"{at}.figure file name repeats {stems[stem]}")
             stems[stem] = at
+        if "image" in section and Path(_need(section, "image", at, str)).suffix.lower() not in IMAGE_SUFFIXES:
+            raise ReportError(f"{at}.image must be one of {sorted(IMAGE_SUFFIXES)}")
+        for item in section.get("files", []):
+            if not isinstance(item, str) or not item:
+                raise ReportError(f"{at}.files must list file paths")
 
 
 # cost: time O(n + r), heap O(n + o), stack O(1), io O(f + t)
@@ -603,8 +609,32 @@ def build_explain(spec: dict[str, Any], renderer: FigureRenderer, output: Path, 
                 f' title="{html.escape(caption or section["title"], quote=True)}"{size} loading="lazy" allow="fullscreen; clipboard-write" allowfullscreen></iframe>'
                 f'{f"<figcaption>{_inline(caption)}</figcaption>" if caption else ""}</figure>'
             )
+        if "image" in section:
+            name = _attach(renderer.base, section["image"], output.parent)
+            alt = html.escape(section.get("caption", section["title"]), quote=True)
+            body += f'<figure class="app-figure"><img src="attachments/{html.escape(name)}" alt="{alt}" loading="lazy"><figcaption>{_inline(section.get("caption", ""))}</figcaption></figure>'
+        if section.get("files"):
+            links = "".join(
+                f'<li><a href="attachments/{html.escape(name)}" download><code>{html.escape(name)}</code></a></li>'
+                for name in (_attach(renderer.base, item, output.parent) for item in section["files"])
+            )
+            body += f"<ul>{links}</ul>"
         parts.append(f'<section id="s{number}"><h2>{_inline(section["title"])}</h2>{body}</section>')
     return _page(spec["title"], spec["lead"], f'<article class="app-prose">{"".join(parts)}</article>', head=head)
+
+
+# cost: time O(b), heap O(1), stack O(1), io 2
+# vars: b = 첨부 파일 바이트
+# basis: estimate
+def _attach(base: Path, relative: str, folder: Path) -> str:
+    """설명 페이지가 혼자 열리도록 첨부를 `attachments/`에 복사하고 이름을 돌려준다. 이름이 겹치면 실패한다."""
+    source = _existing_file(base, relative, "attachment")
+    target = folder / "attachments" / source.name
+    target.parent.mkdir(exist_ok=True)
+    if target.exists() and target.read_bytes() != source.read_bytes():
+        raise ReportError(f"attachment name repeats: {source.name}")
+    shutil.copyfile(source, target)
+    return source.name
 
 
 # cost: time O(t), heap O(1), stack O(1), io O(t)

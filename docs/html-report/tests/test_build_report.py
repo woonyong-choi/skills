@@ -129,7 +129,9 @@ class InlineThinkflowReportTest(unittest.TestCase):
         spec = {"kind": "explain", "title": "요청 구조", "lead": "요청이 서버로 간다", "sections": [
             {"title": "흐름", "text": ["클라이언트가 요청한다"], "figure": "../flow-a.thinkflow", "caption": "요청"},
             {"title": "재시도", "text": ["실패하면 다시 보낸다"], "figure": "../flow-b.thinkflow"},
+            {"title": "로그", "text": ["실행 화면"], "image": "terminal.svg", "caption": "실행 로그", "files": ["../input.json"]},
         ]}
+        (folder / "terminal.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>', encoding="utf-8")
         (folder / "input.json").write_text(json.dumps(spec, ensure_ascii=False), encoding="utf-8")
         command = [sys.executable, str(BUILD), str(folder / "input.json"), "--thinkflow", str(self.thinkflow)]
         completed = subprocess.run(command, capture_output=True, text=True, check=False)
@@ -142,7 +144,9 @@ class InlineThinkflowReportTest(unittest.TestCase):
             self.assertIn('src="theme/diagram-host.js"', page)
             self.assertIn("bindDiagramHost()", (folder / "theme" / "diagram-host.js").read_text(encoding="utf-8"))
             self.assertIn('class="app-blog-post"', page)
-            for name in ("theme/tokens.css", "theme/styles.css", "theme/assets/fonts/pretendard-variable.woff2", "figures/flow-a.html", "figures/flow-b.html"):
+            self.assertIn('src="attachments/terminal.svg"', page)
+            self.assertIn('href="attachments/input.json" download', page)
+            for name in ("attachments/terminal.svg", "attachments/input.json", "theme/tokens.css", "theme/styles.css", "theme/assets/fonts/pretendard-variable.woff2", "figures/flow-a.html", "figures/flow-b.html"):
                 self.assertTrue((folder / name).is_file(), name)
         finally:
             shutil.rmtree(folder)

@@ -13,7 +13,7 @@
 }
 ```
 
-- `explain` → `title`, `lead`, `sections` 필수. 절은 `title`, `text`(문단 배열) 필수, `figure`(`.thinkflow`, 파일 이름 중복 금지)·`caption` 선택
+- `explain` → `title`, `lead`, `sections` 필수. 절은 `title`, `text`(문단 배열) 필수. 선택: `figure`(`.thinkflow`, 파일 이름 중복 금지), `image`(png·gif·jpg·webp·svg), `caption`, `files`(내려받을 데이터 경로 배열). `image`·`files`는 `attachments/`에 복사
 
 비교 보고서 예(외부 파일 없이 생성 가능):
 

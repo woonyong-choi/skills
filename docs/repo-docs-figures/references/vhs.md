@@ -1,30 +1,26 @@
 # VHS
 
-아래 값은 실행 형식을 보여 주는 예시이며 그대로 사용할 의무 없음. 글꼴·색·크기는 저장소 디자인 기준으로 결정. 길이·용량은 게시 환경 제한을 확인해 결정. 재생 속도는 실제로 재생하며 글을 다 읽을 수 있는지 확인해 결정
+기본 설정. 저장소 디자인 정책이 있으면 그 값, 없으면 그대로 사용해 모든 녹화의 품질을 같게 유지
 
 ```text
-Output docs/assets/{이름}.gif
+Output {저장소 루트 기준 경로}.gif
 Set Shell "bash"
-Set FontFamily "D2Coding"
-Set FontSize 18
+Set FontFamily "JetBrains Mono"
+Set FontSize 16
 Set Width 1200
-Set Height 600
-Set Theme "Catppuccin Mocha"
+Set Height 640
 Set Padding 24
-Set Margin 30
-Set BorderRadius 12
-Set WindowBar Colorful
-Set TypingSpeed 60ms
+Set TypingSpeed 40ms
 Hide
 Type "export PS1='$ ' && {준비 명령} && clear"
 Enter
 Show
 Type "{명령}"
 Enter
-Sleep {초}s
+Sleep {출력 마지막 줄까지 읽는 초}s
+Screenshot {같은 경로}.png
 ```
 
-- 준비 명령(빌드, 합성 데이터 준비): `Hide`와 `Show` 사이
-- 사용자 이름, 홈 경로, 키, 실제 사용자 데이터의 화면 노출 금지
-- VHS 화면·대체 글에도 repo-docs 자리표시 적용
-- 실행 위치: 저장소 루트. `Output`은 저장소 루트 기준 경로
+- 준비 명령(폴더 이동, 빌드, 합성 데이터 준비)은 `Hide`와 `Show` 사이. 실행 위치: 저장소 루트
+- 출력 줄이 화면 높이를 넘으면 명령을 나눠 여러 `Type`·`Sleep`으로. 잘린 프레임 게시 금지
+- 사용자 이름, 홈 경로, 키, 실제 사용자 데이터의 화면 노출 금지. VHS 화면·대체 글에도 repo-docs 자리표시 적용
