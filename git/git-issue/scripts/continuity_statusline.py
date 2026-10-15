@@ -32,7 +32,7 @@ def main() -> int:
         payload["cwd"] = payload.get("cwd") or payload.get("workspace", {}).get(
             "current_dir"
         )
-        root = Path(os.environ.get("ISSUE_CONTINUITY_ROOT", core.ROOT))
+        root = core.default_root()
         folder = find_task(root, payload, "claude")
         percent = payload.get("context_window", {}).get("used_percentage")
         managed = managed_window(root, "claude")

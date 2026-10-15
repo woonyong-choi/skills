@@ -14,11 +14,31 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import time
 from urllib.parse import unquote, urlsplit
 
 
 class ContextError(ValueError):
     pass
+
+
+# 훅 진입점(hook_entry.py)이 호스트 제한 시간 안의 마감 시각(epoch 초)을 넘긴다.
+DEADLINE_ENV = "WORK_CONTINUITY_DEADLINE"
+
+
+# cost: time O(1), heap O(1), stack O(1), io O(1)
+# vars: none
+# basis: estimate
+def time_budget(limit: float) -> float:
+    """외부 명령 대기 상한. 훅 마감 시각이 있으면 남은 시간으로 줄이고, 지났으면 TimeoutExpired."""
+    try:
+        deadline = float(os.environ[DEADLINE_ENV])
+    except (KeyError, ValueError):
+        return limit
+    remaining = deadline - time.time()
+    if remaining <= 0:
+        raise subprocess.TimeoutExpired("work continuity hook", 0)
+    return min(limit, remaining)
 
 
 def config_directory() -> Path:
@@ -76,7 +96,7 @@ def identify_project(path: Path) -> dict:
     # vars: n = command output bytes
     # basis: estimate
     def git(*args: str) -> subprocess.CompletedProcess:
-        return subprocess.run(["git", "-C", str(path), *args], text=True, capture_output=True, timeout=3)
+        return subprocess.run(["git", "-C", str(path), *args], text=True, capture_output=True, timeout=time_budget(3))
     top = git("rev-parse", "--show-toplevel")
     if top.returncode:
         return {"identity": "path:" + str(path), "path": str(path), "name": path.name}
@@ -156,6 +176,8 @@ def check_write(project: dict, target: Path) -> None:
     if extension and target.is_relative_to(vault / "assets" / extension):
         return
     for entry in project["registration"].get("source_document_roots", []):
+        if not isinstance(entry, dict):
+            continue
         relative = Path(entry.get("path", ""))
         if relative.is_absolute() or ".." in relative.parts or not relative.name:
             raise ContextError("source document root must be project-relative")

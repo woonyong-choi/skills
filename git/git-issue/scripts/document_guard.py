@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import re
 import shlex
+import subprocess
 
 import project_context
 
@@ -40,6 +41,16 @@ HEREDOC = re.compile(r"""'[^']*'|"(?:\\.|[^"\\])*"|\\.|(?P<comment>(?<!\S)\#.*)|
 
 def deny(reason: str) -> dict:
     return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Work Continuity: " + reason}}
+
+
+def guarded_write(payload: dict) -> bool:
+    """검사 실패 때 거부할 쓰기: 구조화 파일 도구와 셸 apply_patch·applypatch(판독 불가 셸 포함)."""
+    if payload.get("tool_name") in {"Write", "Edit", "MultiEdit", "apply_patch"}:
+        return True
+    try:
+        return shell_patch(payload) is not None
+    except ValueError:
+        return True
 
 
 def document_paths(payload: dict) -> list[Path]:
@@ -116,6 +127,8 @@ def check_tool(payload: dict, project_path: Path | None = None) -> dict:
         for path in paths:
             project_context.check_write(project, path)
         return {}
+    except subprocess.TimeoutExpired:
+        return deny("project check timed out (git or hook time budget); document writes stay blocked until it answers; do not bypass this check")
     except (project_context.ContextError, OSError, ValueError, IndexError, KeyError) as error:
         message = str(error)
         if message.startswith("vault unregistered"):
@@ -321,7 +334,7 @@ def copy_destinations(args: list[str], cwd: Path) -> list[str]:
         return operands + targets
     if not targets and operands:
         targets = [operands.pop()]
-        if not (targets[0].endswith("/") or (cwd / targets[0]).expanduser().is_dir()):
+        if not (targets[0].endswith("/") or (cwd / Path(targets[0]).expanduser()).is_dir()):
             return targets
     return targets + [Path(source.rstrip("/")).name for source in operands]
 

@@ -9,7 +9,6 @@ from __future__ import annotations
 import argparse
 import fcntl
 import json
-import os
 from pathlib import Path
 import re
 import shlex
@@ -20,13 +19,13 @@ import uuid
 from typing import Any
 
 import continuity as core
-from continuity_hook import codex_meter, link_session, session_tasks
+from continuity_hook import host_meter, link_session, session_tasks
 
 _CONTROLLER_LOCKS: list[Any] = []
 
 
 def root() -> Path:
-    return Path(os.environ.get("ISSUE_CONTINUITY_ROOT", core.ROOT))
+    return core.default_root()
 
 
 def tmux(*args: str) -> str:
@@ -119,14 +118,15 @@ def screen_state(text: str, host: str, cursor_column: int | None = None) -> tupl
 
 
 def usage(text: str, host: str, folder: Path) -> tuple[float | None, str | None]:
-    if host == "claude":
+    if core.HOSTS[host].context is None:
+        # status line이 120초 안에 기록한 사용량(Claude)
         meter = core.read(folder / "meter.json")
         percent = meter.get("percent")
         if time.time() - meter.get("at", 0) > 120:
             return None, None
         return percent, meter.get("session_id")
-    # Codex: rollout의 마지막 token_count로 계산한 비율이며 footer의 남은 %와 같다고 주장하지 않는다.
-    return codex_meter(folder)
+    # transcript 어댑터(Codex rollout의 마지막 token_count) 비율이며 footer의 남은 %와 같다고 주장하지 않는다.
+    return host_meter(folder, host)
 
 
 def send(pane: str, message: str, lead: str | None = None) -> None:
