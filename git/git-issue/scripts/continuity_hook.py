@@ -418,7 +418,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
                 }
             )
             text = (
-                "개발 작업은 developer-thinking 본문과 현재 단계의 필수 원문 확인. "
+                "개발 작업은 developer-thinking 현재 단계의 필수 원문 확인. "
                 + context(folder, binding)
                 + persisted_notice(folder, state)
             )
@@ -444,7 +444,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
                 if needs_restore:
                     text += persisted_notice(folder, state)
             else:
-                text = f"현재 연결: {folder.name}, {binding['url']}. developer-thinking의 현재 단계 적용. git-issue의 과업 판정에 따라 goal 유지·scope.outcomes 대조. 독립 결과 전환은 기존 기록 저장 후 bind --session-id {session} --from-task {folder.name}. 작업 경계는 checkpoint --sync --status 진행|검토|보류. 단순 질문은 추가 기록 불필요."
+                text = f"현재 연결: {folder.name}, {binding['url']}. developer-thinking의 현재 단계 적용. git-issue의 과업 판정에 따라 goal 유지·scope.outcomes 대조. 독립 결과 전환은 기존 기록 저장 후 bind --session-id {session} --from-task {folder.name}. 작업 경계는 checkpoint --sync, 착수·재개·단계 전환만 --status 진행|검토|보류. 단순 질문은 추가 기록 불필요."
             if not paths:
                 text += " 파일 변경 전 실행자가 checkpoint --watch-path 상대경로를 반복 지정해 현재 과업의 파일 범위를 등록하세요. 사용자에게 목록 작성을 요구하지 마세요. 범위 미등록은 저장소 전체로 대체하지 않으며 종료 변경 감지는 미활성입니다."
         elif event == "PostCompact":
@@ -505,7 +505,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
             if payload.get("permission_mode") in ("plan", "planMode"):
                 core.save(state_path, state)
                 return {}
-            if session not in binding.get("session_ids", []):
+            if not explicit:
                 core.save(state_path, state)
                 return {}
             claim = state.get("checkpoint_claim") or {}
