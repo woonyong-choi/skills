@@ -67,6 +67,22 @@ class ShellGuardTest(TemporaryCase):
         for name in ("llms.txt", "llms-full.txt", "notes.txt"):
             self.assertEqual(len(guard.document_paths({"tool_name": "Write", "cwd": "/", "tool_input": {"file_path": f"/x/{name}"}})), 1, name)
 
+    def test_only_final_suffix_marks_document(self) -> None:
+        """#68: 문서 확장자 뒤 다른 접미사가 붙은 이름은 문서가 아니다."""
+        for command in (
+            "echo x > a.txt-bak", "echo x >> notes.md.orig", "cp a notes.md.orig", "tee README.md~",
+            "mv a.md.bak b.rst-old", "python3 -c \"open('notes.md.orig','w')\"",
+        ):
+            self.assertEqual(self.decide(command), {}, command)
+        for command in (
+            "echo x > a.md", "echo x > 'dir name/a.md'", 'echo x >"a.md"', "cp a d/b.txt",
+            "python3 -c \"open('a' + 'b.md','w')\"", 'python3 -c "open(f\'{d}/a.md\',\'w\')"',
+            "tee a.MD", "echo x > a.md;echo", "cp --target-directory=d.md a",
+        ):
+            self.assertEqual(self.decide(command)["hookSpecificOutput"]["permissionDecision"], "deny", command)
+        self.assertFalse(guard.mentions_document("a.txt-bak notes.md.orig x.pdf_old"))
+        self.assertTrue(guard.mentions_document("see notes.md, then"))
+
     def test_quoted_redirect_characters_are_arguments(self) -> None:
         for command in ("grep '>' README.md", 'grep -n ">" docs/a.md', "rg '>' README.md", "echo a \\> b.md", "grep 'a;tee' x.md"):
             self.assertEqual(self.decide(command), {}, command)
