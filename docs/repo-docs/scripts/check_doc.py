@@ -1,9 +1,9 @@
 """repo-docs 규칙으로 저장소 Markdown 파일 검사.
 
-사용: python3 check_doc.py 파일 [파일 ...] (저장소 루트에서 실행)
+사용: python3 check_doc.py [--project 작업 경로] 파일 [파일 ...] (저장소 루트에서 실행)
 
-인자: Markdown 파일 하나 이상, 저장소 루트에서 실행
-출력: stdout 경로·줄별 위반, 인자 누락 시 stderr 사용법, 종료 0 통과·1 위반·2 인자 누락
+인자: 선택 --project 작업 경로(등록 Vault 프로젝트, project_context.py 쓰기 경로 검사), Markdown 파일 하나 이상
+출력: stdout 경로·줄별 위반, stderr 사용법·연결/경로 실패 JSON, 종료 0 통과·1 위반·2 인자 누락·검사기 없음·경로 실패(문체 검사 전)
 """
 import os
 import html
@@ -15,6 +15,8 @@ FORMAL_FILES = {"README.md", "README.ko.md"}
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 FENCE_CLOSE = re.compile(r"^ {0,3}(?:`+|~+)[ \t]*$")
 NOT_PARAGRAPH = re.compile(r"^(\||- |[0-9]+\. |#|!\[|\[!|---|<)|^[a-z_]+: ")
+LIST_SENTENCE = re.compile(r"^(?:- |[0-9]+\. )(?=.*\.$)")
+TRAILING_NOTE = re.compile(r"\s*\([^()]*\)(?=\.$)")
 PARAGRAPH_ENDING = re.compile(r"(해요|십시오| 것이다|게 된다|함|음|임)\.$")
 QUOTE_ALERT = re.compile(r"^> \[!(NOTE|WARNING)\]$")
 KO_BANNED = re.compile(r"(TBD|TODO|미측정|더미 데이터|목업|강력한|혁신적|쉽게|간단히|간단하게|다양한|효율적|원활|최적의|완벽한|매끄러운|차세대|것 같다|로 보인다|유저|리포지토리|레포지토리|커맨드|컨피그|구동)")
@@ -167,18 +169,32 @@ def has_bad_cell_ending(cell: str) -> bool:
     )
 
 
+# cost: time O(w), heap O(1), stack O(1), alloc ≈ 3
+# vars: w = 문장 글자 수
+# basis: estimate
+def sentence_errors(text: str, is_formal: bool) -> list[str]:
+    errors = []
+    # 끝 괄호 보충(`저장합니다(기본값).`)은 떼고 그 앞 종결 검사
+    text = TRAILING_NOTE.sub("", text)
+    if is_formal and text.endswith("다.") and not text.endswith("니다."):
+        errors.append("문체(합쇼)")
+    if not is_formal and ((text.endswith("니다.") and not text.endswith("아니다.")) or text.endswith("세요.")):
+        errors.append("문체(평서)")
+    if PARAGRAPH_ENDING.search(text):
+        errors.append("문체")
+    return errors
+
+
 # cost: time O(w), heap O(w), stack O(1), alloc ≈ 6 + 2k
 # vars: w = 줄 글자 수, k = 표 칸 수
 # basis: estimate
+# 마침표로 끝나는 목록 항목은 표식을 떼고 문장으로 검사
 def korean_errors(text: str, is_formal: bool) -> list[str]:
     errors = []
     if not NOT_PARAGRAPH.match(text):
-        if is_formal and text.endswith("다.") and not text.endswith("니다."):
-            errors.append("문체(합쇼)")
-        if not is_formal and ((text.endswith("니다.") and not text.endswith("아니다.")) or text.endswith("세요.")):
-            errors.append("문체(평서)")
-        if PARAGRAPH_ENDING.search(text):
-            errors.append("문체")
+        errors += sentence_errors(text, is_formal)
+    elif LIST_SENTENCE.match(text):
+        errors += sentence_errors(LIST_SENTENCE.sub("", text, count=1), is_formal)
     elif text.startswith("|"):
         errors += ["문체" for cell in text.split("|") if has_bad_cell_ending(re.sub(r"[ .]+$", "", cell))]
     errors += ["쓰지 않는 말"] if KO_BANNED.search(text) else []

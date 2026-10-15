@@ -182,10 +182,32 @@ def _replace_skill(root: Path, skill: Path, digest: str, installed: dict[str, st
             fcntl.flock(lock, fcntl.LOCK_EX)
         _replace_skill_locked(root, skill, digest, installed)
         if skill.name == "git-issue":
-            entry = configuration / "work-continuity.py"
-            staged_entry = configuration / "work-continuity.pending"
-            staged_entry.write_bytes((skill / "scripts/hook_entry.py").read_bytes())
-            os.replace(staged_entry, entry)
+            _install_hook_entry(configuration, skill)
+
+
+# cost: time O(b), heap O(b), stack O(1), io 3
+# vars: b = hook entry bytes
+# basis: estimate
+def _install_hook_entry(configuration: Path, skill: Path) -> None:
+    source = (skill / "scripts/hook_entry.py").read_bytes()
+    entry = configuration / "work-continuity.py"
+    if entry.is_file() and entry.read_bytes() == source:
+        return
+    staged_entry = configuration / "work-continuity.pending"
+    staged_entry.write_bytes(source)
+    os.replace(staged_entry, entry)
+
+
+# cost: time O(b), heap O(b), stack O(1), io 4
+# vars: b = hook entry bytes
+# basis: estimate
+def _restore_hook_entry(skill: Path) -> None:
+    configuration = INSTALL_HOME / ".config/skills"
+    configuration.mkdir(parents=True, exist_ok=True)
+    with (configuration / "runtime.lock").open("a") as lock:
+        if fcntl is not None:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+        _install_hook_entry(configuration, skill)
 
 
 # cost: time O(b), heap O(f), stack O(d), io O(f)
@@ -256,6 +278,12 @@ def sync(root: Path, skills: list[Path], dry_run: bool) -> bool:
         target = _skill_path(root, skill.name)
         if installed.get(skill.name) == current[skill.name] and target.is_dir() and tree_hash(target) == current[skill.name] and not any(target.rglob("tests")):
             if not dry_run:
+                if skill.name == "git-issue":
+                    try:
+                        _restore_hook_entry(skill)
+                    except OSError as error:
+                        print(f"{target}: 훅 진입점 복구 실패: {error}", file=sys.stderr)
+                        success = False
                 print(f"{target}: 일치")
             continue
         if skill.name not in installed and target.exists():

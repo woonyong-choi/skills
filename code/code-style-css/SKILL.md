@@ -108,3 +108,5 @@ npx prettier --check "**/*.css"
 npx stylelint "**/*.css" --max-warnings 0
 python3 <design-tokens 스킬 폴더>/scripts/check_tokens.py <소스 폴더>
 ```
+
+- 실행 조건: Node.js와 개발 의존성 `npm install --save-dev prettier stylelint stylelint-config-standard`, Python 3.9+·표준 라이브러리

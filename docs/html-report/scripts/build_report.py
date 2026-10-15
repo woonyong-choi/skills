@@ -26,12 +26,16 @@ CSS = """
 :root{--report-ink:var(--color-ink);--report-sub:var(--color-ui-muted);--report-line:var(--color-ui-line);--report-pane:var(--color-figure-canvas);--report-page:var(--color-ui-card);--report-active:var(--color-state-active);--report-active-fill:var(--color-help-bg);--report-active-ink:var(--color-state-active-text);--report-chip-ink:var(--color-ink);--report-chip-fill:var(--color-ui-card);--report-chip-border:var(--color-ui-line);--report-chip-hover-fill:var(--color-help-hover);--report-chip-active-ink:var(--color-state-on-active);--report-chip-active-fill:var(--color-state-active-fill);--report-chip-active-border:var(--color-state-active);--report-chip-focus:var(--color-ui-focus);--report-radius:var(--radius-md);--report-small:var(--text-small-text);--nav-offset:calc(4 * var(--spacing-gap))}
 section{scroll-margin-top:var(--nav-offset);margin-block:var(--spacing-gap-lg)}h2{border-bottom:var(--border-width-strong) solid var(--report-active);padding-bottom:var(--spacing-gap-xs)}
 .cols{display:grid;gap:var(--spacing-gap);align-items:start;margin-block:var(--spacing-gap-sm)}.c1{grid-template-columns:1fr}.c2{grid-template-columns:repeat(2,minmax(0,1fr))}.c3{grid-template-columns:repeat(3,minmax(0,1fr))}.c4{grid-template-columns:repeat(4,minmax(0,1fr))}.col{padding:0;min-width:0}.col.mock{border:var(--border-width-strong) dashed var(--color-data-compare);padding:var(--spacing-gap-sm)}
-.frame{display:flex;align-items:center;justify-content:center;background:var(--report-pane);border-radius:var(--radius-lg);padding:var(--spacing-gap-xs)}.frame img{display:block;width:100%;height:auto;max-height:var(--max-h,360px);object-fit:contain}.frame.diagram-frame{padding:0;align-items:stretch;overflow:hidden}.frame.diagram-frame iframe{display:block;width:100%;height:var(--max-h,240px);border:0;background:transparent}
+.frame{display:flex;align-items:center;justify-content:center;background:var(--report-pane);border-radius:var(--radius-lg);padding:var(--spacing-gap-xs)}.frame>a{display:block;width:100%;cursor:zoom-in}.frame img{display:block;width:100%;height:auto;max-height:var(--max-h,360px);object-fit:contain}.frame.diagram-frame{padding:0;align-items:stretch;overflow:hidden}.frame.diagram-frame iframe{display:block;width:100%;height:var(--max-h,240px);border:0;background:transparent}
 figure{margin:0 0 var(--spacing-gap-sm)}figure:last-child{margin-bottom:0}figcaption{font-size:var(--report-small);color:var(--report-sub);margin-top:var(--spacing-gap-xs)}pre.msg{white-space:pre-wrap;word-break:break-all;background:var(--report-pane);padding:var(--spacing-gap-sm);border-radius:var(--report-radius);font-size:var(--report-small);margin:var(--spacing-gap-sm) 0 0}figure+pre.msg{margin-top:0}
 table{border-collapse:collapse;width:100%;table-layout:fixed}th,td{border:var(--border-width-thin) solid var(--report-line);padding:var(--spacing-gap-xs) var(--spacing-gap-sm);vertical-align:middle;text-align:left;overflow-wrap:anywhere}thead th{background:var(--report-pane)}.al-center{text-align:center}.al-right{text-align:right;font-variant-numeric:tabular-nums}.effect{margin-top:var(--spacing-gap-sm)}.effect th:first-child,.effect td:first-child{width:64px;text-align:center}.effect td{vertical-align:top}.rec{background:var(--report-active-fill);border-left:var(--border-width-strong) solid var(--report-active);padding:var(--spacing-gap-sm) var(--spacing-gap);margin:var(--spacing-gap-sm) 0 0}.check{margin:var(--spacing-gap-sm) 0 0}.check ul{margin:var(--spacing-gap-xs) 0 0}.note{font-size:var(--report-small);color:var(--report-sub)}code{font-family:var(--font-mono);white-space:normal}
 nav{position:sticky;top:0;z-index:1;display:flex;flex-wrap:nowrap;gap:var(--spacing-gap-xs);margin-block:var(--spacing-gap-sm);padding-block:var(--spacing-gap-sm);overflow-x:auto;overflow-y:hidden;background:var(--report-page);border-bottom:var(--border-width-thin) solid var(--report-line)}nav a{display:inline-flex;flex:0 0 auto;align-items:center;gap:var(--spacing-gap-xs);min-height:24px;max-width:calc(16 * 21px);padding:var(--spacing-gap-xs) var(--spacing-gap-sm);color:var(--report-chip-ink);text-decoration:none;white-space:nowrap;font-size:var(--report-small);background:var(--report-chip-fill);border:var(--border-width-thin) solid var(--report-chip-border);border-radius:var(--report-radius)}nav a:hover{background:var(--report-chip-hover-fill)}nav a.is-active{color:var(--report-chip-active-ink);background:var(--report-chip-active-fill);border-color:var(--report-chip-active-border)}nav a:focus-visible{outline:var(--border-width-strong) solid var(--report-chip-focus);outline-offset:2px}.nav-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:700px){.cols{grid-template-columns:1fr}}
 @media print{nav,.theme{display:none}}
 """
+
+# ThinkFlow 테마의 글 캡션 색은 다크 값이 없어 어두운 배경에서 안 보인다. 다크에서 바뀌는 보조 글자 색으로 덮는다.
+EXPLAIN_CSS = ".app-prose .app-figure figcaption{color:var(--color-ui-muted)}"
 
 THEME_SCRIPT = """
 const THEME_KEY = 'thinkflow-theme';
@@ -109,7 +113,7 @@ REVIEW_CSS = """
 .review-page textarea::placeholder{color:var(--review-muted)}.review-page :is(button,select,textarea,input,summary):focus-visible{outline:2px solid var(--report-ink);outline-offset:3px}
 .decision-actions{display:flex;align-items:center;gap:calc(var(--review-unit)/2);flex-wrap:wrap;margin-top:var(--review-unit)}.review-page .decision-actions label{display:flex;align-items:center;gap:calc(var(--review-unit)/2)}
 .review-reasons{margin-top:var(--review-unit);font-size:var(--review-small);color:var(--review-muted)}.review-reasons summary{cursor:pointer}.review-reasons .rec{background:var(--review-surface);border-left-color:var(--review-border);color:var(--report-ink)}
-@media(max-width:700px){.review-page .cols{grid-template-columns:1fr}.review-toolbar{gap:calc(var(--review-unit)/2)}}
+@media(max-width:700px){.review-toolbar{gap:calc(var(--review-unit)/2)}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 """
 
@@ -395,7 +399,9 @@ def _picture(image: dict[str, Any], renderer: FigureRenderer) -> str:
         escaped_alt = html.escape(alt)
         caption = f"<figcaption>{escaped_alt}</figcaption>" if alt else ""
         return (
-            f'<figure><div class="frame"{style}><img src="{html.escape(image["src"])}" alt="{escaped_alt}"></div>'
+            # 높이 상한으로 줄어든 캡처를 원본 크기로 열 수 있게 링크로 감싼다.
+            f'<figure><div class="frame"{style}><a href="{html.escape(image["src"])}" target="_blank">'
+            f'<img src="{html.escape(image["src"])}" alt="{escaped_alt}"></a></div>'
             f"{caption}</figure>"
         )
     if "thinkflow" in image:
@@ -592,6 +598,9 @@ def _check_explain(spec: dict[str, Any]) -> None:
 def build_explain(spec: dict[str, Any], renderer: FigureRenderer, output: Path, head: str) -> str:
     """블로그 테마 글 한 편: 절마다 짧은 글과 ThinkFlow 재생기 iframe."""
     _check_explain(spec)
+    # attachments/는 스크립트 소유라 다시 만들 때 이전 사본을 비우고 이번 실행의 이름만 겹침 검사
+    shutil.rmtree(output.parent / "attachments", ignore_errors=True)
+    attached: dict[str, Path] = {}
     parts = []
     for number, section in enumerate(spec["sections"], 1):
         body = "".join(f"<p>{_inline(line)}</p>" for line in section["text"])
@@ -610,29 +619,32 @@ def build_explain(spec: dict[str, Any], renderer: FigureRenderer, output: Path, 
                 f'{f"<figcaption>{_inline(caption)}</figcaption>" if caption else ""}</figure>'
             )
         if "image" in section:
-            name = _attach(renderer.base, section["image"], output.parent)
+            name = _attach(renderer.base, section["image"], output.parent, attached)
             alt = html.escape(section.get("caption", section["title"]), quote=True)
             body += f'<figure class="app-figure"><img src="attachments/{html.escape(name)}" alt="{alt}" loading="lazy"><figcaption>{_inline(section.get("caption", ""))}</figcaption></figure>'
         if section.get("files"):
             links = "".join(
                 f'<li><a href="attachments/{html.escape(name)}" download><code>{html.escape(name)}</code></a></li>'
-                for name in (_attach(renderer.base, item, output.parent) for item in section["files"])
+                for name in (_attach(renderer.base, item, output.parent, attached) for item in section["files"])
             )
             body += f"<ul>{links}</ul>"
         parts.append(f'<section id="s{number}"><h2>{_inline(section["title"])}</h2>{body}</section>')
-    return _page(spec["title"], spec["lead"], f'<article class="app-prose">{"".join(parts)}</article>', head=head)
+    return _page(spec["title"], spec["lead"], f'<article class="app-prose">{"".join(parts)}</article>', head=head, styles=EXPLAIN_CSS)
 
 
 # cost: time O(b), heap O(1), stack O(1), io 2
 # vars: b = 첨부 파일 바이트
 # basis: estimate
-def _attach(base: Path, relative: str, folder: Path) -> str:
-    """설명 페이지가 혼자 열리도록 첨부를 `attachments/`에 복사하고 이름을 돌려준다. 이름이 겹치면 실패한다."""
-    source = _existing_file(base, relative, "attachment")
+def _attach(base: Path, relative: str, folder: Path, attached: dict[str, Path]) -> str:
+    """설명 페이지가 혼자 열리도록 첨부를 `attachments/`에 복사하고 이름을 돌려준다.
+
+    같은 실행에서 다른 원본이 같은 이름을 쓰면 실패한다. 이전 실행의 사본은 덮어쓴다.
+    """
+    source = _existing_file(base, relative, "attachment").resolve()
+    if attached.setdefault(source.name, source) != source:
+        raise ReportError(f"attachment name repeats: {source.name}")
     target = folder / "attachments" / source.name
     target.parent.mkdir(exist_ok=True)
-    if target.exists() and target.read_bytes() != source.read_bytes():
-        raise ReportError(f"attachment name repeats: {source.name}")
     shutil.copyfile(source, target)
     return source.name
 

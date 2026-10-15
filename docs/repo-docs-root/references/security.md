@@ -11,8 +11,7 @@
 
 ## Reporting a vulnerability
 
-Do not disclose vulnerabilities in public issues. Use {verified private reporting channel}.
-Include the affected version, reproduction steps, and expected impact.
+Do not disclose vulnerabilities in public issues. Use {verified private reporting channel}. Include the affected version, reproduction steps, and expected impact.
 
 ## Response process
 

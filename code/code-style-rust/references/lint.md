@@ -1,6 +1,6 @@
 # 린트 설정
 
-workspace는 각 crate의 `Cargo.toml`에 `[lints] workspace = true`를 두고 루트에서 아래 설정을 관리한다. 단일 패키지는 해당 `Cargo.toml`의 `[lints.rust]`, `[lints.clippy]`에 같은 규칙 적용
+workspace는 각 crate의 `Cargo.toml`에 `[lints] workspace = true`를 두고 루트에서 아래 설정 관리. 단일 패키지는 해당 `Cargo.toml`의 `[lints.rust]`, `[lints.clippy]`에 같은 규칙 적용
 
 작업 공간 `Cargo.toml`:
 

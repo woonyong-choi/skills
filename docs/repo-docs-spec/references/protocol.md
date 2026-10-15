@@ -71,6 +71,7 @@
 - {버전 규칙}
 ````
 
+- 영어 작업 언어의 절 이름: `프로토콜` → `Protocol`, `전송` → `Transport`, `연결 수명` → `Connection lifecycle`, `요청` → `Requests`, `매개변수` → `Parameters`, `결과` → `Result`, `오류` → `Errors`, `예` → `Example`, `알림` → `Notifications`, `호환성` → `Compatibility`
 - 알림: 요청과 같은 형식, `#### 결과`만 제외
 - 요청과 알림: 도메인 접두사로 묶고 `{도메인}/{동작}` 알파벳순: `session/start`, `session/stop`
 - 부작용이 없으면 `없음`, 순서 조건이 없으면 `없음`

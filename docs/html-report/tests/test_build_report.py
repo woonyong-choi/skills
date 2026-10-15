@@ -55,7 +55,7 @@ class InlineThinkflowReportTest(unittest.TestCase):
             )
         cls.thinkflow = Path(thinkflow).resolve()
 
-    def _build_navigation_report(self) -> str:
+    def _build_navigation_report(self, options: int = 1) -> str:
         module_spec = importlib.util.spec_from_file_location("build_report", BUILD)
         self.assertIsNotNone(module_spec)
         self.assertIsNotNone(module_spec.loader)
@@ -67,7 +67,8 @@ class InlineThinkflowReportTest(unittest.TestCase):
                 "title": f"탐색 칩 {number}: 여러 섹션을 한 줄로 표시",
                 "what": "섹션이 많아도 탐색 칩은 한 줄로 남아야 합니다. 활성 섹션은 가로 스크롤로 보입니다.",
                 "options": [
-                    {"label": "확인", "text": "탐색 칩 대비와 스크롤을 확인합니다."}
+                    {"label": f"확인 {index}", "text": "탐색 칩 대비와 스크롤을 확인합니다."}
+                    for index in range(1, options + 1)
                 ],
                 "effect": [["칩", "한 줄 표시", "가로 공간이 더 필요함"]],
                 "rec": ["후", "활성 칩이 보이는 위치로 이동합니다."],
@@ -151,6 +152,109 @@ class InlineThinkflowReportTest(unittest.TestCase):
         finally:
             shutil.rmtree(folder)
 
+    def test_capture_step_sets_viewport_to_scroll_height(self) -> None:
+        # #64: 전체 페이지 캡처는 화면 밖 srcdoc iframe이 빈칸으로 남아 뷰포트를 문서 높이로 키운 뒤 찍는다.
+        skill = (ROOT / "docs" / "html-report" / "SKILL.md").read_text(encoding="utf-8")
+        step = next(line for line in skill.splitlines() if line.startswith("5. ") and "index.png" in line)
+        self.assertIn("scrollHeight", step)
+
+    def test_explain_rebuild_after_attachment_change(self) -> None:
+        # #64: 첨부를 바꾼 뒤 다시 만들면 이전 사본을 덮어쓰고, 한 실행 안의 이름 겹침만 실패한다.
+        folder = FIXTURE / "explain-rebuild"
+        folder.mkdir(exist_ok=True)
+        (folder / "sub").mkdir(exist_ok=True)
+        spec = {"kind": "explain", "title": "재생성", "lead": "첨부 변경", "sections": [
+            {"title": "로그", "text": ["실행 화면"], "files": ["data.txt"]},
+        ]}
+        (folder / "input.json").write_text(json.dumps(spec, ensure_ascii=False), encoding="utf-8")
+        command = [sys.executable, str(BUILD), str(folder / "input.json"), "--thinkflow", str(self.thinkflow)]
+        try:
+            (folder / "data.txt").write_text("v1", encoding="utf-8")
+            first = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual(first.returncode, 0, first.stderr)
+            (folder / "data.txt").write_text("v2", encoding="utf-8")
+            second = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual(second.returncode, 0, second.stderr)
+            self.assertEqual((folder / "attachments" / "data.txt").read_text(encoding="utf-8"), "v2")
+            (folder / "sub" / "data.txt").write_text("other", encoding="utf-8")
+            spec["sections"][0]["files"].append("sub/data.txt")
+            (folder / "input.json").write_text(json.dumps(spec, ensure_ascii=False), encoding="utf-8")
+            clash = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertNotEqual(clash.returncode, 0)
+            self.assertIn("attachment name repeats", clash.stderr)
+        finally:
+            shutil.rmtree(folder)
+
+    def test_raster_image_links_to_full_size(self) -> None:
+        # 높이 상한으로 줄어든 캡처는 원본 링크로 열 수 있다.
+        module_spec = importlib.util.spec_from_file_location("build_report", BUILD)
+        module = importlib.util.module_from_spec(module_spec)
+        sys.modules[module_spec.name] = module
+        module_spec.loader.exec_module(module)
+        renderer = module.FigureRenderer(base=FIXTURE, thinkflow=None, static=False)
+        figure = module._picture({"src": "flow-a.thinkflow", "alt": "전체 화면"}, renderer)
+        self.assertIn('<a href="flow-a.thinkflow" target="_blank"><img src="flow-a.thinkflow"', figure)
+        self.assertIn(".frame>a{display:block", module.CSS)
+
+    def test_explain_captions_keep_contrast_in_both_themes(self) -> None:
+        # 테마 캡션 색은 다크 값이 없어 생성 CSS가 보조 글자 색으로 덮는다.
+        playwright_root = self._playwright_root()
+        if playwright_root is None or shutil.which("node") is None:
+            self.skipTest("installed Playwright browser is unavailable")
+        folder = FIXTURE / "explain-caption"
+        folder.mkdir(exist_ok=True)
+        spec = {"kind": "explain", "title": "캡션", "lead": "캡션 대비", "sections": [
+            {"title": "흐름", "text": ["요청"], "figure": "../flow-a.thinkflow", "caption": "그림 캡션"},
+            {"title": "화면", "text": ["화면"], "image": "shot.svg", "caption": "이미지 캡션"},
+        ]}
+        (folder / "shot.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>', encoding="utf-8")
+        (folder / "input.json").write_text(json.dumps(spec, ensure_ascii=False), encoding="utf-8")
+        script = r"""
+const { createRequire } = await import('node:module');
+const { chromium } = createRequire(`${process.env.PLAYWRIGHT_REQUIRE_ROOT}/`)('playwright-core');
+const browser = await chromium.launch();
+const result = {};
+for (const mode of ['light', 'dark']) {
+  const page = await browser.newPage({ colorScheme: mode });
+  await page.goto(process.env.REPORT_URL);
+  await page.locator(`.theme button[data-mode="${mode}"]`).click();
+  result[mode] = await page.evaluate(() => {
+    const rgba = (value) => { const v = value.match(/[\d.]+/g).map(Number); return [v[0], v[1], v[2], v.length > 3 ? v[3] : 1]; };
+    const lum = (c) => c.slice(0, 3).map((x) => { x /= 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }).reduce((s, x, i) => s + x * [0.2126, 0.7152, 0.0722][i], 0);
+    return [...document.querySelectorAll('.app-prose .app-figure figcaption')].map((caption) => {
+      let node = caption, bg = [0, 0, 0, 0];
+      while (node && bg[3] === 0) { bg = rgba(getComputedStyle(node).backgroundColor); node = node.parentElement; }
+      const fg = rgba(getComputedStyle(caption).color);
+      const mixed = fg.slice(0, 3).map((x, i) => x * fg[3] + bg[i] * (1 - fg[3]));
+      const [a, b] = [lum(mixed), lum(bg)].sort((x, y) => y - x);
+      return (a + 0.05) / (b + 0.05);
+    });
+  });
+  await page.close();
+}
+await browser.close();
+process.stdout.write(JSON.stringify(result));
+"""
+        try:
+            command = [sys.executable, str(BUILD), str(folder / "input.json"), "--thinkflow", str(self.thinkflow)]
+            completed = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            completed = subprocess.run(
+                ["node", "--input-type=module", "-e", script],
+                capture_output=True,
+                check=False,
+                env=os.environ | {"PLAYWRIGHT_REQUIRE_ROOT": str(playwright_root), "REPORT_URL": (folder / "index.html").as_uri()},
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            ratios = json.loads(completed.stdout)
+            for mode in ("light", "dark"):
+                self.assertEqual(len(ratios[mode]), 2)
+                for ratio in ratios[mode]:
+                    self.assertGreaterEqual(ratio, 4.5, mode)
+        finally:
+            shutil.rmtree(folder)
+
     def test_navigation_chips_use_state_tokens_and_single_row_css(self) -> None:
         report = self._build_navigation_report()
 
@@ -159,6 +263,37 @@ class InlineThinkflowReportTest(unittest.TestCase):
         self.assertIn("flex-wrap:nowrap", report)
         self.assertIn("overflow-x:auto", report)
         self.assertIn("activeLink.scrollIntoView", report)
+
+    def test_comparison_columns_collapse_to_one_on_narrow_screens(self) -> None:
+        playwright_root = self._playwright_root()
+        if playwright_root is None or shutil.which("node") is None:
+            self.skipTest("installed Playwright browser is unavailable")
+        script = r"""
+const { createRequire } = await import('node:module');
+const { chromium } = createRequire(`${process.env.PLAYWRIGHT_REQUIRE_ROOT}/`)('playwright-core');
+let html = '';
+for await (const chunk of process.stdin) html += chunk;
+const browser = await chromium.launch();
+const columns = {};
+for (const width of [390, 900]) {
+  const page = await browser.newPage({ viewport: { width, height: 700 } });
+  await page.setContent(html);
+  columns[width] = await page.evaluate(() => getComputedStyle(document.querySelector('.cols')).gridTemplateColumns.split(' ').length);
+  await page.close();
+}
+await browser.close();
+process.stdout.write(JSON.stringify(columns));
+"""
+        completed = subprocess.run(
+            ["node", "--input-type=module", "-e", script],
+            input=self._build_navigation_report(options=2),
+            capture_output=True,
+            check=False,
+            env=os.environ | {"PLAYWRIGHT_REQUIRE_ROOT": str(playwright_root)},
+            text=True,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(json.loads(completed.stdout), {"390": 1, "900": 2})
 
     def test_navigation_chips_have_aa_contrast_and_stay_in_one_row(self) -> None:
         playwright_root = self._playwright_root()

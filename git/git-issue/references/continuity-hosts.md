@@ -11,14 +11,14 @@ Python 3.9 이상, macOS/Linux, 표준 라이브러리, git, 인증된 gh. 기�
 - 이 스킬 폴더가 work-continuity 플러그인 루트. 플러그인은 훅만 제공(스킬은 skill-sync 설치), 두 제품이 같은 scripts 사용, 훅 JSON만 제품별
 - 사용량: Claude는 status line의 현재 context_window, Codex는 아래 세션 메타데이터 어댑터. 검증 불가 시 unknown, 계정 한도·누적 사용량으로 추정 금지
 - PostToolUse 75%: 다음 안전한 작업 경계에서 저장 요청. 80% 이상: 미저장 기록 정리를 새 작업보다 우선. 압축 주기마다 임계값별 한 번만. 작업 중단·강제 압축 없음
-- PreToolUse: 구조화된 파일 도구의 문서 경로 검사와 셸 문서 쓰기 거부(정본 repo-docs `references/project-context.md`). Vault·프로젝트 미등록, 영역 이탈은 거부. 편집 도구는 필수 원문 미전달 시 조회 명령 안내와 함께 거부, 읽기·실행 명령은 비대상. SessionStart 주입·bind 안내는 git 작업본에서만
+- PreToolUse: 구조화된 파일 도구의 문서 경로 검사와 셸 문서 쓰기 거부(정본 repo-docs `references/project-context.md`). 로그 리디렉션은 `.log`, `.txt`·`.md` 등 문서 확장자 리디렉션은 문서 쓰기로 거부. Vault·프로젝트 미등록, 영역 이탈은 거부. 편집 도구는 필수 원문 미전달 시 조회 명령 안내와 함께 거부, 읽기·실행 명령은 비대상. SessionStart 주입·bind 안내는 git 작업본에서만
 - PreCompact: 작성된 기록 동기화 시도, 실패는 로컬 보존. 새 의미 요약 생성 없음
 - PostCompact·SessionStart·UserPromptSubmit: 복구 필요 표시 또는 복구 명령 연결. 모든 요청에 전체 이슈 재주입 금지
 - SessionStart: 등록 Vault·프로젝트·두 진입점 검사 결과 안내. 미등록 환경은 자동 추정 대신 등록 오류 보고. 안내 훅이 임의 셸·외부 앱 쓰기를 차단한다고 표현 금지
 - Stop: continuity.md의 Stop 알림 조건에서 한 번 보완 요청. Stop 재진입 무한 반복 금지
 - SessionEnd: 종료 표시만. 강제 종료 시 새 기록 생성 보장 없음
 - 계획 모드: 원격 쓰기 없음. 실행 작업으로 자동 전환 금지
-- 과업 선택: 현재 세션의 명시 bind 우선, 중복 연결이면 자동 선택 거부. `ISSUE_CONTINUITY_TASK`는 미등록 세션의 초기 힌트이며 새 bind를 덮지 않음. 검증된 관리 창에서는 창의 활성 과업을 따르고 시작 cwd·옛 환경변수로 복귀 금지
+- 과업 선택: 현재 세션의 명시 bind 우선, 중복 연결이면 자동 선택 거부. `ISSUE_CONTINUITY_TASK`는 미등록 세션의 초기 힌트이며 새 bind 덮어쓰기 금지. 검증된 관리 창에서는 창의 활성 과업을 따르고 시작 cwd·옛 환경변수로 복귀 금지
 - 훅 파일 누락·처리 오류: 구조화된 파일 쓰기는 거부, 셸·그 밖 이벤트는 진단 후 비차단 종료(설치 복구 경로 보존, 문서 검사 완료 의미 아님). 기록·초기화 준비 실패 유지, 재시도 루프·종료 0의 성공 해석 금지
 
 ## 설치와 검증
@@ -40,7 +40,7 @@ python3 <이 스킬 폴더>/scripts/install_statusline.py install
 - Codex: CLI `/hooks`에서 훅 정의 검토·신뢰 필요. 신뢰 우회 옵션 금지
 - 실행 중 호스트의 새 훅 재로드는 별도 확인. 설치 성공을 현재 대화 활성화로 보고하거나 반복 재시작 요구 금지
 - Claude status line: `install_statusline.py install|remove [--home]`. 기존 설정 전체와 훅 보존, 원래 명령의 입력·출력·종료 코드 유지. remove는 원래 status line 복구, 이후 사용자가 바꾼 설정은 덮어쓰기 거부. 출력: 변경 여부와 종료 0, 실패 stderr·2
-- 누락 훅 종료 검증: `python3 -m pytest <이 스킬 폴더>/tests`(pytest 필요). 실제 셸 명령의 종료·진단만 확인, 호스트 초기화·복구는 아래 실제 창 합격 조건으로 별도 검증
+- 누락 훅 종료 검증: 스킬 원본 저장소에서 `python3 -m pytest git/git-issue/tests`(pytest 필요, 설치본에 tests 없음). 실제 셸 명령의 종료·진단만 확인, 호스트 초기화·복구는 아래 실제 창 합격 조건으로 별도 검증
 
 ## 같은 창·제목의 자동 재개 계약
 
@@ -67,7 +67,7 @@ python3 <이 스킬 폴더>/scripts/continuity_window.py --task 작업명 --host
 
 - 필요: tmux, 로그인한 해당 CLI, 인증된 gh, 열린 이슈 연결과 유효한 초기 checkpoint. 기존 보안·승인·훅 설정 유지, 새 신뢰 요청 자동 승인 금지
 - 소유 범위: 실행기가 만든 tmux 창 하나. 기존 CLI·데스크톱 창을 제목으로 찾아 붙잡기 금지. 같은 작업의 두 번째 실행기는 거부
-- 창 home(`--task`)과 활성 과업 분리. 창 ID·제목·meter는 home에 유지, 과업·저장 기준은 현재 세션 bind를 따름. checkpoint 대기 중 과업이 바뀌면 초기화 없이 중단
+- 창 home(`--task`)과 활성 과업 분리. 창 ID·제목·meter는 home에 유지, 과업·저장 기준은 현재 세션 bind 기준. checkpoint 대기 중 과업이 바뀌면 초기화 없이 중단
 - 기본: 사용량 `--threshold`(기본 75)% 이상에서 유휴 확인 후 전환. 계정 한도 미사용, 사용량 미확인은 추정 없이 대기. 의미 요약은 AI, 구조·저장·원격 일치·작업본 확인은 코드
 - 기록 작성 전 최신 이슈 복구. 자동 초기화 기록의 goal·constraints가 기존 값과 다르면 전환 거부, 정당한 범위 변경은 먼저 일반 checkpoint로 기록. 나머지 필드 의미 보존은 실행자 확인
 - Claude는 기존 출력을 보존하는 status line 사용, 입력 제안은 실행기 전용 설정에서 끄고 전역 설정 보존

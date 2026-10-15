@@ -1,4 +1,4 @@
-"""누락된 플러그인의 실제 Stop 명령이 재시도를 요청하지 않는지 확인."""
+"""HOME 훅 진입점 유무별 실제 훅 명령의 결과 확인."""
 
 import json
 from pathlib import Path
@@ -6,29 +6,34 @@ from pathlib import Path
 import pytest
 
 
-@pytest.mark.parametrize(
-    "host,variable", [("codex", "PLUGIN_ROOT"), ("claude", "CLAUDE_PLUGIN_ROOT")]
-)
-def test_missing_plugin_cache_uses_stable_entrypoint(host: str, variable: str) -> None:
+@pytest.mark.parametrize("host", ["codex", "claude"])
+def test_stop_hook_uses_home_entrypoint(host: str, tmp_path: Path) -> None:
     import os
+    import shutil
     import subprocess
 
-    absent = Path(__file__).parent / "absent-plugin"
-    assert not absent.exists()
-    config = json.loads(
-        (Path(__file__).resolve().parents[1] / "hooks" / (host + ".json")).read_text()
-    )
+    plugin = Path(__file__).resolve().parents[1]
+    config = json.loads((plugin / "hooks" / (host + ".json")).read_text())
     command = config["hooks"]["Stop"][0]["hooks"][0]["command"]
-    result = subprocess.run(
-        ["/bin/sh", "-c", command],
-        input="{}",
-        text=True,
-        capture_output=True,
-        env={**os.environ, variable: str(absent)},
-    )
-    assert result.returncode == 0
-    assert json.loads(result.stdout) == {}
-    assert not result.stderr
+    absent = tmp_path / "absent"
+
+    def stop(home: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ["/bin/sh", "-c", command], input="{}", text=True, capture_output=True,
+            env={**os.environ, "HOME": str(home), "ISSUE_CONTINUITY_ROOT": str(tmp_path / "runtime")},
+        )
+
+    result = stop(absent)
+    assert result.returncode == 0 and json.loads(result.stdout) == {}
+    assert "unavailable" in result.stderr
+    installed = tmp_path / "home"
+    (installed / ("." + host) / "skills").mkdir(parents=True)
+    (installed / ("." + host) / "skills/git-issue").symlink_to(plugin)
+    (installed / ".config/skills").mkdir(parents=True)
+    shutil.copyfile(plugin / "scripts/hook_entry.py", installed / ".config/skills/work-continuity.py")
+    result = stop(installed)
+    assert result.returncode == 0 and json.loads(result.stdout) == {}
+    assert not result.stderr, result.stderr
     import sys
     upgrade = Path(__file__).resolve().parents[1] / "scripts/upgrade_plugin.py"
     for arguments in (("--help",), (host, "--help")):
@@ -46,6 +51,7 @@ def test_missing_plugin_cache_uses_stable_entrypoint(host: str, variable: str) -
         )
         assert missing.returncode == 0 and "unavailable" in missing.stderr
         assert (json.loads(missing.stdout) == {}) == allowed
+        assert allowed or "install.py" in missing.stdout
 
 
 @pytest.mark.parametrize("host", ["codex", "claude"])

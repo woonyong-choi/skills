@@ -19,7 +19,7 @@
 - Codex: `${CODEX_HOME:-~/.codex}/memories/extensions/ad_hoc/notes/`. 생성된 `MEMORY.md`·요약 파일 직접 수정 금지
 - Claude: 호스트 메모리 쓰기 도구가 있으면 그 도구, 없으면 `<Vault>/career/corrections/`
 - 둘 다 불가: 최종 응답에 같은 블록 출력, 저장 안 됨 명시
-- 비밀·민감한 원값 저장 금지. 실수를 막을 규칙만 남김
+- 비밀·민감한 원값 저장 금지. 실수를 막을 규칙만 기록
 
 ## 승격
 

@@ -28,7 +28,7 @@ jobs:
       - name: Run Python tests
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/scripts/test_check_doc.py docs/html-report/tests/test_thinkflow_cli.py
+        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/html-report/tests/test_thinkflow_cli.py
       - name: Load figure renderer
         uses: actions/checkout@v4
         with:

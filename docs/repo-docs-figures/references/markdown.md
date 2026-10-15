@@ -1,7 +1,5 @@
 # Markdown과 CI
 
-Markdown 그림 생성·검사 전 [검사](validation.md) 필수 확인
-
 - 문서 안 그림 관리: `thinkflow md`로 `thinkflow` 코드 블록에서 SVG 생성과 이미지 줄 갱신. 블록·파일 이름·출력 위치·오래된 SVG 정리 규칙: [markdown](https://github.com/woonyong-choi/thinkflow/blob/main/docs/design/markdown.md). 문법·기본값 복제 금지
 - 원본 문서와 생성 SVG 함께 커밋. 생성 이미지 줄의 대체 글은 블록의 `title`에서 결정하므로 `title`도 대체 글 규칙 적용
 - 읽기 전용 최신성 검사: 아래 명령. 사용 버전에서 성공·실패 코드와 파일 변경 여부 확인·기록

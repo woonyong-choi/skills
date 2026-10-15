@@ -97,12 +97,14 @@ def register_project(path: Path, name: str | None, migrate: bool) -> dict:
             raise context.ContextError("project area escapes vault")
         root = Path(actual["path"])
         existing = context.read_registration(index) if index.exists() else {}
-        if existing.get("common") and existing["common"] != actual.get("common"):
+        # 같은 원격의 다른 clone: 저장된 common 유지, 경로만 추가. 등록된 경로의 common 변경은 조정 필요.
+        other_clone = existing.get("common") and existing["common"] != actual.get("common")
+        if other_clone and actual["path"] in existing.get("paths", []):
             raise context.ContextError("registered Git common differs; reconcile without overwriting")
         writes = prepare_migration(root, index, migrate)
-        registration = context.read_registration(index) if index.exists() else {"identity": actual["identity"], "paths": []}
-        registration["paths"] = sorted(set(registration["paths"] + [actual["path"]]))
-        if actual.get("common"):
+        registration = existing or {"identity": actual["identity"], "paths": []}
+        registration["paths"] = sorted(set(registration.get("paths", []) + [actual["path"]]))
+        if actual.get("common") and not other_clone:
             registration["common"] = actual["common"]
         body = "\n".join(index.read_text(encoding="utf-8").splitlines()[1:]) + "\n" if index.exists() else "# Project context\n\n- 필수: 적용 범위에 해당하는 상위 지침. 현재 과업에 필요한 자료만 조회, 전체 agent 재귀 읽기 금지\n- 진행·결정·검사·다음 행동: 기존 Continuity 기록 재사용, 별도 상태 사본 금지\n"
         for target, text in writes.items():

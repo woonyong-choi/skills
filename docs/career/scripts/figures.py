@@ -1,4 +1,4 @@
-"""폴더의 ThinkFlow 원본을 정지 SVG와 인쇄용 PNG(그림 영역만, 라이트, 2배)로 만든다.
+"""폴더의 ThinkFlow 원본을 정지 SVG와 인쇄용 PNG(그림 영역만, 라이트, 2배, 캔버스 배경 투명)로 만든다.
 
 사용: python3 figures.py <figures 폴더> --thinkflow <ThinkFlow 체크아웃>
 인자: 그림 폴더, ThinkFlow 체크아웃(없으면 THINKFLOW_PATH). Chrome 경로는 CHROME_PATH(없으면 playwright 기본)
@@ -21,7 +21,8 @@ const browser = await chromium.launch(chrome ? { executablePath: chrome } : {});
 const page = await browser.newPage({ deviceScaleFactor: 2, colorScheme: 'light' });
 for (const [svg, png] of files) {
   await page.goto('file://' + svg);
-  await page.locator('svg').first().screenshot({ path: png, animations: 'disabled' });
+  await page.$$eval('.fl-canvas-surface', (els) => els.forEach((el) => el.remove()));
+  await page.locator('svg').first().screenshot({ path: png, animations: 'disabled', omitBackground: true });
 }
 await browser.close();
 """
