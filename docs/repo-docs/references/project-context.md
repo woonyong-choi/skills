@@ -46,5 +46,5 @@ index 첫 줄의 메타데이터로 프로젝트를 식별. 별도 상태 저장
 - 문서 검사 연결: `repo-docs/scripts/check_doc.py --project <작업 경로> <문서>` 사용. 연결·경로 실패 시 문체 검사에 앞서 종료 2
 - 검사 범위: 등록·원격/로컬 일치·중복 identity·Vault 밖 심볼릭 링크·두 진입점·허용 경로. 지침 의미 보존·사용자 승인 진위는 원문 대조 필수
 - 문서 작성자는 경로 검사 성공 후 작성. 일반 셸·외부 앱의 임의 쓰기까지 강제 차단하는 보안 경계로 표현 금지
-- 자동 연결: Work Continuity의 `PreToolUse`가 Claude `Write/Edit/MultiEdit`, Codex `apply_patch`의 문서 경로 검사. 대상 확장자는 `md/mdx/rst/adoc/txt/docx/pdf`. 미등록·영역 이탈은 실행 전 거부
+- 자동 연결: Work Continuity의 `PreToolUse`가 Claude `Write/Edit/MultiEdit`, Codex `apply_patch`의 문서 경로 검사. 대상 확장자는 `md/mdx/rst/adoc/txt/docx/pdf`. 미등록·영역 이탈은 실행 전 거부, 다른 등록 프로젝트 경로는 그 프로젝트를 작업 위치(cwd)로 둔 세션에서만 쓰기
 - 셸: 감지한 문서 쓰기는 구조화된 파일 도구 사용 안내와 함께 거부. 로그는 `.log`로 리디렉션(`.txt`·`.md` 리디렉션은 문서 쓰기로 거부), 요청 본문의 문서 경로는 쓰기 판정 제외. 계산된 경로·임의 스크립트·MCP·외부 앱·HTML 전체 쓰기의 완전 차단은 미지원
