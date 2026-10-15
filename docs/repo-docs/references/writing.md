@@ -114,7 +114,7 @@
 5. 표: 머리 행과 `|---|` 구분 행 필수. 칸 앞뒤 공백 하나. 칸 안 줄바꿈 금지
 6. 빈 칸 표기: 값이 0개면 `없음`, 항목이 이 대상에 적용되지 않으면 `해당 없음`
 7. 코드 블록: 백틱 세 개와 언어 태그 `sh`, `text`, 또는 코드 언어 이름(`rust`, `toml`, `json`, `python`). 명령 앞 `$` 금지
-8. 그림: 이미지 한 줄 `![{대체 글}]({상대 경로})`. 다크 모드 그림이 따로 있으면 `<picture>` 블록. 그림 파일이 없으면 그 줄 삭제(repo-docs-figures). mermaid와 텍스트 그림 금지(`docs/ui.md`·`docs/design/` 화면 배치 그림, repo-docs-figures `dap` 원본 블록 예외)
+8. 그림: 이미지 한 줄 `![{대체 글}]({상대 경로})`. 다크 모드 그림이 따로 있으면 `<picture>` 블록. 그림 파일이 없으면 그 줄 삭제(repo-docs-figures). mermaid와 텍스트 그림 금지(`docs/ui.md`·`docs/design/` 화면 배치 그림, repo-docs-figures `thinkflow` 원본 블록 예외)
 9. 저장소 안 링크: 상대 경로. 링크 글자: 문서 제목, 파일 이름, 또는 문서 종류 이름(`결정 기록`). `여기`, `이 링크`, `here` 금지
 10. 굵게·이모지: 문체 절. 기울임, 각주, 배지 금지. HTML은 `<picture>`, `<source>`, `<img>`, `<details>`, `<summary>`와 README 머리의 `<p align="center">`, `<h1 align="center">`, `<a>`, `<br>`만
 11. 인용 블록: GitHub 알림 두 가지만. `> [!NOTE]`(알아 둘 사실), `> [!WARNING]`(어기면 데이터나 동작을 잃는 규칙). 다음 줄 `> {문장}` 한 줄

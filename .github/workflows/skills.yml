@@ -28,24 +28,22 @@ jobs:
       - name: Run Python tests
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/scripts/test_check_doc.py docs/html-report/tests/test_daphnis_cli.py
+        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/scripts/test_check_doc.py docs/html-report/tests/test_thinkflow_cli.py
       - name: Load figure renderer
         uses: actions/checkout@v4
         with:
-          repository: woonyong-choi/daphnis
-          ref: a899e9ec40fc69b581226460b70f13b8f45a03df
-          path: .runtime/daphnis
+          repository: woonyong-choi/thinkflow
+          ref: a562019726020c6991355abec0d4543c06c78ec8
+          path: .runtime/thinkflow
       - name: Install figure renderer and browser
-        working-directory: .runtime/daphnis
+        working-directory: .runtime/thinkflow
         run: |
-          # The pinned renderer uses committed tokens; the private authoring package is unused.
-          npm pkg delete 'dependencies.@woonyong-choi/design-tokens'
-          npm install
+          npm ci
           npx playwright-core install --with-deps chromium
       - name: Run report tests
-        run: python3 docs/html-report/tests/test_build_report.py --daphnis .runtime/daphnis
+        run: python3 docs/html-report/tests/test_build_report.py --thinkflow .runtime/thinkflow
       - name: Verify README figures
         run: |
           python3 experiments/skill-exposure/scripts/03-analyze.py
-          python3 scripts/render_readme.py .runtime/daphnis/src/cli.js
+          python3 scripts/render_readme.py .runtime/thinkflow/src/cli.js
           git diff --exit-code -- docs/assets experiments/skill-exposure/results

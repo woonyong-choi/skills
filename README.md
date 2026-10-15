@@ -194,20 +194,20 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 
 ## 개발
 
-[스킬 작성 형식](tools/skill-sync/references/authoring.md)과 [일관성 검사 기준](tools/skill-sync/references/consistency.md)을 따릅니다. CI는 아래 일관성 검사와 Python 시험을 실행하며, daphnis와 Chromium을 설치해 HTML 보고서 시험도 실행합니다.
+[스킬 작성 형식](tools/skill-sync/references/authoring.md)과 [일관성 검사 기준](tools/skill-sync/references/consistency.md)을 따릅니다. CI는 아래 일관성 검사와 Python 시험을 실행하며, ThinkFlow와 Chromium을 설치해 HTML 보고서 시험도 실행합니다.
 
 ```sh
 python3 tools/skill-sync/scripts/skill_check.py .
-python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/scripts/test_check_doc.py docs/html-report/tests/test_daphnis_cli.py
+python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/scripts/test_check_doc.py docs/html-report/tests/test_thinkflow_cli.py
 ```
 
 시험에는 pytest가 필요합니다. 그림 원본, 밝은·어두운 SVG와 재생성 명령은 [그림 재현 안내](docs/assets/README.md)에 있습니다.
 
-저장소 전체 시험은 `python3 -m pytest -q`로 실행합니다. `DAPHNIS_PATH`가 없거나 빈 값이면 HTML 보고서 시험 3개는 경로 설정 안내와 함께 건너뜁니다. 보고서 시험을 실행하려면 의존성이 설치된 그림 도구 작업본 루트를 지정합니다. 브라우저 시험에는 Node.js, `playwright-core`와 Chromium이 필요합니다.
+저장소 전체 시험은 `python3 -m pytest -q`로 실행합니다. `THINKFLOW_PATH`가 없거나 빈 값이면 HTML 보고서 시험 4개는 경로 설정 안내와 함께 건너뜁니다. 보고서 시험을 실행하려면 의존성이 설치된 그림 도구 작업본 루트를 지정합니다. 브라우저 시험에는 Node.js, `playwright-core`와 Chromium이 필요합니다.
 
 ```sh
-DAPHNIS_PATH="<그림 도구 작업본 루트>" python3 -m pytest -q docs/html-report/tests/test_build_report.py
-python3 docs/html-report/tests/test_build_report.py --daphnis "<그림 도구 작업본 루트>"
+THINKFLOW_PATH="<ThinkFlow 작업본 루트>" python3 -m pytest -q docs/html-report/tests/test_build_report.py
+python3 docs/html-report/tests/test_build_report.py --thinkflow "<ThinkFlow 작업본 루트>"
 ```
 
 ## 라이선스

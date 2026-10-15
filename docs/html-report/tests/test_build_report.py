@@ -1,4 +1,4 @@
-"""Daphnis 그림이 이미지가 아닌 인라인 문서로 들어가는지 검사한다."""
+"""ThinkFlow 그림이 이미지가 아닌 인라인 문서로 들어가는지 검사한다."""
 
 from __future__ import annotations
 
@@ -15,16 +15,16 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-FIXTURE = Path(__file__).resolve().parent / "fixtures" / "inline-daphnis"
+FIXTURE = Path(__file__).resolve().parent / "fixtures" / "inline-thinkflow"
 BUILD = ROOT / "docs" / "html-report" / "scripts" / "build_report.py"
 PLAYWRIGHT_ROOTS = (
     Path.home() / ".local" / "lib" / "node_modules",
-    ROOT.parent.parent / "oss" / "daphnis" / "node_modules",
+    ROOT.parent.parent / "oss" / "thinkflow" / "node_modules",
 )
 
 
 class ReportParser(HTMLParser):
-    """보고서의 이미지와 Daphnis iframe 속성을 모은다."""
+    """보고서의 이미지와 ThinkFlow iframe 속성을 모은다."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -38,22 +38,22 @@ class ReportParser(HTMLParser):
             self.frames.append(dict(attrs))
 
 
-class InlineDaphnisReportTest(unittest.TestCase):
-    """두 Daphnis 재생기가 독립 iframe 문서로 생성되는지 확인한다."""
+class InlineThinkflowReportTest(unittest.TestCase):
+    """두 ThinkFlow 재생기가 독립 iframe 문서로 생성되는지 확인한다."""
 
-    daphnis: Path | None = None
+    thinkflow: Path | None = None
 
     @classmethod
     def setUpClass(cls) -> None:
-        if cls.daphnis is not None:
+        if cls.thinkflow is not None:
             return
-        daphnis = os.environ.get("DAPHNIS_PATH")
-        if not daphnis:
+        thinkflow = os.environ.get("THINKFLOW_PATH")
+        if not thinkflow:
             raise unittest.SkipTest(
-                "daphnis path is not configured; set DAPHNIS_PATH to the checkout root "
-                "or run this script with --daphnis <path>"
+                "thinkflow path is not configured; set THINKFLOW_PATH to the checkout root "
+                "or run this script with --thinkflow <path>"
             )
-        cls.daphnis = Path(daphnis).resolve()
+        cls.thinkflow = Path(thinkflow).resolve()
 
     def _build_navigation_report(self) -> str:
         module_spec = importlib.util.spec_from_file_location("build_report", BUILD)
@@ -80,26 +80,26 @@ class InlineDaphnisReportTest(unittest.TestCase):
             "intro": "접근성 검사 보고서",
             "questions": questions,
         }
-        renderer = module.FigureRenderer(base=FIXTURE, daphnis=None, static=False)
-        tokens_css = (self.daphnis / "src" / "tokens.css").read_text(encoding="utf-8")
+        renderer = module.FigureRenderer(base=FIXTURE, thinkflow=None, static=False)
+        tokens_css = (self.thinkflow / "src" / "vendor" / "theme" / "tokens.css").read_text(encoding="utf-8")
         return module.build(report, renderer, tokens_css)
 
     def _playwright_root(self) -> Path | None:
-        candidates = (*PLAYWRIGHT_ROOTS, self.daphnis / "node_modules")
+        candidates = (*PLAYWRIGHT_ROOTS, self.thinkflow / "node_modules")
         for root in candidates:
             if (root / "playwright-core" / "package.json").is_file():
                 return root
         return None
 
-    def test_dap_figures_use_inline_svg_documents_not_images(self) -> None:
+    def test_thinkflow_figures_use_inline_svg_documents_not_images(self) -> None:
         output = FIXTURE / "index.html"
         command = [
             sys.executable,
             str(BUILD),
             str(FIXTURE / "input.json"),
             str(output),
-            "--daphnis",
-            str(self.daphnis),
+            "--thinkflow",
+            str(self.thinkflow),
         ]
         completed = subprocess.run(command, capture_output=True, text=True, check=False)
         self.assertEqual(completed.returncode, 0, completed.stderr)
@@ -110,16 +110,40 @@ class InlineDaphnisReportTest(unittest.TestCase):
 
         self.assertEqual(parser.images, [])
         self.assertEqual(len(parser.frames), 2)
-        self.assertIn("daphnis-theme", report)
+        self.assertIn("thinkflow-theme", report)
         self.assertIn('data-mode="system"', report)
         self.assertIn('data-mode="light"', report)
         self.assertIn('data-mode="dark"', report)
         for frame in parser.frames:
-            self.assertIn("data-daphnis", frame)
+            self.assertIn("data-diagram", frame)
             document = frame.get("srcdoc")
             self.assertIsNotNone(document)
             self.assertIn("<svg", document)
             self.assertIn("fl-figure", document)
+
+    def test_explain_page_uses_theme_and_diagram_host(self) -> None:
+        # #62: 설명 페이지는 공통 테마 파일과 재생기 호스트, 그림마다 재생기 iframe을 쓴다.
+        folder = FIXTURE / "explain"
+        folder.mkdir(exist_ok=True)
+        spec = {"kind": "explain", "title": "요청 구조", "lead": "요청이 서버로 간다", "sections": [
+            {"title": "흐름", "text": ["클라이언트가 요청한다"], "figure": "../flow-a.thinkflow", "caption": "요청"},
+            {"title": "재시도", "text": ["실패하면 다시 보낸다"], "figure": "../flow-b.thinkflow"},
+        ]}
+        (folder / "input.json").write_text(json.dumps(spec, ensure_ascii=False), encoding="utf-8")
+        command = [sys.executable, str(BUILD), str(folder / "input.json"), "--thinkflow", str(self.thinkflow)]
+        completed = subprocess.run(command, capture_output=True, text=True, check=False)
+        try:
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            page = (folder / "index.html").read_text(encoding="utf-8")
+            parser = ReportParser()
+            parser.feed(page)
+            self.assertEqual([frame["src"] for frame in parser.frames], ["figures/flow-a.html", "figures/flow-b.html"])
+            self.assertIn("bindDiagramHost()", page)
+            self.assertIn('class="app-blog-post"', page)
+            for name in ("theme/tokens.css", "theme/styles.css", "figures/flow-a.html", "figures/flow-b.html"):
+                self.assertTrue((folder / name).is_file(), name)
+        finally:
+            shutil.rmtree(folder)
 
     def test_navigation_chips_use_state_tokens_and_single_row_css(self) -> None:
         report = self._build_navigation_report()
@@ -243,9 +267,9 @@ process.stdout.write(JSON.stringify(measurements));
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--daphnis", type=Path, required=True)
+    parser.add_argument("--thinkflow", type=Path, required=True)
     arguments, unittest_args = parser.parse_known_args()
-    InlineDaphnisReportTest.daphnis = arguments.daphnis.resolve()
+    InlineThinkflowReportTest.thinkflow = arguments.thinkflow.resolve()
     unittest.main(argv=[sys.argv[0], *unittest_args])
 
 
