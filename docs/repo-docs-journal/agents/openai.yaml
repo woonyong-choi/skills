@@ -1,4 +1,4 @@
 interface:
   display_name: "Repo Docs Journal"
-  short_description: "Vault 비공개 판단·작업 일지·원칙 기록과 PR 머지 뒤 기록 기준 판정"
+  short_description: "저장소 .local 비공개 판단·작업 일지·원칙 기록과 기록 기준 판정"
   default_prompt: "$repo-docs-journal 스킬로 처리해 줘: [요청]"

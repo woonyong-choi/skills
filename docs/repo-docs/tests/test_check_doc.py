@@ -78,7 +78,7 @@ class DocumentStyleTest(unittest.TestCase):
             ("README.md", "설계 단계입니다.\n", 0),
             ("guide.md", "설계 단계입니다.\n", 1),
             ("README.md", "설계 단계다.\n", 1),
-            ("/vault/worktree/p/docs/design/a.md", "# 가\n\n## 사용 예\n\n## 요약\n", 1),
+            ("/work/p/docs/design/a.md", "# 가\n\n## 사용 예\n\n## 요약\n", 1),
         ):
             with patch("builtins.open", mock_open(read_data=source)), contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(check_doc.main([name]), expected)
@@ -127,7 +127,7 @@ class CommandLineTest(unittest.TestCase):
         self.assertIn("usage:", result.stdout)
 
     def test_bad_arguments_exit_two_without_traceback(self) -> None:
-        for args in ((), ("--unknown", "a.md"), ("--project",), ("/nonexistent/a.md",)):
+        for args in ((), ("--unknown", "a.md"), ("/nonexistent/a.md",)):
             result = self.run_cli(*args)
             self.assertEqual(result.returncode, 2, args)
             self.assertNotIn("Traceback", result.stderr, args)

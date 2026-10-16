@@ -5,7 +5,7 @@
 ## 폴더
 
 ```text
-<Vault>/career/
+<경력 원본>/
   master.md
   {소속}/
     소속.md

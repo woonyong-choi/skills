@@ -3,25 +3,21 @@
 사용: python3 journal.py <명령> ... (명령: screen, path, check, misses, mode)
 인자: screen은 --source 근거 파일(반복, `-`는 표준 입력 하나)·--alternative·--assumption 인용문·--structure 목록 이름, path는 --kind·--topic·선택 --date·--project
 출력: stdout JSON. 종료 0 통과·1 기준 미충족·형식 위반·위치 거부(파일 0개)·2 인자 오류
-설정: <설정 폴더>/journal.json의 mode(normal|bypass, 기본 normal). 설정 폴더는 vault.json과 같은 곳
+설정: <설정 폴더>/journal.json의 mode(normal|bypass, 기본 normal). 설정 폴더는 SKILLS_CONFIG_DIR, 없으면 ~/.config/skills
+저장 위치: 작업 저장소(--project, 없으면 현재 폴더의 git 저장소)의 `.local/journal/`
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import subprocess
 import sys
 from datetime import date
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-# 설치본(스킬 폴더 나란히)과 원본 저장소(docs/·git/) 두 배치의 git-issue 위치
-for _scripts in (HERE.parents[1] / "git-issue" / "scripts", HERE.parents[2] / "git" / "git-issue" / "scripts"):
-    if (_scripts / "project_context.py").is_file():
-        sys.path.insert(0, str(_scripts))
-        break
-import project_context as pc  # noqa: E402
 
 STRUCTURES = (
     "저장 위치",
@@ -93,40 +89,30 @@ def topic_slug(topic: str) -> str:
     return "-".join(words)
 
 
-# cost: time O(p), heap O(p), stack O(1), io O(p)
-# vars: p = 등록 프로젝트 수
+# cost: time O(1), heap O(1), stack O(1), io 1
+# vars: 없음
 # basis: estimate
+def journal_root(project_path: Path | None) -> Path:
+    """작업 저장소의 `.local/journal`. git 저장소 밖이면 JournalError"""
+    path = project_path or Path.cwd()
+    try:
+        done = subprocess.run(["git", "-C", str(path), "rev-parse", "--show-toplevel"], capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise JournalError(f"저장소 판정 실패: {error}") from error
+    if done.returncode or not done.stdout.strip():
+        raise JournalError(f"git 저장소 밖: {path}")
+    return Path(done.stdout.strip()).resolve() / ".local" / "journal"
+
+
 def target(kind: str, topic: str, day: str, project_path: Path | None) -> dict:
-    """저장 경로 계산과 검사. 등록 프로젝트면 영역 docs/, 아니면 Vault legacy/. 실패면 JournalError(파일 0개)"""
+    """저장 경로 계산. 작업 저장소 `.local/journal/<종류 폴더>/`. 실패면 JournalError(파일 0개)"""
     if kind not in KINDS:
         raise JournalError(f"종류는 {', '.join(KINDS)} 중 하나")
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day):
         raise JournalError(f"날짜 형식 YYYY-MM-DD: {day}")
     name = f"{day}-{topic_slug(topic)}.md"
-    try:
-        vault = pc.resolve_vault()
-    except pc.ContextError as error:
-        raise JournalError(f"Vault 미등록: {error}") from error
-    project = None
-    if project_path is not None:
-        try:
-            project = pc.check_project(project_path)
-        except pc.ContextError as error:
-            # 등록 프로젝트가 아니면 프로젝트 무관 기록(legacy). 등록됐지만 검사 실패면 중단
-            if str(error) != pc.UNREGISTERED:
-                raise JournalError(f"프로젝트 판정 실패: {error}") from error
-        except (OSError, ValueError, IndexError) as error:
-            raise JournalError(f"프로젝트 판정 실패: {error}") from error
-    folder = (Path(project["area"]) / "docs" if project else vault / "legacy") / KINDS[kind]
-    path = (folder / name).resolve()
-    try:
-        if project:
-            pc.check_write(project, path)
-        elif not path.is_relative_to((vault / "legacy").resolve()):
-            raise pc.ContextError("legacy 밖")
-    except pc.ContextError as error:
-        raise JournalError(f"쓰기 위치 거부: {error}") from error
-    return {"path": str(path), "scope": "project" if project else "legacy", "principles": str(vault.resolve() / PRINCIPLES)}
+    root = journal_root(project_path)
+    return {"path": str(root / KINDS[kind] / name), "principles": str(root / PRINCIPLES)}
 
 
 # cost: time O(n), heap O(n), stack O(1)
@@ -218,18 +204,17 @@ def check_principles(path: Path) -> list[str]:
 # cost: time O(f·n), heap O(n), stack O(d), io O(f)
 # vars: f = 기록 파일 수, n = 파일 하나 글자 수, d = 폴더 깊이
 # basis: estimate
-def record_files(vault: Path) -> list[Path]:
-    roots = [vault / "legacy", *sorted((vault / "worktree").glob("*/docs"))]
-    return sorted(path for root in roots for folder in sorted(set(KINDS.values())) for path in (root / folder).glob("*.md"))
+def record_files(root: Path) -> list[Path]:
+    return sorted(path for folder in sorted(set(KINDS.values())) for path in (root / folder).glob("*.md"))
 
 
 # cost: time O(f·n), heap O(f), stack O(d), io O(f)
 # vars: f = 판단 변경 파일 수, n = 파일 하나 글자 수, d = 폴더 깊이
 # basis: estimate
-def misses(vault: Path) -> list[dict]:
+def misses(root: Path) -> list[dict]:
     """모든 판단 변경의 놓친 것 표 행(분류, 원인, 기록). 같은 분류·원인 두 번째면 원칙 생성"""
     rows = []
-    for path in record_files(vault):
+    for path in record_files(root):
         text = path.read_text(encoding="utf-8")
         if front(text).get("종류") != "판단 변경" or "## 놓친 것" not in text:
             continue
@@ -245,7 +230,7 @@ def misses(vault: Path) -> list[dict]:
 # vars: 없음
 # basis: estimate
 def config(mode: str | None = None) -> dict:
-    path = pc.config_directory() / "journal.json"
+    path = Path(os.environ.get("SKILLS_CONFIG_DIR") or Path.home() / ".config/skills").expanduser() / "journal.json"
     data = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
     if mode:
         data["mode"] = mode
@@ -285,13 +270,10 @@ def run(argv: list[str]) -> tuple[int, dict]:
         return 0, {"mode": config(args.value)["mode"]}
     if args.command == "path":
         return 0, target(args.kind, args.topic, args.date, args.project)
-    try:
-        vault = pc.resolve_vault()
-    except pc.ContextError as error:
-        raise JournalError(f"Vault 미등록: {error}") from error
+    root = journal_root(None)
     if args.command == "misses":
-        return 0, {"rows": misses(vault)}
-    files = args.files or [*record_files(vault), *([vault / PRINCIPLES] if (vault / PRINCIPLES).is_file() else [])]
+        return 0, {"rows": misses(root)}
+    files = args.files or [*record_files(root), *([root / PRINCIPLES] if (root / PRINCIPLES).is_file() else [])]
     problems = []
     for path in files:
         problems += check_principles(path) if path.name == PRINCIPLES else check_record(path)

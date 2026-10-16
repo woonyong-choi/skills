@@ -42,6 +42,10 @@ POINTER = INSTALL_HOME / ".config" / "skills" / "source"
 TRASH = INSTALL_HOME / ".skill-trash"
 SKIP = {".claude-plugin", ".codex-plugin", "tests", ".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__", "node_modules"}
 CATEGORIES = ("git", "code", "docs", "design", "tools", "just")
+# just do 플러그인 훅의 런타임을 담은 스킬과 안정된 진입점(~/.config/skills 아래 이름)
+HOOK_SKILL = "just-mode"
+HOOK_ENTRY_SOURCE = "scripts/hooks/entry.py"
+HOOK_ENTRY = "just-do.py"
 # 이 저장소 문체 규칙 대신 형식(frontmatter, 이름, 설명 길이)만 검사하는 스킬의 표시 파일(just 묶음)
 VENDORED_MARKER = "FORMAT_ONLY"
 
@@ -193,7 +197,7 @@ def _replace_skill(root: Path, skill: Path, digest: str, installed: dict[str, st
         if fcntl is not None:
             fcntl.flock(lock, fcntl.LOCK_EX)
         _replace_skill_locked(root, skill, digest, installed)
-        if skill.name == "git-issue":
+        if skill.name == HOOK_SKILL:
             _install_hook_entry(configuration, skill)
 
 
@@ -201,11 +205,12 @@ def _replace_skill(root: Path, skill: Path, digest: str, installed: dict[str, st
 # vars: b = hook entry bytes
 # basis: estimate
 def _install_hook_entry(configuration: Path, skill: Path) -> None:
-    source = (skill / "scripts/hook_entry.py").read_bytes()
-    entry = configuration / "work-continuity.py"
+    """just do 플러그인 훅이 부르는 안정된 진입점. 스킬 설치본 교체와 독립된 위치에 둔다."""
+    source = (skill / HOOK_ENTRY_SOURCE).read_bytes()
+    entry = configuration / HOOK_ENTRY
     if entry.is_file() and entry.read_bytes() == source:
         return
-    staged_entry = configuration / "work-continuity.pending"
+    staged_entry = configuration / (HOOK_ENTRY + ".pending")
     staged_entry.write_bytes(source)
     os.replace(staged_entry, entry)
 
@@ -213,7 +218,7 @@ def _install_hook_entry(configuration: Path, skill: Path) -> None:
 # cost: time O(b), heap O(b), stack O(1), io 4
 # vars: b = hook entry bytes
 # basis: estimate
-def _restore_hook_entry(skill: Path) -> None:
+def _refresh_hook_entry(skill: Path) -> None:
     configuration = INSTALL_HOME / ".config/skills"
     configuration.mkdir(parents=True, exist_ok=True)
     with (configuration / "runtime.lock").open("a") as lock:
@@ -290,11 +295,11 @@ def sync(root: Path, skills: list[Path], dry_run: bool) -> bool:
         target = _skill_path(root, skill.name)
         if installed.get(skill.name) == current[skill.name] and target.is_dir() and tree_hash(target) == current[skill.name] and not any(target.rglob("tests")):
             if not dry_run:
-                if skill.name == "git-issue":
+                if skill.name == HOOK_SKILL:
                     try:
-                        _restore_hook_entry(skill)
+                        _refresh_hook_entry(skill)
                     except OSError as error:
-                        print(f"{target}: 훅 진입점 복구 실패: {error}", file=sys.stderr)
+                        print(f"{target}: 훅 진입점 갱신 실패: {error}", file=sys.stderr)
                         success = False
                 print(f"{target}: 일치")
             continue

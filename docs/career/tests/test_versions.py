@@ -62,7 +62,7 @@ class FlowTest(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory()
         base = Path(self.directory.name)
         (base / "config").mkdir()
-        self.env = unittest.mock.patch.dict("os.environ", {"WOON_KNOWLEDGE_ROOT": str(base), "WORK_CONTINUITY_CONFIG_DIR": str(base / "config")})
+        self.env = unittest.mock.patch.dict("os.environ", {"CAREER_ROOT": str(base / "career"), "SKILLS_CONFIG_DIR": str(base / "config")})
         self.env.start()
         self.addCleanup(self.env.stop)
         self.posting = base / "career" / "2026-11-30-합성-백엔드-개발자"
@@ -129,7 +129,7 @@ class FlowTest(unittest.TestCase):
         with self.assertRaises(VERSIONS.CareerError):
             VERSIONS.confirm(self.posting, build=False)
 
-    def test_confirm_outside_vault_writes_nothing(self) -> None:
+    def test_confirm_outside_root_writes_nothing(self) -> None:
         outside = Path(self.directory.name) / "elsewhere" / "이력서"
         outside.mkdir(parents=True)
         (outside / "이력서.typ").write_text(FIRST, encoding="utf-8")

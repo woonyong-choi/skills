@@ -1,6 +1,6 @@
 # principles.md
 
-위치: `<Vault>/principles.md` 하나. 교훈은 프로젝트를 넘어 되풀이되므로 Vault 전체에서 링크 수로 반복 횟수 집계
+위치: 작업 저장소 `.local/journal/principles.md` 하나. 같은 저장소 기록의 링크 수로 반복 횟수 집계
 
 ```text
 # 원칙

@@ -14,7 +14,7 @@
 
 ## 저장 위치
 
-교정 기록 하나 = 파일 하나 `<Vault>/career/corrections/{YYYYMMDD-HHMMSS}-career-feedback.md`
+교정 기록 하나 = 파일 하나 `<경력 원본>/corrections/{YYYYMMDD-HHMMSS}-career-feedback.md`
 
 - 저장 불가: 최종 응답에 같은 블록 출력, 저장 안 됨 명시
 - 비밀·민감한 원값 저장 금지. 실수를 막을 규칙만 기록

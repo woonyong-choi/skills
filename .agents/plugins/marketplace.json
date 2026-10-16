@@ -5,10 +5,10 @@
   },
   "plugins": [
     {
-      "name": "work-continuity",
+      "name": "just-do",
       "source": {
         "source": "local",
-        "path": "./git/git-issue"
+        "path": "./just"
       },
       "policy": {
         "installation": "AVAILABLE",
