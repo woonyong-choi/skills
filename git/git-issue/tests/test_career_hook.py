@@ -1,0 +1,77 @@
+"""career-record 연결: 세션 안 PR 머지 성공 뒤 PostToolUse 훅의 기록 판단 안내.
+
+합성 Vault·합성 설정 폴더만 사용
+"""
+
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+import shutil
+import sys
+import tempfile
+import unittest
+from unittest import mock
+
+PLUGIN = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PLUGIN / "scripts"))
+
+import continuity_hook  # noqa: E402
+
+
+class CareerHookTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.root)
+        self.vault = self.root / "vault"
+        (self.vault / "career").mkdir(parents=True)
+        self.config = self.root / "config"
+        self.config.mkdir()
+        patcher = mock.patch.dict(os.environ, {"WOON_KNOWLEDGE_ROOT": str(self.vault), "WORK_CONTINUITY_CONFIG_DIR": str(self.config)})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def payload(self, command: str, response: object = None) -> dict:
+        return {
+            "hook_event_name": "PostToolUse",
+            "session_id": "s",
+            "cwd": str(self.root),
+            "tool_name": "Bash",
+            "tool_input": {"command": command},
+            "tool_response": {"stdout": "✓ Squashed and merged", "stderr": "", "interrupted": False} if response is None else response,
+        }
+
+    def test_successful_merge_adds_notice_with_mode(self) -> None:
+        for command in ("gh pr merge 12 --squash", "gh api -X PUT repos/me/x/pulls/12/merge --input body.json"):
+            notice = continuity_hook.career_notice(self.payload(command))
+            self.assertIn("career-record", notice, command)
+            self.assertIn("모드 normal", notice)
+            self.assertIn("record.py", notice)
+        (self.config / "career-record.json").write_text(json.dumps({"mode": "bypass"}), encoding="utf-8")
+        self.assertIn("모드 bypass", continuity_hook.career_notice(self.payload("gh pr merge 12")))
+
+    def test_handle_returns_notice_without_task(self) -> None:
+        result = continuity_hook.handle("claude", self.payload("gh pr merge 12 --squash"), self.root / "state")
+        self.assertIn("career-record", result["hookSpecificOutput"]["additionalContext"])
+
+    def test_no_notice_for_failed_or_other_commands(self) -> None:
+        cases = [
+            self.payload("gh pr merge 12", {"stdout": "", "stderr": "not mergeable", "exit_code": 1}),
+            self.payload("gh pr merge 12", "Exit code: 1\nPull request is not mergeable"),
+            self.payload("gh pr view 12"),
+            self.payload("gh api repos/me/x/pulls/12/merge"),
+            {**self.payload("gh pr merge 12"), "hook_event_name": "PreToolUse"},
+        ]
+        for payload in cases:
+            self.assertEqual(continuity_hook.career_notice(payload), "", payload)
+
+    def test_no_notice_without_career_folder_or_vault(self) -> None:
+        shutil.rmtree(self.vault / "career")
+        self.assertEqual(continuity_hook.career_notice(self.payload("gh pr merge 12")), "")
+        with mock.patch.dict(os.environ, {"WOON_KNOWLEDGE_ROOT": ""}):
+            self.assertEqual(continuity_hook.career_notice(self.payload("gh pr merge 12")), "")
+
+
+if __name__ == "__main__":
+    unittest.main()

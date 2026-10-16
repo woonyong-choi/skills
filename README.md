@@ -52,6 +52,14 @@ Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continu
 
 설치와 실제 훅 실행은 별도다. Codex는 대화형 TUI의 `/hooks`에서 새 훅 정의를 검토·신뢰해야 실행합니다. `codex exec`는 신뢰 전 훅을 알림 없이 건너뜁니다. 사용량 신호가 없으면 임계값은 미확인으로 남기고 작업 경계와 압축 훅을 사용합니다.
 
+PR 머지 뒤 경력 기록은 [career-record](docs/career-record/SKILL.md)가 판단합니다. 세션 안에서 `gh pr merge`가 성공하면 같은 훅이 기록 여부 판단을 안내합니다. Vault에 `career/` 폴더가 있을 때만 안내합니다. 기본 모드 normal은 추가·병합마다 묻습니다. 바로 기록하는 bypass로 바꾸려면 아래 명령을 실행합니다. bypass에서도 상·중 줄과 포트폴리오 묶음이 있는 줄을 지울 때, 넣을 프로젝트 후보가 여럿일 때는 묻습니다.
+
+```sh
+python3 ~/.claude/skills/career-record/scripts/record.py mode bypass
+```
+
+설정은 `vault.json`과 같은 폴더(기본 `~/.config/skills`)의 `career-record.json`에 `{"mode": "bypass"}`로 저장됩니다.
+
 ## 스킬 목록
 
 ### Git과 GitHub
@@ -95,6 +103,7 @@ Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continu
 | [repo-docs-promo](docs/repo-docs-promo/SKILL.md) | 홍보용 촬영 순서와 데모 준비 |
 | [html-report](docs/html-report/SKILL.md) | 홈페이지 문서 디자인의 설명 페이지와 선택 비교·전후 확인 보고서 |
 | [career](docs/career/SKILL.md) | JD 맞춤 이력서·포트폴리오와 Vault 지원 폴더 |
+| [career-record](docs/career-record/SKILL.md) | 경력 원본의 성과 추가·병합·등급과 PR 머지 뒤 기록 판단 |
 
 ### 디자인
 
@@ -199,7 +208,7 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 
 ```sh
 python3 tools/skill-sync/scripts/skill_check.py .
-python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests
+python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests docs/career-record/tests
 (cd docs/html-report/scripts && npm ci) && node --test docs/html-report/tests/*.test.mjs
 ```
 

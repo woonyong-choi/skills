@@ -336,10 +336,80 @@ def context(folder: Path, binding: dict[str, Any]) -> str:
     return f"연결: {binding['url']}. 같은 과업이면 읽기 전용 `{command}`로 기록과 실제 작업본 대조. 독립 결과는 git-issue의 과업 연결 규칙으로 전환. 기록은 실행 권한이 아님. 실행 기록은 {folder}의 기존 파일 갱신."
 
 
+# gh pr merge, 또는 gh api의 PUT .../pulls/N/merge
+PR_MERGE = re.compile(r"\bgh\s+pr\s+merge\b")
+API_MERGE = re.compile(r"\bgh\s+api\b(?=[^\n;&|]*pulls/\d+/merge\b)(?=[^\n;&|]*(?:-X\s*|--method[\s=]+)PUT\b)")
+EXIT_LINE = re.compile(r"(?:^|\n)\s*(?:Exit code|Process exited with code)[:\s]+(\d+)", re.I)
+
+
+# cost: time O(b), heap O(1), stack O(d)
+# vars: b = 도구 응답 바이트, d = 응답 중첩 깊이
+# basis: estimate
+def tool_failed(value: Any) -> bool:
+    """도구 응답의 실패 표시: 0 아닌 종료 코드, 오류·중단 표시, 'Exit code: N' 줄"""
+    if isinstance(value, dict):
+        for key in ("exit_code", "exitCode", "returncode", "return_code"):
+            if isinstance(value.get(key), int) and value[key] != 0:
+                return True
+        if value.get("is_error") or value.get("isError") or value.get("interrupted"):
+            return True
+        return any(tool_failed(child) for child in value.values() if isinstance(child, (dict, str)))
+    if isinstance(value, str):
+        match = EXIT_LINE.search(value)
+        return bool(match and match.group(1) != "0")
+    return False
+
+
+# cost: time O(b), heap O(1), stack O(d), io O(3)
+# vars: b = 명령·도구 응답 바이트, d = 응답 중첩 깊이
+# basis: estimate
+def career_notice(payload: dict[str, Any]) -> str:
+    """세션 안 PR 머지 성공 뒤 career-record 기록 판단 안내. 스킬·Vault career 폴더가 없으면 빈 문자열"""
+    if payload.get("hook_event_name") != "PostToolUse":
+        return ""
+    command = tool_command(payload)
+    if not (PR_MERGE.search(command) or API_MERGE.search(command)) or tool_failed(payload.get("tool_response")):
+        return ""
+    skill = Path(__file__).resolve().parents[1]
+    record = skill.parent / "career-record/scripts/record.py"
+    if not record.is_file():
+        record = skill.parents[1] / "docs/career-record/scripts/record.py"
+    if not record.is_file():
+        return ""
+    try:
+        if not (project_context.resolve_vault() / "career").is_dir():
+            return ""
+        config = project_context.config_directory() / "career-record.json"
+        mode = json.loads(config.read_text(encoding="utf-8")).get("mode", "normal") if config.is_file() else "normal"
+    except (project_context.ContextError, OSError, ValueError):
+        return ""
+    mode = mode if mode in ("normal", "bypass") else "normal"
+    script = shlex.quote(str(record))
+    return (
+        f"PR 머지 성공: career-record 스킬의 머지 뒤 기록 절 적용(모드 {mode}). "
+        "기록 조건 세 가지(사용자 계정 PR, 동작·결과 변화, 검증 있음) 중 하나라도 아니면 묻지 않고 계속. "
+        f"해당하면 `python3 {script} locate --remote <저장소 원격> --author <PR 작성자>`로 위치 → 같은 상황·행동 줄이면 merge, 아니면 add(--pr <PR 주소>). "
+        f"끝나면 `python3 {script} stamp`."
+    )
+
+
 # cost: time O(n), heap O(n), stack O(1), io O(n + 1)
 # vars: n = 처리하는 파일·응답 크기와 외부 명령 작업량
 # basis: estimate
 def handle(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
+    result = _handle(host, payload, root)
+    notice = career_notice(payload)
+    if not notice or (result.get("hookSpecificOutput") or {}).get("permissionDecision"):
+        return result
+    output = result.setdefault("hookSpecificOutput", {"hookEventName": "PostToolUse"})
+    output["additionalContext"] = (output.get("additionalContext", "") + "\n" + notice).lstrip("\n")
+    return result
+
+
+# cost: time O(n), heap O(n), stack O(1), io O(n + 1)
+# vars: n = 처리하는 파일·응답 크기와 외부 명령 작업량
+# basis: estimate
+def _handle(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
     if payload.get("hook_event_name") == "PreToolUse":
         folder = find_task(root, payload, host)
         project = Path(core.read(folder / "binding.json")["repo"]) if folder else None
