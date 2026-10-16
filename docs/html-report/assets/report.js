@@ -234,8 +234,9 @@
       });
       row.append(item);
     }
-    const note = document.createElement('textarea');
-    note.className = 'report-judge-note';
+    const note = document.createElement('input');
+    note.type = 'text';
+    note.className = 'app-input report-judge-note';
     note.placeholder = '의견을 작성해 주세요';
     note.setAttribute('aria-label', `${question.title} 의견`);
     note.value = state[question.id]?.note ?? '';

@@ -17,4 +17,4 @@
 # Closes: #번호 이 커밋으로 이슈 완료 / Refs: #번호 관련 이슈
 # BREAKING CHANGE: 쓰는 쪽이 바꿀 것 (! 를 붙였을 때)
 #
-# 금지: Co-Authored-By, Generated with, 세션 링크, 작성자 변경
+# 금지: 작성 표시(Co-Authored-By, Generated with, 로봇 이모지, 모델 이름 표시, 세션 링크), 작성자 변경
