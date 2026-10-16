@@ -9,14 +9,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
 import time
 
 import continuity as core
-from continuity_hook import find_task, managed_window
+from continuity_hook import find_task
 
 
 # cost: time O(n), heap O(n), stack O(1), io O(n + 1)
@@ -33,20 +32,15 @@ def main() -> int:
             "current_dir"
         )
         root = core.default_root()
-        folder = find_task(root, payload, "claude")
+        folder = find_task(root, payload)
         percent = payload.get("context_window", {}).get("used_percentage")
-        managed = managed_window(root, "claude")
-        if os.environ.get("ISSUE_CONTINUITY_WINDOW") and not managed:
-            raise core.ContinuityError("managed window record unverified")
-        # 관리 창은 task가 바뀌어도 같은 window home의 meter를 읽는다.
-        target = managed[0] if managed else folder
-        if target:
-            with core.locked(target):
+        if folder:
+            with core.locked(folder):
                 core.save(
-                    target / "meter.json",
+                    folder / "meter.json",
                     {
                         "session_id": payload.get("session_id"),
-                        "task": folder.name if folder else None,
+                        "task": folder.name,
                         "percent": percent
                         if type(percent) in (int, float) and 0 <= percent <= 100
                         else None,

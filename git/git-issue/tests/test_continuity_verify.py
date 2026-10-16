@@ -47,7 +47,7 @@ class Case(unittest.TestCase):
         )
         environ.start()
         self.addCleanup(environ.stop)
-        for key in ("WOON_KNOWLEDGE_ROOT", "ISSUE_CONTINUITY_TASK", "ISSUE_CONTINUITY_WINDOW"):
+        for key in ("WOON_KNOWLEDGE_ROOT", "ISSUE_CONTINUITY_TASK"):
             os.environ.pop(key, None)
 
     def state(self, *, synced: bool, saved_at: int | None = None, digest: str | None = None) -> dict:
