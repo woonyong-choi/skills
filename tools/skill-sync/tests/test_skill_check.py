@@ -116,3 +116,13 @@ def test_description_ends_with_use(tmp_path: Path, description: str, expected: l
         f'---\nname: sample\ndescription: "{description}"\n---\n\n# Sample\n', encoding='utf-8')
     errors = [e for e in skill_check.check(str(skill / 'SKILL.md'), ['sample']) if e.startswith('description')]
     assert errors == expected
+
+
+def test_format_only_check_reports_name_mismatch(tmp_path: Path) -> None:
+    skill = tmp_path / 'just/beta'
+    skill.mkdir(parents=True)
+    text = '---\nname: alpha\ndescription: 쓸 때 설명.\ndisable-model-invocation: true\n---\n\n# 본문\n'
+    (skill / 'SKILL.md').write_text(text, encoding='utf-8')
+    assert skill_check.check_vendored(skill / 'SKILL.md') == ['형식 name: 폴더 이름과 다름']
+    (skill / 'SKILL.md').write_text(text.replace('name: alpha', 'name: beta'), encoding='utf-8')
+    assert skill_check.check_vendored(skill / 'SKILL.md') == []

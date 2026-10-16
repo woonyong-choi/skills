@@ -41,9 +41,9 @@ MANIFEST = ".repo-skills.json"
 POINTER = INSTALL_HOME / ".config" / "skills" / "source"
 TRASH = INSTALL_HOME / ".skill-trash"
 SKIP = {".claude-plugin", ".codex-plugin", "tests", ".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__", "node_modules"}
-CATEGORIES = ("git", "code", "docs", "design", "tools", "lazy-mode")
-# 외부 원본을 그대로 가져온 스킬의 표시 파일(import_pstack.py가 씀). 작성 규칙 검사 대신 형식 검사만 적용
-VENDORED_MARKER = "UPSTREAM.json"
+CATEGORIES = ("git", "code", "docs", "design", "tools", "just")
+# 이 저장소 문체 규칙 대신 형식(frontmatter, 이름, 설명 길이)만 검사하는 스킬의 표시 파일(just 묶음)
+VENDORED_MARKER = "FORMAT_ONLY"
 
 
 def configure_target_home(target_home: Path) -> None:

@@ -56,8 +56,8 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.2
-      - name: Run lazy-mode script tests
-        working-directory: lazy-mode/just-mode/scripts
+      - name: Run just script tests
+        working-directory: just/just-mode/scripts
         run: |
           bun install --frozen-lockfile
           bun test
