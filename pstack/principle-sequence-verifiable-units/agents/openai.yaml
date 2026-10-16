@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-sequence-verifiable-units"
+  default_prompt: "$principle-sequence-verifiable-units [요청]"
+policy:
+  allow_implicit_invocation: false

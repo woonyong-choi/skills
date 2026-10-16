@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-explain-the-number"
+  default_prompt: "$principle-explain-the-number [요청]"
+policy:
+  allow_implicit_invocation: false

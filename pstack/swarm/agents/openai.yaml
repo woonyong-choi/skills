@@ -1,0 +1,5 @@
+interface:
+  display_name: "swarm"
+  default_prompt: "$swarm [요청]"
+policy:
+  allow_implicit_invocation: false

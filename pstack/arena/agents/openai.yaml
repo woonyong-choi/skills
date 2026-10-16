@@ -1,0 +1,5 @@
+interface:
+  display_name: "arena"
+  default_prompt: "$arena [요청]"
+policy:
+  allow_implicit_invocation: false

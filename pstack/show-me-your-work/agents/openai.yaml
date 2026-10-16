@@ -1,0 +1,5 @@
+interface:
+  display_name: "show-me-your-work"
+  default_prompt: "$show-me-your-work [요청]"
+policy:
+  allow_implicit_invocation: false

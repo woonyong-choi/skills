@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-exhaust-the-design-space"
+  default_prompt: "$principle-exhaust-the-design-space [요청]"
+policy:
+  allow_implicit_invocation: false

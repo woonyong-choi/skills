@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-subtract-before-you-add"
+  default_prompt: "$principle-subtract-before-you-add [요청]"
+policy:
+  allow_implicit_invocation: false

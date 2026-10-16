@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-migrate-callers-then-delete-legacy-apis"
+  default_prompt: "$principle-migrate-callers-then-delete-legacy-apis [요청]"
+policy:
+  allow_implicit_invocation: false

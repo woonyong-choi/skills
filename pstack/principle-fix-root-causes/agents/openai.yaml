@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-fix-root-causes"
+  default_prompt: "$principle-fix-root-causes [요청]"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-outcome-oriented-execution"
+  default_prompt: "$principle-outcome-oriented-execution [요청]"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-redesign-from-first-principles"
+  default_prompt: "$principle-redesign-from-first-principles [요청]"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-guard-the-context-window"
+  default_prompt: "$principle-guard-the-context-window [요청]"
+policy:
+  allow_implicit_invocation: false

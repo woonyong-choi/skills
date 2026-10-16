@@ -124,6 +124,20 @@ python3 <스킬 설치 폴더>/repo-docs-journal/scripts/journal.py mode bypass
 |---|---|
 | [skill-sync](tools/skill-sync/SKILL.md) | 원본 검사, 도구별 설치, Claude 계정용 zip |
 
+### 가져온 묶음: pstack
+
+[pstack](https://github.com/cursor/plugins/tree/main/pstack)(Lauren Tan, MIT) 스킬 54개를 `pstack/` 아래에 원문 그대로 둡니다. 원본 commit·버전과 고친 곳은 [SOURCE.json](pstack/_upstream/SOURCE.json), 원본 README·하위 에이전트·안내서·라이선스는 [pstack/_upstream](pstack/_upstream/README.md)에 있습니다.
+
+- 부르는 법: 대부분 사람이 직접 부를 때만 켜집니다. Claude Code는 `/poteto-mode`, Codex는 `$poteto-mode`. 자동 선택 목록에 들어가지 않아 평소 문맥을 쓰지 않습니다
+- 원문 수정: 폴더와 이름이 다른 `poteto-mode`, `make-bot-ui`의 `name`만 폴더 이름으로 맞춥니다. Codex가 자동으로 고르지 않게 수동 스킬마다 `agents/openai.yaml`을 덧붙입니다
+- 이 저장소 작성 규칙 검사는 적용하지 않고 형식(frontmatter, 이름, 설명 길이)만 검사합니다. 스킬 폴더의 `UPSTREAM.json`이 그 표시입니다
+- Cursor 전용 기능(Task 도구 인자, `/loop`, 클라우드 에이전트, `~/.cursor` 경로, Bugbot)에 기대는 지시는 그대로라 Claude Code·Codex에서는 일부만 동작합니다. 하위 에이전트 정의(`poteto-agent`, `comment-sicko`)는 아직 설치하지 않습니다
+- 다시 가져오기: cursor/plugins를 받은 뒤 아래 명령. 이전 `pstack/`을 지우고 다시 만듭니다
+
+```sh
+python3 tools/skill-sync/scripts/import_pstack.py --source <cursor/plugins 작업본>
+```
+
 ## 측정 결과
 
 스킬 27개의 노출 구조를 비교한 2차 실험에서 H-flat을 채택했습니다. 주 모델은 gpt-5.6-luna이며 128개 요청을 구조마다 3회 평가했습니다. gpt-6-astra는 같은 요청 중 16개를 3회씩 확인했습니다. 표의 값은 선택한 스킬 집합의 정밀도와 재현율이며, 괄호는 요청 군집 bootstrap 95% 신뢰구간입니다.

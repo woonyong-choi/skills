@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-minimize-reader-load"
+  default_prompt: "$principle-minimize-reader-load [요청]"
+policy:
+  allow_implicit_invocation: false
