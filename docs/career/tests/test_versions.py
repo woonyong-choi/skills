@@ -7,6 +7,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import unittest.mock
 import zlib
 from pathlib import Path
 
@@ -59,7 +60,12 @@ class FlowTest(unittest.TestCase):
     # basis: estimate
     def setUp(self) -> None:
         self.directory = tempfile.TemporaryDirectory()
-        self.posting = Path(self.directory.name) / "2026-11-30-합성-백엔드-개발자"
+        base = Path(self.directory.name)
+        (base / "config").mkdir()
+        self.env = unittest.mock.patch.dict("os.environ", {"WOON_KNOWLEDGE_ROOT": str(base), "WORK_CONTINUITY_CONFIG_DIR": str(base / "config")})
+        self.env.start()
+        self.addCleanup(self.env.stop)
+        self.posting = base / "career" / "2026-11-30-합성-백엔드-개발자"
         (self.posting / "이력서").mkdir(parents=True)
         (self.posting / "figures").mkdir()
         shutil.copy(SKILL / "assets" / "typst" / "career.typ", self.posting / "career.typ")
@@ -122,6 +128,14 @@ class FlowTest(unittest.TestCase):
     def test_confirm_requires_document_folder(self) -> None:
         with self.assertRaises(VERSIONS.CareerError):
             VERSIONS.confirm(self.posting, build=False)
+
+    def test_confirm_outside_vault_writes_nothing(self) -> None:
+        outside = Path(self.directory.name) / "elsewhere" / "이력서"
+        outside.mkdir(parents=True)
+        (outside / "이력서.typ").write_text(FIRST, encoding="utf-8")
+        with self.assertRaises(VERSIONS.CareerError):
+            VERSIONS.confirm(outside, build=False)
+        self.assertEqual(sorted(p.name for p in outside.iterdir()), ["이력서.typ"])
 
     @unittest.skipUnless(HAS_TYPST, "typst 없음")
     def test_subfolder_template_and_figure_compile_with_marks_on_and_off(self) -> None:

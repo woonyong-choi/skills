@@ -50,7 +50,7 @@ description: "저장소의 새 폴더 구조·이름을 정하거나 요청받�
 - `new`, `old`, `temp`, `v2`, `backup` → 상태는 git이 관리 → 삭제 또는 브랜치
 - `crates`, `packages`, `libs`, 루트 `src`(단일 패키지 제외) → 기술 종류 기준 묶기 → `<프로젝트>-<제품>`
 - 경로 안 이름 반복 (`<프로젝트>-server/<프로젝트>-core`) → 중복 → `<프로젝트>-server/core`
-- 대문자·공백·밑줄 → 표기 혼용 → 소문자 kebab-case. 언어가 강제하는 표기(Rust 모듈 snake_case, Java package 등)는 그 언어 우선
+- 대문자·공백·밑줄 → 표기 혼용 → 언어 규칙: repo-docs 파일·폴더 이름 절(공개 저장소는 영어 소문자 kebab-case, 언어가 강제하는 표기 우선)
 
 ## 배포 이름
 
