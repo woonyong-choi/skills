@@ -53,7 +53,7 @@ python3 <이 스킬 폴더>/scripts/install.py
 - 배포 판정: zip 폴더의 `.repo-skills.json`은 생성에 사용한 원본 해시, 계정 업로드 영수증으로 사용 금지. `Claude 계정 zip 재생성: 없음`도 계정 상태 미확인, 변경 목록만으로 배포 완료 판정 금지
 - 검사 의존 스킬: 검사 스크립트와 같은 원본 루트의 `code/code-style/scripts/check_cost_comments.py`를 우선 사용, 없으면 평탄한 설치 루트의 `code-style/scripts/check_cost_comments.py` 사용. 검사 대상 root와 별개인 실행 위치 기준 의존, 누락 시 입력 오류. 참조 링크는 원본형과 평탄한 설치형 양쪽에서 확인
 - skill_check: frontmatter·description 형식, 이름과 폴더 일치, 머리 참조·절 구조·용어·규칙 복제·스크립트 인자와 출력·비용 주석 검사. 판정 기준과 자동 검사 한계: [일관성 검사 기준](references/consistency.md). `agents/openai.yaml`의 필수 필드와 스킬 호출 이름도 검사. 목록·표의 끝말은 스킬 작성 형식 기준으로 검사. 종료 코드: 위반 1, 입력 오류 2, 전체 통과 0
-- 가져온 스킬: 폴더에 `UPSTREAM.json`이 있으면 원문 보존 대상이라 frontmatter·이름·설명 길이만 검사. 다시 가져오기는 `scripts/import_pstack.py --source <cursor/plugins 작업본>`(README 가져온 묶음 절)
+- 가져온 스킬: 폴더에 `UPSTREAM.json`이 있으면 외부 원본에서 이식한 스킬이라 frontmatter·이름·설명 길이만 검사. 원본 갱신은 `scripts/import_pstack.py --source <cursor/plugins 작업본>`(README pstack 절)
 
 ### Claude Code와 Codex 설치
 
