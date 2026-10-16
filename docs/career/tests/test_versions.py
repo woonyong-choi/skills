@@ -134,6 +134,48 @@ class FlowTest(unittest.TestCase):
         self.assertFalse(outside.exists())
         self.assertEqual(VERSIONS.main(["place", str(self.posting)]), 0)
 
+    def test_root_asks_once_then_reads_saved_config(self) -> None:
+        import contextlib
+        import io
+        import json
+        import os
+
+        config = Path(os.environ["SKILLS_CONFIG_DIR"]) / "career.json"
+        del os.environ["CAREER_ROOT"]
+        # 미설정: 종료 1, 파일 0개
+        error = io.StringIO()
+        with contextlib.redirect_stderr(error):
+            self.assertEqual(VERSIONS.main(["root"]), 1)
+        self.assertIn("root --set", error.getvalue())
+        self.assertFalse(config.exists())
+        # 저장: 다른 키 보존, 절대 경로, 임시 파일 없음
+        config.write_text(json.dumps({"other": 1}), encoding="utf-8")
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(VERSIONS.main(["root", "--set", str(self.posting.parent)]), 0)
+        self.assertEqual(output.getvalue().strip(), str(self.posting.parent.resolve()))
+        self.assertEqual(json.loads(config.read_text(encoding="utf-8")), {"other": 1, "root": str(self.posting.parent.resolve())})
+        self.assertEqual(sorted(path.name for path in config.parent.iterdir()), ["career.json"])
+        # 다시 물을 필요 없음: 저장 값으로 위치 검사
+        self.assertEqual(VERSIONS.main(["place", str(self.posting)]), 0)
+        # 환경 변수가 저장 값보다 우선
+        os.environ["CAREER_ROOT"] = str(Path(self.directory.name) / "elsewhere")
+        self.assertEqual(VERSIONS.career_root(), (Path(self.directory.name) / "elsewhere").resolve())
+
+    def test_root_rejects_broken_config_and_stray_arguments(self) -> None:
+        import contextlib
+        import io
+        import os
+
+        del os.environ["CAREER_ROOT"]
+        (Path(os.environ["SKILLS_CONFIG_DIR"]) / "career.json").write_text("[1]", encoding="utf-8")
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(VERSIONS.main(["root", "--set", str(self.posting.parent)]), 1)
+            with self.assertRaises(SystemExit):
+                VERSIONS.main(["place"])
+            with self.assertRaises(SystemExit):
+                VERSIONS.main(["check", str(self.posting), "--set", "x"])
+
     @unittest.skipUnless(HAS_TYPST, "typst 없음")
     def test_subfolder_template_and_figure_compile_with_marks_on_and_off(self) -> None:
         self.work.write_text(FIRST + "\n#changes-legend([이력서 작업본], [이력서-0001])\n#changed[이전 문장][새 문장]\n", encoding="utf-8")

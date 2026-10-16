@@ -1,6 +1,6 @@
 ---
 name: just-agent
-description: /just-mode 실행 중에 띄우는 코드 작성·도우미 작업용 위임 서브에이전트. 위임 작업에 쓰고, /just-mode 자체를 실행하는 데 쓰지 않는다. 새 작업마다 새 just-agent를 띄우고, just-mode의 서브에이전트 절이 정한 좁은 경우에만 재개한다. 작업 전에 just-mode 스킬의 SKILL.md를 원칙 목록까지 끝까지 읽는다. 일반 서브에이전트로 바꾸면 이 읽기를 건너뛰어 방식이 흐트러진다. 모델은 역할 `code`를 쓴다.
+description: /just-mode 실행 중에 띄우는 코드 작성·도우미 작업용 위임 서브에이전트. 위임 작업에 쓰고, /just-mode 자체를 실행하는 데 쓰지 않는다. 새 작업마다 새 just-agent를 띄우고, just-mode `references/subagents.md`가 정한 좁은 경우에만 재개한다. 작업 전에 just-mode 스킬의 SKILL.md를 원칙 목록까지 끝까지 읽는다. 일반 서브에이전트로 바꾸면 이 읽기를 건너뛰어 방식이 흐트러진다. 모델은 역할 `code`를 쓴다.
 ---
 
 # just 서브에이전트

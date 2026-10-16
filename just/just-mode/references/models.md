@@ -11,29 +11,29 @@
 
 ## 기본값
 
-| 역할 | Claude Code | Codex | OpenCode |
-|---|---|---|---|
-| `code` | `sonnet` | 호스트 기본 모델 | 호스트 기본 모델 |
-| `judgment` | `opus` | 호스트 기본 모델, 추론 수준 `high` | 호스트 기본 모델 |
-| `review` | `opus` + 셸 `codex exec` | 기본 모델 + 셸 `claude -p --model opus` | 설정된 두 제공자, 없으면 셸 `claude -p`·`codex exec` |
-| `cheap` | `haiku` | 가장 싼 모델 | 가장 싼 모델 |
+| 역할 | Claude Code | Codex | OpenCode | 추론 수준 |
+|---|---|---|---|---|
+| `code` | `opus` | `gpt-6.1-sol` | 호스트 기본 모델 | `medium` |
+| `judgment` | `opus` | `gpt-6-astra` | 호스트 기본 모델 | `high` |
+| `review` | `opus` + 셸 `codex exec -m gpt-6.1-sol` | `gpt-6.1-sol` + 셸 `claude -p --model opus` | 설정된 두 제공자, 없으면 셸 `claude -p --model opus`·`codex exec -m gpt-6.1-sol` | `high` |
+| `cheap` | `haiku` | `gpt-6-luna` | 가장 싼 모델 | `low` |
 
 ## 설정 파일 형식
 
 ```json
 {
   "roles": {
-    "code": {"claude": "sonnet", "codex": "", "opencode": ""},
-    "judgment": {"claude": "opus", "codex": "", "opencode": ""},
-    "review": {"claude": ["opus", "codex:"], "codex": ["", "claude:opus"], "opencode": []},
-    "cheap": {"claude": "haiku", "codex": "", "opencode": ""}
+    "code": {"claude": "opus", "codex": "gpt-6.1-sol", "opencode": ""},
+    "judgment": {"claude": "opus", "codex": "gpt-6-astra", "opencode": ""},
+    "review": {"claude": ["opus", "codex:gpt-6.1-sol"], "codex": ["gpt-6.1-sol", "claude:opus"], "opencode": []},
+    "cheap": {"claude": "haiku", "codex": "gpt-6-luna", "opencode": ""}
   },
   "effort": {"code": "medium", "judgment": "high", "review": "high", "cheap": "low"}
 }
 ```
 
 - 빈 문자열은 호스트 기본 모델
-- `review` 목록의 `codex:<모델>`, `claude:<모델>`은 다른 회사 CLI를 셸로 부른다는 뜻
+- `review` 목록의 `codex:<모델>`, `claude:<모델>`은 다른 회사 CLI를 셸로 부른다는 뜻. `codex:gpt-6.1-sol`은 `codex exec -m gpt-6.1-sol`, `claude:opus`는 `claude -p --model opus`
 - `effort`는 추론 수준. Claude Code는 `/effort`, Codex는 `-c model_reasoning_effort=<값>`, OpenCode는 에이전트 설정 `reasoningEffort`
 
 ## 고르는 규칙

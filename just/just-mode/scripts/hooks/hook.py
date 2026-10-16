@@ -110,26 +110,18 @@ def load_module(path: Path, name: str) -> ModuleType:
 
 
 def merge_notice(payload: dict[str, Any]) -> str:
-    """셸 PR 머지 성공 뒤 경력 원본 확인 안내 한 줄. career-record가 없거나 경력 원본 위치가 없으면 생략"""
+    """셸 PR 머지 성공 뒤 경력 원본 확인 안내 한 줄. hanger 스킬이 설치되지 않았으면 생략"""
     if payload.get("hook_event_name") != "PostToolUse":
         return ""
     command = tool_command(payload)
     if not (PR_MERGE.search(command) or API_MERGE.search(command)) or tool_failed(payload.get("tool_response")):
         return ""
-    record = store.skill_file(store.CAREER_RECORD)
-    if record is None:
+    skill = store.skill_file(store.CAREER_NOTES)
+    if skill is None:
         return ""
-    try:
-        module = load_module(record, "career_record")
-        module.career_root()
-        mode = module.read_config()["mode"]
-    except Exception:  # noqa: BLE001 - 안내 생략이 실패 처리다. 경력 스크립트 오류가 훅을 멈추면 안 된다.
-        return ""
-    script = shlex.quote(str(record))
     return (
-        f"PR 머지 성공. 경력 원본에 남길 성과인지 career-record(모드 {mode})로 확인한다: "
-        f"`gh pr view <번호> --json author,title,files,url | python3 {script} screen - --user <내 계정>`가 skip이면 끝, "
-        f"아니면 career-record의 머지 뒤 기록 절을 따른다."
+        "PR 머지 성공. 경력 원본에 남길 성과(내 PR, 동작·결과 변화, 검증 근거 있음)인지 판단하고, "
+        f"남길 성과면 hanger 스킬({skill})로 경력 원본에 기록한다."
     )
 
 

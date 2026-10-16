@@ -17,7 +17,7 @@ const SUB_BLOCKS = [
 	"머지.",
 ];
 const PROGRAM_H3 = ["프로그램 시작 준비", "담당자 띄우기", "PR 절차", "판정과 머지", "부팅 절차"];
-const PROGRAM_MARKERS = ["git show origin/main:", "1시간마다 주기적으로 다시 깨우기", "상태 메시지"];
+const PROGRAM_MARKERS = ["git show origin/HEAD:", "1시간마다 주기적으로 다시 깨우기", "상태 메시지"];
 const HOW_TO_READ_MARKERS = [
 	"상자 하나가 작업 단위 하나다",
 	"증거를 적는다",

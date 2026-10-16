@@ -1,8 +1,9 @@
 """공고 폴더의 이력서·포트폴리오 작업 파일 확정, 변경 표시 개수, 폴더 구조 검사.
 
-사용: python3 versions.py place <공고 폴더> | confirm <문서 폴더> | marks <작업 파일> | check <공고 폴더>
-인자: place는 만들 공고 폴더(없어도 됨), confirm은 이력서/ 또는 포트폴리오/ 폴더, marks는 작업 .typ, check는 공고 폴더. confirm --no-compile은 PDF 생성 생략
-출력: place는 stdout 검사한 절대 경로, confirm은 stdout 확정 .typ·.pdf 경로, marks는 stdout `추가 N 바뀜 N 삭제 N`, check는 stdout `ok`. stderr 실패 이유, 종료 0 성공·1 실패·2 인자 오류
+사용: python3 versions.py root [--set <폴더>] | place <공고 폴더> | confirm <문서 폴더> | marks <작업 파일> | check <공고 폴더>
+인자: root는 산출물 폴더 확인, --set은 <설정 폴더>/career.json의 root에 저장. place는 만들 공고 폴더(없어도 됨), confirm은 이력서/ 또는 포트폴리오/ 폴더, marks는 작업 .typ, check는 공고 폴더. confirm --no-compile은 PDF 생성 생략
+출력: root는 stdout 산출물 폴더 절대 경로(미설정이면 종료 1), place는 stdout 검사한 절대 경로, confirm은 stdout 확정 .typ·.pdf 경로, marks는 stdout `추가 N 바뀜 N 삭제 N`, check는 stdout `ok`. stderr 실패 이유, 종료 0 성공·1 실패·2 인자 오류
+산출물 폴더: 환경 변수 CAREER_ROOT, 없으면 <설정 폴더>/career.json의 root. 설정 폴더는 SKILLS_CONFIG_DIR, 없으면 ~/.config/skills
 실행 조건: Python 3.9 이상. PDF 생성은 PATH의 typst 또는 Python typst 패키지
 """
 
@@ -105,24 +106,49 @@ def compile_pdf(source: Path, root: Path) -> Path:
     return pdf
 
 
+def config_path() -> Path:
+    return Path(os.environ.get("SKILLS_CONFIG_DIR") or Path.home() / ".config/skills").expanduser() / "career.json"
+
+
+def read_config(path: Path) -> dict:
+    if not path.is_file():
+        return {}
+    try:
+        config = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as error:
+        raise CareerError(f"설정 형식 오류: {path}: {error}") from error
+    if not isinstance(config, dict):
+        raise CareerError(f"설정 형식 오류: {path}: 객체가 아님")
+    return config
+
+
 def career_root() -> Path:
-    """경력 원본 폴더: CAREER_ROOT, 없으면 <설정 폴더>/career.json의 root. 설정 폴더는 SKILLS_CONFIG_DIR, 없으면 ~/.config/skills"""
-    value = os.environ.get("CAREER_ROOT")
+    """산출물 폴더(공고 폴더·교정 기록): CAREER_ROOT, 없으면 career.json의 root"""
+    value = os.environ.get("CAREER_ROOT") or read_config(config_path()).get("root")
     if not value:
-        path = Path(os.environ.get("SKILLS_CONFIG_DIR") or Path.home() / ".config/skills").expanduser() / "career.json"
-        try:
-            value = json.loads(path.read_text(encoding="utf-8")).get("root") if path.is_file() else None
-        except ValueError as error:
-            raise CareerError(f"설정 형식 오류: {path}: {error}") from error
-    if not value:
-        raise CareerError("경력 원본 위치 미설정: CAREER_ROOT 또는 <설정 폴더>/career.json의 root")
+        raise CareerError("산출물 폴더 미설정: 사용자에게 위치를 묻고 versions.py root --set <폴더>로 저장")
     return Path(value).expanduser().resolve()
 
 
+def save_root(folder: Path) -> Path:
+    """career.json의 root만 바꾸고 다른 키는 보존. 임시 파일과 rename으로 한 번에 교체"""
+    path = config_path()
+    config = read_config(path)
+    config["root"] = str(folder.expanduser().resolve())
+    path.parent.mkdir(parents=True, exist_ok=True)
+    staged = path.with_name(path.name + ".pending")
+    try:
+        staged.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        os.replace(staged, path)
+    finally:
+        staged.unlink(missing_ok=True)
+    return Path(config["root"])
+
+
 def inside_root(folder: Path) -> None:
-    """쓰기 전 경력 원본 아래인지 확인. 아니면 파일을 쓰지 않고 CareerError"""
+    """쓰기 전 산출물 폴더 아래인지 확인. 아니면 파일을 쓰지 않고 CareerError"""
     if not folder.resolve().is_relative_to(career_root()):
-        raise CareerError(f"경력 원본 폴더 밖: {folder}")
+        raise CareerError(f"산출물 폴더 밖: {folder}")
 
 
 def confirm(folder: Path, build: bool = True) -> list[Path]:
@@ -191,12 +217,21 @@ def check(posting: Path) -> list[str]:
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("place", "confirm", "marks", "check"))
-    parser.add_argument("path", type=Path)
+    parser.add_argument("action", choices=("root", "place", "confirm", "marks", "check"))
+    parser.add_argument("path", type=Path, nargs="?")
     parser.add_argument("--no-compile", action="store_true")
+    parser.add_argument("--set", type=Path, dest="root")
     args = parser.parse_args(argv)
+    if (args.action == "root") != (args.path is None) or (args.root is not None and args.action != "root"):
+        parser.error("root만 경로 없이, 나머지는 경로 하나와 함께 실행")
     try:
-        if args.action == "place":
+        if args.action == "root":
+            if args.root is not None:
+                save_root(args.root)
+                if os.environ.get("CAREER_ROOT"):
+                    print("CAREER_ROOT 환경 변수가 저장한 값보다 우선", file=sys.stderr)
+            print(career_root())
+        elif args.action == "place":
             inside_root(args.path)
             print(args.path.resolve())
         elif args.action == "confirm":

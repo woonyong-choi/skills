@@ -7,7 +7,7 @@ description: "저장소 루트 README.md와 영어판 README.en.md를 작성·�
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 루트 `README.md`와 `README.en.md`의 종류, 절 구성과 절 규칙, 이미지
-- 필요할 때만 읽기: 흐름·구조 그림, 데모 GIF 제작 → repo-docs-figures; README 갱신 뒤 `llms.txt` 재생성 → repo-docs-llms; 포트폴리오형 원본 → career-record `references/format.md`
+- 필요할 때만 읽기: 흐름·구조 그림, 데모 GIF 제작 → repo-docs-figures; README 갱신 뒤 `llms.txt` 재생성 → repo-docs-llms
 
 - 독자·답할 질문: repo-docs 문서 목록. 언어: repo-docs 언어. 영어판: 아래 영어판 절
 - 길이: 필수 정보와 핵심 사용 흐름 보존, 독립적으로 조회하는 세부는 `docs/` 링크
