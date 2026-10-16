@@ -183,6 +183,66 @@ class StopClaimTest(Case):
         self.assertEqual(state["end_check"], "verified")
 
 
+class CheckpointCommentTest(Case):
+    """#90 지시 4: 체크포인트 댓글은 개조식 600자 요약 + 접힌 복구 JSON, 상태 전환·결정·인계 때만 원격 게시."""
+
+    def posted_body(self, data: dict) -> str:
+        record = {"id": "b" * 32, "parent": None, "digest": core.signature(data, SCOPE), "data": data, "scope": SCOPE}
+        core.save(self.folder / "checkpoint.json", {"data": data, "scope": SCOPE, "pending": record, "sync": "pending"})
+        bodies: list[str] = []
+
+        def run(args: list[str], payload: str | None = None, cwd: str | None = None) -> str:
+            if "--method" in args:
+                bodies.append(json.loads(payload or "{}")["body"])
+            return "{}"
+
+        published = {**record, "url": "https://example.invalid/c"}
+        with mock.patch.object(core, "run", side_effect=run), mock.patch.object(core, "remote_records", side_effect=[[], [published]]):
+            core.sync(self.folder, core.read(self.folder / "checkpoint.json"), self.binding)
+        return bodies[0]
+
+    def test_comment_is_short_bullets_with_folded_recovery_json(self) -> None:
+        body = self.posted_body(DATA)
+        visible = body.split("<details>", 1)[0]
+        self.assertTrue(body.startswith(core.MARKER + "\n단계: s (완료 조건 1)\n"), body)
+        for label in ("- 한 일: ", "- 결과: ", "- 다음: ", "- 막힌 것: "):
+            self.assertIn(label, visible)
+        self.assertNotIn("###", visible)
+        self.assertNotIn('"digest"', visible)
+        record = json.loads(body.split("```json\n", 1)[1].split("\n```", 1)[0])
+        self.assertEqual(record["data"], DATA)
+
+    def test_visible_part_stays_within_600_chars(self) -> None:
+        long = {key: "가" * 1000 for key in core.FIELDS}
+        visible = self.posted_body(long).split("<details>", 1)[0]
+        self.assertLessEqual(len(visible), 600)
+
+    def test_same_state_resave_is_not_published(self) -> None:
+        issue = json.dumps({"state": "open", "body": "## 완료 조건\n- [ ] c\n"})
+        outcome = {"result": "r", "criterion": 1, "criterion_result": "c", "verification": "v", "independent": False, "counterfactual": "x"}
+        scope = {**SCOPE, "outcomes": [outcome]}
+        snap = {"head": "h", "branch": "b"}
+        calls: list[str] = []
+
+        def sync(folder: Path, state: dict, binding: dict) -> dict:
+            calls.append(state["pending"]["id"])
+            state.update({"remote_id": state["pending"]["id"], "remote_verified": state["pending"]["digest"], "pending": None, "sync": "synced"})
+            core.save(folder / "checkpoint.json", state)
+            return state
+
+        with mock.patch.object(core, "run", return_value=issue), mock.patch.object(core, "snapshot", return_value=snap), mock.patch.object(core, "sync", side_effect=sync):
+            core.checkpoint(self.folder, self.binding, {**DATA, "scope": scope}, True)
+            self.assertEqual(len(calls), 1, "진행 시작은 게시")
+            changed = core.checkpoint(self.folder, self.binding, {**DATA, "results": "다른 결과", "scope": scope}, True)
+            self.assertEqual(len(calls), 1, "같은 상태 재저장은 미게시")
+            self.assertEqual(changed["sync"], "local")
+            self.assertEqual(core.verify_checkpoint(self.folder, synced=True)["remote"], "local only")
+            core.checkpoint(self.folder, self.binding, {**DATA, "results": "또 다른 결과", "scope": scope}, True)
+            self.assertEqual(len(calls), 1)
+            core.checkpoint(self.folder, self.binding, {**DATA, "results": "또 다른 결과", "scope": scope}, True, event="인계")
+            self.assertEqual(len(calls), 2, "인계는 게시")
+
+
 class ExchangeTest(Case):
     def test_original_request_and_last_exchange_restore(self) -> None:
         self.event("UserPromptSubmit", prompt="원래 요청: 로그인 오류 수정")

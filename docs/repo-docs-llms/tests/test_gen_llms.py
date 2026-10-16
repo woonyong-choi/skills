@@ -55,6 +55,21 @@ class GenerateIndexTest(unittest.TestCase):
     # cost: time O(c), heap O(c), stack O(1), io O(1)
     # vars: c = README 글자 수
     # basis: estimate
+    def test_new_template_uses_why_section_as_intro(self) -> None:
+        # #90 지시 5: 새 README 틀은 머리 뒤 소개 문단 없이 데모·알림·절. 소개는 해결하는 문제 절 첫 문단
+        readme = (
+            '<h1 align="center">Tool</h1>\n\n<p align="center">\n  Fast index tool<br>\n'
+            '  <a href="#quick-start">Quick start</a> · <a href="#why">Why</a>\n</p>\n\n'
+            "![Search finishes in one step](docs/assets/demo.gif)\n\n> [!NOTE]\n> In development.\n\n"
+            "## Quick start\n\nRun it.\n\n## Why\n\nIndexing big folders is slow. Tool keeps an index.\n"
+        )
+        code, error = self.run_main(readme)
+        self.assertIn(code, (0, None), error)
+        index = Path("llms.txt").read_text(encoding="utf-8")
+        self.assertIn("> Fast index tool", index)
+        self.assertIn("Indexing big folders is slow. Tool keeps an index.", index)
+        self.assertNotIn("\n!\n", index)
+
     def test_single_link_navigation_is_not_intro(self) -> None:
         cases = [
             "[Status](#status)",
@@ -148,6 +163,35 @@ class GenerateIndexTest(unittest.TestCase):
             with self.assertRaises(SystemExit) as raised:
                 gen_llms.raw_base_url()
         self.assertIn("use --branch", str(raised.exception.code))
+
+
+class DocumentListTest(unittest.TestCase):
+    """#90 지시 5: docs/README.md 분류별 목록(들여쓰기 3단계)의 문서 줄을 순서대로 읽는다."""
+
+    def test_list_rows_in_order_without_category_lines(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            previous = os.getcwd()
+            os.chdir(folder)
+            try:
+                Path("docs").mkdir()
+                Path("docs/README.md").write_text(
+                    "# 문서\n\n소개.\n\n- 시작\n  - [아키텍처](architecture.md): 구성 요소\n"
+                    "- 설계\n  - [입력](design/input.md): 입력 접수\n    - [재시도](design/input-retry.md): 재시도 순서\n"
+                    "- 기록\n  - [결정 기록](decisions/README.md): 고른 이유\n",
+                    encoding="utf-8",
+                )
+                rows = gen_llms.read_rows()
+            finally:
+                os.chdir(previous)
+        self.assertEqual(
+            rows,
+            [
+                ("아키텍처", "architecture.md", "구성 요소"),
+                ("입력", "design/input.md", "입력 접수"),
+                ("재시도", "design/input-retry.md", "재시도 순서"),
+                ("결정 기록", "decisions/README.md", "고른 이유"),
+            ],
+        )
 
 
 if __name__ == "__main__":

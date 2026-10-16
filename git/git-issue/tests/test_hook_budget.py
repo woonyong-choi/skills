@@ -223,5 +223,65 @@ class GuardEdgeTest(TemporaryCase):
             context.check_write(project, self.base / "repo/docs/a.md")
 
 
+class ProjectAttentionTest(unittest.TestCase):
+    """#90 상태표: 진행·보류인데 다음 행동·재개 조건이 없거나 보류 30일 이상이면 check가 알리고 상태는 유지."""
+
+    def gh(self, items: list[dict], issues: list[dict]) -> tuple[list[str], object]:
+        calls: list[str] = []
+        page = {"hasNextPage": False, "endCursor": None}
+        options = [{"id": name, "name": name, "color": "GRAY", "description": ""} for name in ("대기", "진행", "검토", "보류", "완료")]
+
+        def fake(args: list[str], payload: str | None) -> dict:
+            query = json.loads(payload or "{}").get("query", "")
+            calls.append(query)
+            if "mutation" in query:
+                raise AssertionError("check must not change status")
+            if "projectsV2" in query:
+                return {"data": {"repository": {"projectsV2": {"nodes": [{"id": "P", "number": 1, "title": "판"}], "pageInfo": page}}}}
+            if "fields(" in query:
+                return {"data": {"node": {"fields": {"nodes": [{"id": "S", "name": "Status", "options": options}], "pageInfo": page}}}}
+            if "issues(" in query:
+                return {"data": {"repository": {"issues": {"nodes": issues, "pageInfo": page}}}}
+            if "items(" in query:
+                return {"data": {"node": {"items": {"nodes": items, "pageInfo": page}}}}
+            raise AssertionError(query)
+
+        return calls, fake
+
+    def item(self, number: int, status: str, *, days: int = 1, hold: str | None = None) -> dict:
+        stamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - days * 86400))
+        return {
+            "id": f"I{number}",
+            "content": {"id": f"C{number}", "number": number, "state": "OPEN", "repository": {"nameWithOwner": "o/r"}},
+            "fieldValueByName": {"name": status, "updatedAt": stamp},
+            "hold": {"text": hold} if hold is not None else None,
+        }
+
+    def test_check_reports_missing_next_resume_and_long_hold(self) -> None:
+        import project_status
+        checkpoint = "<!-- work-checkpoint-v1 -->\n```json\n" + json.dumps({"data": {"next": "시험 추가"}}) + "\n```"
+        issues = [
+            {"id": "C1", "number": 1, "state": "OPEN", "comments": {"nodes": []}},
+            {"id": "C2", "number": 2, "state": "OPEN", "comments": {"nodes": [{"body": checkpoint}]}},
+            {"id": "C3", "number": 3, "state": "OPEN", "comments": {"nodes": []}},
+            {"id": "C4", "number": 4, "state": "OPEN", "comments": {"nodes": []}},
+        ]
+        items = [
+            self.item(1, "진행"),
+            self.item(2, "진행"),
+            self.item(3, "보류", hold="결정 대기"),
+            self.item(4, "보류", days=31, hold="결정 대기; 재개 조건: 사용자 선택"),
+        ]
+        _, fake = self.gh(items, issues)
+        with mock.patch("builtins.print") as printed:
+            code = project_status.main(["--repo", "o/r", "check", "--fix"], gh=fake)
+        lines = [call.args[0] for call in printed.call_args_list]
+        self.assertEqual(code, 1, lines)
+        self.assertTrue(any("#1" in line and "다음 행동 없음" in line for line in lines), lines)
+        self.assertFalse(any("#2" in line for line in lines), lines)
+        self.assertTrue(any("#3" in line and "재개 조건 없음" in line for line in lines), lines)
+        self.assertTrue(any("#4" in line and "보류 30일" in line for line in lines), lines)
+
+
 if __name__ == "__main__":
     unittest.main()

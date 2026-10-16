@@ -26,7 +26,7 @@ mkdir -p "$skills_target/.claude" "$skills_target/.codex"
 python3 tools/skill-sync/scripts/install.py --source . --target-home "$skills_target"
 ```
 
-Claude Code와 Codex의 사용자 스킬 폴더에 설치합니다. 기본 대상은 현재 사용자 홈입니다. 별도 홈에서 확인하려면 실행 전에 `SKILLS_TARGET_HOME`을 그 경로로 지정합니다. 성공 시 `설치 성공` 또는 `일치`와 배포 zip 목록을 출력하고 종료 코드 0을 반환합니다. 스킬별 보조 도구의 요구 조건은 각 SKILL.md에 있습니다.
+Claude Code와 Codex의 사용자 스킬 폴더에 설치합니다. 기본 대상은 현재 사용자 홈입니다. 별도 홈에서 확인하려면 실행 전에 `SKILLS_TARGET_HOME`을 그 경로로 지정합니다. 성공 시 `설치 성공` 또는 `일치`와 배포 zip 목록을 출력하고 종료 코드 0을 반환합니다. 스킬별 보조 도구의 요구 조건은 각 SKILL.md에 있습니다. 사람이 직접 커밋할 때 같은 형식을 쓰려면 `git config --global commit.template ~/.claude/skills/git-commit/references/commit-template.txt`를 실행합니다.
 
 ## 사용법
 
@@ -173,9 +173,9 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 |---|---|---|
 | Python 코드 검토 | code-style, code-style-python | 비용 대상 함수 작성·변경·검토 시 code-style의 `references/cost.md`; 린트 설정 생성·변경·감사 시 Python의 `references/lint.md` |
 | CSS 검토 | code-style, design-tokens, code-style-css | Stylelint 설정 작업 시 CSS의 `references/lint.md`; 토큰 분류·단계 신설·변경 시 `references/categories.md` |
-| 커밋 메시지 작성 | git-commit, repo-docs의 `references/writing.md` | 메시지 예 대조 시 git-commit의 `references/examples.md`; 실제 커밋 전 검사 시 code-style |
+| 커밋 메시지 작성 | git-commit, repo-docs의 `references/writing.md` | 메시지 작성 시 git-commit의 `references/commit-template.txt`; 실제 커밋 전 검사 시 code-style |
 | 설계 문서 작성 | repo-docs, `references/writing.md`, repo-docs-design | 작성·갱신·검토 대상에 따라 `references/index.md`, `architecture.md`, `design.md`, `glossary.md` 중 해당 문서 |
-| 이슈 본문 작성 | git-issue, repo-docs의 `references/writing.md` | 종류별 `references/{design,build,bug,experiment}.md`; 게시 전 `public-links.md`; 상태 사건 발생 전 `project-status.md` |
+| 이슈 본문 작성 | git-issue, repo-docs의 `references/writing.md` | 종류별 `references/{design,build,bug,experiment,docs}.md`; 게시 전 `public-links.md`; 상태 사건 발생 전 `project-status.md` |
 | 스킬 검사 | skill-sync, `references/execution.md` | 형식 수정 시 `references/authoring.md`; 도구 설치 시 `installation.md`; 계정 배포 시 `claude-upload.md` |
 
 위 연결에 따른 정적 읽기량입니다. Python·CSS 검토는 설정 변경이 없는 기본 경로이며 비용 주석 대상이면 상세 문서를 추가합니다. 아키텍처 작성은 공통 문체와 선택한 템플릿까지 포함합니다. 실제 호출 빈도나 평균 토큰 사용량을 측정한 값은 아닙니다.

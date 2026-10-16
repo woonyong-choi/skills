@@ -448,6 +448,8 @@ def verify_checkpoint(
         raise ContinuityError("local checkpoint differs from its pending record")
     if since is not None and state.get("saved_at", 0) < since:
         raise ContinuityError("no checkpoint saved during this request")
+    if synced and state.get("sync") == "local":
+        return {"local": "verified", "remote": "local only", "digest": signed}
     if synced and (pending or state.get("sync") != "synced"):
         raise ContinuityError("checkpoint not synced; local pending kept")
     if synced and state.get("remote_verified") not in (None, signed):
@@ -459,6 +461,26 @@ def verify_checkpoint(
             raise ContinuityError("remote checkpoint missing or different on read-back")
         remote = "verified"
     return {"local": "verified", "remote": remote, "digest": signed}
+
+
+COMMENT_LIMIT = 600  # 체크포인트 댓글의 보이는 요약 상한(글자)
+PUBLISH_EVENTS = ("결정", "인계")
+
+
+def comment_summary(record: dict, board_status: str | None = None) -> str:
+    """보이는 개조식 요약. 전체 상태는 접힌 복구 JSON에만. COMMENT_LIMIT 넘으면 항목을 줄여 맞춤"""
+    data, scope = record["data"], record.get("scope") or {}
+    covers = ", ".join(str(item) for item in scope.get("covers", [])) or "없음"
+    head = f"단계: {' '.join(str(scope.get('stage', '미기재')).split())} (완료 조건 {covers})\n\n"
+    blocked = "보류, 사유·재개 조건은 다음 항목" if board_status == "보류" else "없음"
+    rows = [("한 일", data["actions"]), ("결과", data["results"]), ("다음", data["next"]), ("막힌 것", blocked)]
+    rows = [(label, " ".join(value.split())) for label, value in rows]
+    limit = COMMENT_LIMIT - len(MARKER) - 2 - len(head) - sum(len(f"- {label}: \n") for label, _ in rows)
+    while sum(len(value) for _, value in rows) > limit:
+        longest = max(range(len(rows)), key=lambda index: len(rows[index][1]))
+        label, value = rows[longest]
+        rows[longest] = (label, value[: max(len(value) - max(len(value) // 4, 1) - 1, 0)].rstrip() + "…")
+    return head + "".join(f"- {label}: {value}\n" for label, value in rows)
 
 
 def sync(folder: Path, state: dict, binding: dict) -> dict:
@@ -480,30 +502,9 @@ def sync(folder: Path, state: dict, binding: dict) -> dict:
             raise ContinuityError(
                 "remote checkpoint advanced; restore and reconcile before publishing"
             )
-        body = MARKER + "\n## 작업 기록\n\n"
-        previous: dict = next(
-            (item["data"] for item in records if item["id"] == record.get("parent")), {}
-        )
-        scope = record.get("scope")
-        if scope:
-            body += (
-                "현재 단계: "
-                + scope["stage"]
-                + "\n\n완료 조건 연결: "
-                + str(scope["covers"])
-                + "\n\n판단: "
-                + scope["reason"]
-                + "\n\n분리 경계: "
-                + scope["boundary"]
-                + "\n\n"
-            )
-        body += "\n\n".join(
-            "### " + title + "\n" + record["data"][key]
-            for title, key in zip(TITLES, FIELDS)
-            if previous.get(key) != record["data"][key]
-        )
+        body = MARKER + "\n" + comment_summary(record, state.get("board_status")) + "\n"
         body += (
-            "\n\n<details><summary>복구 데이터</summary>\n\n```json\n"
+            "\n<details><summary>복구 데이터</summary>\n\n```json\n"
             + json.dumps(record, ensure_ascii=False, indent=2)
             + "\n```\n</details>"
         )
@@ -563,6 +564,7 @@ def checkpoint(
     reconcile: bool = False,
     board_status: str | None = None,
     watch_paths: list[str] | None = None,
+    event: str | None = None,
 ) -> dict:
     if board_status and (not should_sync or not binding.get("project")):
         raise ContinuityError("status requires --sync and a bound project")
@@ -631,7 +633,7 @@ def checkpoint(
             }
         )
     if state.get("data") != data or state.get("scope") != scope:
-        if state.get("pending"):
+        if state.get("pending") and state.get("sync") != "local":
             raise ContinuityError(
                 "unsynced checkpoint exists; sync it before replacing recorded decisions"
             )
@@ -676,7 +678,20 @@ def checkpoint(
                 else ["check", "--number", str(binding["issue"]), "--fix"]
             )
             run(command)
-        return sync(folder, state, binding)
+        # 원격 게시: 진행 시작(첫 기록), 상태 전환, 결정·인계. 같은 상태 안 변경은 로컬만
+        if (
+            not state.get("remote_id")
+            or event in PUBLISH_EVENTS
+            or (board_status and board_status != state.get("board_status"))
+            or not state.get("pending")
+        ):
+            if board_status:
+                state["board_status"] = board_status
+            return sync(folder, state, binding)
+        state["sync"] = "local"
+        save(folder / "checkpoint.json", state)
+        state["verified"] = verify_checkpoint(folder, synced=True)
+        return state
     state["verified"] = verify_checkpoint(folder)
     return state
 
@@ -754,7 +769,7 @@ def restore(
             or local.get("snapshot") != actual
         ):
             raise ContinuityError(
-                "clear not ready: reconcile and sync a current checkpoint first"
+                "clear not ready: reconcile and publish a current checkpoint first (checkpoint --sync --event 인계)"
             )
         try:
             verify_checkpoint(folder, records, synced=True)
@@ -1349,6 +1364,7 @@ def main() -> int:
             item.add_argument("--input", required=True, type=Path)
             item.add_argument("--sync", action="store_true")
             item.add_argument("--status", choices=["진행", "검토", "보류"])
+            item.add_argument("--event", choices=PUBLISH_EVENTS, help="같은 상태라도 원격 게시")
             item.add_argument(
                 "--watch-path",
                 action="append",
@@ -1396,6 +1412,7 @@ def main() -> int:
                             reconcile=args.reconcile,
                             board_status=args.status,
                             watch_paths=args.watch_path,
+                            event=args.event,
                         )
                         if args.command == "checkpoint"
                         else restore(
