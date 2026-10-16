@@ -1,4 +1,4 @@
-# type(scope): 결과 한 줄 (#이슈)
+# type(scope): 결과 한 줄 (번호는 꼬리말에만)
 #
 # type  feat 기능 추가·변경 | fix 버그 수정 | refactor 구조만 | perf 속도·용량
 #       test 테스트만 | docs 문서만 | style 포맷만 | build 빌드·의존성
