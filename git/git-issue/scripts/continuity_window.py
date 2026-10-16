@@ -325,7 +325,7 @@ def reset_cycle(args: argparse.Namespace, home: Path, state: dict[str, Any]) -> 
     validate_baseline(data, baseline["data"])
     ensure_task_unchanged(args, home, state, strict=True)
     with core.locked(folder):
-        core.checkpoint(folder, binding, data, True)
+        core.checkpoint(folder, binding, data, True, event="인계")
         ready = core.restore(folder, binding, False, verify_clear=True)
     if not ready["clear_ready"]:
         raise core.ContinuityError("checkpoint not ready")
