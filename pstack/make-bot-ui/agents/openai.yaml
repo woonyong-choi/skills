@@ -1,0 +1,5 @@
+interface:
+  display_name: "make-bot-ui"
+  default_prompt: "$make-bot-ui [요청]"
+policy:
+  allow_implicit_invocation: false

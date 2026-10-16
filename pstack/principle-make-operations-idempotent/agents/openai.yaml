@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-make-operations-idempotent"
+  default_prompt: "$principle-make-operations-idempotent [요청]"
+policy:
+  allow_implicit_invocation: false

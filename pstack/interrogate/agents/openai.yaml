@@ -1,0 +1,5 @@
+interface:
+  display_name: "interrogate"
+  default_prompt: "$interrogate [요청]"
+policy:
+  allow_implicit_invocation: false

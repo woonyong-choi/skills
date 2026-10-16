@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-never-block-on-the-human"
+  default_prompt: "$principle-never-block-on-the-human [요청]"
+policy:
+  allow_implicit_invocation: false

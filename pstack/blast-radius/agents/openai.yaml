@@ -1,0 +1,5 @@
+interface:
+  display_name: "blast-radius"
+  default_prompt: "$blast-radius [요청]"
+policy:
+  allow_implicit_invocation: false
