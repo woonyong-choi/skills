@@ -2,6 +2,7 @@
 
 import contextlib
 import io
+import os
 import subprocess
 import sys
 import unittest
@@ -131,6 +132,27 @@ class CommandLineTest(unittest.TestCase):
             self.assertEqual(result.returncode, 2, args)
             self.assertNotIn("Traceback", result.stderr, args)
             self.assertTrue(result.stderr.strip(), args)
+
+
+class ReadmeOrderTest(unittest.TestCase):
+    """#90 지시 5: README 절 순서는 repo-docs-readme 틀의 두 종류 순서."""
+
+    def errors(self, text: str) -> list[str]:
+        import tempfile
+        with tempfile.TemporaryDirectory() as folder:
+            previous = Path.cwd()
+            os.chdir(folder)
+            try:
+                Path("README.md").write_text(text, encoding="utf-8")
+                return check_doc.structure_errors("README.md", "README.md")
+            finally:
+                os.chdir(previous)
+
+    def test_new_template_order(self) -> None:
+        self.assertEqual(self.errors("# T\n\n## Quick start\n\n## Why\n\n## How it works\n\n## Status\n"), [])
+        self.assertEqual(self.errors("# T\n\n## Why\n\n## Quick start\n"), ["절 순서"])
+        self.assertEqual(self.errors("# T\n\n## Problem and constraints\n\n## Design decisions\n\n## Results\n"), [])
+        self.assertEqual(self.errors("# T\n\n## Results\n\n## Implementation\n"), ["절 순서"])
 
 
 if __name__ == "__main__":

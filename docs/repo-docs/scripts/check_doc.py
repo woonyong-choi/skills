@@ -49,8 +49,9 @@ EMOJI = re.compile(
     r"|[#*0-9]\uFE0F?\u20E3"
 )
 
-README_KO = ["작동 방식", "설치", "사용법", "기능", "측정 결과", "상태", "비교", "로드맵", "문서", "개발", "라이선스"]
-README_EN = ["How it works", "Installation", "Usage", "Features", "Benchmarks", "Status", "Comparison", "Roadmap", "Documentation", "Development", "License"]
+# repo-docs-readme 틀: 오픈소스형 7절 다음 포트폴리오형 5절. 한 README는 한 종류만 쓰므로 한 목록으로 순서 검사
+README_KO = ["빠른 시작", "해결하는 문제", "작동 방식", "상태", "문서", "개발", "라이선스", "문제와 제약", "설계 결정", "구현", "결과", "실행"]
+README_EN = ["Quick start", "Why", "How it works", "Status", "Documentation", "Development", "License", "Problem and constraints", "Design decisions", "Implementation", "Results", "Running"]
 ARCHITECTURE_KO = ["맥락", "코드 지도", "실행 흐름", "불변 조건", "배치", "기술 선택"]
 ARCHITECTURE_EN = ["Context", "Code map", "Flows", "Invariants", "Deployment", "Technology choices"]
 DESIGN_KO = ["요약", "동기", "예시", "상세 설계", "단점", "대안", "미해결 질문"]
