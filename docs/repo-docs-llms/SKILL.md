@@ -17,7 +17,7 @@ description: "README와 문서 목록에서 llms.txt·llms-full.txt를 생성·�
 파일 → 내용 → 만드는 조건:
 
 - `llms.txt` → 이름, 한 줄 소개, 소개 문단, 문서 링크 목록 → `docs/README.md` 존재
-- `llms-full.txt` → `README.md`와 `docs/README.md` 목록의 문서 본문을 목록 순서대로 이은 것 → 사용자가 요청할 때만. 문서 본문의 복사본이라 기본은 생성 제외
+- `llms-full.txt` → `README.md`와 `docs/README.md` 목록의 문서 본문을 목록 순서대로 이은 것 → 사용자가 요청할 때만(문서 본문의 복사본)
 
 ## llms.txt 형식
 

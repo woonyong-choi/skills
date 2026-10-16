@@ -84,19 +84,19 @@ description: "제품 요구·아키텍처·기능·운영을 선택하거나 설
 
 ## docs/README.md
 
-`docs/README.md` 작성·갱신·검토 전 [index.md](references/index.md) 필수 확인
+작성·갱신·검토 전 [index.md](references/index.md) 필수 확인
 
 ## architecture.md
 
-`architecture.md` 작성·갱신·검토 전 [architecture.md](references/architecture.md) 필수 확인
+작성·갱신·검토 전 [architecture.md](references/architecture.md) 필수 확인
 
 ## design/{주제}.md
 
-`design/{주제}.md` 작성·갱신·검토 전 [design.md](references/design.md) 필수 확인
+작성·갱신·검토 전 [design.md](references/design.md) 필수 확인
 
 ## glossary.md
 
-`glossary.md` 작성·갱신·검토 전 [glossary.md](references/glossary.md) 필수 확인
+작성·갱신·검토 전 [glossary.md](references/glossary.md) 필수 확인
 
 ## 코드로 옮기기
 

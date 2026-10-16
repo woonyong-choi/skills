@@ -55,7 +55,7 @@ docs/experiments/
 - `scripts/` → 번호 = 실행 순서. 입력은 앞 단계 파일만
 - `results/summary.json` → 보고서의 모든 수치. 보고서 수치는 이 파일에서만
 - 결과 차트 → 원본·산출물 위치, JSON 입력과 변환·검사(repo-docs-figures references/charts.md 실험 차트)
-- `run.sh` → `collect`, `process`, `analyze`, `verify`, `all` 다섯 명령. `./run.sh analyze`는 `raw/`를 입력으로 전처리를 다시 실행한 뒤 분석을 실행해 결과 재생성
+- `run.sh` → `collect`, `process`, `analyze`, `verify`, `all` 다섯 명령. `./run.sh analyze`는 `raw/`에서 전처리를 다시 실행한 뒤 분석해 결과 재생성
 - `logs/` → `run.sh` 명령마다 실행 출력 전부. 수정 금지, 홈 경로는 `~`로. 아래 `log` 함수로만 기록, 기존 로그면 거부. 검사·재현 재실행은 `RUN_ID={실행 id}-check`, 그 로그 커밋 제외
 - 실행 id 공유 → `collect`가 첫 줄에 출력한 id를 같은 실행의 이후 명령에 `RUN_ID={실행 id} ./run.sh {명령}`으로 전달. 생략하면 새 id
 - `env.json` → 계획의 실험 환경 표와 같은 항목을 `collect`가 자동 기록. 계획 값과 다르면 보고서 계획과 다른 점에
@@ -95,19 +95,19 @@ log() { local f="logs/$1-$id.log"; [[ ! -e $f ]] || { echo "$f exists; use anoth
 
 ## docs/experiments/README.md
 
-`docs/experiments/README.md` 작성·갱신·검토 전 [index.md](references/index.md) 필수 확인
+작성·갱신·검토 전 [index.md](references/index.md) 필수 확인
 
 ## design.md
 
-`design.md` 작성·갱신·검토 전 [design.md](references/design.md) 필수 확인
+작성·갱신·검토 전 [design.md](references/design.md) 필수 확인
 
 ## data/README.md
 
-`data/README.md` 작성·갱신·검토 전 [data.md](references/data.md) 필수 확인
+작성·갱신·검토 전 [data.md](references/data.md) 필수 확인
 
 ## report.md
 
-`report.md` 작성·갱신·검토 전 [report.md](references/report.md) 필수 확인
+작성·갱신·검토 전 [report.md](references/report.md) 필수 확인
 
 ## 통계 규칙
 
