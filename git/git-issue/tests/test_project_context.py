@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import tempfile
 import os
 from pathlib import Path
 import shutil
@@ -13,7 +14,7 @@ import unittest
 
 PLUGIN = Path(__file__).resolve().parents[1]
 SCRIPT = PLUGIN / "scripts/project_context.py"
-RUNTIME = PLUGIN.parents[2] / ".local/orchestration/issue-continuity/test-runtime/project-context"
+RUNTIME = Path(tempfile.gettempdir()) / "skills-test-runtime" / "project-context"
 
 
 class ProjectContextWorkflow(unittest.TestCase):
