@@ -48,14 +48,14 @@ $git-pull-request 현재 diff와 테스트 결과로 PR 본문을 작성해 줘.
 
 Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continuity`를 유지합니다. 연결한 이슈에 작업 기록을 저장하고 새 세션·압축 후 복구 명령을 안내합니다. 저장 완료는 실제 기록을 다시 읽어 판정하고, 원래 요청과 마지막 대화는 로컬 작업 기록에만 보관합니다. [판 상태](git/git-issue/references/project-status.md), [기록·복구](git/git-issue/references/continuity.md), [설치·호스트 연결](git/git-issue/references/continuity-hosts.md)은 해당 작업 때만 읽습니다. 판단은 소유 스킬, 저장·복구는 플러그인 코드가 담당합니다.
 
-기존 `issue-continuity`는 이전 설치 ID다. 중복 활성화 여부를 먼저 확인하고, 활성 갱신은 설치·호스트 연결의 안정된 진입점 절차를 따릅니다.
+기존 `issue-continuity`는 이전 설치 ID입니다. 중복 활성화 여부를 먼저 확인하고, 활성 갱신은 설치·호스트 연결의 안정된 진입점 절차를 따릅니다.
 
-설치와 실제 훅 실행은 별도다. Codex는 대화형 TUI의 `/hooks`에서 새 훅 정의를 검토·신뢰해야 실행합니다. `codex exec`는 신뢰 전 훅을 알림 없이 건너뜁니다. 사용량 신호가 없으면 임계값은 미확인으로 남기고 작업 경계와 압축 훅을 사용합니다.
+설치와 실제 훅 실행은 별개입니다. Codex는 대화형 TUI의 `/hooks`에서 새 훅 정의를 검토·신뢰해야 실행합니다. `codex exec`는 신뢰 전 훅을 알림 없이 건너뜁니다. 사용량 신호가 없으면 임계값은 미확인으로 남기고 작업 경계와 압축 훅을 사용합니다.
 
-PR 머지 뒤 경력 기록은 [career-record](docs/career-record/SKILL.md)가 판단합니다. 세션 안에서 `gh pr merge`가 성공하면 같은 훅이 기록 여부 판단을 안내합니다. Vault에 `career/` 폴더가 있을 때만 안내합니다. 기본 모드 normal은 추가·병합마다 묻습니다. 바로 기록하는 bypass로 바꾸려면 아래 명령을 실행합니다. bypass에서도 상·중 줄과 포트폴리오 묶음이 있는 줄을 지울 때, 넣을 프로젝트 후보가 여럿일 때는 묻습니다.
+PR 머지 뒤 경력 기록은 [career-record](docs/career-record/SKILL.md)가 판단합니다. 세션 안에서 PR 머지(`gh pr merge`, `gh api` PUT 머지)가 성공하면 같은 훅이 기록 여부 판단을 안내합니다. Vault에 `career/` 폴더가 있을 때만 안내합니다. 기본 모드 normal은 추가·병합마다 묻습니다. 바로 기록하는 bypass로 바꾸려면 아래 명령을 실행합니다. bypass에서도 상·중 줄과 포트폴리오 묶음이 있는 줄을 지울 때, 넣을 프로젝트 후보가 여럿일 때는 묻습니다.
 
 ```sh
-python3 ~/.claude/skills/career-record/scripts/record.py mode bypass
+python3 <스킬 설치 폴더(~/.claude/skills 또는 ~/.codex/skills)>/career-record/scripts/record.py mode bypass
 ```
 
 설정은 `vault.json`과 같은 폴더(기본 `~/.config/skills`)의 `career-record.json`에 `{"mode": "bypass"}`로 저장됩니다.
@@ -63,7 +63,7 @@ python3 ~/.claude/skills/career-record/scripts/record.py mode bypass
 같은 훅은 career-record 다음 [repo-docs-journal](docs/repo-docs-journal/SKILL.md)의 판단 기록 여부도 안내합니다. 버린 대안 문장, 확인하지 못한 가정 문장, 구조 항목(저장 위치, 데이터 형식 등) 세 가지를 모두 댈 수 있는 판단만 기록합니다. 기본 normal은 세 가지 인용문을 보여 주고 묻습니다. 바로 저장하려면 bypass로 바꿉니다.
 
 ```sh
-python3 ~/.claude/skills/repo-docs-journal/scripts/journal.py mode bypass
+python3 <스킬 설치 폴더>/repo-docs-journal/scripts/journal.py mode bypass
 ```
 
 설정은 같은 폴더의 `journal.json`에 저장됩니다.
@@ -142,7 +142,7 @@ python3 ~/.claude/skills/repo-docs-journal/scripts/journal.py mode bypass
 
 H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니다. 채택은 점추정 순위가 아니라 품질, 일관성, 연결 누락, 읽기량, 왕복·지연 기준의 동시 통과로 결정했습니다. 후보 선택을 고려한 98.333% 동시 구간을 사용했으며 H-flat만 모든 기준을 통과했습니다. tree는 재현율·정확 집합·일관성·연결 누락 기준을, hybrid는 일관성·연결 누락·목록 크기·연결 개선 기준 등을 통과하지 못했습니다.
 
-보류는 열등함을 입증한 결과가 아닙니다. 두 모델의 정답 합의는 인간 검증이 아니며, 불일치 요청을 제외한 표본에는 선택 편향이 남는다. 이 수치는 제한된 스킬 선택 실험의 결과이며 실제 작업 완성도나 전체 도구 환경의 성능을 뜻하지 않습니다. 확인 모델의 결과, 판정 기준과 공개 집계의 범위는 [2차 실험 결과](experiments/skill-exposure/report.md)에 있습니다. 앞선 형식 통일·조건부 읽기 실험은 [1차 실험 결과](experiments/skill-format-unification/report.md)에 있습니다.
+보류는 열등함을 입증한 결과가 아닙니다. 두 모델의 정답 합의는 인간 검증이 아니며, 불일치 요청을 제외한 표본에는 선택 편향이 남습니다. 이 수치는 제한된 스킬 선택 실험의 결과이며 실제 작업 완성도나 전체 도구 환경의 성능을 뜻하지 않습니다. 확인 모델의 결과, 판정 기준과 공개 집계의 범위는 [2차 실험 결과](experiments/skill-exposure/report.md)에 있습니다. 앞선 형식 통일·조건부 읽기 실험은 [1차 실험 결과](experiments/skill-format-unification/report.md)에 있습니다.
 
 ### 과거 실험의 본문 크기
 
@@ -218,7 +218,7 @@ python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/t
 (cd docs/html-report/scripts && npm ci) && node --test docs/html-report/tests/*.test.mjs
 ```
 
-시험에는 pytest가 필요합니다. 그림 원본, 밝은·어두운 SVG와 재생성 명령은 [그림 재현 안내](docs/assets/README.md)에 있습니다.
+그림 원본, 밝은·어두운 SVG와 재생성 명령은 [그림 재현 안내](docs/assets/README.md)에 있습니다.
 
 시험에는 pytest와 Node.js 22.12 이상이 필요합니다. career PDF 컴파일 시험은 `typst`(명령 또는 Python 패키지)가 있을 때만 돕니다. HTML 보고서 생성 시험은 `docs/html-report/scripts`에서 `npm ci`를 실행한 뒤에만 돌고, 설치 전에는 건너뜁니다.
 

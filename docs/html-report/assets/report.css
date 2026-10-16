@@ -37,8 +37,7 @@
 
 /* ---- 판정 조작부: 버튼 한 줄, 그 아래 의견 칸 ---- */
 .report-judge { display: grid; gap: var(--spacing-gap-xs); margin-top: var(--spacing-gap); }
-.report-judge-note, .report-result { display: block; box-sizing: border-box; width: -webkit-fill-available; width: stretch; min-block-size: calc(3 * var(--text-body-text) * var(--leading-line-body)); padding: var(--spacing-gap-xs) var(--spacing-gap-sm); font: inherit; color: var(--color-body); background: var(--color-feature-tab-background); border: 0; border-radius: var(--radius-feature-tab-radius); resize: vertical; }
-.report-judge-note::placeholder { color: var(--color-ui-muted); }
+.report-result { display: block; box-sizing: border-box; width: -webkit-fill-available; width: stretch; min-block-size: calc(3 * var(--text-body-text) * var(--leading-line-body)); padding: var(--spacing-gap-xs) var(--spacing-gap-sm); font: inherit; color: var(--color-body); background: var(--color-feature-tab-background); border: 0; border-radius: var(--radius-feature-tab-radius); resize: vertical; }
 .report-result { margin-top: var(--spacing-gap); font-family: var(--font-mono); font-size: var(--text-small-text); }
 .report-section[hidden] { display: none; }
 

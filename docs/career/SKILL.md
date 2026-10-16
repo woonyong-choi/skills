@@ -19,7 +19,7 @@ description: "자기소개서만 쓰는 작업 제외, 채용 공고(JD)에 맞�
 
 ## 지원 폴더
 
-Vault 미등록: 쓰기 전 사용자에게 Vault 절대 경로 요청 → 훅 거부 메시지의 `project_context.py --register-vault <경로>` 실행. 등록 뒤 `<Vault>/career/` 없으면 생성
+쓰기 전 Vault 확인: `versions.py`가 등록 Vault의 `career/` 아래인지 검사, 아니면 파일 0개로 중단. 미등록이면 사용자에게 Vault 절대 경로 요청 → `project_context.py --register-vault <경로>`. 등록 뒤 `<Vault>/career/` 없으면 생성
 
 ```text
 <Vault>/career/

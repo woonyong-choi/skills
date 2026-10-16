@@ -12,13 +12,11 @@
 - 사실·근거 교정은 선택·문장·컴파일·추출·화면 검사·해시·완료 주장을 무효화. 끝내기 전 재실행
 - 교정이 있으면 `전략.md` 확인 절에 `## 교정과 기억 전달` 절: 저장 위치 또는 대체 출력, 누적 횟수, 승격 후보, 경력 원본 변경 여부
 
-## 저장 위치(호스트별)
+## 저장 위치
 
-교정 기록 하나 = 파일 하나 `{YYYYMMDD-HHMMSS}-career-feedback.md`:
+교정 기록 하나 = 파일 하나 `<Vault>/career/corrections/{YYYYMMDD-HHMMSS}-career-feedback.md`(Claude·Codex 공통)
 
-- Codex: `${CODEX_HOME:-~/.codex}/memories/extensions/ad_hoc/notes/`. 생성된 `MEMORY.md`·요약 파일 직접 수정 금지
-- Claude: 호스트 메모리 쓰기 도구가 있으면 그 도구, 없으면 `<Vault>/career/corrections/`
-- 둘 다 불가: 최종 응답에 같은 블록 출력, 저장 안 됨 명시
+- 저장 불가: 최종 응답에 같은 블록 출력, 저장 안 됨 명시
 - 비밀·민감한 원값 저장 금지. 실수를 막을 규칙만 기록
 
 ## 승격
