@@ -54,9 +54,6 @@ class Ask(Exception):
     """모드 규칙상 사용자 질문이 먼저 필요. 파일 0개"""
 
 
-# cost: time O(1), heap O(1), stack O(1), io O(1)
-# vars: 없음
-# basis: estimate
 def config_directory() -> Path:
     return Path(os.environ.get("SKILLS_CONFIG_DIR") or Path.home() / ".config/skills").expanduser()
 
@@ -65,9 +62,6 @@ def config_path() -> Path:
     return config_directory() / "career-record.json"
 
 
-# cost: time O(1), heap O(1), stack O(1), io O(1)
-# vars: 없음
-# basis: estimate
 def read_config() -> dict:
     path = config_path()
     data = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
@@ -76,18 +70,12 @@ def read_config() -> dict:
     return data
 
 
-# cost: time O(1), heap O(1), stack O(1), io O(1)
-# vars: 없음
-# basis: estimate
 def write_config(data: dict) -> None:
     path = config_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-# cost: time O(1), heap O(1), stack O(1), io O(1)
-# vars: 없음
-# basis: estimate
 def career_root() -> Path:
     """경력 원본 폴더: CAREER_ROOT, 없으면 career.json의 root. 둘 다 없거나 폴더가 아니면 RecordError"""
     value = os.environ.get("CAREER_ROOT")
@@ -105,9 +93,6 @@ def career_root() -> Path:
     return root
 
 
-# cost: time O(d), heap O(d), stack O(1), io O(1)
-# vars: d = 경로 깊이
-# basis: estimate
 def guard(target: Path, root: Path) -> Path:
     """쓰기 위치 검사. 경력 원본 아래 공고 폴더 밖만 허용"""
     target = (root / target if not target.is_absolute() else target).resolve()
@@ -121,9 +106,6 @@ def guard(target: Path, root: Path) -> Path:
 # --- 이력서.md·포트폴리오.md 읽기·쓰기 ---
 
 
-# cost: time O(n), heap O(n), stack O(1)
-# vars: n = 파일 줄 수
-# basis: estimate
 def split_front(text: str) -> tuple[dict, str]:
     """YAML 머리(문자열 값, 문자열 목록만)와 본문"""
     if not text.startswith("---\n"):
@@ -151,9 +133,6 @@ def split_front(text: str) -> tuple[dict, str]:
     return attributes, text[end + 5:]
 
 
-# cost: time O(a), heap O(a), stack O(1)
-# vars: a = 속성 값 수
-# basis: estimate
 def join_front(attributes: dict, order: tuple[str, ...]) -> str:
     keys = [key for key in order if key in attributes] + [key for key in attributes if key not in order]
     out = ["---"]
@@ -167,9 +146,6 @@ def join_front(attributes: dict, order: tuple[str, ...]) -> str:
     return "\n".join(out + ["---", ""])
 
 
-# cost: time O(n), heap O(n), stack O(1)
-# vars: n = 본문 줄 수
-# basis: estimate
 def parse_lines(body: str) -> tuple[list[dict], list[str]]:
     """줄 목록(first, fields 순서 보존)과 형식 문제"""
     lines: list[dict] = []
@@ -188,9 +164,6 @@ def parse_lines(body: str) -> tuple[list[dict], list[str]]:
     return lines, problems
 
 
-# cost: time O(l), heap O(l), stack O(1)
-# vars: l = 줄 수
-# basis: estimate
 def render_lines(lines: list[dict]) -> str:
     out = []
     for line in lines:
@@ -199,9 +172,6 @@ def render_lines(lines: list[dict]) -> str:
     return "\n".join(out) + ("\n" if out else "")
 
 
-# cost: time O(n), heap O(n), stack O(1)
-# vars: n = 포트폴리오.md 줄 수
-# basis: estimate
 def parse_bundles(text: str) -> list[dict]:
     """## 제목 묶음과 ### 절 이름 목록. 코드 울타리 안 제목은 무시"""
     bundles: list[dict] = []
@@ -220,9 +190,6 @@ def parse_bundles(text: str) -> list[dict]:
     return bundles
 
 
-# cost: time O(f), heap O(1), stack O(1)
-# vars: f = 칸 수
-# basis: estimate
 def grade(fields: dict) -> str:
     """상: 운영 결과 수치(결과에 숫자, 확인에 운영)·근거 링크·본인 주도(주체가 본인으로 시작) 셋 다. 중: 하나 빠짐. 하: 결과 미확인·단순 참여(주체가 참여로 시작)·둘 이상 빠짐"""
     result, actor = fields.get("결과", UNKNOWN), fields.get("주체", UNKNOWN)
@@ -236,9 +203,6 @@ def grade(fields: dict) -> str:
     return "상" if missing == 0 else "중" if missing == 1 else "하"
 
 
-# cost: time O(l log l), heap O(l), stack O(1)
-# vars: l = 줄 수
-# basis: estimate
 def normalize(lines: list[dict]) -> list[dict]:
     """8칸 순서로 채우고 등급 계산, 등급 순 정렬(같은 등급은 기존 순서 = 최근 먼저)"""
     for line in lines:
@@ -252,9 +216,6 @@ def normalize(lines: list[dict]) -> list[dict]:
 class Project:
     """프로젝트 폴더 하나의 이력서.md·포트폴리오.md. save 전에는 파일을 쓰지 않는다"""
 
-    # cost: time O(n), heap O(n), stack O(1), io 2
-    # vars: n = 두 파일 줄 수
-    # basis: estimate
     def __init__(self, folder: Path, root: Path):
         self.folder, self.root = folder, root
         resume = folder / RESUME
@@ -271,24 +232,15 @@ class Project:
     def name(self) -> str:
         return str(self.folder.relative_to(self.root))
 
-    # cost: time O(l), heap O(1), stack O(1)
-    # vars: l = 줄 수
-    # basis: estimate
     def find(self, first: str) -> dict:
         for line in self.lines:
             if line["first"] == first:
                 return line
         raise RecordError(f"{self.name}: 줄 없음 \"{first}\"")
 
-    # cost: time O(p), heap O(p), stack O(1)
-    # vars: p = 포트폴리오.md 줄 수
-    # basis: estimate
     def has_bundle(self, first: str) -> bool:
         return any(bundle["title"] == first for bundle in parse_bundles(self.portfolio))
 
-    # cost: time O(p), heap O(p), stack O(1)
-    # vars: p = 포트폴리오.md 줄 수
-    # basis: estimate
     def drop_bundle(self, first: str) -> None:
         lines = self.portfolio.splitlines()
         bundles = parse_bundles(self.portfolio)
@@ -296,9 +248,6 @@ class Project:
         kept = preamble + [raw for bundle in bundles if bundle["title"] != first for raw in bundle["lines"]]
         self.portfolio = "\n".join(kept).rstrip("\n") + "\n" if any(raw.strip() for raw in kept) else ""
 
-    # cost: time O(l + p), heap O(l + p), stack O(1), io 2
-    # vars: l = 줄 수, p = 포트폴리오.md 글자 수
-    # basis: estimate
     def save(self) -> list[str]:
         self.lines = normalize(self.lines)
         (self.folder / RESUME).write_text(join_front(self.attributes, ATTRIBUTES) + "\n" + render_lines(self.lines), encoding="utf-8")
@@ -312,9 +261,6 @@ class Project:
 # --- 모드 규칙 ---
 
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def decide(mode: str, action: str, *, grade_value: str = "하", bundle: bool = False, locations: int = 1) -> str:
     """ask 또는 run. normal은 추가·병합·삭제 전부 질문. bypass는 위치 후보 여럿, 상·중 줄 삭제, 묶음 있는 줄 삭제만 질문"""
     if mode != "bypass":
@@ -326,18 +272,12 @@ def decide(mode: str, action: str, *, grade_value: str = "하", bundle: bool = F
     return "run"
 
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def label(line: dict) -> str:
     values = dict(line["fields"])
     result = values.get("결과", UNKNOWN)
     return "\"" + line["first"] + (f" ({result})" if result != UNKNOWN else "") + "\""
 
 
-# cost: time O(s), heap O(s), stack O(1)
-# vars: s = --set 인자 수
-# basis: estimate
 def parse_sets(items: list[str]) -> dict:
     values = {}
     for item in items or []:
@@ -349,9 +289,6 @@ def parse_sets(items: list[str]) -> dict:
     return values
 
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def append_value(old: str, new: str, sep: str) -> str:
     if old == UNKNOWN or not old:
         return new
@@ -363,9 +300,6 @@ def append_value(old: str, new: str, sep: str) -> str:
 # --- 명령 ---
 
 
-# cost: time O(l), heap O(l), stack O(1), io 2
-# vars: l = 프로젝트 줄 수
-# basis: estimate
 def add(project: Project, first: str, values: dict, *, mode: str, yes: bool, similar: str | None = None,
         replace: str | None = None, locations: int = 1) -> list[str]:
     first = first.strip()
@@ -402,9 +336,6 @@ def add(project: Project, first: str, values: dict, *, mode: str, yes: bool, sim
     return report
 
 
-# cost: time O(l), heap O(l), stack O(1), io 2
-# vars: l = 프로젝트 줄 수
-# basis: estimate
 def merge(project: Project, first: str, values: dict, *, mode: str, yes: bool, locations: int = 1) -> list[str]:
     """결과는 ' → '로, 확인·근거는 ', '로 뒤에 붙임. 상태는 바꿈. 주체·상황·행동은 미확인일 때만 채움"""
     line = project.find(first)
@@ -428,9 +359,6 @@ def merge(project: Project, first: str, values: dict, *, mode: str, yes: bool, l
     return [f"경력 병합: {project.name} \"{first}\" ({new_grade})"]
 
 
-# cost: time O(l), heap O(1), stack O(1), io 2
-# vars: l = 프로젝트 줄 수
-# basis: estimate
 def fill(project: Project, first: str, values: dict) -> list[str]:
     """빈칸 답 반영. 미확인 칸만 채움, 이미 값이 있으면 거부(병합·수정 사용)"""
     line = project.find(first)
@@ -443,9 +371,6 @@ def fill(project: Project, first: str, values: dict) -> list[str]:
     return [f"경력 채움: {project.name} \"{first}\" {', '.join(values)}"]
 
 
-# cost: time O(l), heap O(1), stack O(1), io 2
-# vars: l = 프로젝트 줄 수
-# basis: estimate
 def edit(project: Project, first: str, values: dict, new_first: str | None) -> list[str]:
     """상태 변화·오류 고침. 첫 줄을 바꾸면 짝 묶음 제목도 함께"""
     line = project.find(first)
@@ -460,9 +385,6 @@ def edit(project: Project, first: str, values: dict, new_first: str | None) -> l
     return [f"경력 수정: {project.name} \"{line['first']}\""]
 
 
-# cost: time O(l + p), heap O(p), stack O(1), io 2
-# vars: l = 줄 수, p = 포트폴리오.md 줄 수
-# basis: estimate
 def remove(project: Project, first: str, *, mode: str, yes: bool) -> list[str]:
     line = project.find(first)
     line_grade = dict(line["fields"]).get("등급", "하")
@@ -475,9 +397,6 @@ def remove(project: Project, first: str, *, mode: str, yes: bool) -> list[str]:
     return [f"경력 삭제: {project.name} \"{first}\" ({line_grade})"]
 
 
-# cost: time O(f), heap O(f), stack O(d), io O(f)
-# vars: f = career 아래 파일 수, d = 폴더 깊이
-# basis: estimate
 def projects(root: Path) -> list[Path]:
     return sorted(
         path.parent for path in root.rglob(RESUME)
@@ -490,9 +409,6 @@ DEPENDENCY_FILE = re.compile(r"(?:^|/)(?:package(?:-lock)?\.json|yarn\.lock|pnpm
 EXCLUDED_TYPE = re.compile(r"^(?:docs|style)(?:\([^)]*\))?!?:|^(?:chore|build)\(deps[^)]*\)!?:", re.I)
 
 
-# cost: time O(f), heap O(f), stack O(1)
-# vars: f = PR 변경 파일 수
-# basis: estimate
 def screen(pr: dict, user: str) -> dict:
     """기계로 가를 수 있는 제외만 판정(gh pr view --json author,title,files,url). 나머지는 AI가 본문·코드로 판단"""
     author = ((pr.get("author") or {}).get("login") or "").lower()
@@ -513,9 +429,6 @@ def screen(pr: dict, user: str) -> dict:
     }
 
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def identity(remote: str) -> str:
     """원격 주소의 host/owner/repo 소문자. https·ssh·.git 차이 무시, 해석 불가면 원문"""
     value = remote.strip()
@@ -528,9 +441,6 @@ def identity(remote: str) -> str:
     return (host + "/" + parsed.path.strip("/").removesuffix(".git")).lower()
 
 
-# cost: time O(f), heap O(f), stack O(d), io O(f)
-# vars: f = career 아래 파일 수, d = 폴더 깊이
-# basis: estimate
 def locate(root: Path, remote: str, author: str | None) -> dict:
     """저장소 원격과 이력서.md 저장소 속성 대조. 1개면 위치, 여럿·0개면 질문 후보"""
     target = identity(remote)
@@ -554,9 +464,6 @@ def locate(root: Path, remote: str, author: str | None) -> dict:
     return {"ask": "어느 프로젝트에 넣을까요?\n" + "\n".join(f"{i}. {c}" for i, c in enumerate(candidates, 1)), "candidates": candidates, "personal": personal}
 
 
-# cost: time O(f), heap O(f), stack O(d), io O(f)
-# vars: f = career 아래 파일 수, d = 폴더 깊이
-# basis: estimate
 def blanks(root: Path) -> str:
     items = []
     for folder in projects(root):
@@ -573,9 +480,6 @@ def blanks(root: Path) -> str:
     return f"채워 주세요 ({len(items)}개)\n" + "\n".join(f"{i}. {item}" for i, item in enumerate(items, 1))
 
 
-# cost: time O(n), heap O(n), stack O(1), io 1
-# vars: n = 파일 글자 수
-# basis: estimate
 def parent_names(path: Path, root: Path) -> list[str]:
     """파일 안에 쓰면 안 되는 상위 폴더 이름(소속·팀). 개인은 일반 낱말이라 제외"""
     names = list(path.parent.relative_to(root).parts)
@@ -584,9 +488,6 @@ def parent_names(path: Path, root: Path) -> list[str]:
     return [name for name in names if name != PERSONAL and len(name) >= 2]
 
 
-# cost: time O(f·n), heap O(n), stack O(d), io O(f)
-# vars: f = career 아래 파일 수, n = 파일 하나 글자 수, d = 폴더 깊이
-# basis: estimate
 def check(root: Path) -> list[str]:
     problems = []
     if (root / "cases").exists():
@@ -662,9 +563,6 @@ def check(root: Path) -> list[str]:
     return problems
 
 
-# cost: time O(1), heap O(1), stack O(1), io O(1)
-# vars: 없음
-# basis: estimate
 def new_project(root: Path, relative: str, attributes: dict, org: dict) -> list[str]:
     folder = guard(Path(relative), root)
     parts = folder.relative_to(root).parts
@@ -692,9 +590,6 @@ def new_project(root: Path, relative: str, attributes: dict, org: dict) -> list[
     return [str(path.relative_to(root)) for path, _ in planned]
 
 
-# cost: time O(a), heap O(a), stack O(1)
-# vars: a = 인자 수
-# basis: estimate
 def attribute_sets(items: list[str], allowed: tuple[str, ...]) -> dict:
     values: dict = {}
     for item in items or []:
@@ -709,9 +604,6 @@ def attribute_sets(items: list[str], allowed: tuple[str, ...]) -> dict:
     return values
 
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="경력 원본 기록")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -751,9 +643,6 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-# cost: time O(f·n), heap O(n), stack O(d), io O(f)
-# vars: f = career 아래 파일 수, n = 파일 하나 글자 수, d = 폴더 깊이
-# basis: estimate
 def run(argv: list[str]) -> tuple[int, dict]:
     args = build_parser().parse_args(argv)
     config = read_config()
@@ -799,9 +688,6 @@ def run(argv: list[str]) -> tuple[int, dict]:
     return 0, {"report": report, "files": project.save(), "mode": mode}
 
 
-# cost: time O(f·n), heap O(n), stack O(d), io O(f)
-# vars: f = career 아래 파일 수, n = 파일 하나 글자 수, d = 폴더 깊이
-# basis: estimate
 def main(argv: list[str] | None = None) -> int:
     try:
         code, result = run(sys.argv[1:] if argv is None else argv)

@@ -182,8 +182,11 @@ class RuleGateTest(HookCase):
         denied = self.hook("PreToolUse", host="codex", tool_name="Bash", tool_input={"command": patch})
         self.assertEqual(denied["hookSpecificOutput"]["permissionDecision"], "deny")
         reader = task.skill_file(task.RULE_READER)
-        rewritten = self.hook("PreToolUse", tool_name="Bash", tool_input={"command": f"python3 {reader} implement"})
-        self.assertIn("--pending", rewritten["hookSpecificOutput"]["updatedInput"]["command"])
+        for arguments in ("app.py", "--ids CS-ERROR principle-fix-root-causes", "--ids=CS-ERROR"):
+            rewritten = self.hook("PreToolUse", tool_name="Bash", tool_input={"command": f"python3 {reader} {arguments}"})
+            self.assertIn("--pending", rewritten["hookSpecificOutput"]["updatedInput"]["command"], arguments)
+        for arguments in ("--ids CS-NAEM", "notes.md", "--check", "app.py; touch x.py"):
+            self.assertEqual(self.hook("PreToolUse", tool_name="Bash", tool_input={"command": f"python3 {reader} {arguments}"}), {}, arguments)
 
     def test_stop_blocks_once_after_edit_without_rules(self) -> None:
         self.hook("PostToolUse", tool_name="Edit", tool_input={"file_path": str(self.repo / "app.py"), "old_string": "a", "new_string": "b"}, tool_response="edited")
@@ -191,6 +194,62 @@ class RuleGateTest(HookCase):
         self.assertEqual(blocked["decision"], "block")
         self.assertIn("필수 규칙 원문", blocked["reason"])
         self.assertNotIn("필수 규칙 원문", self.hook("Stop").get("reason", ""))
+
+
+class RuleMapTest(HookCase):
+    """편집할 파일 종류·내용 → 원칙 파일, code-style 절, 언어별 스킬 대응(rule-map.json)."""
+
+    def delivered(self, name: str, content: str) -> str:
+        """훅 거부 → --pending 조회 반복 → 출력 기록으로 편집이 열릴 때까지 받은 원문 전체."""
+        edit = {"tool_name": "Write", "tool_input": {"file_path": str(self.repo / name), "content": content}}
+        blocked = self.hook("PreToolUse", **edit)["hookSpecificOutput"]
+        self.assertEqual(blocked["permissionDecision"], "deny")
+        command = blocked["permissionDecisionReason"].split("`")[1]
+        output = ""
+        for _ in range(10):
+            read = subprocess.run(shlex.split(command), capture_output=True, text=True, timeout=30, check=False)
+            self.assertEqual(read.returncode, 0, read.stderr)
+            output += read.stdout
+            self.hook("PostToolUse", tool_name="Bash", tool_input={"command": command}, tool_response={"stdout": read.stdout})
+            if not self.hook("PreToolUse", **edit):
+                return output
+        self.fail("rule gate did not open")
+
+    def test_typescript_edit_gets_typescript_section_and_type_principles(self) -> None:
+        output = self.delivered("a.ts", "export type State = { kind: 'idle' };\n")
+        for text in ("<!-- code-style-typescript | code-style-typescript/SKILL.md -->", "## TypeScript 전용", "npx tsc --noEmit", "# 타입 시스템 규율", "# 경계 규율", "# 동작 증명", "기대 결과를 구현 코드, 같은 계산식, 모델 답변에서 베끼지 않는다"):
+            self.assertIn(text, output)
+        self.assertNotIn("code-style-python", output)
+
+    def test_javascript_edit_skips_typescript_section(self) -> None:
+        output = self.delivered("b.mjs", "export const limit = 1;\n")
+        self.assertIn("code-style-typescript-common", output)
+        self.assertIn("## 이름", output)
+        self.assertNotIn("## TypeScript 전용", output)
+        self.assertNotIn("# 타입 시스템 규율", output)
+
+    def test_python_edit_gets_python_skill_and_principles(self) -> None:
+        output = self.delivered("tool.py", "def run():\n    return 1\n")
+        for text in ("<!-- code-style-python | code-style-python/SKILL.md -->", "# 동작 증명", "# 기초부터 생각하기", "# 게으름 규약", "## 수치 기준"):
+            self.assertIn(text, output)
+        self.assertNotIn("# 공유 상태는", output)
+        self.assertNotIn("# 구현 말고 동작 테스트", output)
+
+    def test_concurrency_words_add_shared_state_principles(self) -> None:
+        output = self.delivered("worker.py", "import threading\n\nlock = threading.Lock()\n")
+        for text in ("# 공유 상태는 한 번에 하나씩 쓰게 하기 전에 먼저 나누기", "# 작업을 멱등으로 만들기", "# 데이터 · 동시성"):
+            self.assertIn(text, output)
+
+    def test_test_file_adds_test_principles(self) -> None:
+        output = self.delivered("tests/test_tool.py", "def test_run():\n    assert run() == 1\n")
+        self.assertIn("# 구현 말고 동작 테스트", output)
+        self.assertIn("# 검증 가능한 단위로 순서 짓기", output)
+
+    def test_map_hashes_match_sources(self) -> None:
+        reader = task.skill_file(task.RULE_READER)
+        done = subprocess.run([sys.executable, str(reader), "--check"], capture_output=True, text=True, timeout=30, check=False)
+        self.assertEqual((done.returncode, done.stderr), (0, ""))
+        self.assertIn("changed 0", done.stdout)
 
 
 class PostToolTest(HookCase):

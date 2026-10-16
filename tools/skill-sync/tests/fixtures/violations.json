@@ -42,48 +42,6 @@
     "kind": "스크립트 출력 형식"
   },
   {
-    "id": "cost",
-    "file": "alpha/scripts/inspect.py",
-    "before": "time O(n), heap O(n), stack O(1)",
-    "after": "heap O(n), time O(n)",
-    "kind": "비용 주석 형식"
-  },
-  {
-    "id": "basis",
-    "file": "alpha/scripts/inspect.py",
-    "before": "# basis: estimate",
-    "after": "# basis: guessed",
-    "kind": "비용 주석 형식"
-  },
-  {
-    "id": "vars",
-    "file": "alpha/scripts/inspect.py",
-    "before": "# vars: n = 파일 크기",
-    "after": "# 변수 없음",
-    "kind": "비용 주석 형식"
-  },
-  {
-    "id": "missing-cost",
-    "file": "alpha/scripts/inspect.py",
-    "before": "# cost:",
-    "after": "# 비용:",
-    "kind": "비용 주석"
-  },
-  {
-    "id": "zero-cost",
-    "file": "alpha/scripts/inspect.py",
-    "before": "io 2",
-    "after": "io 0",
-    "kind": "비용 주석 형식"
-  },
-  {
-    "id": "cost-extra-field",
-    "file": "alpha/scripts/inspect.py",
-    "before": "time O(n), heap",
-    "after": "time O(n), wrong O(n), heap",
-    "kind": "비용 주석 형식"
-  },
-  {
     "id": "empty-arguments",
     "file": "alpha/scripts/inspect.py",
     "before": "인자: 파일 하나",

@@ -78,7 +78,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 | 나눈 조각마다 병렬 확인을 돌리거나, 워커끼리 경주시키기(독립 서브에이전트) | [`/swarm`](../swarm/SKILL.md) |
 | 다른 모델들이 diff를 검토하고 깨뜨려 보게 하기 | [`/interrogate`](../interrogate/SKILL.md) |
 | 싼 로컬 테스트가 있을 때 테스트 먼저 버그 고치기 | [`/tdd`](../tdd/SKILL.md) |
-| `.ts`, `.tsx` 작업에 TypeScript 규칙 적용하기 | [`/typescript-best-practices`](../typescript-best-practices/SKILL.md) |
+| `.ts`, `.tsx` 작업에 TypeScript 규칙 적용하기 | 편집 전 훅이 `code-style-typescript`의 TypeScript 전용 절을 함께 넘긴다. |
 | 주석을 쓰지 않은 검토자로 리뷰 전에 주석 걷어 내기 | [`/no-comments`](../no-comments/SKILL.md) |
 | 글에서 AI 티 걷어 내기 | [`/unslop`](../unslop/SKILL.md) |
 | 문서, RFC, README, PR 설명, 커밋 메시지를 기준에 맞게 쓰기 | [`/technical-writing`](../technical-writing/SKILL.md) |

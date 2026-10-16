@@ -82,27 +82,7 @@ def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
         # #25: 평탄한 설치본의 검사기가 하위 문서·앵커·용어 정본을 조회.
         checked = subprocess.run([sys.executable, str(installed / 'scripts/skill_check.py'), str(installed.parent)], capture_output=True, text=True)
         assert (checked.returncode, checked.stdout) == (0, 'total 0\n'), checked.stderr + checked.stdout
-        reader = installed.parent / 'developer-thinking/scripts/read_rules.py'
-        selected = subprocess.run([sys.executable, str(reader), 'product', 'implement', 'failure', 'implement'], capture_output=True, text=True)
-        assert selected.returncode == 0, selected.stderr
-        assert '- 필요할 때만 읽기: 결과가 다른 미확정 설계 선택' in selected.stdout
-        assert '- 필요할 때만 읽기: 코드에 들어간 인터페이스 문서' in selected.stdout
-        assert selected.stdout.index('# Code Style') < selected.stdout.index('## 실패 처리')
-        for heading in ('조건별 읽기', '원칙', '구현', '실패 처리', '검증'):
-            assert selected.stdout.count(f'\n## {heading}\n') == 1
-        review = subprocess.run([sys.executable, str(reader), 'review'], capture_output=True, text=True)
-        assert review.returncode == 0, review.stderr
-        assert '## 구현' not in review.stdout and '## 실패 처리' not in review.stdout
-        reader = installed.parent / 'code-style/scripts/read_rules.py'
-        command = [sys.executable, str(reader), '--ids', 'CS-ERROR', 'CS-TEST', 'CS-ERROR']
-        original = subprocess.run(command, capture_output=True, text=True)
-        plain = subprocess.run([*command, '--text'], capture_output=True, text=True)
-        assert original.returncode == plain.returncode == 0
-        for row in json.loads(original.stdout):
-            assert plain.stdout.count(row['text']) == 1
-        invalid = subprocess.run([sys.executable, str(reader), '--catalog', '--text'], capture_output=True, text=True)
-        assert invalid.returncode == 2 and not invalid.stdout
-        _check_code_style_language_reader(reader, installed.parent)
+        _check_rule_reader(installed.parent / 'just-mode/scripts/rules/read_rules.py', install_home / 'work' / f'{installed.parent.parent.name}-reader')
         _check_installed_rule_hooks(installed.parent, install_home / 'work' / installed.parent.parent.name)
 
     with zipfile.ZipFile(install_home / 'dist/skill-sync.zip') as archive:
@@ -240,22 +220,16 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str, w
     repeated = subprocess.run(shlex.split(command), capture_output=True, text=True, env=env)
     assert '전달 완료' in repeated.stdout
     assert not invoke('PreToolUse')
-    reader = hook.parents[3] / 'developer-thinking/scripts/read_rules.py'
-    query = {'command': f'{sys.executable} {reader} implement'}
-    rewritten = invoke('PreToolUse', tool_input=query)['hookSpecificOutput']['updatedInput']
-    reused = subprocess.run(shlex.split(rewritten['command']), capture_output=True, text=True, env=env)
-    assert reused.returncode == 0 and '전달 완료' in reused.stdout
-    style = hook.parents[3] / 'code-style/scripts/read_rules.py'
-    for arguments in ('--ids=CS-ERROR --text --language=python', '--ids CS-ERROR --text --language python'):
-        query_input = {'command': f'{sys.executable} {style} {arguments}'}
-        rewritten = invoke('PreToolUse', tool_input=query_input)['hookSpecificOutput']['updatedInput']
-        reused = subprocess.run(shlex.split(rewritten['command']), capture_output=True, text=True, env=env)
-        assert reused.returncode == 0 and '전달 완료' in reused.stdout
-    for arguments in ('--ids CS-NAEM --text', '--ids CS-ERROR --text --language=Py/x', '--ids CS-ERROR --text --language=missing'):
-        invalid = f'{sys.executable} {style} {arguments}'
+    reader = hook.parents[1] / 'rules/read_rules.py'
+    for arguments in ('tool.py', '--ids CS-ERROR CS-TEST', '--ids=CS-ERROR'):
+        rewritten = invoke('PreToolUse', tool_input={'command': f'{sys.executable} {reader} {arguments}'})['hookSpecificOutput']['updatedInput']
+        reused = subprocess.run(shlex.split(rewritten['command']), capture_output=True, text=True, env=env, cwd=work)
+        assert reused.returncode == 0 and '전달 완료' in reused.stdout, arguments
+    for arguments in ('--ids CS-NAEM', '--ids CS-ERROR --check', 'notes.md'):
+        invalid = f'{sys.executable} {reader} {arguments}'
         assert not invoke('PreToolUse', tool_input={'command': invalid})
-        failed = subprocess.run(shlex.split(invalid), capture_output=True, text=True, env=env)
-        assert (failed.returncode, failed.stdout) == (2, '')
+        failed = subprocess.run(shlex.split(invalid), capture_output=True, text=True, env=env, cwd=work)
+        assert (failed.returncode, failed.stdout) == (2, ''), arguments
     patch = '*** Begin Patch\n*** Update File: tool.py\n@@\n+def added():\n+    raise ValueError()\n*** End Patch'
     for field in ('command', 'patch'):
         assert invoke('PreToolUse', session_id=session + '-patch-' + field, tool_name='apply_patch', tool_input={field: patch})['hookSpecificOutput']['permissionDecision'] == 'deny'
@@ -263,6 +237,7 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str, w
     assert invoke('PreToolUse', agent_id='separate-worker')['hookSpecificOutput']['permissionDecision'] == 'deny'
     fresh = {'session_id': session + '-query-first'}
     invoke('SessionStart', **fresh)
+    query = {'command': f'{sys.executable} {reader} --ids CS-CORE'}
     rewritten = invoke('PreToolUse', tool_input=query, **fresh)['hookSpecificOutput']['updatedInput']
     prior = subprocess.run(shlex.split(rewritten['command']), capture_output=True, text=True, env=env)
     assert prior.returncode == 0 and '# Code Style' in prior.stdout
@@ -281,11 +256,11 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str, w
     assert not invoke('PreToolUse', tool_name='Bash', tool_input={'command': 'true'})
     assert invoke('PreToolUse')['hookSpecificOutput']['permissionDecision'] == 'deny'
     for suffix in ('\ntouch source.py', ' "$(touch source.py)"', ' `touch source.py`', '; touch source.py'):
-        unsafe = f'{sys.executable} {style} --catalog' + suffix
+        unsafe = f'{sys.executable} {reader} tool.py' + suffix
         assert not invoke('PreToolUse', tool_name='Bash', tool_input={'command': unsafe})  # 조회 재작성 없음, 셸은 강제 대상 아님
-    string_query = invoke('PreToolUse', tool_name='Bash', tool_input=f'{sys.executable} {reader} implement')
+    string_query = invoke('PreToolUse', tool_name='Bash', tool_input=f'{sys.executable} {reader} {target}')
     assert '--pending' in string_query['hookSpecificOutput']['updatedInput']['command']
-    rule_source = style.parents[1] / 'references/structure.md'
+    rule_source = hook.parents[3] / 'code-style/references/structure.md'
     original = rule_source.read_bytes()
     try:
         rule_source.write_text('## temporarily unavailable\n', encoding='utf-8')
@@ -297,75 +272,53 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str, w
     assert invoke('PreToolUse')['hookSpecificOutput']['permissionDecision'] == 'deny'
 
 
-# #58: code-style 조회의 --language 공개 계약. 실패는 종료 2와 빈 stdout.
-def _check_code_style_language_reader(reader: Path, skills: Path) -> None:
+# 규칙 조회기 공개 계약: 파일 종류별 선택, ID 조회, 해시 대조. 실패는 종료 2와 빈 stdout.
+def _check_rule_reader(reader: Path, work: Path) -> None:
+    skills = reader.parents[3]
+    work.mkdir(parents=True, exist_ok=True)
+
     def run(*arguments: str) -> subprocess.CompletedProcess[str]:
-        return subprocess.run([sys.executable, str(reader), *arguments], capture_output=True, text=True)
+        return subprocess.run([sys.executable, str(reader), *arguments], capture_output=True, text=True, cwd=work, check=False)
 
-    language = (skills / 'code-style-python/SKILL.md').read_text()
-    cost = (skills / 'code-style/references/cost.md').read_text()
-    rows = json.loads(run('--ids', 'CS-ERROR', 'CS-COST').stdout)
-    selected = run('--ids', 'CS-ERROR', 'CS-COST', 'CS-ERROR', '--text', '--language', 'python', 'python')
+    checked = run('--check')
+    assert (checked.returncode, checked.stdout.strip()) == (0, f"rules {len(json.loads((reader.parent / 'rule-map.json').read_text())['rules'])}, changed 0"), checked.stderr
+    python = (skills / 'code-style-python/SKILL.md').read_text().split('\n---\n', 1)[1].lstrip('\n')
+    selected = run('tool.py', 'tool.py')
     assert selected.returncode == 0, selected.stderr
-    for text in (*(row['text'] for row in rows), language, cost):
-        assert selected.stdout.count(text) == 1
-    assert [selected.stdout.count(f'<!-- {name} -->') for name in ('code-style-python/SKILL.md', 'code-style/references/cost.md')] == [1, 1]
-    assert selected.stdout.count('<!-- CS-LANGUAGE |') == 1
-    assert selected.stdout.index('<!-- CS-LANGUAGE |') < selected.stdout.index('<!-- CS-ERROR |')
+    assert selected.stdout.count(python) == 1
+    assert selected.stdout.index('<!-- principle-prove-it-works |') < selected.stdout.index('<!-- CS-CORE |') < selected.stdout.index('<!-- code-style-python |')
+    typescript, javascript = run('view.ts'), run('view.js')
+    assert '## TypeScript 전용' in typescript.stdout and '<!-- principle-type-system-discipline |' in typescript.stdout
+    assert '## TypeScript 전용' not in javascript.stdout and '## 이름' in javascript.stdout and 'code-style-python' not in javascript.stdout
+    repeated = run('--ids', 'CS-ERROR', 'CS-TEST', 'CS-ERROR')
+    assert repeated.returncode == 0 and repeated.stdout.count('<!-- CS-ERROR |') == 1 and repeated.stdout.count('<!-- CS-TEST |') == 1
 
-    rust = (skills / 'code-style-rust/SKILL.md').read_text()
-    for arguments in (
-        ('--language', 'python', '--language', 'rust'),
-        ('--language', 'python', 'rust', '--language', 'python'),
-    ):
-        merged = run('--ids', 'CS-ERROR', '--text', *arguments)
-        assert merged.returncode == 0, merged.stderr
-        assert (merged.stdout.count(language), merged.stdout.count(rust)) == (1, 1), arguments
-
-    unselected = run('--ids', 'CS-ERROR', '--text')
-    assert unselected.returncode == 0, unselected.stderr
-    assert language not in unselected.stdout and cost not in unselected.stdout and 'CS-LANGUAGE' not in unselected.stdout
-
-    for arguments in (
-        ('--ids', 'CS-ERROR', '--text', '--language', 'Python'),
-        ('--ids', 'CS-ERROR', '--text', '--language', 'python', '../python'),
-        ('--ids', 'CS-ERROR', '--text', '--language', 'missing-language'),
-        ('--ids', 'CS-ERROR', '--language', 'python'),
-        ('--catalog', '--text', '--language', 'python'),
-        ('--text', '--language', 'python'),
-        ('--ids', 'CS-ERROR', '--text', '--language'),
-    ):
+    for arguments in (('--ids', 'CS-NAEM'), ('--ids', 'CS-ERROR', '--check'), ('notes.md',), (), ('--ids',)):
         failed = run(*arguments)
         assert (failed.returncode, failed.stdout) == (2, ''), arguments
 
-    for removed, arguments in (
-        (skills / 'code-style-python/SKILL.md', ('--ids', 'CS-ERROR', '--text', '--language', 'python')),
-        (skills / 'code-style/references/cost.md', ('--ids', 'CS-ERROR', 'CS-COST', '--text')),
-    ):
-        content = removed.read_bytes()
-        removed.unlink()
-        try:
-            failed = run(*arguments)
-        finally:
-            removed.write_bytes(content)
-        assert (failed.returncode, failed.stdout) == (2, ''), removed
+    removed = skills / 'code-style-python/SKILL.md'
+    content = removed.read_bytes()
+    removed.unlink()
+    try:
+        failed = run('tool.py')
+    finally:
+        removed.write_bytes(content)
+    assert (failed.returncode, failed.stdout) == (2, '')
 
-    # 같은 ID가 다른 절을 가리키면 마지막 항목으로 덮어쓰지 않고 거부.
-    catalog = json.loads((skills / 'code-style/references/rule-map.json').read_text())
-    first, second = catalog['sections'][:2]
-    duplicate = json.dumps({'sections': [*catalog['sections'], {**first, 'title': second['title']}]})
+    catalog = reader.parent / 'rule-map.json'
     for source, replacements, arguments in (
-        (skills / 'code-style/references/rule-map.json', ('null', '{"sections": null}', '{"sections": [null]}', '{"sections": [{}]}'), ('--catalog',)),
-        (skills / 'code-style/references/rule-map.json', (duplicate,), ('--ids', first['id'], '--text')),
-        (skills / 'code-style/references/errors.md', ('## missing\n',), ('--ids', 'CS-ERROR', '--text')),
+        (catalog, ('null', '{"rules": null, "select": []}', '{"rules": {"x": null}, "select": []}', '{"rules": {}, "select": [{"rules": ["x"]}]}'), ('--ids', 'CS-ERROR')),
+        (skills / 'code-style/references/structure.md', ('## missing\n',), ('--ids', 'CS-NAME')),
+        (skills / 'code-style/references/errors.md', ('## changed\n',), ('--ids', 'CS-ERROR')),
     ):
         content = source.read_bytes()
         try:
             for replacement in replacements:
                 source.write_text(replacement, encoding='utf-8')
                 failed = run(*arguments)
-                assert (failed.returncode, failed.stdout) == (2, ''), source
-                assert str(source) in failed.stderr and 'Traceback' not in failed.stderr
+                assert (failed.returncode, failed.stdout) == (2, ''), (source, replacement)
+                assert 'Traceback' not in failed.stderr and ('rule' in failed.stderr or str(source) in failed.stderr), failed.stderr
         finally:
             source.write_bytes(content)
 

@@ -6,9 +6,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 LABELS = {'control': '대조', 'flat': 'H-flat', 'tree': 'H-tree', 'hybrid': 'H-hybrid'}
 
-# cost: time O(n), heap O(n), stack O(1), io 2
-# vars: n = 집계 JSON 크기
-# basis: estimate
 def main() -> None:
     summary = json.loads((ROOT / 'data/aggregates.json').read_text())
     rows = []

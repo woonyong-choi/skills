@@ -19,9 +19,6 @@ class SourceError(Exception):
     """원본 탐색 실패. 원인은 이미 stderr에 출력됨."""
 
 
-# cost: time O(n + s) + 도구 실행 시간, heap O(n + s), stack O(1), io O(n)
-# vars: n = 원본 경로 글자 수, s = 자식 프로세스 출력 크기
-# basis: estimate
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sources", nargs="*")
@@ -76,9 +73,6 @@ def main(argv: list[str]) -> int:
         return 1
 
 
-# cost: time O(n), heap O(n), stack O(1), io 2
-# vars: n = git이 출력한 경로 바이트 수
-# basis: estimate
 def _tracked_sources() -> list[str]:
     """저장소 루트의 docs/assets/ 아래 추적 원본. 옛 형식도 넣어 변환 전 실패시킨다.
     하위 폴더에서 실행해도 루트 기준으로 찾고, 경로는 현재 위치 기준으로 돌려준다."""
@@ -90,17 +84,11 @@ def _tracked_sources() -> list[str]:
     ]
 
 
-# cost: time O(s), heap O(s), stack O(1), io 1
-# vars: s = git 출력 크기
-# basis: estimate
 def _repository_root() -> Path:
     """현재 위치가 속한 저장소 루트."""
     return Path(_git("rev-parse", "--show-toplevel").decode("utf-8").strip())
 
 
-# cost: time O(s), heap O(s), stack O(1), io 1
-# vars: s = git 출력 크기
-# basis: estimate
 def _git(*arguments: str) -> bytes:
     """git 출력. 실패하면 git stderr를 그대로 보여 주고 실패를 올린다."""
     result = subprocess.run(["git", *arguments], capture_output=True)

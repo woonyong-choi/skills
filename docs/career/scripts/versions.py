@@ -30,9 +30,6 @@ class CareerError(Exception):
     """검사·확정 실패. 메시지가 사용자에게 보일 이유"""
 
 
-# cost: time O(n), heap O(1), stack O(1)
-# vars: n = 원문 글자 수
-# basis: estimate
 def bracket_end(text: str, start: int) -> int:
     """text[start] == '['인 내용 블록의 닫는 괄호 다음 위치. 역슬래시로 막은 괄호는 건너뜀"""
     depth = 0
@@ -52,9 +49,6 @@ def bracket_end(text: str, start: int) -> int:
     raise CareerError(f"닫히지 않은 괄호: {text[start:start + 30]!r}")
 
 
-# cost: time O(n * m), heap O(n), stack O(d)
-# vars: n = 원문 글자 수, m = 변경 표시 수, d = 표시 중첩 깊이
-# basis: estimate
 def resolve(text: str) -> str:
     """변경 표시를 반영한 깨끗한 원문: added→본문, changed→새 문장, removed→삭제(코드 안은 none), 범례 줄 삭제"""
     text = LEGEND.sub("", text)
@@ -84,9 +78,6 @@ def resolve(text: str) -> str:
     return "".join(out)
 
 
-# cost: time O(n), heap O(1), stack O(1)
-# vars: n = 원문 글자 수
-# basis: estimate
 def count_marks(text: str) -> dict[str, int]:
     names = {"added": "추가", "changed": "바뀜", "removed": "삭제"}
     counts = {label: 0 for label in names.values()}
@@ -95,17 +86,11 @@ def count_marks(text: str) -> dict[str, int]:
     return counts
 
 
-# cost: time O(f), heap O(f), stack O(1), io O(f)
-# vars: f = 문서 폴더 파일 수
-# basis: estimate
 def numbered(folder: Path) -> list[int]:
     pattern = re.compile(rf"^{re.escape(folder.name)}-(\d{{4}})\.typ$")
     return sorted(int(m.group(1)) for path in folder.iterdir() if (m := pattern.match(path.name)))
 
 
-# cost: time O(c) + 컴파일 시간, heap O(c), stack O(1), io O(1)
-# vars: c = 원문 글자 수
-# basis: estimate
 def compile_pdf(source: Path, root: Path) -> Path:
     """표시 끈 PDF. 공고 폴더를 root로 두어 /career.typ, /figures 참조 허용"""
     pdf = source.with_suffix(".pdf")
@@ -120,9 +105,6 @@ def compile_pdf(source: Path, root: Path) -> Path:
     return pdf
 
 
-# cost: time O(d), heap O(d), stack O(1), io O(1)
-# vars: d = 경로 깊이
-# basis: estimate
 def career_root() -> Path:
     """경력 원본 폴더: CAREER_ROOT, 없으면 <설정 폴더>/career.json의 root. 설정 폴더는 SKILLS_CONFIG_DIR, 없으면 ~/.config/skills"""
     value = os.environ.get("CAREER_ROOT")
@@ -143,9 +125,6 @@ def inside_root(folder: Path) -> None:
         raise CareerError(f"경력 원본 폴더 밖: {folder}")
 
 
-# cost: time O(c) + 컴파일 시간, heap O(c), stack O(1), io O(f)
-# vars: c = 작업 파일 글자 수, f = 문서 폴더 파일 수
-# basis: estimate
 def confirm(folder: Path, build: bool = True) -> list[Path]:
     """작업 파일을 깨끗하게 정리해 다음 번호로 저장하고 작업 파일도 같은 상태로 갱신"""
     inside_root(folder)
@@ -168,9 +147,6 @@ def confirm(folder: Path, build: bool = True) -> list[Path]:
     return written
 
 
-# cost: time O(f + s), heap O(f + s), stack O(1), io O(f)
-# vars: f = 공고 폴더 파일 수, s = 전략.md 글자 수
-# basis: estimate
 def check(posting: Path) -> list[str]:
     """공고 폴더 구조·양식 해시·전략.md 절·문서 폴더 파일 이름 검사. 문제 목록 반환"""
     problems = []
@@ -213,9 +189,6 @@ def check(posting: Path) -> list[str]:
     return problems
 
 
-# cost: time O(f) + 컴파일 시간, heap O(f), stack O(1), io O(f)
-# vars: f = 처리 파일 수
-# basis: estimate
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("place", "confirm", "marks", "check"))

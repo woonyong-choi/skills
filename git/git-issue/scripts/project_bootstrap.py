@@ -154,8 +154,6 @@ class ProjectBootstrap(ProjectStatus):
         return selected[0]
 
 
-# cost: time O(1), heap O(1), stack O(1), io O(1)
-# basis: estimate
 @contextlib.contextmanager
 def repository_lock(repo: str) -> Iterator[None]:
     root = Path.home() / ".config/skills/project-locks"
@@ -169,9 +167,6 @@ def repository_lock(repo: str) -> Iterator[None]:
             fcntl.flock(handle, fcntl.LOCK_UN)
 
 
-# cost: time O(n), heap O(n), stack O(1), io O(p)
-# vars: n = returned projects and fields, p = GitHub query and mutation calls
-# basis: estimate
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", required=True, help="owner/name")

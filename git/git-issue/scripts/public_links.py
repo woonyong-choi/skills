@@ -51,9 +51,6 @@ class _Finding:
 
 
 class _Context:
-    # cost: time O(f), heap O(f), stack O(1), io 5
-    # vars: f = HEAD 파일 목록 크기
-    # basis: estimate
     def __init__(self, root: Path, remote_name: str = "origin") -> None:
         self.root = Path(_run(["git", "-C", str(root), "rev-parse", "--show-toplevel"]))
         remote = self.git("remote", "get-url", remote_name)
@@ -76,9 +73,6 @@ class _Context:
     def git(self, *args: str) -> str:
         return _run(["git", "-C", str(self.root), *args])
 
-    # cost: time O(r), heap O(r), stack O(1), io 0 또는 1
-    # vars: r = 저장소 조회 응답 크기. 같은 저장소는 실행 중 재조회 제외
-    # basis: estimate
     def lookup(self, name: str) -> _Repository:
         key = name.removesuffix(".git").lower()
         if key not in self.repositories:
@@ -107,9 +101,6 @@ class _Context:
         return self.repositories[key]
 
 
-# cost: time O(o), heap O(o), stack O(1), io 1
-# vars: o = 외부 명령 출력 크기. 명령 하나당 제한 30초
-# basis: estimate
 def _run(command: list[str]) -> str:
     result = subprocess.run(
         command, capture_output=True, text=True, timeout=30, check=True
@@ -273,9 +264,6 @@ def _fix(text: str, findings: list[_Finding]) -> str:
     return text
 
 
-# cost: time O(n·p + p² + f), heap O(n + p + f), stack O(1), io O(p + 1)
-# vars: n = 본문 길이, p = 경로와 링크 수, f = HEAD 파일 목록 크기
-# basis: estimate
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

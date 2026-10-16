@@ -19,9 +19,6 @@ import install
 SCRIPTS = Path(__file__).resolve().parent
 
 
-# cost: time O(b + f log f), heap O(b + f), stack O(d), io O(f)
-# vars: b = 원본 바이트 수, f = 파일 수, d = 폴더 깊이
-# basis: estimate
 def source_record(skill: Path, dist: Path) -> dict[str, str]:
     content = (skill / "SKILL.md").read_bytes()
     description = re.search(r'^description: "(.*)"$', content.decode(), re.M)
@@ -31,9 +28,6 @@ def source_record(skill: Path, dist: Path) -> dict[str, str]:
             "skillHash": hashlib.sha256(content).hexdigest(), "path": str(dist / f"{skill.name}.zip")}
 
 
-# cost: time O(n·b), heap O(b + n), stack O(1), io O(n·t)
-# vars: n = 스킬 수, b = SKILL.md 바이트 수, t = 설치 도구 수
-# basis: estimate
 def verify_local(records: list[dict[str, str]], roots: dict[str, Path], *, account_verified: bool) -> bool:
     print("| 스킬 | " + " | ".join(roots) + " | zip | 계정 이름·description·영수증 |")
     print("|---|" + "---|" * (len(roots) + 2))
@@ -53,9 +47,6 @@ def verify_local(records: list[dict[str, str]], roots: dict[str, Path], *, accou
     return success
 
 
-# cost: time O(n·b + n·f log f), heap O(n·b + f), stack O(d), io O(n·f + q)
-# vars: n = 스킬 수, b = 스킬 바이트 수, f = 파일 수, d = 폴더 깊이, q = 계정 UI 조회 횟수
-# basis: estimate
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source")

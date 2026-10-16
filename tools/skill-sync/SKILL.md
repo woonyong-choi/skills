@@ -51,8 +51,8 @@ python3 <이 스킬 폴더>/scripts/install.py
 - Claude 계정 zip 구성: 루트 스킬 폴더의 `SKILL.md` 하나만 포함. `SKILL.md`가 있는 하위 폴더는 그 안의 파일까지 제외, 나머지 보조 파일은 기존 제외 규칙에 따라 포함. 세 도구 설치본과 zip 모두 `tests/`·`.claude-plugin/`·`.codex-plugin/` 제외. 플러그인은 별도 설치하여 스킬 폴더의 중복 자동 로드 방지
 - zip 검사: 기존 zip의 파일 목록·중복·내용을 배포 대상 원본과 대조, 손상·불일치 시 재생성. 새 zip도 같은 검사 후 교체, 위반 시 설치 실패(종료 코드 1)
 - 배포 판정: zip 폴더의 `.repo-skills.json`은 생성에 사용한 원본 해시, 계정 업로드 영수증으로 사용 금지. `Claude 계정 zip 재생성: 없음`도 계정 상태 미확인, 변경 목록만으로 배포 완료 판정 금지
-- 검사 의존 스킬: 검사 스크립트와 같은 원본 루트의 `code/code-style/scripts/check_cost_comments.py`를 우선 사용, 없으면 평탄한 설치 루트의 `code-style/scripts/check_cost_comments.py` 사용. 검사 대상 root와 별개인 실행 위치 기준 의존, 누락 시 입력 오류. 참조 링크는 원본형과 평탄한 설치형 양쪽에서 확인
-- skill_check: frontmatter·description 형식, 이름과 폴더 일치, 머리 참조·절 구조·용어·규칙 복제·스크립트 인자와 출력·비용 주석 검사. 판정 기준과 자동 검사 한계: [일관성 검사 기준](references/consistency.md). `agents/openai.yaml`의 필수 필드와 스킬 호출 이름도 검사. 목록·표의 끝말은 스킬 작성 형식 기준으로 검사. 종료 코드: 위반 1, 입력 오류 2, 전체 통과 0
+- 참조 링크 검사: 원본형과 평탄한 설치형 양쪽에서 확인
+- skill_check: frontmatter·description 형식, 이름과 폴더 일치, 머리 참조·절 구조·용어·규칙 복제·스크립트 인자와 출력 검사. 판정 기준과 자동 검사 한계: [일관성 검사 기준](references/consistency.md). `agents/openai.yaml`의 필수 필드와 스킬 호출 이름도 검사. 목록·표의 끝말은 스킬 작성 형식 기준으로 검사. 종료 코드: 위반 1, 입력 오류 2, 전체 통과 0
 - 형식만 검사하는 스킬: 폴더에 `FORMAT_ONLY` 파일이 있으면(just 묶음) 이 저장소 문체 규칙 대신 frontmatter·이름·설명 길이만 검사
 
 ### Claude Code와 Codex 설치
