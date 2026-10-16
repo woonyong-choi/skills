@@ -110,7 +110,7 @@ export function judgedSections(body) {
       continue;
     }
     if (fence) {
-      if (grid && /^\s*-\s+src:/.test(line)) current.grids[current.grids.length - 1] += 1;
+      if (grid) current.grids[current.grids.length - 1] += (line.match(/^\s*-\s+src:|"src"\s*:/g) ?? []).length;
       continue;
     }
     const heading = line.match(/^##\s+(.+)$/);
@@ -143,4 +143,87 @@ export function cssViolations(css) {
     }
   }
   return found;
+}
+
+// ---- 설명 강제 자동 검사 ----
+const EXAMPLE_SLOT = /(?:^|[\s(])(예를 들면|예|근거):\s*(.*)$/;
+const CONCRETE = /\d|`|[A-Za-z]|["“”'‘’「」]/;
+const CODE_NAME = /`?\b(?:[a-z][a-z0-9]*_[a-z0-9_]+(?:\.[a-z]+)?|[\w-]+\.(?:py|mjs|js|ts|sh|json))\b`?/g;
+const UNIT = /(\d+(?:\.\d+)?)\s*(px|ms|%|KB|MB)(?![A-Za-z])/g;
+const SENTENCE_LIMIT = 80;
+
+// cost: time O(w), heap O(w), stack O(1)
+// vars: w = 목록 파일 글자 수
+// basis: estimate
+/** 낯선 말 목록 파일(references/unfamiliar-words.md)의 `- 말` 줄 */
+export function readWords(text) {
+  return [...text.matchAll(/^-\s+(\S+)\s*$/gm)].map((match) => match[1].replace(/[`:]/g, ''));
+}
+
+// cost: time O(n), heap O(n), stack O(1)
+// vars: n = 원문 글자 수
+// basis: estimate
+/** 검사할 본문 줄: front matter와 코드 펜스 안은 빈 줄로 두어 줄 번호를 지킨다 */
+function proseLines(source) {
+  const lines = source.split('\n');
+  const end = lines[0] === '---' ? lines.indexOf('---', 1) : -1;
+  let fence = '';
+  return lines.map((line, at) => {
+    if (at <= end) return '';
+    const step = fenceStep(line, fence);
+    if (step !== undefined) {
+      fence = step;
+      return '';
+    }
+    return fence ? '' : line;
+  });
+}
+
+// cost: time O(1), heap O(1), stack O(1)
+// vars: 없음
+// basis: estimate
+/** 글자 수를 셀 문장: 링크 주소와 마크다운 표식 제외 */
+function visible(text) {
+  return text.replace(/\]\([^)]*\)/g, ']').replace(/[`*_[\]]/g, '').replace(/^\s*(?:[-*]|\d+\.)\s+/, '').replace(/^#+\s+/, '').trim();
+}
+
+// cost: time O(n * w), heap O(n), stack O(1)
+// vars: n = 원문 글자 수, w = 낯선 말 수
+// basis: estimate
+/**
+ * 설명 강제 검사. 걸리면 { line, reason } 목록(줄 번호는 원문 기준 1부터).
+ * 빈 칸·남은 {자리}, 숫자·이름·코드 없는 예·근거, 풀이 없이 처음 나온 낯선 말, 80자 넘는 문장, 비교 대상 없는 단위 숫자
+ */
+export function lintSource(source, words = []) {
+  const problems = [];
+  const seen = new Set();
+  const add = (line, reason) => problems.push({ line, reason });
+  proseLines(source).forEach((line, at) => {
+    const number = at + 1;
+    if (!line.trim()) return;
+    if (/^\s*-\s+[^:]+:\s*$/.test(line)) add(number, '빈 칸');
+    const placeholder = line.replace(/`[^`]*`/g, '').match(/\{[^}\n]*\}/);
+    if (placeholder) add(number, `채우지 않은 자리 ${placeholder[0]}`);
+    const slot = line.match(EXAMPLE_SLOT);
+    if (slot && slot[2].trim() && !CONCRETE.test(slot[2])) add(number, `예에 숫자·고유 이름·코드 표기 없음: ${slot[1]}`);
+    const names = [...words.map((word) => ({ word, pattern: new RegExp(`${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[가-힣]*`, 'g') })), { word: undefined, pattern: CODE_NAME }];
+    for (const { word, pattern } of names) {
+      for (const hit of line.matchAll(pattern)) {
+        const name = word ?? hit[0].replace(/`/g, '');
+        if (seen.has(name)) continue;
+        seen.add(name);
+        if (!/^\s*\(/.test(line.slice(hit.index + hit[0].length))) add(number, `낯선 말 '${name}' 풀이 없음(처음 나올 때 괄호로 풀이)`);
+      }
+    }
+    for (const sentence of visible(line).split(/(?<=[.!?])\s+/)) {
+      if ([...sentence].length > SENTENCE_LIMIT) add(number, `문장 ${[...sentence].length}자, ${SENTENCE_LIMIT}자 이하로 나누기`);
+      for (const hit of sentence.matchAll(UNIT)) {
+        const before = sentence.slice(0, hit.index);
+        if (before.split('(').length > before.split(')').length) continue;
+        const after = sentence.slice(hit.index + hit[0].length);
+        if (!/^\s*(?:[가-힣]+\s*)?\(/.test(after) && !/^\s*(?:보다|의)/.test(after) && !/보다/.test(sentence)) add(number, `${hit[1]}${hit[2]}에 비교 대상 없음(괄호 설명 또는 ~보다)`);
+      }
+    }
+  });
+  return problems;
 }

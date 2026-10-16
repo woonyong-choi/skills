@@ -2,16 +2,17 @@
 // 보고서 원문 Markdown을 document-engine으로 그려 정본 문서 배치에 조립한 보고서 폴더를 만든다.
 // 인자: 원문 Markdown 경로, 선택 출력 폴더(기본 원문 폴더)
 // 출력: 출력 폴더의 index.html, 원문 Markdown, theme/(정본 CSS·글꼴), report.css, report.js, diagrams/, assets/. stdout index.html 경로, stderr 실패 이유, 종료 0 성공·1 실패·2 인자 오류
-// 실행 조건: Node.js 22.12 이상, 이 폴더에서 npm ci. 실패하면 기존 출력 폴더의 파일 유지
+// 실행 조건: Node.js 22.12 이상, 이 폴더에서 npm ci. 설명 검사·원문 규칙·도표 실패면 기존 출력 폴더의 파일 유지
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { judgedSections, splitSource } from './report-core.mjs';
+import { judgedSections, lintSource, readWords, splitSource } from './report-core.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ASSETS = join(HERE, '..', 'assets');
+const WORDS = join(HERE, '..', 'references', 'unfamiliar-words.md');
 const ASSET_PREFIX = '/__report__/assets/';
 
 // cost: time O(1), heap O(1), stack O(1)
@@ -59,6 +60,8 @@ function copyInto(stage, files) {
 export async function buildReport(sourcePath, outDir = dirname(sourcePath)) {
   const source = readFileSync(sourcePath, 'utf8');
   const { meta, summary, body } = splitSource(source);
+  const problems = lintSource(source, readWords(readFileSync(WORDS, 'utf8')));
+  if (problems.length) throw new Error(`설명 검사 ${problems.length}건\n${problems.map((item) => `${item.line}줄: ${item.reason}`).join('\n')}`);
   const engine = await import('document-engine');
   const ui = await import('@woonyong-choi/design-tokens/components');
   const themeRoot = fileURLToPath(engine.DEFAULT_THEME_FILES.root);

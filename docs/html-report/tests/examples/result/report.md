@@ -1,29 +1,30 @@
 ---
 kind: result
-title: 문서 머리 간격 전후 확인
-target: homepage
-version: pr-120
+title: PR #120 문서 제목 아래 간격
+target: woonyong-choi/homepage
+version: PR #120@a1b2c3d
 ---
 
-문서 제목 아래 간격을 정본 토큰으로 바꾼 결과를 확인한다.
+확인 항목 1개 중 1개 충족, 0개 남은 문제. 항목마다 승인·재작업·보류를 고른 뒤 결과 복사를 눌러 붙여 넣으면 진행
 
 ## 제목 아래 간격
 
+- 요청: 제목과 첫 문단 사이를 본문 문단 간격과 같게
+- 반영: 제목 아래 간격을 디자인 저장소의 문단 간격 값으로 교체
+
 ```ui:figure-grid
-columns: 2
-items:
-  - src: a.png
-    alt: 제목과 첫 문단 사이가 좁다
-    caption: 전
-  - src: b.png
-    alt: 제목과 첫 문단 사이가 본문 간격과 같다
-    caption: 후
+{ "columns": 2, "items": [
+  { "src": "a.png", "alt": "제목과 첫 문단 사이가 문단 간격보다 좁다", "caption": "main@9f8e7d6" },
+  { "src": "b.png", "alt": "제목과 첫 문단 사이가 문단 간격과 같다", "caption": "PR #120@a1b2c3d" }
+] }
 ```
 
+- 제목 아래 간격이 문단 간격과 같음: 충족. 근거: 두 간격 모두 24px(본문 글자 높이의 1.5배)
+
 :::note[판단]
-수용 조건 충족. 간격이 본문 문단 간격과 같다.
+수용 조건 충족. 남은 문제 없음
 :::
 
 ## 정리
 
-남은 문제 없음.
+- 제목 아래 간격: 충족
