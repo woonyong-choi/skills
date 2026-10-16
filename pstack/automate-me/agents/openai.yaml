@@ -1,0 +1,5 @@
+interface:
+  display_name: "automate-me"
+  default_prompt: "$automate-me [요청]"
+policy:
+  allow_implicit_invocation: false

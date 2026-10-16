@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-build-the-lever"
+  default_prompt: "$principle-build-the-lever [요청]"
+policy:
+  allow_implicit_invocation: false

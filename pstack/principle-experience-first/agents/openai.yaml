@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-experience-first"
+  default_prompt: "$principle-experience-first [요청]"
+policy:
+  allow_implicit_invocation: false

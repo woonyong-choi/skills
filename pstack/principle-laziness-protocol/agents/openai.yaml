@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle-laziness-protocol"
+  default_prompt: "$principle-laziness-protocol [요청]"
+policy:
+  allow_implicit_invocation: false

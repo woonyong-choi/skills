@@ -1,0 +1,5 @@
+interface:
+  display_name: "teach"
+  default_prompt: "$teach [요청]"
+policy:
+  allow_implicit_invocation: false

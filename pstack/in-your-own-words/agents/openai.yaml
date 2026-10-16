@@ -1,0 +1,5 @@
+interface:
+  display_name: "in-your-own-words"
+  default_prompt: "$in-your-own-words [요청]"
+policy:
+  allow_implicit_invocation: false

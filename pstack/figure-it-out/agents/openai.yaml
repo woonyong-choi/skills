@@ -1,0 +1,5 @@
+interface:
+  display_name: "figure-it-out"
+  default_prompt: "$figure-it-out [요청]"
+policy:
+  allow_implicit_invocation: false

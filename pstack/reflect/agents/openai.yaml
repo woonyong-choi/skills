@@ -1,0 +1,5 @@
+interface:
+  display_name: "reflect"
+  default_prompt: "$reflect [요청]"
+policy:
+  allow_implicit_invocation: false
