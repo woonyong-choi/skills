@@ -48,7 +48,29 @@
     return [...picks, '재작업', '보류'];
   }
 
-  globalThis.ReportCore = Object.freeze({ storageKey, result, category, choices });
+  // cost: time O(q), heap O(q), stack O(1)
+  // vars: q = 저장된 절 수
+  // basis: estimate
+  /** 저장 값 복원. 옛 형식·깨진 값은 버리고 빈 값으로 시작(choice 문자열, note 문자열만) */
+  function restore(raw) {
+    let parsed;
+    try {
+      parsed = JSON.parse(raw ?? '{}');
+    } catch {
+      return {};
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    const state = {};
+    for (const [id, entry] of Object.entries(parsed)) {
+      if (!entry || typeof entry !== 'object') continue;
+      const choice = typeof entry.choice === 'string' ? entry.choice : null;
+      const note = typeof entry.note === 'string' ? entry.note : '';
+      if (choice || note) state[id] = { choice, note };
+    }
+    return state;
+  }
+
+  globalThis.ReportCore = Object.freeze({ storageKey, result, category, choices, restore });
   if (typeof document === 'undefined') return;
 
   const root = document.documentElement;
@@ -151,12 +173,7 @@
 
   // ---- 판정 ----
   const key = storageKey(report);
-  let state = {};
-  try {
-    state = JSON.parse(read(key) ?? '{}') ?? {};
-  } catch {
-    state = {};
-  }
+  const state = restore(read(key));
   const save = () => write(key, JSON.stringify(state));
   const sections = new Map();
   let filter = 'all';
@@ -179,7 +196,10 @@
   }
   const copy = button('결과 복사', { class: 'report-copy' });
   copy.addEventListener('click', copyResult);
-  control.append(progress, filters, copy);
+  const scroller = document.createElement('div');
+  scroller.className = 'report-bar-scroll';
+  scroller.append(filters);
+  control.append(progress, scroller, copy);
 
   const marks = report.kind === 'decision' ? LETTERS : ['전', '후'];
   for (const question of report.questions) {
