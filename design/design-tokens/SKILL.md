@@ -33,7 +33,7 @@ description: "UI·아이콘의 시각 변경을 검수하거나 공통 토큰·�
 - 의미(semantic) → 용도. 테마마다 값 변경 → `color.accent`, `color.text.muted`, `space.card.pad` → 구성 요소 토큰, 코드
 - 구성 요소(component) → 한 구성 요소만의 값. 선택 → `button.height`, `tab.gap` → 그 구성 요소 코드
 
-- 한 구성 요소의 값만 바꾸고 다른 구성 요소의 값은 유지해야 하면 구성 요소 토큰 사용. 그런 변경이 필요하지 않으면 의미 토큰 직접 사용
+- 구성 요소 토큰: 한 구성 요소의 값만 바꾸고 다른 구성 요소의 값은 유지해야 할 때만. 그 밖은 의미 토큰 직접 사용
 - 기본 토큰만 직접 값(DTCG 색 객체·dimension 등). 의미·구성 요소 토큰의 값은 다른 토큰 참조 `{color.blue.600}`
 
 ## 이름
@@ -106,5 +106,5 @@ python3 <이 스킬 폴더>/scripts/check_tokens.py <검사할 폴더>
 - CSS 계열: 주석 밖 전체. 마크업 계열(`.html`, `.svg`, `.vue`, `.svelte`): `<style>`, `style` 속성, 표현 속성만. JavaScript 계열: 주석 밖 모든 문자열의 색, CSS·마크업 모양 문자열과 값 하나뿐인 문자열(`'12px'`)의 나머지 규칙, 코드의 토큰 경로(`tokens.color.blue['600']`), 스타일 객체(`style`, `sx`, `css`) 안 숫자
 - 제외: `tokens.json`, `tokens.dark.json`, 첫 줄에 생성물 표시가 있는 파일, `node_modules`, `dist`, `build`, `coverage`, `.git`, 비어 있지 않은 이유를 가진 `tokens-allow:` 줄
 - 출력 `total 0`까지 수정. 0이 아니면 종료 코드 1
-- 직접 확인: 이징 함수(`cubic-bezier()`, `ease` 등), 토큰 이름이 용도를 드러내는지, 구성 요소 토큰이 다른 구성 요소의 값을 유지한 채 그 구성 요소의 값만 바꾸는 데 필요한지, `style`·`sx`·`css` 밖 이름의 스타일 객체 숫자
+- 직접 확인: 이징 함수(`cubic-bezier()`, `ease` 등), 토큰 이름이 용도를 드러내는지, 구성 요소 토큰의 필요성(세 층 절 기준), `style`·`sx`·`css` 밖 이름의 스타일 객체 숫자
 - 화면 구현값의 하드코딩과 테스트 기대값 구분

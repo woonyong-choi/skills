@@ -10,7 +10,7 @@ description: "비공개 판단·판단 변경·작업 일지·원칙을 기록·
 - 필요할 때만 읽기: 판단이 공개 설계를 정했을 때 → repo-docs-decision
 
 - 진행·결정 상태는 이슈·Continuity 기록(git-issue). 이 스킬은 기록 기준을 통과한 판단과 사용자가 요청한 회고만
-- 형식: 일반 Markdown과 Obsidian 속성(YAML)만. html-report 사용 금지(html-report는 설명·선택 비교·전후 확인 3종의 브라우저 확인 전용)
+- 형식: 일반 Markdown과 Obsidian 속성(YAML)만. html-report 사용 금지(설명·선택 비교·전후 확인 3종의 브라우저 확인 전용)
 - 문장: 쉬운 설명 규칙(repo-docs `references/plain-language.md`)
 - repo-docs-decision 대상 판정을 통과한 판단: 공개 결정 기록 작성 필요를 보고, 사용자 승인 시 작성 후 이 기록 `관련` 속성에 그 경로 추가
 
