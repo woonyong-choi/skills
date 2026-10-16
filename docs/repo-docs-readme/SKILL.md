@@ -7,7 +7,7 @@ description: "저장소 루트 README.md와 영어판 README.en.md를 작성·�
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 루트 `README.md`와 `README.en.md`의 종류, 절 구성과 절 규칙, 이미지
-- 필요할 때만 읽기: 흐름·구조 그림, 데모 GIF 제작 → repo-docs-figures; README 갱신 뒤 `llms.txt` 재생성 → repo-docs-llms; 포트폴리오형 원본 → career `references/source.md`
+- 필요할 때만 읽기: 흐름·구조 그림, 데모 GIF 제작 → repo-docs-figures; README 갱신 뒤 `llms.txt` 재생성 → repo-docs-llms; 포트폴리오형 원본 → career-record `references/format.md`
 
 - 독자·답할 질문: repo-docs 문서 목록. 언어: repo-docs 언어. 영어판: 아래 영어판 절
 - 길이: 필수 정보와 핵심 사용 흐름 보존, 독립적으로 조회하는 세부는 `docs/` 링크
@@ -16,7 +16,7 @@ description: "저장소 루트 README.md와 영어판 README.en.md를 작성·�
 ## 종류
 
 - 오픈소스형: 남이 설치해 쓰는 저장소
-- 포트폴리오형: 내가 한 일을 보여 주는 저장소. 절 순서는 career 경력 원본 `cases/{사례}.md` 절 순서(문제 정의·제약 → 의사결정 → 구현 → 성과)와 일치, 원본 절을 그대로 이동
+- 포트폴리오형: 내가 한 일을 보여 주는 저장소. 절 순서는 경력 원본 `포트폴리오.md` 묶음 절 순서(해결한 문제 → 설계 결정 → 구현 → 결과)와 일치, 원본 절을 그대로 이동
 - 틀: [template.md](references/template.md)에서 종류 하나 선택. 절 이름·순서 그대로, 아래 조건이 없는 절은 생략
 
 ## 입력
