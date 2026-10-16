@@ -6,7 +6,7 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 # Git Branch
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
-- 범위: 브랜치 구조, 작업 단위, 브랜치 이름, PR 생성, 머지, 릴리스
+- 범위: 브랜치 구조, 작업 단위, 브랜치 이름, PR 생성, 머지, 릴리스. PR 스택 머지 순서·워크트리 정리는 just-mode 플레이북(`playbooks/shipping.md`, `playbooks/worktree-cleanup.md`)
 - 필요할 때만 읽기: 작업 선택, 시작 전 막힘 확인 → git-issue 다음 작업; 커밋 메시지, PR 제목, squash 메시지 작성 → git-commit; PR 본문 작성 → git-pull-request; 검사 범위·증거 확인 → code-style; PR 생성·머지 → git-issue `references/project-status.md` 필수 확인
 
 ## 구조
@@ -26,13 +26,13 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 
 ## 작업 단위
 
-이슈로 추적하는 작업 하나 = 브랜치 하나 = PR 하나 = 작업 주체 하나.
+작은 일: 이슈 하나 = 브랜치 하나 = PR 하나 = 작업 주체 하나. 큰 일: 하위 이슈마다 PR 하나를 쌓는 스택(just-mode `playbooks/shipping.md`)
 
 - 작업 이슈 연결·작은 후속 작업 재사용 기준: (git-issue 과업 연결과 기록)
 - 작업 주체: 이슈 담당자와 bind된 과업. 재개·인계는 이슈·작업본·기록 일치와 기존 작업자의 동시 수정 여부 대조, 세션 ID 변경만으로 다른 주체 판정 금지
 - `experiment` 이슈의 사전 등록 PR 여부와 결과 연결: repo-docs-experiment 흐름
 - 서로 독립된 추적 작업이면 이슈부터 분리
-- 큰 작업: 브랜치가 아니라 이슈를 하위 이슈로 분할. 하위 이슈마다 브랜치 하나
+- 큰 작업: 브랜치가 아니라 이슈를 하위 이슈로 분할. 하위 이슈마다 브랜치·PR 하나, 아래 PR부터 순서대로 머지
 
 ## 이름
 
@@ -64,8 +64,8 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 
 ## 작업 중
 
-- 분기: 최신 기본 브랜치에서 `git switch --no-track -c {브랜치} {원격}/{기본 브랜치}`
-- 저장소 정책이 병렬 작업을 허용하고 병렬 실행을 요청받은 경우: 에이전트마다 이슈 하나, 브랜치 하나, worktree 하나. `git worktree add --no-track ../{저장소}.wt/{브랜치의 / 를 - 로} -b {브랜치} {원격}/{기본 브랜치}`
+- 분기: 최신 기본 브랜치에서 새 worktree(just-mode `playbooks/opening-a-pr.md` 워크트리). `git worktree add --no-track ../{저장소}.wt/{브랜치의 / 를 - 로} -b {브랜치} {원격}/{기본 브랜치}`. 스택의 위 PR은 바로 아래 PR 브랜치에서 분기, PR base도 그 브랜치
+- 병렬 실행(사용자 요청, just 자율 실행·orchestrate): 에이전트마다 이슈 하나, 브랜치 하나, worktree 하나
 - 병렬 작업 시 같은 생성물·빌드 단위(crate, 패키지)의 검사 담당은 하나. 다른 에이전트는 자기 파일만 수정, 검사 실패 보고. 읽기 검토·독립 조사는 병행 허용
 - 검사 시작·종료 시 대상 HEAD 대조, 변경 여부 기록
 - 임시 폴더, 저장소 사본, 두 번째 clone 금지. 검사는 자기 worktree에서만
@@ -83,13 +83,15 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 - squash merge만
 - squash 메시지: git-commit 형식. 첫 줄은 PR 제목(번호 직접 기재 금지, ` (#{PR 번호})`는 GitHub 기본값), 본문은 PR의 `왜 필요한가`(비우기 금지), 꼬리말은 PR 본문과 같은 `Closes:`·`Refs:`
 - GitHub의 자동 커밋 목록 삭제. 작성 표시: (git-commit 금지)
-- 머지도 직접: 검사·CI 통과와 화면 확인(해당 시) 뒤 squash 머지와 정리까지 진행. 사용자가 보류를 말한 PR만 대기. 도구 권한으로 막히면 막힌 단계와 이유, 사용자 실행용 한 줄 명령 보고
-- 머지 뒤: 훅이 career-record 기록 확인을 한 줄 안내. 훅이 보지 못하는 머지(웹 화면, MCP 도구)는 머지한 에이전트가 같은 확인을 직접 실행
-- 머지 후 자기 브랜치 삭제: 원격, 로컬, worktree. 정리 스크립트로 한 번에(정리 절)
+- 머지도 직접: 머지 조건(git-pull-request 머지 조건) 충족 뒤 squash 머지와 정리까지 진행. 사용자가 보류를 말한 PR만 대기. 도구 권한으로 막히면 막힌 단계와 이유, 사용자 실행용 한 줄 명령 보고
+- 머지 뒤: 훅이 "경력 원본에 남길 성과인가" 확인을 한 줄 안내, 남길 성과면 hanger로 기록. 훅이 보지 못하는 머지(웹 화면, MCP 도구)는 머지한 에이전트가 같은 확인을 직접 실행
+- 머지 후 자기 브랜치 삭제: 원격, 로컬, worktree(정리 절)
 
 ## 정리
 
-머지 후 정리 또는 이슈 취소 정리 전 [cleanup.md](references/cleanup.md) 필수 확인
+- 머지된 워크트리·브랜치 정리: just-mode `playbooks/worktree-cleanup.md`의 점검(`worktree-audit.sh`)과 지우기 순서. 다른 작업의 worktree 정리 금지
+- 원격 작업 브랜치: 머지 뒤 `gh pr merge --squash --delete-branch` 또는 `git push {원격} --delete {브랜치}`
+- 이슈 취소: PR 닫기, 브랜치 직접 삭제
 
 ## 릴리스
 
@@ -100,5 +102,5 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 - 기본 브랜치·`v{major}` 직접 commit·push
 - 같은 이슈 브랜치 중복 생성, 다른 이슈 작업 섞기
 - 다른 주체의 브랜치 작업(commit, push 포함)
-- 요청 없는 rebase·force push
+- 요청 없는 rebase·force push. 예외: 스택 머지 뒤 위 PR을 기본 브랜치 위로 옮기는 just-mode `playbooks/shipping.md` 단계의 `--force-with-lease`
 - 요청 없는 태그·브랜치 보호 설정 변경

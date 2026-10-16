@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 코드베이스를 탐색해 "X는 어떻게 동작하나?" 질문에 답한다. 하위 시스템을 처음 맡는 시니어 엔지니어 수준의 아키텍처 설명을 만든다. 쓸 만한 머릿속 모델을 세울 만큼은 자세하고, 주석 달린 소스 코드처럼 읽힐 만큼 자세하지는 않다.
 
-모든 서브에이전트는 읽기 전용으로 띄운다([호스트 대응표](../just-mode/references/hosts.md)). 탐색자는 `code` 역할, 설명자는 `judgment` 역할 모델을 쓴다([역할별 모델](../just-mode/references/models.md)). 지정한 모델이 거부될 때의 처리도 역할별 모델을 따른다. 서브에이전트마다 추론 수준은 **just-mode** 스킬의 서브에이전트 절에 따라 일에 맞게 고른다.
+모든 서브에이전트는 읽기 전용으로 띄운다([호스트 대응표](../just-mode/references/hosts.md)). 탐색자는 `code` 역할, 설명자는 `judgment` 역할 모델을 쓴다([역할별 모델](../just-mode/references/models.md)). 지정한 모델이 거부될 때의 처리도 역할별 모델을 따른다. 서브에이전트마다 추론 수준은 [서브에이전트](../just-mode/references/subagents.md#추론-수준과-속도-고르기)에 따라 일에 맞게 고른다.
 
 ## 1. 복잡도 판단
 

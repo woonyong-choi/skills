@@ -5,7 +5,7 @@
 ## 기본 전제 조건
 
 - 일회용 데이터 폴더로 Notes를 `http://127.0.0.1:4173`에서 띄운다.
-- 동시에 도는 실행이 상태를 공유하지 않도록 `NOTES_DATA_DIR=/tmp/notes-verify-$RUN_ID`를 설정한다.
+- 동시에 도는 실행이 상태를 공유하지 않도록 `NOTES_DATA_DIR=$PWD/.local/tmp/notes-verify-$RUN_ID`를 설정한다.
 - 제목이 `Quarterly plan`과 `Grocery list`인 노트를 시드로 넣는다.
 - `control-notes`와 `notes` CLI를 `PATH`에 둔다.
 - `control-notes doctor`를 돌리고 기대한 URL, 데이터 폴더, 빌드 리비전이 나오는지 확인한다.

@@ -5,7 +5,7 @@
 조사 요청은 읽기 전용이다. 코드 변경이 아니라 근거를 단 설명이나 권고를 낸다.
 
 1. **how** 스킬로 조사한다. 동기를 묻는 질문이면 **why** 스킬도 쓴다.
-2. 처리량 체크포인트는 한 줄로 둔다: `throughput checkpoint: n/a, read-only investigation`.
+2. 처리량 점검은 한 줄로 둔다. `처리량 점검: 해당 없음, 읽기 전용 조사`.
 3. `how` 모양의 출력(Overview / Key Concepts / How It Works / Where Things Live / Gotchas)을 내거나, 요청이 대안 사이의 결정이면 장단점 표를 붙인 권고를 낸다.
 4. 답변에 **unslop** 스킬을 적용한다.
 

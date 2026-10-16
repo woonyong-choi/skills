@@ -57,25 +57,6 @@ export interface InboxPushResult {
   readonly filename: string;
 }
 
-export interface OpenGate {
-  readonly kind: "open";
-  readonly id: string;
-  readonly question: string;
-  readonly options: string;
-  readonly defaultAnswer: string;
-}
-
-export interface ResolvedGate {
-  readonly kind: "resolved";
-  readonly id: string;
-  readonly question: string;
-  readonly options: string;
-  readonly defaultAnswer: string;
-  readonly answer: string;
-}
-
-export type Gate = OpenGate | ResolvedGate;
-
 export type FrontierPrState = "OPEN" | "MERGED" | "CLOSED";
 
 export interface FrontierPr {
@@ -102,14 +83,13 @@ export interface StatusSummary {
   readonly unitStates: Counts;
   readonly ledgerVerdicts: Counts;
   readonly frontierGeneration: number;
-  readonly openGateIds: readonly string[];
+  readonly inboxCount: number;
 }
 
 export interface StatusReport {
   readonly units: readonly Unit[];
   readonly ledger: readonly LedgerEntry[];
   readonly frontier: Frontier;
-  readonly gates: readonly Gate[];
   readonly summary: StatusSummary;
   readonly changed: string;
 }
@@ -153,18 +133,6 @@ export interface PushInboxParams {
   readonly report?: string;
 }
 
-export interface ParkGateParams {
-  readonly id: string;
-  readonly question: string;
-  readonly options: string;
-  readonly defaultAnswer: string;
-}
-
-export interface ResolveGateParams {
-  readonly id: string;
-  readonly answer: string;
-}
-
 export interface SetFrontierParams {
   readonly repo: string;
   readonly prs?: readonly number[];
@@ -198,11 +166,6 @@ export interface Store {
     readonly drain: () => Promise<readonly InboxPointer[]>;
     readonly peek: () => Promise<readonly InboxPointer[]>;
     readonly count: () => Promise<number>;
-  };
-  readonly gates: {
-    readonly park: (params: ParkGateParams) => Promise<OpenGate>;
-    readonly list: () => Promise<readonly OpenGate[]>;
-    readonly resolve: (params: ResolveGateParams) => Promise<ResolvedGate>;
   };
   readonly frontier: {
     readonly set: (params: SetFrontierParams) => Promise<Frontier>;
@@ -312,6 +275,16 @@ function requiredLine(value: string, label: string): string {
     throw new UserError(`${label} 값이 비어 있음`);
   }
   return cleaned;
+}
+
+function issueNumber(value: string): string {
+  const match = /^#?([1-9]\d*)$/.exec(value.trim());
+  if (match === null) {
+    throw new UserError(
+      `unit id는 하위 이슈 번호여야 함(예: 123 또는 #123): ${value}`
+    );
+  }
+  return match[1] ?? "";
 }
 
 function positiveInteger(value: number, label: string): number {
@@ -593,79 +566,6 @@ async function readPointers(
   return result;
 }
 
-function renderGates(rows: readonly Gate[]): string {
-  if (rows.length === 0) {
-    return "";
-  }
-  const blocks = rows.map((gate) => {
-    const answer =
-      gate.kind === "resolved" ? `\n- Answer: ${gate.answer}` : "";
-    return `## ${gate.id}
-
-- Status: ${gate.kind}
-- Question: ${gate.question}
-- Options: ${gate.options}
-- Default: ${gate.defaultAnswer}${answer}`;
-  });
-  return `# Gates\n\n${blocks.join("\n\n")}\n`;
-}
-
-async function readGates(store: string): Promise<readonly Gate[]> {
-  const raw = (await requiredFile(join(store, "gates.md")))
-    .replace(/\r/g, "")
-    .trim();
-  if (raw.length === 0) {
-    return [];
-  }
-  const prefix = "# Gates\n\n## ";
-  if (!raw.startsWith(prefix)) {
-    throw new UserError("gates.md의 제목이 잘못됨");
-  }
-  const result: Gate[] = [];
-  for (const block of raw.slice(prefix.length).split("\n\n## ")) {
-    const lines = block.split("\n").filter((value) => value.length > 0);
-    const id = lines.shift() ?? "";
-    const fields = new Map<string, string>();
-    for (const value of lines) {
-      const match = /^- ([^:]+): (.*)$/.exec(value);
-      if (match === null) {
-        throw new UserError(`gates.md의 gate 형식이 잘못됨: ${id}`);
-      }
-      fields.set(match[1] ?? "", match[2] ?? "");
-    }
-    const status = fields.get("Status");
-    const question = fields.get("Question");
-    const options = fields.get("Options");
-    const defaultAnswer = fields.get("Default");
-    if (
-      id.length === 0 ||
-      question === undefined ||
-      options === undefined ||
-      defaultAnswer === undefined
-    ) {
-      throw new UserError(`gates.md의 gate 형식이 잘못됨: ${id}`);
-    }
-    if (status === "open") {
-      result.push({ kind: "open", id, question, options, defaultAnswer });
-    } else if (status === "resolved" && fields.has("Answer")) {
-      result.push({
-        kind: "resolved",
-        id,
-        question,
-        options,
-        defaultAnswer,
-        answer: fields.get("Answer") ?? "",
-      });
-    } else {
-      throw new UserError(`gates.md에 잘못된 Status가 있음: ${status ?? ""}`);
-    }
-  }
-  if (new Set(result.map((gate) => gate.id)).size !== result.length) {
-    throw new UserError("gates.md에 중복된 gate id가 있음");
-  }
-  return result;
-}
-
 function parseFrontier(raw: string): Frontier {
   let value: unknown;
   try {
@@ -765,16 +665,13 @@ function summarize(
   unitRows: readonly Unit[],
   ledgerRows: readonly LedgerEntry[],
   currentFrontier: Frontier,
-  gateRows: readonly Gate[]
+  inboxCount: number
 ): StatusSummary {
   return {
     unitStates: countValues(unitRows.map((unit) => unit.state)),
     ledgerVerdicts: countValues(ledgerRows.map((row) => row.verdict)),
     frontierGeneration: currentFrontier.generation,
-    openGateIds: gateRows
-      .filter((gate): gate is OpenGate => gate.kind === "open")
-      .map((gate) => gate.id)
-      .sort(),
+    inboxCount,
   };
 }
 
@@ -810,27 +707,20 @@ function previousSummary(raw: string): StatusSummary | null {
   if (
     !isRecord(value) ||
     typeof value.frontierGeneration !== "number" ||
-    !isUnknownArray(value.openGateIds)
+    typeof value.inboxCount !== "number"
   ) {
     return null;
   }
   const unitStates = countRecord(value.unitStates);
   const ledgerVerdicts = countRecord(value.ledgerVerdicts);
-  const openGateIds = value.openGateIds.filter(
-    (item): item is string => typeof item === "string"
-  );
-  if (
-    unitStates === null ||
-    ledgerVerdicts === null ||
-    openGateIds.length !== value.openGateIds.length
-  ) {
+  if (unitStates === null || ledgerVerdicts === null) {
     return null;
   }
   return {
     unitStates,
     ledgerVerdicts,
     frontierGeneration: value.frontierGeneration,
-    openGateIds,
+    inboxCount: value.inboxCount,
   };
 }
 
@@ -872,10 +762,8 @@ function changed(before: StatusSummary | null, after: StatusSummary): string {
       `frontier 세대 ${before.frontierGeneration}->${after.frontierGeneration}`
     );
   }
-  if (before.openGateIds.join("\0") !== after.openGateIds.join("\0")) {
-    result.push(
-      `열린 gate ${before.openGateIds.length}->${after.openGateIds.length}`
-    );
+  if (before.inboxCount !== after.inboxCount) {
+    result.push(`inbox ${before.inboxCount}->${after.inboxCount}`);
   }
   return result.length === 0 ? "파생 변경 없음" : result.join("; ");
 }
@@ -902,7 +790,6 @@ function statusMarkdown(
   unitRows: readonly Unit[],
   ledgerRows: readonly LedgerEntry[],
   currentFrontier: Frontier,
-  gateRows: readonly Gate[],
   currentSummary: StatusSummary
 ): string {
   return `# orchestrate 상태
@@ -914,7 +801,7 @@ function statusMarkdown(
 상태별 개수: ${countLine(currentSummary.unitStates)}
 
 ${table(
-  ["ID", "Track", "State", "Branch", "PR", "SHA", "Brief"],
+  ["Issue", "Track", "State", "Branch", "PR", "SHA", "Brief"],
   unitRows.map(unitCells)
 )}
 
@@ -942,19 +829,7 @@ ${table(
   ])
 )}
 
-## Gates
-
-${table(
-  ["ID", "Status", "Question", "Options", "Default", "Answer"],
-  gateRows.map((gate) => [
-    gate.id,
-    gate.kind,
-    gate.question,
-    gate.options,
-    gate.defaultAnswer,
-    gate.kind === "resolved" ? gate.answer : "",
-  ])
-)}
+수거하지 않은 inbox 포인터: ${currentSummary.inboxCount}
 
 <!-- orch-summary ${JSON.stringify(currentSummary)} -->
 `;
@@ -1129,8 +1004,9 @@ function trunkBranch(repo: string): string {
       repo,
     }).replace(/^origin\//, "");
   } catch {
-    // init 후 fetch한 체크아웃과 로컬 fixture에는 origin/HEAD가 없다.
-    return "main";
+    throw new UserError(
+      "기본 브랜치를 알 수 없음(origin/HEAD 없음). git remote set-head origin --auto 실행"
+    );
   }
 }
 
@@ -1267,7 +1143,7 @@ export function openStore(
       add: async (params) => {
         await beginWrite();
         const row: Unit = {
-          id: requiredCell(params.id, "unit id"),
+          id: issueNumber(params.id),
           track: requiredCell(params.track, "track"),
           state: "pending",
           branch: "",
@@ -1288,7 +1164,7 @@ export function openStore(
       },
       set: async (params) => {
         await beginWrite();
-        const id = requiredCell(params.id, "unit id");
+        const id = issueNumber(params.id);
         const state = requiredCell(params.state, "state");
         const rows = [...(await readUnits(store))];
         const index = rows.findIndex((unit) => unit.id === id);
@@ -1318,7 +1194,7 @@ export function openStore(
       },
       get: async (id) => {
         ensureOpen();
-        const cleanId = requiredCell(id, "unit id");
+        const cleanId = issueNumber(id);
         const row = (await readUnits(store)).find(
           (unit) => unit.id === cleanId
         );
@@ -1451,57 +1327,6 @@ export function openStore(
         return (await readPointers(join(store, "inbox"))).length;
       },
     },
-    gates: {
-      park: async (params) => {
-        await beginWrite();
-        const gate: OpenGate = {
-          kind: "open",
-          id: requiredLine(params.id, "gate id"),
-          question: requiredLine(params.question, "question"),
-          options: requiredLine(params.options, "options"),
-          defaultAnswer: requiredLine(
-            params.defaultAnswer,
-            "default"
-          ),
-        };
-        const rows = [...(await readGates(store))];
-        const index = rows.findIndex((old) => old.id === gate.id);
-        if (index < 0) {
-          rows.push(gate);
-        } else {
-          rows[index] = gate;
-        }
-        await atomicWrite(join(store, "gates.md"), renderGates(rows));
-        return gate;
-      },
-      list: async () => {
-        ensureOpen();
-        return (await readGates(store)).filter(
-          (gate): gate is OpenGate => gate.kind === "open"
-        );
-      },
-      resolve: async (params) => {
-        await beginWrite();
-        const id = requiredLine(params.id, "gate id");
-        const rows = [...(await readGates(store))];
-        const index = rows.findIndex((gate) => gate.id === id);
-        const old = rows[index];
-        if (index < 0 || old === undefined) {
-          throw new NotFoundError(`없는 gate: ${id}`);
-        }
-        const gate: ResolvedGate = {
-          kind: "resolved",
-          id: old.id,
-          question: old.question,
-          options: old.options,
-          defaultAnswer: old.defaultAnswer,
-          answer: requiredLine(params.answer, "answer"),
-        };
-        rows[index] = gate;
-        await atomicWrite(join(store, "gates.md"), renderGates(rows));
-        return gate;
-      },
-    },
     frontier: {
       set: async (params) => {
         await beginWrite();
@@ -1563,12 +1388,12 @@ export function openStore(
         const unitRows = await readUnits(store);
         const ledgerRows = await readLedger(store);
         const currentFrontier = await readFrontier(store);
-        const gateRows = await readGates(store);
+        const inboxCount = (await readPointers(join(store, "inbox"))).length;
         const currentSummary = summarize(
           unitRows,
           ledgerRows,
           currentFrontier,
-          gateRows
+          inboxCount
         );
         const path = join(store, "status.md");
         const before = (await exists(path))
@@ -1581,7 +1406,6 @@ export function openStore(
             unitRows,
             ledgerRows,
             currentFrontier,
-            gateRows,
             currentSummary
           )
         );
@@ -1589,7 +1413,6 @@ export function openStore(
           units: unitRows,
           ledger: ledgerRows,
           frontier: currentFrontier,
-          gates: gateRows,
           summary: currentSummary,
           changed: change,
         };
@@ -1602,7 +1425,6 @@ export function openStore(
       await writeIfMissing(join(store, "units.tsv"), `${UNIT_HEADER}\n`);
       await writeIfMissing(join(store, "ledger.tsv"), `${LEDGER_HEADER}\n`);
       await mkdir(join(store, "inbox"), { recursive: true });
-      await writeIfMissing(join(store, "gates.md"), "");
       await writeIfMissing(join(store, "preferences.md"), "");
       await writeIfMissing(join(store, "frontier.json"), "{}\n");
       return { store };

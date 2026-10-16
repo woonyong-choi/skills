@@ -46,7 +46,7 @@ class HookCase(unittest.TestCase):
         git(self.repo, "add", ".")
         git(self.repo, "commit", "-q", "-m", "init")
         self.env = {**os.environ, "SKILLS_CONFIG_DIR": str(self.base / "config")}
-        for key in ("CAREER_ROOT", task.DEADLINE_ENV, "CODEX_THREAD_ID"):
+        for key in (task.DEADLINE_ENV, "CODEX_THREAD_ID"):
             self.env.pop(key, None)
 
     def hook(self, event: str, host: str = "claude", **extra: object) -> dict:
@@ -265,17 +265,33 @@ class PostToolTest(HookCase):
         self.assertIn("결정 기록에 지금까지의 결정과 다음 할 일을 남긴 뒤 남은 범위는 새 서브에이전트에 인계한다", first)
         self.assertEqual(self.context(self.hook("PostToolUse", tool_name="Bash", tool_input={"command": "ls"})), "")
 
-    def test_merge_notice_is_one_career_line(self) -> None:
-        self.assertEqual(self.context(self.merge()), "")
-        career = self.base / "career"
-        career.mkdir()
-        self.env["CAREER_ROOT"] = str(career)
+    def test_merge_notice_is_one_line_to_hanger(self) -> None:
+        # 원본 저장소: docs/hanger가 있으니 경력 원본 위치 설정 없이도 안내
         notice = self.context(self.merge())
         self.assertEqual(len(notice.splitlines()), 1)
-        self.assertIn("career-record(모드 normal)", notice)
-        self.assertNotIn("journal", notice)
+        self.assertIn("경력 원본에 남길 성과", notice)
+        self.assertIn(f"hanger 스킬({REPO / 'docs/hanger/SKILL.md'})", notice)
+        self.assertNotIn("career", notice)
         failed = self.hook("PostToolUse", tool_name="Bash", tool_input={"command": "gh pr merge 12"}, tool_response="Exit code: 1\nnot mergeable")
         self.assertEqual(self.context(failed), "")
+        self.assertEqual(self.context(self.hook("PostToolUse", tool_name="Bash", tool_input={"command": "gh pr view 12"}, tool_response={"exit_code": 0})), "")
+
+    def test_merge_notice_needs_installed_hanger(self) -> None:
+        # 설치본 배치: hanger 스킬이 just-mode 옆에 없으면 안내 생략, 설치하면 그 경로로 안내
+        skills = self.base / "skills"
+        hooks = skills / "just-mode/scripts/hooks"
+        shutil.copytree(HOOKS, hooks, ignore=shutil.ignore_patterns("tests", "__pycache__", ".pytest_cache"))
+        payload = json.dumps({"hook_event_name": "PostToolUse", "session_id": SESSION, "cwd": str(self.base), "tool_name": "Bash", "tool_input": {"command": "gh pr merge 12 --squash"}, "tool_response": {"exit_code": 0}})
+
+        def notice() -> str:
+            done = subprocess.run([sys.executable, str(hooks / "hook.py"), "claude"], input=payload, capture_output=True, text=True, env=self.env, timeout=30)
+            self.assertEqual((done.returncode, done.stderr), (0, ""))
+            return self.context(json.loads(done.stdout))
+
+        self.assertEqual(notice(), "")
+        (skills / "hanger").mkdir()
+        (skills / "hanger/SKILL.md").write_text("---\nname: hanger\n---\n", encoding="utf-8")
+        self.assertIn(f"hanger 스킬({skills / 'hanger/SKILL.md'})", notice())
 
 
 class TaskCliTest(HookCase):

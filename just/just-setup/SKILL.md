@@ -1,11 +1,11 @@
 ---
 name: just-setup
-description: just가 역할마다 쓸 모델과 추론 예산을 정한다. 현재 호스트(Claude Code, Codex, OpenCode)와 쓸 수 있는 모델을 알아내고, 스킬 기본값보다 우선하는 ~/.config/skills/models.json을 쓴다. /just-setup, "just 모델 설정", "just 예산", just 모델 선택 변경에 쓴다.
+description: just가 역할마다 쓸 모델과 추론 예산, 자율 실행의 동시 작업 수를 정한다. 현재 호스트(Claude Code, Codex, OpenCode)와 쓸 수 있는 모델을 알아내고, 스킬 기본값보다 우선하는 ~/.config/skills/models.json과 ~/.config/skills/just.json을 쓴다. /just-setup, "just 모델 설정", "just 예산", "동시 작업 수", just 모델 선택 변경에 쓴다.
 ---
 
 # just 설정
 
-`~/.config/skills/models.json`을 써서 just가 역할마다 쓸 모델과 추론 수준을 정한다. 파일 형식, 역할의 뜻, 기본값은 [역할별 모델](../just-mode/references/models.md)이 정본이다. 호스트를 알아내는 방법은 [호스트 대응표](../just-mode/references/hosts.md)를 따른다.
+`~/.config/skills/models.json`을 써서 just가 역할마다 쓸 모델과 추론 수준을 정하고, `~/.config/skills/just.json`을 써서 자율 실행의 동시 작업 수를 정한다. 모델 파일 형식, 역할의 뜻, 기본값은 [역할별 모델](../just-mode/references/models.md)이 정본이다. 호스트를 알아내는 방법은 [호스트 대응표](../just-mode/references/hosts.md)를 따른다.
 
 ## 단계
 
@@ -20,11 +20,11 @@ description: just가 역할마다 쓸 모델과 추론 예산을 정한다. 현�
 확인한 모델만 쓴다. 확인하지 않은 모델 이름을 파일에 쓰지 않는다. 빈 문자열(호스트 기본 모델)은 언제나 쓸 수 있다.
 
 - Claude Code: 별칭 `opus`, `sonnet`, `haiku`를 쓸 수 있다. 사용자가 전체 모델 ID를 주면 그 값도 받는다.
-- Codex: 모델 목록을 내는 명령이 없다. `~/.codex/config.toml`의 `model` 값이 있으면 그것을 현재 기본 모델로 보고, 다른 모델은 사용자에게 쓸 수 있는 이름을 질문한다. 사용자가 모르면 빈 문자열(기본 모델)로 둔다.
+- Codex: 모델 목록을 내는 명령이 없다. `~/.codex/config.toml`의 `model` 값이 있으면 그것을 현재 기본 모델로 본다. 기본값의 `gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-luna`는 `codex exec -m <모델> "ok"`가 성공하면 확인한 것으로 본다. 실패한 모델은 빈 문자열(기본 모델)로 둔다.
 - OpenCode: `opencode models`를 돌려 나온 `<제공자>/<모델>` 목록을 쓴다.
-- 다른 회사 CLI: `claude`가 있으면 `claude:opus`, `claude:sonnet`, `claude:haiku`를 쓸 수 있다. `codex`가 있으면 `codex:`(Codex 기본 모델)와 사용자가 확인해 준 `codex:<모델>`을 쓸 수 있다.
+- 다른 회사 CLI: `claude`가 있으면 `claude:opus`, `claude:sonnet`, `claude:haiku`를 쓸 수 있다. `codex`가 있으면 `codex:`(Codex 기본 모델)와 위 방법으로 확인한 `codex:<모델>`(기본값 `codex:gpt-6.1-sol`)을 쓸 수 있다.
 
-하나도 알아낼 수 없으면 사용자에게 쓸 수 있는 모델 이름을 붙여 달라고 질문한다.
+하나도 알아낼 수 없으면 모든 역할을 빈 문자열(호스트 기본 모델)로 두고, 사용자가 모델 이름을 알려 주면 바꿀 수 있다고 알린다.
 
 ### 3. 현재 상태 읽기
 
@@ -74,7 +74,7 @@ python3 - <<'EOF'
 import json, os, tempfile
 path = os.path.expanduser("~/.config/skills/models.json")
 HOST = "claude"
-ROLES = {"code": "sonnet", "judgment": "opus", "review": ["opus", "codex:"], "cheap": "haiku"}
+ROLES = {"code": "opus", "judgment": "opus", "review": ["opus", "codex:gpt-6.1-sol"], "cheap": "haiku"}
 EFFORT = {"code": "medium", "judgment": "high", "review": "high", "cheap": "low"}
 os.makedirs(os.path.dirname(path), exist_ok=True)
 data = json.load(open(path)) if os.path.exists(path) else {}
@@ -90,10 +90,24 @@ os.replace(tmp, path)
 EOF
 ```
 
-### 7. 확인
+### 7. 동시 작업 수 정하기
+
+자율 실행(`../just-mode/playbooks/autonomous-run.md`)이 판의 대기 이슈를 동시에 몇 개까지 처리할지 `~/.config/skills/just.json`의 `parallel`에 둔다. 값은 1 이상의 정수이고, 파일이 없으면 3이다. 실행할 때 `JUST_PARALLEL` 환경 변수가 있으면 파일보다 먼저 쓴다.
+
+```json
+{
+  "parallel": 3
+}
+```
+
+1. 파일이 있으면 읽고 현재 값을 보여 준다. 없으면 기본값 3을 보여 준다.
+2. 사용자가 값을 말하지 않았으면 그대로 둔다. 동시 작업이 많을수록 사용량 한도에 빨리 닿는다고 한 줄로 알린다.
+3. 값을 바꿀 때는 6단계와 같은 방법(병합, 임시 파일 뒤 이름 바꾸기)으로 `parallel` 키만 고친다.
+
+### 8. 확인
 
 파일을 썼다고 알리고, 바뀐 역할과 값을 보여 준다. 설정은 그 뒤에 띄우는 서브에이전트부터 적용되고, 이미 돌고 있는 서브에이전트에는 적용되지 않는다고 말한다. 이 스킬을 다시 돌리면 갱신된다.
 
-### 8. 검증 스킬 제안(선택)
+### 9. 검증 스킬 제안(선택)
 
 프로젝트에 실제 앱을 조작해 동작을 증명할 방법(`verify-*` 스킬이나 기존 검증 도구)이 있는지 확인한다. 없으면 한 번만 제안한다. "에이전트가 사용자처럼 앱을 조작해 변경이 동작함을 증명할 수 있게 프로젝트 전용 검증 스킬을 만들까요? /create-verification-skill로 만들 수 있습니다." 그렇다고 하면 `/create-verification-skill`을 부른다(Codex는 `$create-verification-skill`). 아니라고 하면 더 권하지 않고 넘어간다.

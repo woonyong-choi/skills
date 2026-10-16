@@ -27,7 +27,7 @@ from typing import Any, Iterator
 
 # 훅이 쓰는 다른 스킬의 파일. 위치가 바뀌면 이 표만 고친다.
 RULE_READER = ("just-mode", "scripts/rules/read_rules.py")
-CAREER_RECORD = ("career-record", "scripts/record.py")
+CAREER_NOTES = ("hanger", "SKILL.md")
 DECISION_LOGGER = ("show-me-your-work", "scripts/log.sh")
 ENTRY_SKILL = "just-mode"
 CATEGORIES = ("just", "code", "docs", "git", "design", "tools")

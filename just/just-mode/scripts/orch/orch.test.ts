@@ -86,6 +86,11 @@ async function makeGitStack(directory: string): Promise<{
   await writeFile(join(repo, "main.txt"), "main\n");
   git({ repo, args: ["add", "."] });
   git({ repo, args: ["commit", "-m", "main"] });
+  git({ repo, args: ["update-ref", "refs/remotes/origin/main", "main"] });
+  git({
+    repo,
+    args: ["symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"],
+  });
 
   const branches = [
     "stack/merged",
@@ -215,9 +220,13 @@ esac
 
 function runCli(
   args: readonly string[],
-  env: Readonly<Record<string, string | undefined>> = process.env
+  env: Readonly<Record<string, string | undefined>> = process.env,
+  cwd?: string
 ): RunResult {
-  const result = Bun.spawnSync([process.execPath, SCRIPT, ...args], { env });
+  const result = Bun.spawnSync([process.execPath, SCRIPT, ...args], {
+    env,
+    cwd,
+  });
   return {
     code: result.exitCode,
     stdout: result.stdout.toString(),
@@ -256,7 +265,6 @@ describe("Store", () => {
     expect((await readdir(directory)).sort()).toEqual([
       ".orch.lock",
       "frontier.json",
-      "gates.md",
       "inbox",
       "ledger.tsv",
       "preferences.md",
@@ -267,46 +275,49 @@ describe("Store", () => {
     expect(await readdir(directory)).not.toContain(".orch.lock");
   });
 
-  it("composes unit add, set, get, list, and counts", async () => {
+  it("composes unit add, set, get, list, and counts keyed by sub-issue number", async () => {
     const { store } = await initializedStore();
 
     expect(
       await store.units.add({
-        id: "u1",
+        id: "101",
         track: "build",
-        brief: "briefs/u1.md",
+        brief: "briefs/101.md",
       })
-    ).toMatchObject({ id: "u1", state: "pending" });
+    ).toMatchObject({ id: "101", state: "pending" });
     expect(
-      await store.units.add({ id: "=SUM(A1)", track: "+build" })
-    ).toMatchObject({ id: "'=SUM(A1)", track: "'+build" });
+      await store.units.add({ id: "#102", track: "+build" })
+    ).toMatchObject({ id: "102", track: "'+build" });
 
     const updated = await store.units.set({
-      id: "u1",
+      id: "#101",
       state: "done",
-      branch: "feature/u1",
+      branch: "feat/101-orch-units",
       pr: 184530,
       sha: "abc123",
     });
     expect(updated).toEqual({
-      id: "u1",
+      id: "101",
       track: "build",
       state: "done",
-      branch: "feature/u1",
+      branch: "feat/101-orch-units",
       pr: "184530",
       sha: "abc123",
-      brief: "briefs/u1.md",
+      brief: "briefs/101.md",
     });
-    expect(await store.units.get("u1")).toEqual(updated);
+    expect(await store.units.get("101")).toEqual(updated);
     expect(
       await store.units.list({ state: "done", track: "build" })
     ).toEqual([updated]);
     expect(await store.units.counts()).toEqual({ done: 1, pending: 1 });
     await expect(
-      store.units.add({ id: "u1", track: "build" })
-    ).rejects.toThrow("이미 있는 unit: u1");
+      store.units.add({ id: "#101", track: "build" })
+    ).rejects.toThrow("이미 있는 unit: 101");
     await expect(
-      store.units.set({ id: "missing", state: "done" })
+      store.units.add({ id: "u1", track: "build" })
+    ).rejects.toThrow("unit id는 하위 이슈 번호여야 함");
+    await expect(
+      store.units.set({ id: "999", state: "done" })
     ).rejects.toBeInstanceOf(NotFoundError);
   });
 
@@ -397,8 +408,8 @@ describe("Store", () => {
       onStaleLock: (holder) => stale.push(holder),
     });
     expect(
-      await recovered.units.add({ id: "u1", track: "build" })
-    ).toMatchObject({ id: "u1" });
+      await recovered.units.add({ id: "101", track: "build" })
+    ).toMatchObject({ id: "101" });
     expect(stale).toEqual([String(exited.pid)]);
     await recovered.close();
     expect(await readdir(directory)).not.toContain(".orch.lock");
@@ -411,7 +422,7 @@ describe("Store", () => {
 
     const blocked = useStore(directory);
     await expect(
-      blocked.units.add({ id: "u1", track: "build" })
+      blocked.units.add({ id: "101", track: "build" })
     ).rejects.toThrow(`pid ${process.pid} 프로세스가 스토어 잠금을 잡고 있음`);
 
     const stolen: string[] = [];
@@ -420,41 +431,32 @@ describe("Store", () => {
       onLockStolen: (holder) => stolen.push(holder),
     });
     expect(
-      await forced.units.add({ id: "u1", track: "build" })
-    ).toMatchObject({ id: "u1" });
+      await forced.units.add({ id: "101", track: "build" })
+    ).toMatchObject({ id: "101" });
     expect(stolen).toEqual([String(process.pid)]);
     await forced.close();
     expect(await readdir(directory)).not.toContain(".orch.lock");
   });
 
-  it("parks gates, stores standing orders, and renders status", async () => {
+  it("stores standing orders and renders status with the inbox count", async () => {
     const { directory, store } = await initializedStore();
-    await store.units.add({ id: "u1", track: "build" });
-    expect(
-      await store.gates.park({
-        id: "release",
-        question: "Ship now?",
-        options: "ship,wait",
-        defaultAnswer: "wait",
-      })
-    ).toMatchObject({ kind: "open", id: "release" });
+    await store.units.add({ id: "101", track: "build" });
     expect(
       await store.standing.add({ line: "Never force push." })
     ).toEqual({ number: 1, line: "Never force push." });
 
     const first = await store.status.render();
     expect(first.changed).toBe("첫 생성");
-    expect(first.summary.openGateIds).toEqual(["release"]);
-    expect(await readFile(join(directory, "status.md"), "utf8")).toContain(
-      "| release | open | Ship now? |"
-    );
+    expect(first.summary.inboxCount).toBe(0);
+    const markdown = await readFile(join(directory, "status.md"), "utf8");
+    expect(markdown).toContain("| 101 | build | pending |");
+    expect(markdown).not.toContain("Gates");
     expect((await store.status.render()).changed).toBe("파생 변경 없음");
 
-    expect(
-      await store.gates.resolve({ id: "release", answer: "ship" })
-    ).toMatchObject({ kind: "resolved", answer: "ship" });
-    expect((await store.status.render()).changed).toBe("열린 gate 1->0");
-    expect(await store.gates.list()).toEqual([]);
+    await store.inbox.push({ agent: "worker-1", unit: "101", status: "done" });
+    expect((await store.status.render()).changed).toBe("inbox 0->1");
+    await store.inbox.drain();
+    expect((await store.status.render()).changed).toBe("inbox 1->0");
     expect(await store.standing.show()).toEqual([
       { number: 1, line: "Never force push." },
     ]);
@@ -530,6 +532,24 @@ describe("Store", () => {
             prs: [10, 10],
           })
         ).rejects.toThrow("--prs에 중복된 PR 번호가 있음");
+      },
+    });
+  });
+
+  it("refuses to guess the trunk when origin/HEAD is missing", async () => {
+    const { directory, store } = await initializedStore();
+    const stack = await makeGitStack(directory);
+    git({
+      repo: stack.repo,
+      args: ["symbolic-ref", "--delete", "refs/remotes/origin/HEAD"],
+    });
+
+    await withFakeGh({
+      directory,
+      operation: async () => {
+        await expect(store.frontier.set({ repo: stack.repo })).rejects.toThrow(
+          "기본 브랜치를 알 수 없음(origin/HEAD 없음)"
+        );
       },
     });
   });
@@ -622,7 +642,7 @@ describe("orch CLI", () => {
     expect(frontierHelp.stdout).toContain("--prs <n,...>");
 
     const directory = await makeDirectory();
-    const invalid = runCli(["--store", directory, "unit", "add", "u1"]);
+    const invalid = runCli(["--store", directory, "unit", "add", "101"]);
     expect(invalid.code).toBe(1);
     expect(invalid.stderr).toContain("required option '--track <track>'");
 
@@ -646,12 +666,12 @@ describe("orch CLI", () => {
     expect(runCli(["init"], env).code).toBe(0);
 
     const added = runCli(
-      ["unit", "add", "u1", "--track", "build", "--json"],
+      ["unit", "add", "101", "--track", "build", "--json"],
       env
     );
     expect(added.code).toBe(0);
     expect(JSON.parse(added.stdout)).toEqual({
-      id: "u1",
+      id: "101",
       track: "build",
       state: "pending",
       branch: "",
@@ -686,17 +706,17 @@ describe("orch CLI", () => {
       "build",
     ]);
     expect(userError.code).toBe(1);
-    expect(userError.stderr).toContain("unit id 값이 비어 있음");
+    expect(userError.stderr).toContain("unit id는 하위 이슈 번호여야 함");
 
     const missingUnit = runCli([
       "--store",
       directory,
       "unit",
       "get",
-      "missing",
+      "999",
     ]);
     expect(missingUnit.code).toBe(2);
-    expect(missingUnit.stderr).toContain("없는 unit: missing");
+    expect(missingUnit.stderr).toContain("없는 unit: 999");
 
     const missingLedger = runCli([
       "--store",
@@ -714,5 +734,51 @@ describe("orch CLI", () => {
       verdict: "NOT-VERIFIED",
     });
     expect(missingLedger.stderr).toBe("");
+  });
+
+  it("keeps the store in the repository .local/orch/<name> folder", async () => {
+    const directory = await makeDirectory();
+    const repo = join(directory, "repo");
+    await mkdir(join(repo, "sub"), { recursive: true });
+    git({ repo, args: ["init", "--initial-branch=trunk"] });
+    const env = { ...process.env, ORCH_STORE: undefined, ORCH_NAME: undefined };
+
+    const initialized = runCli(
+      ["--name", "migration", "init"],
+      env,
+      join(repo, "sub")
+    );
+    expect(initialized.code).toBe(0);
+    const store = join(realpathSync(repo), ".local", "orch", "migration");
+    expect(initialized.stdout.trim()).toBe(`초기화함 ${store}`);
+    expect((await readdir(store)).sort()).toEqual([
+      "frontier.json",
+      "inbox",
+      "ledger.tsv",
+      "preferences.md",
+      "units.tsv",
+    ]);
+
+    const byEnv = runCli(
+      ["unit", "add", "#7", "--track", "build"],
+      { ...env, ORCH_NAME: "migration" },
+      repo
+    );
+    expect(byEnv.code).toBe(0);
+    expect(await readFile(join(store, "units.tsv"), "utf8")).toContain(
+      "7\tbuild\tpending"
+    );
+
+    const nested = runCli(["--name", "a/b", "init"], env, repo);
+    expect(nested.code).toBe(1);
+    expect(nested.stderr).toContain("--name에는 폴더 이름 하나만 씀");
+
+    const outside = runCli(["--name", "migration", "init"], env, directory);
+    expect(outside.code).toBe(1);
+    expect(outside.stderr).toContain("--name은 git 저장소 안에서만 쓸 수 있음");
+
+    const missing = runCli(["init"], env, repo);
+    expect(missing.code).toBe(1);
+    expect(missing.stderr).toContain("--name <이름>(.local/orch/<이름>) 또는 --store <dir>를 지정");
   });
 });

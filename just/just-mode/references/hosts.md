@@ -23,6 +23,18 @@ just 스킬이 공통으로 쓰는 동작을 Claude Code CLI, Codex CLI, OpenCod
 | 항상 적용 규칙 | `CLAUDE.md` | `AGENTS.md` | `AGENTS.md` |
 | 대화 기록 위치 | `~/.claude/projects/<프로젝트 경로를 -로 바꾼 이름>/*.jsonl` | `~/.codex/sessions/**/rollout-*.jsonl` | `~/.local/share/opencode/` 아래 세션 저장소 |
 
+## 무한 자율 실행
+
+멈추라고 할 때까지 도는 자율 실행(`../playbooks/autonomous-run.md`)은 세션이 스스로 다시 깨어날 수 있는 호스트에서만 한다.
+
+| 호스트 | 지원 | 방법 |
+|---|---|---|
+| Claude Code | 됨 | `/loop <간격> <프롬프트>`로 다시 깨우기를 건다 |
+| Codex | 됨 | 같은 세션 안에서 대기 명령(`sleep`)과 확인을 반복한다. 셸 반복문으로 `codex exec`를 새로 띄우면 세션 맥락이 끊기므로 쓰지 않는다 |
+| OpenCode | 안 됨 | 한 번 실행용이다. 종료 조건까지 한 번 돌고 끝내며, 끝낼 때 결정 기록에 phase `다음`으로 이어 할 일을 남긴다 |
+
+- 잠자기 방지는 macOS에서 `caffeinate -dimsu &`로 하고 PID를 결정 기록에 남긴다. 멈출 때 그 PID를 `kill`한다. 다른 운영체제는 건너뛰고 보고에 적는다.
+
 ## 서브에이전트 공통 규칙
 
 - 프롬프트에 파일 내용을 붙이지 않고 파일 경로를 넘김

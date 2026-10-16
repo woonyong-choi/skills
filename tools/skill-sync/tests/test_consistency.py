@@ -65,17 +65,10 @@ def section(path: str, title: str) -> list[str]:
     return [line for line in body.splitlines() if line.strip()]
 
 
-def test_readme_steps_follow_developer_thinking() -> None:
-    # #82: README의 단계 이름은 developer-thinking 실행 순서가 정본
-    steps = [line.split('. ', 1)[1].split(':', 1)[0] for line in section('code/developer-thinking/SKILL.md', '실행 순서') if line[0].isdigit()]
-    readme = (ROOT / 'README.md').read_text(encoding='utf-8')
-    assert '·'.join(steps) + ' 순서' in readme
-
-
 def test_shared_guides_have_one_owner() -> None:
-    # #82: UI·CSS 안내는 code-style, Closes·Refs 선택은 git-issue 닫기만 소유
-    thinking = (ROOT / 'code/developer-thinking/SKILL.md').read_text(encoding='utf-8')
-    assert 'design-tokens' not in thinking and 'code-style-css' not in thinking
+    # #82: UI·CSS 안내는 code-style, Closes·Refs 선택은 git-issue 닫기만 소유. 입구는 just-mode 하나
+    entry = (ROOT / 'just/just-mode/SKILL.md').read_text(encoding='utf-8')
+    assert 'design-tokens' not in entry and 'code-style-css' not in entry
     commit = (ROOT / 'git/git-commit/SKILL.md').read_text(encoding='utf-8')
     assert '→ 관련 이슈' not in commit and '→ 이 커밋으로 닫는 이슈' not in commit
     assert '(git-issue 닫기)' in commit

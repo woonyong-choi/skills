@@ -5,7 +5,7 @@
   <a href="#설치">설치</a> · <a href="#사용법">사용법</a> · <a href="#스킬-목록">스킬 목록</a> · <a href="#측정-결과">측정 결과</a>
 </p>
 
-개발 작업은 [developer-thinking](code/developer-thinking/SKILL.md)에서 연결·조회·결정·구현·검증·종료 순서로 진행합니다. 각 단계는 기존 소유 스킬의 해당 규칙만 읽습니다. 원본은 역할별 폴더에 두고, Claude Code와 Codex에는 같은 이름과 내용으로 설치합니다.
+개발 작업은 [just-mode](just/just-mode/SKILL.md)에서 시작합니다. 각 단계는 기존 소유 스킬의 해당 규칙만 읽습니다. 원본은 역할별 폴더에 두고, Claude Code와 Codex에는 같은 이름과 내용으로 설치합니다.
 
 ## 작동 방식
 
@@ -57,13 +57,7 @@ claude plugin install just-do@woon-skills
 
 설치와 실제 훅 실행은 별개입니다. Codex는 대화형 TUI의 `/hooks`에서 새 훅 정의를 검토·신뢰해야 실행합니다. `codex exec`는 신뢰 전 훅을 알림 없이 건너뜁니다. 사용량 신호가 없으면 80% 안내는 나오지 않습니다.
 
-PR 머지 뒤 경력 기록은 [career-record](docs/career-record/SKILL.md)가 판단합니다. 세션 안에서 PR 머지(`gh pr merge`, `gh api` PUT 머지)가 성공하면 같은 훅이 경력 원본에 남길 성과인지 확인하라고 한 줄로 안내합니다. 경력 원본 위치(`CAREER_ROOT` 또는 `~/.config/skills/career.json`의 `root`)가 있을 때만 안내합니다. 기본 모드 normal은 추가·병합마다 묻습니다. 바로 기록하는 bypass로 바꾸려면 아래 명령을 실행합니다. bypass에서도 상·중 줄과 포트폴리오 묶음이 있는 줄을 지울 때, 넣을 프로젝트 후보가 여럿일 때는 묻습니다.
-
-```sh
-python3 <스킬 설치 폴더(~/.claude/skills 또는 ~/.codex/skills)>/career-record/scripts/record.py mode bypass
-```
-
-설정은 `~/.config/skills/career-record.json`에 `{"mode": "bypass"}`로 저장됩니다.
+PR 머지 뒤 경력 기록은 [hanger](docs/hanger/SKILL.md)로 남깁니다. 세션 안에서 PR 머지(`gh pr merge`, `gh api` PUT 머지)가 성공하면 같은 훅이 경력 원본에 남길 성과인지 판단하라고 한 줄로 안내합니다. hanger 스킬이 설치돼 있을 때만 안내합니다.
 
 ## 스킬 목록
 
@@ -81,7 +75,6 @@ python3 <스킬 설치 폴더(~/.claude/skills 또는 ~/.codex/skills)>/career-r
 | 스킬 | 용도 |
 |---|---|
 | [code-style](code/code-style/SKILL.md) | 이름, 오류 처리, 주석, 테스트의 공통 규칙 |
-| [developer-thinking](code/developer-thinking/SKILL.md) | 개발 실행 순서, 조건별 규칙 조회 |
 | [code-refactoring](code/code-refactoring/SKILL.md) | 문제 원인에 맞는 리팩터링 기법 선택 |
 | [code-style-css](code/code-style-css/SKILL.md) | CSS 선택자, 배치, 반응형, 접근성 |
 | [code-style-typescript](code/code-style-typescript/SKILL.md) | JavaScript·TypeScript 코드와 ESLint·Prettier·node:test·tsc |
@@ -104,9 +97,8 @@ python3 <스킬 설치 폴더(~/.claude/skills 또는 ~/.codex/skills)>/career-r
 | [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | 그림, 차트, 대체 글, 데모 GIF |
 | [repo-docs-root](docs/repo-docs-root/SKILL.md) | AGENTS.md와 저장소 루트 문서 |
 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 문서 색인 생성 |
-| [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 저장소 `.local/journal/` 비공개 판단·작업 일지·원칙과 기록 기준 판정 |
 | [career](docs/career/SKILL.md) | JD 맞춤 이력서·포트폴리오와 지원 폴더 |
-| [career-record](docs/career-record/SKILL.md) | 경력 원본의 성과 추가·병합·등급과 PR 머지 뒤 기록 판단 |
+| [hanger](docs/hanger/SKILL.md) | Hanger closet 노트 검색·작성·정리와 경력 원본 기록 |
 
 ### 디자인
 
@@ -177,7 +169,7 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 | [repo-docs-design](docs/repo-docs-design/SKILL.md) | 10,869 | 4,274 | 6,595 |
 | [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md) | 12,990 | 6,463 | 6,527 |
 | [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | 14,171 | 4,151 | 10,020 |
-| [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 6,458 | 3,473 | 2,985 |
+| repo-docs-journal(삭제) | 6,458 | 3,473 | 2,985 |
 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 3,693 | 2,596 | 1,097 |
 | [repo-docs-note](docs/repo-docs-note/SKILL.md) | 3,141 | 2,352 | 789 |
 | [repo-docs-readme](docs/repo-docs-readme/SKILL.md) | 12,684 | 11,218 | 1,466 |

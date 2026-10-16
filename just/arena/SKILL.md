@@ -14,8 +14,8 @@ disable-model-invocation: true
 
 1. 각 후보가 만들 산출물을 밝힌다.
 2. 채점 기준을 세운다. *이* 작업에서 성공이 어떤 모습인지 채점할 수 있는 구체적 기준 3~6개다. D단계에서 기준안을 고를 때 쓴다. 후보에게는 작업만 보여 준다.
-3. 러너를 고른다. 러너 구성은 `review` 역할의 모델 목록을 따른다([역할별 모델](../just-mode/references/models.md)). 목록 항목마다 러너 하나를 띄우므로 기본은 서로 다른 회사 모델 둘(Claude 하나, GPT 하나)이다. 다른 회사 모델은 [호스트 대응표](../just-mode/references/hosts.md)의 방법으로 실행한다. 지정한 모델이 거부되면 역할별 모델의 규칙대로 처리하고 그렇다고 알린다. 여러 설계 방향을 다루면 러너를 더 띄운다. 판단력보다 생성량이 관건인 일이면 같은 모델을 N번 쓴다. 서브에이전트마다 추론 수준은 **just-mode** 스킬의 서브에이전트 절에 따라 일에 맞게 고른다.
-4. 후보마다 별도 출력 위치를 준다. 가능하면 git 워크트리, 아니면 `/tmp/arena-<slug>/candidate-<n>/`이다. **separate-before-serializing-shared-state** 원칙 스킬을 따른다.
+3. 러너를 고른다. 러너 구성은 `review` 역할의 모델 목록을 따른다([역할별 모델](../just-mode/references/models.md)). 목록 항목마다 러너 하나를 띄우므로 기본은 서로 다른 회사 모델 둘(Claude 하나, GPT 하나)이다. 다른 회사 모델은 [호스트 대응표](../just-mode/references/hosts.md)의 방법으로 실행한다. 지정한 모델이 거부되면 역할별 모델의 규칙대로 처리하고 그렇다고 알린다. 여러 설계 방향을 다루면 러너를 더 띄운다. 판단력보다 생성량이 관건인 일이면 같은 모델을 N번 쓴다. 서브에이전트마다 추론 수준은 [서브에이전트](../just-mode/references/subagents.md#추론-수준과-속도-고르기)에 따라 일에 맞게 고른다.
+4. 후보마다 별도 출력 위치를 준다. 가능하면 git 워크트리, 아니면 `.local/runs/arena-<이름>/candidate-<n>/`이다. 종합 메모도 같은 `arena-<이름>/` 폴더에 둔다. **separate-before-serializing-shared-state** 원칙 스킬을 따른다.
 
 ## B단계: 병렬 분배
 
