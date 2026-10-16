@@ -409,3 +409,11 @@ class CareerBuildTest(SyntheticVault):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StdinScreenTest(unittest.TestCase):
+    def test_screen_reads_pr_json_from_stdin(self) -> None:
+        pr = '{"author":{"login":"me"},"title":"docs: 오타","files":[{"path":"README.md"}],"url":"u"}'
+        done = subprocess.run([sys.executable, str(SCRIPT), "screen", "-", "--user", "me"], input=pr, capture_output=True, text=True, timeout=30)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn("skip", json.loads(done.stdout))

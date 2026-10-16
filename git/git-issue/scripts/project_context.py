@@ -87,6 +87,10 @@ def normalize_remote(value: str, base: Path | None = None) -> str:
     return host + "/" + parsed.path.strip("/").removesuffix(".git")
 
 
+# 등록 프로젝트가 없다는 뜻의 오류 문구. 호출자가 legacy 판정에 사용
+UNREGISTERED = "project is unregistered"
+
+
 # cost: time O(n), heap O(n), stack O(1), io O(4)
 # vars: n = Git command output bytes
 # basis: estimate
@@ -144,8 +148,10 @@ def resolve_project(path: Path) -> dict:
         longest = len(matches[0][1]["identity"])
         matches = [item for item in matches if len(item[1]["identity"]) == longest]
         actual.update(identity=matches[0][1]["identity"], path=matches[0][1]["identity"][5:])
-    if len(matches) != 1:
-        raise ContextError("project is unregistered or has duplicate identities")
+    if not matches:
+        raise ContextError(UNREGISTERED)
+    if len(matches) > 1:
+        raise ContextError("project has duplicate identities")
     index, registration = matches[0]
     registered_paths = registration.get("paths", [])
     same_worktree = actual.get("common") and actual["common"] == registration.get("common")

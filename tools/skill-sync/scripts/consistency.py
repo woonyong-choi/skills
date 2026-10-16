@@ -218,7 +218,7 @@ def check_consistency(paths: list[Path]) -> dict[Path, list[str]]:
             for line, rule in collect_rules(text, include_intro=document != path):
                 duplicates[rule].append((path, f'{label}:{line}'))
         for script in sorted((path.parent / 'scripts').rglob('*')):
-            if script.suffix not in ('.py', '.js', '.mjs') or script.name.startswith('test_') or '__pycache__' in script.parts:
+            if script.suffix not in ('.py', '.js', '.mjs') or script.name.startswith('test_') or {'__pycache__', 'node_modules'} & set(script.parts):
                 continue
             errors[path].extend(check_script(script, cost_checker))
     for rule, locations in duplicates.items():

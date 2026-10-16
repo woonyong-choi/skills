@@ -9,7 +9,7 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 - 범위: 브라우저로 보는 보고서 폴더 하나. 설명 페이지(`explain`), 선택 비교(`decision`), 전후 확인(`result`)의 원문 형식, 생성, 확인, 전달
 - 고정 양식: AI는 원문 Markdown만 작성. HTML은 `build_report.mjs`만 생성, HTML·CSS·생성물 직접 작성·수정 금지
 - 디자인: 홈페이지 문서 페이지와 같은 정본(design-tokens) 상속. 보고서에만 있는 배치·상단 막대·판정 조작은 `assets/report.css`, `assets/report.js`가 소유
-- 필요할 때만 읽기: 원문 작성 → repo-docs `references/plain-language.md` 필수 확인; `.thinkflow` 원문 작성·변경 → repo-docs-figures `references/syntax.md` 필수 확인; 스크린샷 촬영 → repo-docs-figures 스크린샷 규칙(촬영 스크립트), 비교용 예외(앱 영역만, 검증 테마 하나) 포함; 저장·사실 상태·자리표시 → repo-docs
+- 필요할 때만 읽기: 원문 작성 → repo-docs `references/plain-language.md` 필수 확인; `.thinkflow` 원문 작성·변경 → repo-docs-figures `references/syntax.md` 필수 확인; 스크린샷 촬영 → repo-docs-figures 스크린샷 규칙(촬영 스크립트, 비교용 예외 포함); 저장·사실 상태·자리표시 → repo-docs
 
 ## 사용 조건
 
@@ -63,7 +63,7 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 
 ## 작성 규칙
 
-세 종류 공통. 쉬운 설명 규칙 9개와 낯선 말 목록(repo-docs `references/plain-language.md`) 필수 적용. 보고서 전용:
+세 종류 공통. 쉬운 설명 규칙 전체와 낯선 말 목록(repo-docs `references/plain-language.md`) 필수 적용. 보고서 전용:
 
 - 설명 페이지 도표 원문: 배치·폭·세로 전환은 그림 작성 문서(머리 참조) 적용, 선 라벨 2~4자. 순서·변화가 이해를 돕는 도표만 `scene` 추가(ThinkFlow `docs/usage.md`, `docs/reference/`)
 - 비교 보고서: 그림 캡션은 후보 이름 또는 실제 대상·버전. 순서 표시(A·B·C·D, 전·후)는 런타임 담당. 시각 차이가 결정에 필요하면 글만으로 그림 대체 금지, 실제와 모형 구분. 전후 확인의 Git 검토만 머지 판정
@@ -97,7 +97,6 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 - 3번 답이 요약과 같은 뜻인지 작성 세션이 대조
 - 실행: `node <이 스킬 폴더>/scripts/read_review.mjs <보고서 폴더>/report.md --host {claude|codex}`(지금 쓰는 도구). 모델(가장 싼 것)과 생각 수준(low)은 스크립트 고정, 더 비싼 모델로 올려 통과 금지. 결과 보고에 사용 토큰 수 한 줄
 - 하나라도 걸리면 고쳐서 다시 읽히기, 최대 2번. 그래도 걸리면 걸린 줄을 표시한 채 띄우고 보고
-- 연결 예정: #91 교차 리뷰의 호스트 어댑터가 머지되면 그 실행 명령에 모델 지정만 더해 교체(후속 이슈)
 
 ## 그림과 모형 표시
 
@@ -121,7 +120,7 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 
 - 등록 프로젝트: `<Vault>/worktree/<프로젝트>/docs/보고서/{YYYY-MM-DD}-{주제}/`
 - 프로젝트 무관: `<Vault>/legacy/보고서/{YYYY-MM-DD}-{주제}/`
-- Vault 미등록·접근 불가: 저장 중단. 사용자에게 Vault 절대 경로 요청 → git-issue `project_context.py --register-vault <경로>`
+- Vault 미등록·접근 불가: 저장 중단, 등록 절차는 repo-docs `references/project-context.md`
 - 저장소 안 저장 금지(git 제외 여부와 무관)
 - 생성기 검사: 파일을 쓰기 전에 git-issue `project_context.py`의 Vault 해석·쓰기 검사로 출력 폴더 확인. 위 두 위치가 아니면 HTML·그림·도표 포함 어떤 파일도 쓰지 않고 종료 1. 출력 폴더 인자가 없으면 원문 폴더가 검사 대상
 - 폴더 내용: `report.md`(원문), `assets/`(그림), 생성물 `index.html`, `report.css`, `report.js`, `theme/`(정본 CSS·글꼴), `diagrams/`(도표). 외부 네트워크 없이 열기 가능
@@ -153,5 +152,5 @@ node <이 스킬 폴더>/scripts/build_report.mjs <보고서 폴더>/report.md
 ## 금지
 
 - 보고서를 git에 커밋
-- 보고서 산출물의 저장 위치 밖(임시 폴더, `/tmp`) 저장. 확인 중 캡처만 세션 작업 폴더 허용
+- 보고서 산출물의 저장 위치 밖(임시 폴더, `/tmp`) 저장. 확인 중 캡처만 연결된 작업 기록 폴더(git-issue continuity) 허용
 - 이모지

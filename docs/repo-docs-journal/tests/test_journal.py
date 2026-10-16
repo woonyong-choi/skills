@@ -126,6 +126,13 @@ class PathTest(SyntheticVault):
         self.assertEqual(Path(result["path"]), (area / "docs" / "판단" / "2026-10-16-보고서-위치-Vault-통일.md").resolve())
         self.assertEqual(result["scope"], "project")
 
+    def test_registered_project_failing_check_does_not_fall_back_to_legacy(self) -> None:
+        project, _ = self.project()
+        (project / "CLAUDE.md").unlink()
+        with self.assertRaises(journal.JournalError):
+            journal.target("판단", "보고서 위치 Vault 통일", "2026-10-16", project)
+        self.assertFalse((self.vault / "legacy" / "판단").exists())
+
     def test_name_rule(self) -> None:
         for topic in ("report location", "보고서", "보고서 위치 저장 방식 Vault 통일 결정", "보고서/위치 통일"):
             with self.assertRaises(journal.JournalError, msg=topic):
@@ -226,3 +233,12 @@ class CheckTest(SyntheticVault):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StdinScreenTest(unittest.TestCase):
+    def test_screen_reads_source_from_stdin(self) -> None:
+        source = "버린 대안: A는 느려서 제외. 아마 캐시가 있을 것"
+        args = [sys.executable, str(SCRIPT), "screen", "--source", "-", "--alternative", "A는 느려서 제외", "--assumption", "아마 캐시가 있을 것", "--structure", "저장 위치"]
+        done = subprocess.run(args, input=source, capture_output=True, text=True, timeout=30)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertTrue(json.loads(done.stdout)["pass"])

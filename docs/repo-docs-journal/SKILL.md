@@ -25,7 +25,7 @@ description: "비공개 판단·판단 변경·작업 일지·원칙을 기록·
 
 - 파일 이름: `{YYYY-MM-DD}-{주제}.md`, 주제는 한국어 2~5단어, 공백은 `-`
 - 목록: 속성(날짜, 종류, 이전 판단, 관련)으로 Obsidian이 생성. 손으로 관리하는 목록 파일 금지
-- 쓰기 전: `python3 <이 스킬 폴더>/scripts/journal.py path --kind {종류} --topic "{주제}"` → 출력 `path`에만 Write. 등록 Vault 해석·쓰기 검사를 git-issue `project_context.py` 함수 직접 호출로 수행, 실패(Vault 미등록·영역 밖)면 종료 1, 파일 0개로 중단
+- 쓰기 전: `python3 <이 스킬 폴더>/scripts/journal.py path --kind {종류} --topic "{주제}"` → 출력 `path`에만 Write. 등록 Vault 해석·쓰기 검사를 git-issue `project_context.py` 함수 직접 호출로 수행, 등록 안 된 프로젝트면 legacy, 실패(Vault 미등록·등록 프로젝트 검사 실패·영역 밖)면 종료 1, 파일 0개로 중단
 - 쓴 뒤: `journal.py check` 출력 0건까지 수정. Python 3.9+, git-issue 스킬 필요
 
 ## 기록 기준
@@ -37,7 +37,7 @@ description: "비공개 판단·판단 변경·작업 일지·원칙을 기록·
 3. 구조: 저장 위치 / 폴더·파일 구조 / 데이터 형식 / 저장소·스킬 사이 경계와 역할 / 외부 계약(명령·설정·API) / 작업 흐름(언제 무엇이 자동으로 도는지) 중 하나 → 이름 기재
 
 - 제외 예: 화면 값(색·여백), 문구, 함수 안 구현, 실행으로 확인 끝난 설정 값
-- 판정: 근거 원문(PR 본문, 연결 이슈, PR 댓글, 그 PR로 이어진 세션 대화)을 파일로 저장 → `journal.py screen --source {파일} ... --alternative "{인용}" --assumption "{인용}" --structure "{목록 이름}"`. 인용은 원문 그대로
+- 판정: 근거 원문(PR 본문, 연결 이슈, PR 댓글, 그 PR로 이어진 세션 대화)을 표준 입력으로 → `journal.py screen --source - ... --alternative "{인용}" --assumption "{인용}" --structure "{목록 이름}"`. 인용은 원문 그대로
 - 탈락: 이유 한 줄(`기록 기준 미충족: 가정 문장 없음`)
 
 ## PR 머지 뒤
@@ -46,9 +46,7 @@ description: "비공개 판단·판단 변경·작업 일지·원칙을 기록·
 
 1. 근거 수집: 머지된 PR 본문·연결 이슈·PR 댓글(`gh pr view {번호} --json body,comments,closingIssuesReferences`), 세션 대화에서 그 PR로 이어진 결정
 2. 기록 기준 판정(위 절)
-3. 모드: `journal.py mode`(설정 `<설정 폴더>/journal.json`, `vault.json`과 같은 폴더, 기본 normal)
-   - normal: 기준 세 칸 인용문을 보여 주고 질문 뒤 저장
-   - bypass: 통과 시 바로 저장, 작업 보고 끝에 한 줄 `판단 기록: {경로} "{제목}"`
+3. 모드: `journal.py mode`(설정 `<설정 폴더>/journal.json`, `vault.json`과 같은 폴더, 기본 normal). normal은 기준 세 칸 인용문을 보여 주고 질문 뒤 저장, bypass는 통과 시 바로 저장. 보고는 작성 시점 절
 4. 이전 판단을 뒤집으면 판단 변경 양식
 
 직접 요청("이거 기록해 줘")도 같은 기준. 미충족이면 이유를 말하고, 사용자가 그래도 원하면 저장
@@ -88,4 +86,4 @@ description: "비공개 판단·판단 변경·작업 일지·원칙을 기록·
 - 작성 전 같은 폴더 기록의 속성·제목으로 이전 판단 변경 여부 확인. 바꾸면 판단 변경 양식
 - 기간을 받으면 저장소 추적기의 해당 기간 결정·오류 원인·변경 근거 수집. GitHub 사용 시 `gh`로 닫힌 `design`·`bug` 이슈와 PR 조회, 추적기가 없으면 문서 내부 결정 기록 사용
 - 작업 일지에 속한 기록이면 작업 일지의 진행 기록에 한 행 추가
-- 보고: 저장한 경로와 남은 `[추정]` 수만
+- 보고: developer-thinking 작업 보고 틀의 바뀐 것 칸에 `판단 기록: {경로} "{제목}"`, 남은 `[추정]`이 있으면 못 한 것 칸에 개수

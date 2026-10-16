@@ -27,4 +27,5 @@ llmstxt.org 형식(2026-09-30 확인)
 - Optional → `docs/README.md`의 `experiments/`, `decisions/` 경로 줄과 `CHANGELOG.md`(링크 글자는 그 파일의 `#` 제목, 설명 없음)
 - URL → `https://raw.githubusercontent.com/{소유자}/{저장소}/{기본 브랜치}/docs/{파일}`. 원문 마크다운 주소. 다른 호스트는 저장소 원문 URL 정책 적용
 
+- 언어: 고정 제목·이름·소개는 영어(`README.en.md`가 있으면 그 파일). 문서 목록의 제목·설명은 `docs/README.md` 원문 그대로, 번역 금지(번역하면 원문과 어긋남)
 - `## Docs`, `## Optional`: 영어 제목 고정. `Optional`은 형식이 정한 이름으로 건너뛰어도 되는 문서라는 뜻

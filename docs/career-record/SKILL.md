@@ -51,7 +51,7 @@ description: "경력 원본에 프로젝트·성과를 추가·병합·수정하
 
 세션 안 `gh pr merge`(또는 `gh api`의 PUT `pulls/N/merge`) 성공 뒤 Developer Thinking 훅이 안내 출력. 직접 요청("이거 경력에 추가해 줘")도 같은 순서
 
-1. 기계 제외: `gh pr view {번호} --json author,title,files,url > {임시}.json` → `record.py screen {임시}.json --user $(gh api user --jq .login)`. `skip`이면 묻지 않고 끝
+1. 기계 제외: `gh pr view {번호} --json author,title,files,url | record.py screen - --user $(gh api user --jq .login)`. `skip`이면 묻지 않고 끝
 2. 기록 조건 셋 모두: 사용자 계정 PR, 동작·결과 변화(기능 추가, 성능 개선, 장애·버그 해결, 구조 변경, 운영 자동화), 검증(테스트, 측정, 운영 관찰). 제외: 문서·오타, 포맷, 의존성 버전만, 동작 변화 없는 이름 변경
 3. 위치: `locate --remote $(git remote get-url origin) --author {작성자}` → 저장소 속성 일치 1개면 그 폴더, 여럿이면 질문, 0개면 최근 수정 프로젝트 3개 + `새 프로젝트(소속 선택)`. 개인 계정 저장소는 `개인/` 기본
 4. 같은 줄 판정([원본 형식](references/format.md) 같은 줄 판정): 같으면 `merge`, 아니면 `add --similar`(가장 가까운 줄 있을 때)
@@ -66,7 +66,7 @@ normal 질문 예:
 비슷한 줄: "정산 배치를 주문 이벤트 처리로 전환" → 병합 / 새 줄 / 건너뛰기
 ```
 
-놓친 머지 정리("최근 머지된 PR 경력 정리"): `since` 시각 이후 `gh search prs --author @me --merged-at ">={시각}" --json url,repository` → PR마다 위 1~5 → `stamp`. 시각이 없으면 범위 질문
+놓친 머지 정리("최근 머지된 PR 경력 정리"): `since` 시각 이후 `gh search prs --author @me --merged-at ">={시각}" --json url,repository` → PR마다 위 1~5 → `stamp`. 시각이 없으면 최근 30일로 가정, 가정은 보고 끝 한 줄
 
 ## 초안과 빈칸
 
