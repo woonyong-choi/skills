@@ -124,15 +124,15 @@ python3 <스킬 설치 폴더>/repo-docs-journal/scripts/journal.py mode bypass
 |---|---|
 | [skill-sync](tools/skill-sync/SKILL.md) | 원본 검사, 도구별 설치, Claude 계정용 zip |
 
-### pstack(한국어 이식본)
+### lazy-mode
 
-[pstack](https://github.com/cursor/plugins/tree/main/pstack)(Lauren Tan, MIT) 0.15.25를 한국어로 옮기고 Claude Code CLI, Codex CLI, OpenCode 공용으로 바꾼 스킬 53개를 `pstack/` 아래에 둡니다. 영어 원본과 출처는 [pstack/_upstream](pstack/_upstream/SOURCE.json)에 그대로 보관합니다.
+작업 순서표(플레이북)·검토·검증 스킬 묶음입니다. [pstack](https://github.com/cursor/plugins/tree/main/pstack)(MIT) 0.15.25를 한국어로 옮기고 Claude Code CLI, Codex CLI, OpenCode 공용으로 바꿨습니다. 영어 원본과 라이선스는 [lazy-mode/_upstream](lazy-mode/_upstream/SOURCE.json)에 보관합니다.
 
-- 입구: `/pstack-mode`(Codex는 `$pstack-mode`)에 요청을 붙이면 23개 플레이북 중 맞는 순서를 고릅니다. 도움말은 `/pstack-help`
-- 원본과 달라진 점: Cursor 전용 기능과 Grok 지정을 뺐습니다. 서브에이전트·주기적 깨우기·다른 회사 모델 검토는 [호스트 대응표](pstack/pstack-mode/references/hosts.md) 한 곳에서 호스트별로 정합니다. Grok Bot 전용 `make-bot-ui`는 뺐습니다
-- 모델: 본문은 역할 이름(`code`, `judgment`, `review`, `cheap`)만 씁니다. 실제 모델은 `/setup-pstack`이 만드는 `~/.config/skills/models.json`이 정합니다([역할별 모델](pstack/pstack-mode/references/models.md))
+- 입구: `/just-mode`(Codex는 `$just-mode`)에 요청을 붙이면 23개 플레이북 중 맞는 순서를 고릅니다. 도움말은 `/just-help`
+- 원본과 달라진 점: Cursor 전용 기능과 Grok 지정을 뺐습니다. 서브에이전트·주기적 깨우기·다른 회사 모델 검토는 [호스트 대응표](lazy-mode/just-mode/references/hosts.md) 한 곳에서 호스트별로 정합니다. Grok Bot 전용 `make-bot-ui`는 뺐습니다
+- 모델: 본문은 역할 이름(`code`, `judgment`, `review`, `cheap`)만 씁니다. 실제 모델은 `/lazy-setup`이 만드는 `~/.config/skills/models.json`이 정합니다([역할별 모델](lazy-mode/just-mode/references/models.md))
 - 부르는 법: 대부분 사람이 직접 부를 때만 켜집니다. Claude Code는 설명을 평소 문맥에 넣지 않고, Codex는 스킬마다 `agents/openai.yaml`이 자동 선택을 막습니다
-- 하위 에이전트 정의(`pstack-agent`, `comment-sicko`)는 [pstack/_agents](pstack/_agents/pstack-agent.md)에 있고 아직 자동 설치하지 않습니다. 설치되지 않은 호스트에서는 스킬이 같은 지시를 프롬프트에 넣습니다
+- 하위 에이전트 정의(`just-agent`, `comment-sicko`)는 [lazy-mode/_agents](lazy-mode/_agents/just-agent.md)에 있고 아직 자동 설치하지 않습니다. 설치되지 않은 호스트에서는 스킬이 같은 지시를 프롬프트에 넣습니다
 - 검사: 스킬 폴더의 `UPSTREAM.json`이 있으면 이 저장소 작성 규칙 대신 형식만 검사합니다
 - 원본 갱신 따라가기: cursor/plugins를 받은 뒤 아래 명령. `_upstream`만 갱신하고 바뀐 원본 파일 목록을 출력하니, 목록을 보고 이식본에 옮깁니다
 
