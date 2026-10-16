@@ -25,11 +25,11 @@ description: "개발 중 단일 실행 관측이나 자료 요약을 짧은 기�
 
 ## insight
 
-단일 실행 관측인 insight 작성·갱신 전 [insight.md](references/insight.md) 필수 확인
+insight 작성·갱신 전 [insight.md](references/insight.md) 필수 확인
 
 ## reference
 
-자료 요약인 reference 작성·갱신 전 [reference.md](references/reference.md) 필수 확인
+reference 작성·갱신 전 [reference.md](references/reference.md) 필수 확인
 
 ## 공통 규칙
 

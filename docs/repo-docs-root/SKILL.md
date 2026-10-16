@@ -35,16 +35,16 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 
 ## AGENTS.md
 
-`AGENTS.md` 작성·갱신·검토 전 [agents.md](references/agents.md) 필수 확인. 등록 Vault 프로젝트는 repo-docs `references/project-context.md`의 진입과 이전 절 우선, 승인 문서 임의 제거 금지
+작성·갱신·검토 전 [agents.md](references/agents.md) 필수 확인. 등록 Vault 프로젝트는 repo-docs `references/project-context.md`의 진입과 이전 절 우선, 승인 문서 임의 제거 금지
 
 ## .github/CONTRIBUTING.md
 
-`.github/CONTRIBUTING.md` 작성·갱신·검토 전 [contributing.md](references/contributing.md) 필수 확인
+작성·갱신·검토 전 [contributing.md](references/contributing.md) 필수 확인
 
 ## .github/SECURITY.md
 
-`.github/SECURITY.md` 작성·갱신·검토 전 [security.md](references/security.md) 필수 확인
+작성·갱신·검토 전 [security.md](references/security.md) 필수 확인
 
 ## CHANGELOG.md
 
-`CHANGELOG.md` 작성·갱신·검토 전 [changelog.md](references/changelog.md) 필수 확인
+작성·갱신·검토 전 [changelog.md](references/changelog.md) 필수 확인

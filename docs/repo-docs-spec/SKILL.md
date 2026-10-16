@@ -15,24 +15,24 @@ description: "구현된 protocol·CLI·UI·data·configuration·errors의 형식
 
 ## protocol.md
 
-`protocol.md` 작성·갱신·검토 전 [protocol.md](references/protocol.md) 필수 확인
+작성·갱신·검토 전 [protocol.md](references/protocol.md) 필수 확인
 
 ## cli.md
 
-`cli.md` 작성·갱신·검토 전 [cli.md](references/cli.md) 필수 확인
+작성·갱신·검토 전 [cli.md](references/cli.md) 필수 확인
 
 ## ui.md
 
-`ui.md` 작성·갱신·검토 전 [ui.md](references/ui.md) 필수 확인
+작성·갱신·검토 전 [ui.md](references/ui.md) 필수 확인
 
 ## data.md
 
-`data.md` 작성·갱신·검토 전 [data.md](references/data.md) 필수 확인
+작성·갱신·검토 전 [data.md](references/data.md) 필수 확인
 
 ## configuration.md
 
-`configuration.md` 작성·갱신·검토 전 [configuration.md](references/configuration.md) 필수 확인
+작성·갱신·검토 전 [configuration.md](references/configuration.md) 필수 확인
 
 ## errors.md
 
-`errors.md` 작성·갱신·검토 전 [errors.md](references/errors.md) 필수 확인
+작성·갱신·검토 전 [errors.md](references/errors.md) 필수 확인
