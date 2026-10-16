@@ -22,7 +22,7 @@ description: "README·docs·PR에 넣는 구조도·차트·스크린샷·데모
 - 데모 GIF → GIF → `docs/assets/demo.gif` → 폭 960px 이하 → 15초 이하, 10MB 이하
 - 스크린샷 → PNG → `docs/assets/{이름}-light.png`, `{이름}-dark.png` → 파일 폭 1920px → 1장 1MB 이하
 - 구조도·차트 → SVG + 원본 → `docs/assets/{이름}.svg` → 제한 없음 → 해당 없음
-- PR 화면 비교 → PNG → `pr-assets` 브랜치 → 스크린샷과 같음 → 스크린샷 용량과 동일
+- PR 화면 비교 → PNG → `pr-assets` 브랜치 → 창 폭 1280px·390px(git-pull-request 화면·움직임 변경 절) → 스크린샷 용량과 동일
 
 - 이름: 보여 주는 것을 영어 소문자 kebab-case. 예: `lag-table-growing-light.png`. `image1`, 날짜·한글 이름 금지
 

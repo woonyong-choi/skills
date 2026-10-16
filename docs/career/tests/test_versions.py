@@ -137,6 +137,12 @@ class FlowTest(unittest.TestCase):
             VERSIONS.confirm(outside, build=False)
         self.assertEqual(sorted(p.name for p in outside.iterdir()), ["이력서.typ"])
 
+    def test_place_checks_posting_folder_before_any_write(self) -> None:
+        outside = Path(self.directory.name) / "elsewhere" / "2026-11-01-회사-백엔드"
+        self.assertEqual(VERSIONS.main(["place", str(outside)]), 1)
+        self.assertFalse(outside.exists())
+        self.assertEqual(VERSIONS.main(["place", str(self.posting)]), 0)
+
     @unittest.skipUnless(HAS_TYPST, "typst 없음")
     def test_subfolder_template_and_figure_compile_with_marks_on_and_off(self) -> None:
         self.work.write_text(FIRST + "\n#changes-legend([이력서 작업본], [이력서-0001])\n#changed[이전 문장][새 문장]\n", encoding="utf-8")

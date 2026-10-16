@@ -365,3 +365,23 @@ def _check_code_style_language_reader(reader: Path, skills: Path) -> None:
                 assert str(source) in failed.stderr and 'Traceback' not in failed.stderr
         finally:
             source.write_bytes(content)
+
+
+def test_dependency_folder_symlink_does_not_block_install(tmp_path: Path) -> None:
+    """npm ci가 만든 node_modules 안 symlink는 배포 대상 밖이라 설치를 막지 않고 복사되지도 않음"""
+    source = tmp_path / 'source'
+    shutil.copytree(SOURCE, source)
+    skill = next(path.parent for path in sorted(source.rglob('SKILL.md')))
+    modules = skill / 'scripts/node_modules'
+    (modules / 'real').mkdir(parents=True)
+    (modules / '.bin').mkdir()
+    (modules / '.bin/link').symlink_to(modules / 'real')
+    home = tmp_path / 'home'
+    (home / '.claude').mkdir(parents=True)
+    result = subprocess.run(
+        [sys.executable, str(INSTALL), '--source', str(source), '--target-home', str(home), '--dist', str(home / 'dist')],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert list(home.rglob('SKILL.md')), 'installed'
+    assert not list(home.rglob('node_modules'))

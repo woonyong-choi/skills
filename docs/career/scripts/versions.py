@@ -1,8 +1,8 @@
 """공고 폴더의 이력서·포트폴리오 작업 파일 확정, 변경 표시 개수, 폴더 구조 검사.
 
-사용: python3 versions.py confirm <문서 폴더> | marks <작업 파일> | check <공고 폴더>
-인자: confirm은 이력서/ 또는 포트폴리오/ 폴더, marks는 작업 .typ, check는 공고 폴더. confirm --no-compile은 PDF 생성 생략
-출력: confirm은 stdout 확정 .typ·.pdf 경로, marks는 stdout `추가 N 바뀜 N 삭제 N`, check는 stdout `ok`. stderr 실패 이유, 종료 0 성공·1 실패·2 인자 오류
+사용: python3 versions.py place <공고 폴더> | confirm <문서 폴더> | marks <작업 파일> | check <공고 폴더>
+인자: place는 만들 공고 폴더(없어도 됨), confirm은 이력서/ 또는 포트폴리오/ 폴더, marks는 작업 .typ, check는 공고 폴더. confirm --no-compile은 PDF 생성 생략
+출력: place는 stdout 검사한 절대 경로, confirm은 stdout 확정 .typ·.pdf 경로, marks는 stdout `추가 N 바뀜 N 삭제 N`, check는 stdout `ok`. stderr 실패 이유, 종료 0 성공·1 실패·2 인자 오류
 실행 조건: Python 3.9 이상. PDF 생성은 PATH의 typst 또는 Python typst 패키지
 """
 
@@ -213,12 +213,15 @@ def check(posting: Path) -> list[str]:
 # basis: estimate
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("confirm", "marks", "check"))
+    parser.add_argument("action", choices=("place", "confirm", "marks", "check"))
     parser.add_argument("path", type=Path)
     parser.add_argument("--no-compile", action="store_true")
     args = parser.parse_args(argv)
     try:
-        if args.action == "confirm":
+        if args.action == "place":
+            inside_vault(args.path)
+            print(args.path.resolve())
+        elif args.action == "confirm":
             for path in confirm(args.path.resolve(), build=not args.no_compile):
                 print(path)
         elif args.action == "marks":

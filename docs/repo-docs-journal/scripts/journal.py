@@ -1,7 +1,7 @@
 """판단 기록의 기록 기준 판정, 저장 경로 계산·검사, 기록 형식 검사, 놓친 것 모으기, 모드 설정.
 
 사용: python3 journal.py <명령> ... (명령: screen, path, check, misses, mode)
-인자: screen은 --source 근거 파일(반복)·--alternative·--assumption 인용문·--structure 목록 이름, path는 --kind·--topic·선택 --date·--project
+인자: screen은 --source 근거 파일(반복, `-`는 표준 입력 하나)·--alternative·--assumption 인용문·--structure 목록 이름, path는 --kind·--topic·선택 --date·--project
 출력: stdout JSON. 종료 0 통과·1 기준 미충족·형식 위반·위치 거부(파일 0개)·2 인자 오류
 설정: <설정 폴더>/journal.json의 mode(normal|bypass, 기본 normal). 설정 폴더는 vault.json과 같은 곳
 """
@@ -111,8 +111,12 @@ def target(kind: str, topic: str, day: str, project_path: Path | None) -> dict:
     if project_path is not None:
         try:
             project = pc.check_project(project_path)
-        except (pc.ContextError, OSError, ValueError, IndexError):
-            project = None
+        except pc.ContextError as error:
+            # 등록 프로젝트가 아니면 프로젝트 무관 기록(legacy). 등록됐지만 검사 실패면 중단
+            if str(error) != pc.UNREGISTERED:
+                raise JournalError(f"프로젝트 판정 실패: {error}") from error
+        except (OSError, ValueError, IndexError) as error:
+            raise JournalError(f"프로젝트 판정 실패: {error}") from error
     folder = (Path(project["area"]) / "docs" if project else vault / "legacy") / KINDS[kind]
     path = (folder / name).resolve()
     try:
@@ -275,7 +279,7 @@ def run(argv: list[str]) -> tuple[int, dict]:
     mode.add_argument("value", nargs="?", choices=("normal", "bypass"))
     args = parser.parse_args(argv)
     if args.command == "screen":
-        result = screen([path.read_text(encoding="utf-8") for path in args.source], args.alternative, args.assumption, args.structure)
+        result = screen([sys.stdin.read() if str(path) == "-" else path.read_text(encoding="utf-8") for path in args.source], args.alternative, args.assumption, args.structure)
         return (0 if result["pass"] else 1), result
     if args.command == "mode":
         return 0, {"mode": config(args.value)["mode"]}

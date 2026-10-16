@@ -345,6 +345,16 @@ class ExchangeTest(Case):
         os.environ["WOON_KNOWLEDGE_ROOT"] = str(self.base)
         self.assertTrue(core.private_problem(self.folder, str(self.repo)))
 
+    def test_record_root_ignored_by_vault_git_stores_conversation(self) -> None:
+        vault = self.base / "vault"
+        folder = vault / "legacy/orchestration/task"
+        folder.mkdir(parents=True)
+        subprocess.run(["git", "init", "-q", str(vault)], check=True)
+        os.environ["WOON_KNOWLEDGE_ROOT"] = str(vault)
+        self.assertTrue(core.private_problem(folder, str(self.repo)), "추적 대상이면 거부")
+        (vault / ".gitignore").write_text("legacy/orchestration/\n", encoding="utf-8")
+        self.assertEqual(core.private_problem(folder, str(self.repo)), "")
+
 
 class SessionStartStabilityTest(Case):
     def run_hook(self, payload: dict) -> bytes:

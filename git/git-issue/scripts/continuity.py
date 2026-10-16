@@ -821,17 +821,34 @@ def clip(text: str, limit: int) -> str:
     return kept + f"\n[truncated: kept {len(kept.encode())} of {len(raw)} bytes]"
 
 
-def private_problem(folder: Path, repo: str | None) -> str:
-    """대화 원문 저장 위치 검사. 작업본·등록 Vault 안이면 거부 사유, 통과는 빈 값"""
-    import project_context
+# cost: time O(1), heap O(1), stack O(1), io 1
+# basis: estimate
+def git_ignored(root: Path, place: Path) -> bool:
+    """place가 root 저장소에서 Git 무시 대상인지. Git 없음·저장소 아님은 거짓"""
+    try:
+        done = subprocess.run(
+            ["git", "-C", str(root), "check-ignore", "-q", str(place)],
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return False
+    return done.returncode == 0
 
+
+def private_problem(folder: Path, repo: str | None) -> str:
+    """대화 원문 저장 위치 검사. 작업본 안, Vault 안이면서 Git 추적 대상이면 거부 사유, 통과는 빈 값"""
     place = folder.resolve()
-    blocked = [Path(repo)] if repo else []
+
+    def inside(area: Path) -> bool:
+        return place == area.resolve() or area.resolve() in place.parents
+
+    if repo and inside(Path(repo)):
+        return "record root inside working tree; conversation excerpts not stored"
     with contextlib.suppress(project_context.ContextError, OSError, ValueError):
-        blocked.append(project_context.resolve_vault())
-    for area in blocked:
-        if place == area.resolve() or area.resolve() in place.parents:
-            return "record root inside working tree or Vault; conversation excerpts not stored"
+        vault = project_context.resolve_vault()
+        if inside(vault) and not git_ignored(vault, place):
+            return "record root tracked by Vault Git; conversation excerpts not stored"
     return ""
 
 

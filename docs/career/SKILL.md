@@ -19,7 +19,7 @@ description: "자기소개서만 쓰는 작업 제외, 채용 공고(JD)에 맞�
 
 ## 지원 폴더
 
-쓰기 전 Vault 확인: `versions.py`가 등록 Vault의 `career/` 아래인지 검사, 아니면 파일 0개로 중단. 미등록이면 사용자에게 Vault 절대 경로 요청 → `project_context.py --register-vault <경로>`. 등록 뒤 `<Vault>/career/` 없으면 생성
+쓰기 전 Vault 확인: 공고 폴더를 만들기 전 `python3 <이 스킬 폴더>/scripts/versions.py place <공고 폴더>`로 등록 Vault의 `career/` 아래인지 검사(확정 `confirm`도 같은 검사). 종료 0이 아니면 파일 0개로 중단. Vault 등록 절차: repo-docs `references/project-context.md`. 등록 뒤 `<Vault>/career/` 없으면 생성
 
 ```text
 <Vault>/career/

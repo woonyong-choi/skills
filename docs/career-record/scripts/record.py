@@ -1,7 +1,7 @@
 """경력 원본(<Vault>/career/)의 프로젝트 줄을 추가·병합·채움·수정·삭제하고 구조·등급을 검사한다.
 
 사용: python3 record.py <명령> ... (명령: check, add, merge, fill, edit, remove, new-project, locate, screen, blanks, mode, since, stamp)
-인자: 명령마다 프로젝트 폴더(경력 원본 기준 상대 경로 또는 절대 경로), --first·--line 줄 첫 줄, --set 칸=값(반복), --pr PR 주소, --yes 사용자 승인
+인자: 명령마다 프로젝트 폴더(경력 원본 기준 상대 경로 또는 절대 경로), --first·--line 줄 첫 줄, --set 칸=값(반복), --pr PR 주소, --yes 사용자 승인. screen의 PR JSON은 파일 또는 `-`(표준 입력)
 출력: stdout JSON. 종료 0 성공·1 검사 위반 또는 위치 거부(파일 0개)·2 인자 오류·3 질문 필요(파일 0개, ask에 질문 문장)
 설정: <설정 폴더>/career-record.json의 mode(normal|bypass, 기본 normal)와 last_recorded. 설정 폴더는 vault.json과 같은 곳
 """
@@ -756,7 +756,7 @@ def run(argv: list[str]) -> tuple[int, dict]:
         write_config({**config, "last_recorded": at})
         return 0, {"last_recorded": at}
     if args.command == "screen":
-        return 0, screen(json.loads(args.pr_json.read_text(encoding="utf-8")), args.user)
+        return 0, screen(json.loads(sys.stdin.read() if str(args.pr_json) == "-" else args.pr_json.read_text(encoding="utf-8")), args.user)
     root = career_root() if args.command != "check" or args.root is None else args.root.resolve()
     if args.command == "check":
         problems = check(root)
