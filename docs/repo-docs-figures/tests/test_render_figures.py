@@ -118,7 +118,7 @@ class ThinkflowCliTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             repo = Path(folder)
             subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-            for path in ("docs/assets/a.thinkflow", "docs/assets/old.dap", "tests/b.thinkflow", "docs/experiments/x/results/terminal.tape"):
+            for path in ("docs/assets/a.thinkflow", "docs/assets/old.dap", "tests/b.thinkflow", "docs/notes/demo.tape"):
                 (repo / path).parent.mkdir(parents=True, exist_ok=True)
                 (repo / path).write_text("thinkflow\n", encoding="utf-8")
             subprocess.run(["git", "add", "."], cwd=repo, check=True)
@@ -163,7 +163,7 @@ class ThinkflowCliTest(unittest.TestCase):
             patch.object(FIGURES.subprocess, "run") as run,
             contextlib.redirect_stderr(io.StringIO()) as stderr,
         ):
-            self.assertEqual(FIGURES.main(["a.thinkflow", "results/terminal.tape"]), 1)
+            self.assertEqual(FIGURES.main(["a.thinkflow", "demo.tape"]), 1)
         self.assertIn("vhs not found", stderr.getvalue())
         run.assert_not_called()
 

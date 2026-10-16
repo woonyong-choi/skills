@@ -1,4 +1,4 @@
-"""README.md와 docs/README.md로 llms.txt(--full이면 llms-full.txt도) 생성.
+"""README.en.md(없으면 README.md)와 docs/README.md 목록으로 llms.txt(--full이면 llms-full.txt도) 생성.
 
 사용: python3 gen_llms.py [--full] (저장소 루트에서 실행)
 
@@ -17,12 +17,13 @@ import sys
 from pathlib import Path
 
 OPTIONAL_PREFIXES = ("experiments/", "decisions/")
-ROW = re.compile(r"\| \[(.+?)\]\((.+?)\) \| (.+?) \|$")
-# 분류별 목록의 문서 줄: 들여쓰기 0~3단계, `- [제목](경로): 답하는 것`. 분류 줄(링크 없음) 제외
 # 머리 뒤 소개 문단이 없는 README 틀(repo-docs-readme)의 소개 절
 INTRO_SECTIONS = ("Why", "해결하는 문제", "Problem and constraints", "문제와 제약")
 IMAGE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
-ITEM = re.compile(r"^(?: {2}){0,3}- \[(.+?)\]\((.+?)\): (.+)$")
+# 분류(## 절) 아래 문서 줄: 들여쓰기 0~2단계, `- [제목](경로): 답하는 것`
+ITEM = re.compile(r"^(?: {2}){0,2}- \[(.+?)\]\((.+?)\): (\S.*)$")
+LIST_LINE = re.compile(r"^ *[-*+] ")
+FENCE_LINE = re.compile(r"^[ \t]*(`{3,}|~{3,})")
 LANGUAGE_LINE = re.compile(r"\|.*README[\w.-]*\.md|README[\w.-]*\.md.*\|")
 FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,}).*?^[ \t]*\1[ \t]*$\n?", re.MULTILINE | re.DOTALL)
 LINK = re.compile(r"\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)|!?\[[^\]]*\]\([^)]*\)|<a\b[^>]*>.*?</a>", re.IGNORECASE)
@@ -76,16 +77,27 @@ def section_intro(blocks: list[str]) -> list[str]:
 # vars: c = docs/README.md 글자 수, r = 문서 줄 수
 # basis: estimate
 def read_rows() -> list[tuple[str, str, str]]:
+    """목록 줄을 위에서부터 순서대로. 코드 블록 안 제외, 형식이 틀린 목록 줄과 표만 있는 옛 형식은 종료"""
     rows = []
-    in_fence = False
-    for line in open("docs/README.md", encoding="utf-8"):
-        if line.startswith("```"):
-            in_fence = not in_fence
-            continue
+    fence = ""
+    table = False
+    for number, line in enumerate(open("docs/README.md", encoding="utf-8"), 1):
         text = line.rstrip("\n")
-        match = None if in_fence else ROW.match(text) or ITEM.match(text)
-        if match:
+        marker = FENCE_LINE.match(text)
+        if marker and (not fence or marker.group(1).startswith(fence)):
+            fence = "" if fence else marker.group(1)
+            continue
+        if fence:
+            continue
+        if text.lstrip().startswith("|"):
+            table = True
+        elif LIST_LINE.match(text):
+            match = ITEM.match(text)
+            if not match:
+                raise SystemExit(f"docs/README.md {number}번째 줄 목록 형식 아님(`- [제목](경로): 답하는 것`): {text.strip()}")
             rows.append(match.groups())
+    if table and not rows:
+        raise SystemExit("docs/README.md가 목록 형식이 아님")
     return rows
 
 
@@ -121,19 +133,20 @@ def is_public(root: Path, relative: str, private_dirs: tuple[str, ...] = (".loca
 
 
 # cost: time O(t), heap O(t), stack O(1), io O(n)
-# vars: t = README와 목록 문서 글자 수 합, n = 문서 줄 수
+# vars: t = README·영어판과 목록 문서 글자 수 합, n = 문서 줄 수
 # basis: estimate
 def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url: str | None = None, private_dirs: tuple[str, ...] = (".local", "archive")) -> int:
     raw = raw_base_url(remote, branch, raw_url)
     rows = read_rows()
     root = Path.cwd().resolve()
-    inputs = ["README.md", "docs/README.md"] + ["docs/" + target for _, target, _ in rows]
+    source = "README.en.md" if Path("README.en.md").exists() or Path("README.en.md").is_symlink() else "README.md"
+    inputs = list(dict.fromkeys(["README.md", source, "docs/README.md"])) + ["docs/" + target for _, target, _ in rows]
     if Path("CHANGELOG.md").exists() or Path("CHANGELOG.md").is_symlink():
         inputs.append("CHANGELOG.md")
     for relative in inputs:
         if not is_public(root, relative, private_dirs):
             raise SystemExit("공개 문서 경로 아님: " + relative)
-    readme = FENCE.sub("", open("README.md", encoding="utf-8").read())
+    readme = FENCE.sub("", open(source, encoding="utf-8").read())
     blocks = [block.strip() for block in re.split(r"\n\s*\n", readme) if block.strip()]
     heading = re.search(r"<h1[^>]*>(.*?)</h1>|^# ([^\n]+)$", readme, re.MULTILINE | re.DOTALL)
     texts = []
@@ -155,11 +168,11 @@ def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url:
         if lines:
             texts.append(" ".join(lines))
     if not heading or len(texts) < 2:
-        raise SystemExit("README.md needs a title, a tagline paragraph and an intro paragraph")
+        raise SystemExit(f"{source} needs a title, a tagline paragraph and an intro paragraph")
     tagline, intro = texts[0], texts[1]
     name = html.unescape(" ".join(re.sub(r"<[^>]+>", " ", heading.group(1) or heading.group(2)).split())) if heading else ""
     if not name:
-        raise SystemExit("README.md needs a title, a tagline paragraph and an intro paragraph")
+        raise SystemExit(f"{source} needs a title, a tagline paragraph and an intro paragraph")
     main_rows = [row for row in rows if not row[1].startswith(OPTIONAL_PREFIXES)]
     optional_rows = [row for row in rows if row[1].startswith(OPTIONAL_PREFIXES)]
     index = [f"# {name}", "", f"> {tagline}", "", intro, "", "## Docs", ""]

@@ -18,7 +18,7 @@ description: "AGENTS.md·CLAUDE.md 링크·CHANGELOG·CONTRIBUTING·SECURITY·LI
 - `LICENSE` → 루트 → 해당 없음 → 조건부 → 조건부 → 조건부 → 조건부
 - `AGENTS.md` → 루트 → repo-docs → 조건부 → 조건부 → 조건부 → 조건부
 - `CLAUDE.md` → 루트 → 해당 없음 → 조건부 → 조건부 → 조건부 → 조건부
-- `CONTRIBUTING.md` → `.github/` → repo-docs → 없음 → 필수 → 필수 → 필수
+- `CONTRIBUTING.md` → `.github/` → repo-docs → 없음 → 없음 → 필수 → 필수
 - `SECURITY.md` → `.github/` → repo-docs → 없음 → 없음 → 필수 → 필수
 - `CHANGELOG.md` → 루트 → repo-docs → 없음 → 없음 → 없음 → 필수
 

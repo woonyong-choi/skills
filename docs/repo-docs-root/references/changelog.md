@@ -1,27 +1,28 @@
 # CHANGELOG.md
 
 ````text
-# Changelog
+# 변경 기록
 
-Notable changes by version. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/).
+버전별 주요 변경을 적는다. 형식: [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/). 버전: [유의적 버전](https://semver.org/lang/ko/).
 
 ## {버전} - {YYYY-MM-DD}
 
 ### {분류}
 
-- {변경} ([#{번호}]({PR URL}))
+- {PR 제목의 설명} ([#{번호}]({PR URL}))
 ````
 
 커밋 type → 분류:
 
-- `feat` 새 기능 → `Added`
-- `feat` 기존 동작 변경, `perf` → `Changed`
-- 사용 중단 표시 → `Deprecated`
-- 기능 제거 → `Removed`
-- `fix` → `Fixed`
-- 보안 수정 → `Security`. `fix`여도 `Fixed`보다 우선
+- `feat` 새 기능 → `추가`
+- `feat` 기존 동작 변경, `perf` → `변경`
+- 사용 중단 표시 → `사용 중단`
+- 기능 제거 → `제거`
+- `fix` → `수정`
+- 보안 수정 → `보안`. `fix`여도 `수정`보다 우선
 
-- 분류 순서: 위 표 순서. 항목이 없는 분류는 제목까지 제외
-- 릴리스 PR에서 지난 태그 뒤 머지된 PR마다 항목 하나. 글자는 PR 제목의 설명을 영어로 옮긴 문장. 사용자 동작·호환·보안 영향이 없는 내부 변경만 제외, 커밋 type만으로 제외 금지
-- 호환이 깨지는 변경: 항목 앞에 `Breaking:`
+- 분류 순서: 위 순서. 항목이 없는 분류는 제목까지 제외
+- 릴리스 PR에서 지난 태그 뒤 머지된 PR마다 항목 하나. 글자는 PR 제목 `type(scope): 설명`의 설명 부분 그대로(번역 금지). 사용자 동작·호환·보안 영향이 없는 내부 변경만 제외, 커밋 type만으로 제외 금지
+- 호환이 깨지는 변경: 항목 앞에 `호환 깨짐:`
 - 버전: 최신이 위
+- 영어 작업 언어 저장소: 제목 `Changelog`, 분류 `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`, 접두 `Breaking:`
