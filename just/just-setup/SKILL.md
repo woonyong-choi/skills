@@ -1,11 +1,11 @@
 ---
 name: just-setup
-description: just이 역할마다 쓸 모델과 추론 예산을 정한다. 현재 호스트(Claude Code, Codex, OpenCode)와 쓸 수 있는 모델을 알아내고, 스킬 기본값보다 우선하는 ~/.config/skills/models.json을 쓴다. /just-setup, "just 모델 설정", "just 예산", just 모델 선택 변경에 쓴다.
+description: just가 역할마다 쓸 모델과 추론 예산을 정한다. 현재 호스트(Claude Code, Codex, OpenCode)와 쓸 수 있는 모델을 알아내고, 스킬 기본값보다 우선하는 ~/.config/skills/models.json을 쓴다. /just-setup, "just 모델 설정", "just 예산", just 모델 선택 변경에 쓴다.
 ---
 
 # just 설정
 
-`~/.config/skills/models.json`을 써서 just이 역할마다 쓸 모델과 추론 수준을 정한다. 파일 형식, 역할의 뜻, 기본값은 [역할별 모델](../just-mode/references/models.md)이 정본이다. 호스트를 알아내는 방법은 [호스트 대응표](../just-mode/references/hosts.md)를 따른다.
+`~/.config/skills/models.json`을 써서 just가 역할마다 쓸 모델과 추론 수준을 정한다. 파일 형식, 역할의 뜻, 기본값은 [역할별 모델](../just-mode/references/models.md)이 정본이다. 호스트를 알아내는 방법은 [호스트 대응표](../just-mode/references/hosts.md)를 따른다.
 
 ## 단계
 
@@ -41,7 +41,7 @@ description: just이 역할마다 쓸 모델과 추론 예산을 정한다. 현�
 - `medium — 한 단계 낮춤`
 - `small — 두 단계 낮춤`
 
-**(나) 예산을 적용한다.** 추론 수준 사다리는 `low` < `medium` < `high` < `xhigh` < `max`다. `large`는 역할별 기본값을 그대로 쓴다. `unlimited`는 모든 역할을 `max`로 올린다. `medium`은 기본값에서 한 단계, `small`은 두 단계 내린다. `low`보다 내려가지 않는다. 현재 호스트가 지원하지 않는 수준이면 그보다 낮은 수준 중 가장 가까운 것을 쓴다(예: Codex에는 `max`가 없으므로 `xhigh`).
+**(나) 예산을 적용한다.** 추론 수준 순서는 `low` < `medium` < `high` < `xhigh` < `max`다. `large`는 역할별 기본값을 그대로 쓴다. `unlimited`는 모든 역할을 `max`로 올린다. `medium`은 기본값에서 한 단계, `small`은 두 단계 내린다. `low`보다 내려가지 않는다. 현재 호스트가 지원하지 않는 수준이면 그보다 낮은 수준 중 가장 가까운 것을 쓴다(예: Codex에는 `max`가 없으므로 `xhigh`).
 
 **(다) 역할마다 모델을 고른다.** 다시 돌릴 때 사용자가 전에 바꾼 값은 그대로 둔다. 처음이면 기본값에서 출발한다.
 
@@ -96,4 +96,4 @@ EOF
 
 ### 8. 검증 스킬 제안(선택)
 
-프로젝트에 실제 앱을 움직여 증명할 방법(`verify-*` 스킬이나 기존 검증 도구)이 있는지 확인한다. 없으면 한 번만 제안한다. "에이전트가 사용자처럼 앱을 움직여 변경이 동작함을 증명할 수 있게 프로젝트 전용 검증 스킬을 만들까요? /create-verification-skill로 만들 수 있습니다." 그렇다고 하면 `/create-verification-skill`을 부른다(Codex는 `$create-verification-skill`). 아니라고 하면 더 권하지 않고 넘어간다.
+프로젝트에 실제 앱을 조작해 동작을 증명할 방법(`verify-*` 스킬이나 기존 검증 도구)이 있는지 확인한다. 없으면 한 번만 제안한다. "에이전트가 사용자처럼 앱을 조작해 변경이 동작함을 증명할 수 있게 프로젝트 전용 검증 스킬을 만들까요? /create-verification-skill로 만들 수 있습니다." 그렇다고 하면 `/create-verification-skill`을 부른다(Codex는 `$create-verification-skill`). 아니라고 하면 더 권하지 않고 넘어간다.
