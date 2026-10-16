@@ -11,7 +11,7 @@ import urllib.parse
 import re
 import sys
 
-FORMAL_FILES = {"README.md", "README.ko.md"}
+FORMAL_FILES = {"README.md"}  # 한국어 정본 README(합쇼). 영어판 README.en.md는 영어 검사
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 FENCE_CLOSE = re.compile(r"^ {0,3}(?:`+|~+)[ \t]*$")
 NOT_PARAGRAPH = re.compile(r"^(\||- |[0-9]+\. |#|!\[|\[!|---|<)|^[a-z_]+: ")
@@ -52,11 +52,11 @@ EMOJI = re.compile(
 # repo-docs-readme 틀: 오픈소스형 7절 다음 포트폴리오형 5절. 한 README는 한 종류만 쓰므로 한 목록으로 순서 검사
 README_KO = ["빠른 시작", "해결하는 문제", "작동 방식", "상태", "문서", "개발", "라이선스", "문제와 제약", "설계 결정", "구현", "결과", "실행"]
 README_EN = ["Quick start", "Why", "How it works", "Status", "Documentation", "Development", "License", "Problem and constraints", "Design decisions", "Implementation", "Results", "Running"]
-ARCHITECTURE_KO = ["맥락", "코드 지도", "실행 흐름", "불변 조건", "배치", "기술 선택"]
+ARCHITECTURE_KO = ["외부 연결", "구성 요소", "처리 흐름", "지켜야 할 규칙", "배포", "기술 선택"]
 ARCHITECTURE_EN = ["Context", "Code map", "Flows", "Invariants", "Deployment", "Technology choices"]
-DESIGN_KO = ["요약", "동기", "예시", "상세 설계", "단점", "대안", "미해결 질문"]
+DESIGN_KO = ["요약", "해결하는 문제", "사용 예", "작동 방식", "단점", "대안", "미해결"]
 DESIGN_EN = ["Summary", "Motivation", "Examples", "Design", "Drawbacks", "Alternatives", "Unresolved questions"]
-DECISION_KO = ["배경", "선택지", "결정", "결과", "다시 볼 조건"]
+DECISION_KO = ["배경", "선택지", "결정", "영향", "다시 볼 조건"]
 DECISION_EN = ["Context", "Options", "Decision", "Consequences", "Revisit when"]
 
 
@@ -89,7 +89,7 @@ def _private_links(raw: str) -> bool:
 # cost: time O(1), heap O(1), stack O(1)
 # basis: estimate
 def section_lists(name: str) -> list[list[str]]:
-    if name in ("README.md", "README.ko.md"):
+    if name in ("README.md", "README.en.md"):
         return [README_KO, README_EN]
     docs = re.search(r"(?:^|/)(docs/.+)$", name)
     name = docs.group(1) if docs else name
@@ -139,8 +139,8 @@ def structure_errors(name: str, path: str) -> list[str]:
     indexes = [index for index in section_indexes(level_two_headings(path), lists) if index >= 0]
     if indexes != sorted(indexes) or len(indexes) != len(set(indexes)):
         errors.append("절 순서")
-    pair = {"README.md": "README.ko.md", "README.ko.md": "README.md"}.get(name)
-    if name == "README.ko.md" and os.path.exists(pair):
+    pair = {"README.md": "README.en.md", "README.en.md": "README.md"}.get(name)
+    if name == "README.en.md" and os.path.exists(pair):
         mine = section_indexes(level_two_headings(path), lists)
         theirs = section_indexes(level_two_headings(pair), lists)
         if mine != theirs:
@@ -339,7 +339,7 @@ def check(path: str) -> int:
                 previous_quote = ""
             elif not in_fence:
                 is_blank = False
-                errors += prose_errors(raw, is_formal, english, previous_quote, README_TAGS if name in ("README.md", "README.ko.md") else ALLOWED_TAGS)
+                errors += prose_errors(raw, is_formal, english, previous_quote, README_TAGS if name in ("README.md", "README.en.md") else ALLOWED_TAGS)
                 text = _style_text(style_raw, previous_quote)
                 errors += _style_errors(text)
                 previous_quote = raw

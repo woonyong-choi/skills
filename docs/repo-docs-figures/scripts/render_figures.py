@@ -60,7 +60,7 @@ def main(argv: list[str]) -> int:
             render_flags = ["--strict"] + (["--static"] if args.static else [])
             subprocess.run(command + ["render", *figures, *render_flags], check=True)
         for source in tapes:
-            # 찾은 녹화의 Output은 저장소 루트 기준이라 루트에서 실행. 경로 지정 녹화(실험)는 현재 위치 유지
+            # 찾은 녹화의 Output은 저장소 루트 기준이라 루트에서 실행. 경로 지정 녹화는 현재 위치 유지
             if args.sources:
                 subprocess.run(["vhs", source], check=True)
             else:
