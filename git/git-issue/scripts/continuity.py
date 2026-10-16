@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-from datetime import datetime
 import fcntl
 import hashlib
 import itertools
@@ -22,13 +21,12 @@ import json
 import os
 from pathlib import Path
 import re
-import stat
 import subprocess
 import sys
 import shutil
 import time
 import uuid
-from typing import Any, BinaryIO, Callable, Iterator, NamedTuple
+from typing import Any, Callable, Iterator, NamedTuple
 
 import project_context
 import task_scope
@@ -52,7 +50,7 @@ class ContinuityError(Exception):
 
 
 def default_root() -> Path:
-    """작업 기록 루트 정본: ISSUE_CONTINUITY_ROOT, 없으면 등록 Vault의 legacy/orchestration. CLI·훅·status line·창 실행기 공통.
+    """작업 기록 루트 정본: ISSUE_CONTINUITY_ROOT, 없으면 등록 Vault의 legacy/orchestration. CLI·훅·status line 공통.
     이전 기본 위치에 기록이 있고 Vault 쪽이 비었으면 한 번 옮김. Vault 미등록이면 ContinuityError"""
     configured = os.environ.get(ROOT_ENV)
     if configured:
@@ -1012,83 +1010,6 @@ def codex_rollout(session: object) -> str | None:
     return found[0] if len(found) == 1 else None
 
 
-# 사용량 meter: 관측·검증한 rollout 형식의 cli_version만 계산, 다른 버전은 unknown
-CODEX_METER_VERSIONS = frozenset({"0.158.0", "0.162.1"})
-CODEX_METRIC_MAX_AGE_SECONDS = 6 * 60 * 60
-CODEX_CLOCK_SKEW_SECONDS = 60
-
-
-def codex_meter_session(line: bytes, session: str) -> bool:
-    """사용량 계산용 session_meta: ID 일치와 검증한 cli_version"""
-    meta = codex_meta(line)
-    return meta is not None and meta.get("id") == session and meta.get("cli_version") in CODEX_METER_VERSIONS
-
-
-# cost: time O(t), heap O(t), stack O(1), io 1
-# vars: t = TRANSCRIPT_TAIL_BYTES
-# basis: estimate
-def codex_tail(stream: BinaryIO, size: int) -> tuple[list[bytes], bool]:
-    """끝부분의 완전한 줄과, 줄바꿈 없이 쓰는 중인 마지막 조각 여부. 잘린 첫 줄 제외"""
-    start = max(0, size - TRANSCRIPT_TAIL_BYTES)
-    stream.seek(start)
-    lines = stream.read(size - start).split(b"\n")
-    return (lines[1:-1] if start > 0 else lines[:-1]), bool(lines[-1])
-
-
-def codex_token_metric(line: bytes, now: float) -> float | None:
-    """token_count 줄의 last_token_usage.total_tokens / model_context_window(%). 값이 틀리면 None"""
-    try:
-        record = json.loads(line)
-        info = record["payload"]["info"]
-        used, window = info["last_token_usage"]["total_tokens"], info["model_context_window"]
-        stamp = datetime.fromisoformat(record["timestamp"].replace("Z", "+00:00"))
-    except (ValueError, KeyError, TypeError, AttributeError):
-        return None  # 알려진 형식이 아니면 사용량 없음
-    if type(used) is not int or type(window) is not int or used < 0 or window <= 0 or used > window:
-        return None
-    if stamp.tzinfo is None:
-        return None  # 시간대 없는 시각은 현재와 비교 불가
-    if not -CODEX_CLOCK_SKEW_SECONDS <= now - stamp.timestamp() <= CODEX_METRIC_MAX_AGE_SECONDS:
-        return None  # 오래됐거나 미래인 사용량으로 자동 초기화 금지
-    return round(used * 100 / window, 1)
-
-
-def codex_latest_metric(lines: list[bytes], now: float) -> float | None:
-    """마지막 token_count의 비율. 그 뒤 압축 기록이 있거나 값이 틀리면 None"""
-    metric = None
-    for line in lines:
-        head = line[:160]
-        if b'"type":"compacted"' in head:
-            metric = None
-        elif b'"type":"token_count"' in head:
-            metric = codex_token_metric(line, now)
-    return metric
-
-
-# cost: time O(t), heap O(t), stack O(1), io 3
-# vars: t = TRANSCRIPT_TAIL_BYTES
-# basis: estimate
-def codex_context(path: Path, session: str, now: float) -> tuple[float | None, str | None]:
-    """(사용량 %, 검증한 session ID). 경로·session·cli_version 실패는 둘 다 None, token_count 부재·압축 뒤·잘못된 값은 사용량만 None.
-
-    footer의 남은 %와 같다고 주장하지 않음.
-    """
-    real = verified_rollout(path, session)
-    if real is None:
-        return None, None
-    try:
-        fd = os.open(real, os.O_RDONLY | os.O_NOFOLLOW)
-        with os.fdopen(fd, "rb") as stream:
-            info = os.fstat(fd)
-            if not stat.S_ISREG(info.st_mode) or not codex_meter_session(stream.readline(CODEX_META_BYTES + 1), session):
-                return None, None
-            lines, is_unfinished = codex_tail(stream, info.st_size)
-            # 쓰는 중인 마지막 줄이 token_count·compacted일 수 있어 다음 읽기까지 unknown
-            return (None if is_unfinished else codex_latest_metric(lines, now)), session
-    except (OSError, ValueError):
-        return None, None  # 읽는 중 바뀐 파일은 미검증
-
-
 def payload_transcript(payload: dict) -> str | None:
     path = payload.get("transcript_path")
     return path if isinstance(path, str) and path else None
@@ -1195,7 +1116,7 @@ def codex_detect(row: dict) -> bool:
 
 
 class Host(NamedTuple):
-    """호스트별 transcript 위치·판독·캐시 지표·사용량. read: 캐시 읽기 필드, total: 비율 분모 필드, spike: 급증 판정 필드(앞의 것 우선), context: rollout 사용량(meter), 없으면 None"""
+    """호스트별 transcript 위치·판독·캐시 지표·사용량. read: 캐시 읽기 필드, total: 비율 분모 필드, spike: 급증 판정 필드(앞의 것 우선)"""
 
     locate: Callable[[dict], str | None]
     turn: Callable[[dict], tuple[str, str] | None]
@@ -1205,7 +1126,6 @@ class Host(NamedTuple):
     read: str
     total: tuple[str, ...]
     spike: tuple[str, ...]
-    context: Callable[[Path, str, float], tuple[float | None, str | None]] | None
 
 
 HOSTS = {
@@ -1218,7 +1138,6 @@ HOSTS = {
         "cache_read",
         ("input", "cache_read", "cache_creation"),
         ("cache_creation",),
-        None,
     ),
     "codex": Host(
         lambda payload: payload_transcript(payload) or codex_rollout(payload.get("session_id")),
@@ -1229,7 +1148,6 @@ HOSTS = {
         "cached_input",
         ("input",),
         ("cache_write", "uncached_input"),
-        codex_context,
     ),
 }
 
