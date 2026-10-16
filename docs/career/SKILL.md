@@ -8,7 +8,7 @@ description: "자기소개서만 쓰는 작업 제외, 채용 공고(JD)에 맞�
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 범위: 지원 폴더, JD 분석, 경력 원본 읽기·고르기, 이력서·포트폴리오 작성·버전·확인, 교정 기록. 원본 추가·병합·수정·형식은 career-record
 - 결과물: Typst로 만든 PDF만. HTML 결과물·HTML 미리보기 단계 없음
-- 필요할 때만 읽기: 포트폴리오 그림 원본 작성 → repo-docs-figures `references/syntax.md` 필수 확인; 방향 제안·확인 결과·완료 보고 문장 → html-report 작성 규칙과 낯선 말 목록(html-report `references/unfamiliar-words.md`)
+- 필요할 때만 읽기: 포트폴리오 그림 원본 작성 → repo-docs-figures `references/syntax.md` 필수 확인; 방향 제안·확인 결과·완료 보고 문장 → repo-docs `references/plain-language.md`(쉬운 설명 규칙과 낯선 말 목록)
 
 ## 입력
 

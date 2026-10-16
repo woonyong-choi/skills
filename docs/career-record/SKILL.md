@@ -7,7 +7,7 @@ description: "경력 원본에 프로젝트·성과를 추가·병합·수정하
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 범위: 경력 원본(`<Vault>/career/`)의 형식, 추가·병합·수정·삭제, 등급, PR 머지 뒤 기록 판단, 원본 초안과 빈칸 채우기. JD 없이 동작
-- 필요할 때만 읽기: 질문·빈칸·완료 보고 문장 → html-report 작성 규칙과 낯선 말 목록(html-report `references/unfamiliar-words.md`); 그림 원본 작성 → repo-docs-figures `references/syntax.md`
+- 필요할 때만 읽기: 질문·빈칸·완료 보고 문장 → repo-docs `references/plain-language.md`(쉬운 설명 규칙과 낯선 말 목록); 그림 원본 작성 → repo-docs-figures `references/syntax.md`
 
 ## 경계
 
