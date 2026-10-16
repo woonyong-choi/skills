@@ -1,6 +1,6 @@
 ---
 name: unslop
-description: 글에서 AI 티 나는 군더더기를 걷어 낼 때 쓴다. 어떤 글에든 쓴다.
+description: "글에서 AI 티 나는 군더더기를 걷어 낼 때 쓴다. 어떤 글에든 쓴다."
 disable-model-invocation: true
 ---
 

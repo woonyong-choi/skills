@@ -1,5 +1,7 @@
 # 린트 설정
 
+Ruff, mypy, pytest 설정의 기준 값을 적는다.
+
 `pyproject.toml`:
 
 ```toml
@@ -24,4 +26,4 @@ strict = true
 filterwarnings = ["error"]
 ```
 
-- ruff `max-args`: `self`·`cls` 제외 → 7 그대로 (code-style 수치 기준)
+- ruff `max-args`는 `self`와 `cls`를 세지 않으므로 code-style [수치 기준](../../code-style/references/structure.md#수치-기준)의 7을 그대로 쓴다.

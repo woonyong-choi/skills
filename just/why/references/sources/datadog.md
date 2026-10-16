@@ -18,14 +18,14 @@ Datadog MCP를 쓴다. 넓게 시작해 좁힌다.
 
 1. **담당 서비스를 찾는다.**
 
-   ```
+   ```text
    search_datadog_services (filter by name or team)
    search_datadog_service_dependencies (see upstream/downstream)
    ```
 
 2. **대시보드와 모니터부터 본다.**
 
-   ```
+   ```text
    search_datadog_dashboards (query: feature name, service name, symbol)
    search_datadog_monitors   (same queries)
    ```
@@ -34,7 +34,7 @@ Datadog MCP를 쓴다. 넓게 시작해 좁힌다.
 
 3. **대상 주변 지표를 본다.**
 
-   ```
+   ```text
    search_datadog_metrics (by name pattern, e.g., the feature or symbol)
    get_datadog_metric_context (metadata: description, units, tags)
    get_datadog_metric (timeseries; "was there a spike around the PR date?")
@@ -44,7 +44,7 @@ Datadog MCP를 쓴다. 넓게 시작해 좁힌다.
 
 4. **로그. 쏟아 내지 말고 좁힌다.**
 
-   ```
+   ```text
    search_datadog_logs (raw log patterns near the target, set use_log_patterns=true)
    analyze_datadog_logs (SQL-style aggregations, only when you need counts)
    ```
@@ -53,7 +53,7 @@ Datadog MCP를 쓴다. 넓게 시작해 좁힌다.
 
 5. **APM 스팬과 트레이스.**
 
-   ```
+   ```text
    aggregate_spans    (stats: "how often does this endpoint fail?")
    search_datadog_spans (inspect individual spans)
    get_datadog_trace  (a specific trace ID)
@@ -63,7 +63,7 @@ Datadog MCP를 쓴다. 넓게 시작해 좁힌다.
 
 6. **장애.**
 
-   ```
+   ```text
    search_datadog_incidents (by title, team, date range)
    get_datadog_incident     (full detail for a specific incident)
    ```

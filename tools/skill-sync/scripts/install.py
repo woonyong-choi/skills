@@ -46,8 +46,6 @@ CATEGORIES = ("git", "code", "docs", "design", "tools", "just")
 HOOK_SKILL = "just-mode"
 HOOK_ENTRY_SOURCE = "scripts/hooks/entry.py"
 HOOK_ENTRY = "just-do.py"
-# 이 저장소 문체 규칙 대신 형식(frontmatter, 이름, 설명 길이)만 검사하는 스킬의 표시 파일(just 묶음)
-VENDORED_MARKER = "FORMAT_ONLY"
 
 
 def configure_target_home(target_home: Path) -> None:

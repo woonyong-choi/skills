@@ -1,6 +1,6 @@
 ---
 name: principle-experience-first
-description: "제품, UX, 기능 범위의 트레이드오프가 생길 때 적용한다. 구현이 편한 쪽보다 사용자가 쓰기 좋은 쪽을 고르고, 거친 기능 여러 개보다 다듬은 기능 몇 개를 배포한다."
+description: "제품, UX, 기능 범위의 트레이드오프가 생길 때 쓴다. 구현이 편한 쪽보다 사용자가 쓰기 좋은 쪽을 고르고, 거친 기능 여러 개보다 다듬은 기능 몇 개를 배포한다."
 disable-model-invocation: true
 user-invocable: false
 ---

@@ -1,5 +1,7 @@
 # .github/SECURITY.md
 
+`.github/SECURITY.md`를 쓰거나 갱신하거나 검토할 때 이 틀을 쓴다.
+
 ````text
 # 보안 정책
 
@@ -22,7 +24,7 @@
 | 수정 공개 | 신고 후 90일 이내 |
 ````
 
-- 지원 버전: 실제 유지보수 정책에서 확인한 범위만
-- 기한: 위 값이 기본. 사용자가 다른 값을 정하면 그 값
-- 신고 경로: 작성 전 `gh api repos/{소유자}/{저장소}/private-vulnerability-reporting`로 활성 여부 확인. 꺼져 있으면 저장하지 말고 보고(설정 변경은 사용자 결정). 다른 경로·주소 임의 생성 금지
-- 영어 작업 언어 저장소 절 이름: `Security policy`, `Supported versions`, `Reporting a vulnerability`, `Response process`
+- 지원 버전은 실제 유지보수 정책에서 확인한 범위만 쓴다.
+- 기한은 위 값이 기본이다. 사용자가 다른 값을 정하면 그 값을 쓴다.
+- 쓰기 전에 `gh api repos/{소유자}/{저장소}/private-vulnerability-reporting`로 비공개 신고가 켜져 있는지 확인한다. 꺼져 있으면 저장하지 않고 보고한다. 설정을 바꾸는 일은 사용자가 정한다. 다른 경로나 주소를 지어내지 않는다.
+- 작업 언어가 영어인 저장소의 절 이름은 `Security policy`, `Supported versions`, `Reporting a vulnerability`, `Response process`다.

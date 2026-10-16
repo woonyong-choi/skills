@@ -1,6 +1,6 @@
 ---
 name: principle-model-the-domain
-description: "상태가 있는 로직을 쓸 때, 또는 코드에 분기가 많거나 같은 모양 가정이 여러 파일에 되풀이될 때 적용한다."
+description: "상태가 있는 로직을 쓸 때, 또는 코드에 분기가 많거나 같은 모양 가정이 여러 파일에 되풀이될 때 쓴다."
 disable-model-invocation: true
 user-invocable: false
 ---

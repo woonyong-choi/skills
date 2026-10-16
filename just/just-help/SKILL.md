@@ -1,6 +1,6 @@
 ---
 name: just-help
-description: just 설정, /just-mode 사용법, 작업에 맞는 스킬·플레이북·원칙 고르기를 안내한다. 질문과 함께 /just-help를 부른다.
+description: "just 설정, /just-mode 사용법, 작업에 맞는 스킬·플레이북·원칙 고르기를 안내한다. 사용자가 질문과 함께 /just-help로 부를 때만 쓴다."
 disable-model-invocation: true
 ---
 
@@ -31,8 +31,8 @@ just에 관한 사용자 질문에 답하고, 사용자가 보낼 수 있는 프
 
 모델 설정이 없고 그것이 중요하면, 지금 역할마다 모델과 추론 예산을 고를지 사용자에게 질문한다. 사용자가 처음이거나, 질문이 설정이나 비용에 관한 것이거나, 답이 어떤 모델이 도는지에 달렸으면 중요하다. 대화당 한 번만 묻는다. 필요도 불분명하면 두 질문을 함께 묻는다. 선택지는 둘이다.
 
-- 지금: 입력할 명령으로 `/just-setup`을 주고 질문에도 답한다.
-- 나중에: 질문에 답하고, `/just-setup`을 돌리기 전까지 모든 역할이 기본 모델을 쓴다는 줄을 하나 더한다.
+- **지금.** 입력할 명령으로 `/just-setup`을 주고 질문에도 답한다.
+- **나중에.** 질문에 답하고, `/just-setup`을 돌리기 전까지 모든 역할이 기본 모델을 쓴다는 줄을 하나 더한다.
 
 ## 설정하기
 
@@ -40,7 +40,7 @@ just에 관한 사용자 질문에 답하고, 사용자가 보낼 수 있는 프
 2. [`/just-setup`](../just-setup/SKILL.md)을 돌린다. 추론 예산을 묻고, 역할마다 모델을 정하고, `~/.config/skills/models.json`을 쓴다. 설정은 그 뒤에 띄우는 서브에이전트부터 적용된다.
 3. `/just-mode`와 목표, 통과하거나 실패할 수 있는 확인 조건으로 실제 작업을 시작한다.
 
-설치만으로는 아무것도 바뀌지 않고, 사용자가 스킬을 불러야 동작한다. 사용자의 말만으로 호출되는 스킬은 `/just-setup` 하나다. 첫 프롬프트를 [`references/prompting.md`](references/prompting.md)에 따라 함께 다듬어 주겠다고 제안한다.
+설치만으로는 아무것도 바뀌지 않고, 사용자가 스킬을 불러야 동작한다(예외는 잘못된 실행 고치기 절의 표에 있다). 첫 프롬프트를 [`references/prompting.md`](references/prompting.md)에 따라 함께 다듬어 주겠다고 제안한다.
 
 비용이 걱정이면 토큰이 어디에 쓰이고 어떻게 줄이는지 말한다. just는 서브에이전트와 검토 패널에 토큰을 더 쓴다. `/just-setup`을 다시 돌려 더 작은 예산이나 더 싼 모델을 고른다. 역할 값을 빈 문자열로 두면 호스트 기본 모델을 쓰므로, 호스트를 싼 모델로 돌릴 때 토큰이 줄어든다. `review` 목록의 항목 하나마다 서브에이전트 하나가 돌므로, 목록이 짧을수록 서브에이전트가 적게 돈다. `/just-mode`는 엄격함이 필요한 작업에만 쓴다.
 
@@ -55,7 +55,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 - `/just-mode`로 메시지를 보내면 그 메시지에 스킬이 붙는다. 대화가 이어질수록 효과가 약해진다.
 - 항상 적용 규칙 파일(호스트 대응표)에 "사소하지 않은 작업은 just-mode 스킬 방식으로 한다"를 넣으면 매 턴 적용된다.
 - `just-do` 플러그인을 설치하면 세션 시작과 압축 뒤에 훅이 "코드를 바꾸는 개발 일이면 just-mode를 읽고 그 순서로 진행한다"를 넣는다([just do 훅](../just-mode/references/hooks.md)).
-- 둘 다 아니면 새 작업마다 `/just-mode`로 시작한다.
+- 규칙 파일도 플러그인도 없으면 새 작업마다 `/just-mode`로 시작한다.
 
 대화 중에 "새 작업"이라고 말하면 모드가 새 플레이북을 맞춘다. `/just-mode`는 플레이북 단계가 띄우는 서브에이전트에 이미 `just-agent`를 쓴다. 직접 띄우는 서브에이전트에서 같은 방식을 쓰려면 `just-agent` 서브에이전트로 띄운다. 정의가 설치되지 않은 호스트에서는 같은 지시를 프롬프트에 넣는다(호스트 대응표).
 
@@ -67,7 +67,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 |---|---|
 | 사소하지 않은 작업을 엄격하게 하기 | [`/just-mode`](../just-mode/SKILL.md) |
 | 시작 전에 에이전트가 목표와 문제를 이해했는지 확인하기 | [`/in-your-own-words`](../in-your-own-words/SKILL.md) |
-| 시작 전에 작업 목표를 더 높이기: 더 전문가답게, 결과 중심으로, 과하게 정하지 않게 | [`/sharpen`](../sharpen/SKILL.md) |
+| 시작 전에 작업 목표를 더 높이기(더 전문가답게, 결과 중심으로, 과하게 정하지 않게) | [`/sharpen`](../sharpen/SKILL.md) |
 | 지금 코드가 어떻게 동작하는지, 새 코드를 어디에 둘지 알기 | [`/how`](../how/SKILL.md) |
 | 코드가 왜 이런 모양인지, 숫자가 어디서 왔는지 알기 | [`/why`](../why/SKILL.md) |
 | 변경이나 하위 시스템을 쉬운 말로 이해하기 | [`/teach`](../teach/SKILL.md) |
@@ -79,7 +79,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 | 나눈 조각마다 병렬 확인을 돌리거나, 워커끼리 경주시키기(독립 서브에이전트) | [`/swarm`](../swarm/SKILL.md) |
 | 다른 모델들이 diff를 검토하고 깨뜨려 보게 하기 | [`/interrogate`](../interrogate/SKILL.md) |
 | 싼 로컬 테스트가 있을 때 테스트 먼저 버그 고치기 | [`/tdd`](../tdd/SKILL.md) |
-| `.ts`, `.tsx` 작업에 TypeScript 규칙 적용하기 | 편집 전 훅이 `code-style-typescript`의 TypeScript 전용 절을 함께 넘긴다. |
+| `.ts`, `.tsx` 작업에 TypeScript 규칙 적용하기 | 편집 전 훅이 **code-style-typescript** 스킬의 TypeScript 전용 절을 함께 넘긴다. |
 | 주석을 쓰지 않은 검토자로 리뷰 전에 주석 걷어 내기 | [`/no-comments`](../no-comments/SKILL.md) |
 | 글에서 AI 티 걷어 내기 | [`/unslop`](../unslop/SKILL.md) |
 | 문서, RFC, README, PR 설명, 커밋 메시지를 기준에 맞게 쓰기 | [`/technical-writing`](../technical-writing/SKILL.md) |
@@ -97,7 +97,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 
 이 폴더 옆에 표에 없는 스킬 폴더가 있으면 그 frontmatter를 읽고 description으로 연결한다. `principle-*` 폴더는 아래 원칙에서 다룬다.
 
-헷갈리기 쉬운 것:
+### 헷갈리기 쉬운 것
 
 - `/how`는 코드가 무엇을 하는지 설명한다. `/why`는 이유를 설명한다. `/teach`는 둘 중 하나나 둘 다 돌리고 결과를 쉬운 말로 설명한다.
 - `/arena`는 모든 워커에게 같은 지시를 주고 가장 좋은 부분을 합친다. `/swarm`은 일을 조각이나 경주로 나누고 보고서 하나를 돌려준다.
@@ -106,7 +106,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 - `/recall`은 최근 여러 대화에 걸친 맥락을 다시 세운다. `/ketchup`은 사용자의 마지막 메시지 뒤 이 대화만 다룬다. 특정 대화나 브랜치 하나를 재개하는 것은 세션 이어받기 플레이북이다.
 - `/figure-it-out`은 엄격한 실행 하나를 설계한다. 오케스트레이션 플레이북은 여러 날과 많은 PR에 걸친 프로그램을 돌린다. 자율 실행 플레이북은 작업 하나를 종료 조건까지 몬다.
 
-just에 없는 것:
+### just에 없는 것
 
 - 주기적으로 다시 깨우기는 호스트 기능이다(호스트 대응표). 스킬 만들기 도구는 `skill-creator` 스킬이 설치돼 있을 때만 있다.
 - just에는 `/orchestrate` 스킬이 없다. 오케스트레이션은 `/just-mode` 플레이북이다. 명령 목록에 `/orchestrate`가 보이면 다른 스킬 모음이 제공한 것이다.
@@ -122,7 +122,7 @@ just에 없는 것:
 - "이 대기열 완전 오토파일럿"은 오토파일럿 전체를 돌린다. "스택으로 쌓고 배포는 하지 마"는 오토파일럿 스택을 돌린다.
 - "평가 플레이북 돌려"는 평가를 돌린다.
 
-`/just-mode` 없이 "이 PR 봐 줘" 같은 표현을 쓰면 같은 일을 하는 다른 스킬이 대신 시작될 수 있다. [`just-mode`](../just-mode/SKILL.md)의 플레이북 절이 모든 플레이북과 적용 시점을 나열한다. PR 열기, PR 돌보기, 배포는 각각 `playbooks/opening-a-pr.md`, `playbooks/babysit.md`, `playbooks/shipping.md`에 있다.
+`/just-mode` 없이 "이 PR 봐 줘" 같은 표현을 쓰면 같은 일을 하는 다른 스킬이 대신 시작될 수 있다. [`just-mode`](../just-mode/SKILL.md)의 순서표 고르기 절이 모든 플레이북과 적용 시점을 나열한다. PR 열기, PR 돌보기, 배포는 각각 `playbooks/opening-a-pr.md`, `playbooks/babysit.md`, `playbooks/shipping.md`에 있다.
 
 just에는 계획 스킬이 없다. 호스트의 계획 모드가 있으면 함께 쓸 수 있다. 여러 단계나 쌓인 PR에 걸친 작업은 `/just-mode`에 계획을 요청하면 [여러 단계 또는 여러 PR 계획 플레이북](../just-mode/playbooks/multi-phase-plan.md)이 돈다. 이 플레이북은 계획을 쓰고 구현하지 않는다. 설계 질문은 프로토타입 플레이북이나 `/architect`가 코드로 먼저 정한다.
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "just-setup"
+  short_description: "just 역할별 모델, 추론 예산, 동시 작업 수 설정"
+  default_prompt: "$just-setup [요청]"

@@ -71,7 +71,7 @@ def test_shared_guides_have_one_owner() -> None:
     assert 'design-tokens' not in entry and 'code-style-css' not in entry
     commit = (ROOT / 'git/git-commit/SKILL.md').read_text(encoding='utf-8')
     assert '→ 관련 이슈' not in commit and '→ 이 커밋으로 닫는 이슈' not in commit
-    assert '(git-issue 닫기)' in commit
+    assert '](../git-issue/SKILL.md#닫기)' in commit
 
 
 def test_issue_binding_reads_hooks_before_bind() -> None:

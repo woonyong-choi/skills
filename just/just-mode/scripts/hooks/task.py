@@ -5,9 +5,11 @@
   python3 task.py show [--session-id <세션 ID>] [--cwd <경로>]
   python3 task.py unbind [--session-id <세션 ID>] [--cwd <경로>]
 
-세션 ID를 생략하면 CODEX_THREAD_ID를 쓴다. 연결은 "이 세션이 어느 과업·이슈인지"만 기록한다.
-결정 기록은 `.local/decisions/<과업>.tsv`(show-me-your-work log.sh 형식)이고 이 스크립트는 읽기만 한다.
+인자: bind|show|unbind, --task 과업 이름, --issue 이슈 URL, --session-id 세션 ID(생략하면 CODEX_THREAD_ID), --cwd 작업 경로(기본 현재 폴더)
 출력: stdout JSON, 실패는 stderr와 종료 2
+
+연결은 "이 세션이 어느 과업·이슈인지"만 기록한다.
+결정 기록은 `.local/decisions/<과업>.tsv`(show-me-your-work log.sh 형식)이고 이 스크립트는 읽기만 한다.
 """
 
 from __future__ import annotations

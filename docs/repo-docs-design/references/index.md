@@ -1,5 +1,7 @@
 # docs/README.md
 
+`docs/README.md` 문서 목록을 쓰거나 갱신하거나 검토할 때 이 틀을 쓴다.
+
 ````text
 # 문서
 
@@ -25,7 +27,8 @@
 - [실험](experiments/README.md): {답하는 것}
 ````
 
-- 첫 문단: 문서 묶음 이름, 작업 언어, 읽기 시작점 세 문장
-- 분류: 시작(architecture, glossary) → 설계(`design/`) → 명세(protocol·cli·ui·data·configuration·errors) → 기록(`decisions/README.md`, `experiments/README.md`). 문서가 없는 분류 생략. 분류 안은 읽는 순서
-- 문서 줄: `[제목](경로): 답하는 것`(명사구, 20자 안팎). 루트 README의 같은 문서는 같은 제목·같은 설명
-- 분류는 `##` 절, 목록 줄은 모두 문서 줄. 링크 없는 목록 줄 금지(repo-docs-llms가 오류로 종료). 단계는 최대 3단계(분류 → 문서 → 하위 문서). 하위 문서는 같은 폴더의 `{주제}-{세부}.md`, 목록에서만 들여쓰기. 폴더 추가 금지
+- 첫 문단은 문서 묶음 이름, 작업 언어, 읽기 시작점 세 문장이다.
+- 분류는 시작(architecture, glossary), 설계(`design/`), 명세(protocol, cli, ui, data, configuration, errors), 기록(`decisions/README.md`, `experiments/README.md`) 순서다. 문서가 없는 분류는 뺀다. 분류 안은 읽는 순서로 놓는다.
+- 문서 줄은 `[제목](경로): 답하는 것`이다. 답하는 것은 20자 안팎의 명사구다. 루트 README에 같은 문서가 있으면 같은 제목과 같은 설명을 쓴다.
+- 분류는 `##` 절이고 목록 줄은 모두 문서 줄이다. 링크 없는 목록 줄을 쓰지 않는다. repo-docs-llms가 오류로 끝난다.
+- 단계는 분류, 문서, 하위 문서의 3단계까지다. 하위 문서는 같은 폴더의 `{주제}-{세부}.md`이고 목록에서만 들여 쓴다. 폴더를 더하지 않는다.
