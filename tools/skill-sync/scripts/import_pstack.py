@@ -1,9 +1,9 @@
-"""cursor/plugins의 pstack 영어 원본을 pstack/_upstream/에 갱신하고 바뀐 원본 파일을 알린다.
+"""cursor/plugins의 pstack 영어 원본을 lazy-mode/_upstream/에 갱신하고 바뀐 원본 파일을 알린다.
 
 사용: python3 import_pstack.py --source <cursor/plugins 작업본> [--dest <이 저장소>]
 인자: --source cursor/plugins git 작업본(pstack/ 포함), --dest 저장소 루트(기본 이 저장소)
 출력: stdout 원본 버전·commit과 바뀐 파일 목록(`+` 추가, `-` 삭제, `~` 변경), 종료 0 성공·1 원본 형식 오류·2 인자 오류
-한국어 이식본(pstack/<스킬>/)은 건드리지 않는다. 목록을 보고 이식본에 같은 변경을 옮긴다
+한국어 이식본(lazy-mode/<스킬>/)은 건드리지 않는다. 목록을 보고 이식본에 같은 변경을 옮긴다
 """
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ def refresh(source: Path, dest: Path) -> tuple[dict, list[str]]:
     manifest = json.loads((root / "plugin.json").read_text(encoding="utf-8"))
     if not any((root / "skills").glob("*/SKILL.md")):
         raise UpstreamError("pstack/skills 아래 스킬 없음")
-    target = dest / "pstack" / UPSTREAM
+    target = dest / "lazy-mode" / UPSTREAM
     before = digests(target)
     if target.exists():
         shutil.rmtree(target)

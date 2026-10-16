@@ -1,0 +1,5 @@
+interface:
+  display_name: "just-mode"
+  default_prompt: "$just-mode [요청]"
+policy:
+  allow_implicit_invocation: false
