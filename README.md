@@ -108,7 +108,6 @@ python3 <스킬 설치 폴더>/repo-docs-journal/scripts/journal.py mode bypass
 | [repo-docs-root](docs/repo-docs-root/SKILL.md) | AGENTS.md와 저장소 루트 문서 |
 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 문서 색인 생성 |
 | [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | Vault 비공개 판단·작업 일지·원칙과 PR 머지 뒤 기록 기준 판정 |
-| [html-report](docs/html-report/SKILL.md) | 홈페이지 문서 디자인의 설명 페이지와 선택 비교·전후 확인 보고서 |
 | [career](docs/career/SKILL.md) | JD 맞춤 이력서·포트폴리오와 Vault 지원 폴더 |
 | [career-record](docs/career-record/SKILL.md) | 경력 원본의 성과 추가·병합·등급과 PR 머지 뒤 기록 판단 |
 
@@ -175,7 +174,6 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 | [git-commit](git/git-commit/SKILL.md) | 5,753 | 5,017 | 736 |
 | [git-issue](git/git-issue/SKILL.md) | 17,281 | 8,155 | 9,126 |
 | [git-pull-request](git/git-pull-request/SKILL.md) | 6,169 | 5,026 | 1,143 |
-| [html-report](docs/html-report/SKILL.md) | 10,501 | 9,117 | 1,384 |
 | [repo-docs](docs/repo-docs/SKILL.md) | 20,511 | 11,048 | 9,463 |
 | [repo-docs-decision](docs/repo-docs-decision/SKILL.md) | 5,568 | 2,881 | 2,687 |
 | [repo-docs-design](docs/repo-docs-design/SKILL.md) | 10,869 | 4,274 | 6,595 |
@@ -222,17 +220,16 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 
 ## 개발
 
-[스킬 작성 형식](tools/skill-sync/references/authoring.md)과 [일관성 검사 기준](tools/skill-sync/references/consistency.md)을 따릅니다. CI는 아래 일관성 검사와 Python 시험, HTML 보고서 생성기 시험을 실행합니다.
+[스킬 작성 형식](tools/skill-sync/references/authoring.md)과 [일관성 검사 기준](tools/skill-sync/references/consistency.md)을 따릅니다. CI는 아래 일관성 검사와 Python 시험을 실행합니다.
 
 ```sh
 python3 tools/skill-sync/scripts/skill_check.py .
 python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests docs/career-record/tests docs/repo-docs-journal/tests
-(cd docs/html-report/scripts && npm ci) && node --test docs/html-report/tests/*.test.mjs
 ```
 
 그림 원본, 밝은·어두운 SVG와 재생성 명령은 [그림 재현 안내](docs/assets/README.md)에 있습니다.
 
-시험에는 pytest와 Node.js 22.12 이상이 필요합니다. career PDF 컴파일 시험은 `typst`(명령 또는 Python 패키지)가 있을 때만 돕니다. HTML 보고서 생성 시험은 `docs/html-report/scripts`에서 `npm ci`를 실행한 뒤에만 돌고, 설치 전에는 건너뜁니다.
+시험에는 pytest와 Node.js 22.12 이상이 필요합니다. career PDF 컴파일 시험은 `typst`(명령 또는 Python 패키지)가 있을 때만 돕니다.
 
 ## 라이선스
 
