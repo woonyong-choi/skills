@@ -1,6 +1,6 @@
 """career-record: 경력 원본 구조 검사, 추가·병합·10줄 초과, 모드 규칙, 위치 찾기, 위치 거부, career 문서 생성 흐름.
 
-실제 Vault는 쓰지 않는다. 모든 시험은 임시 폴더의 합성 Vault와 합성 설정 폴더만 사용
+실제 경력 원본은 쓰지 않는다. 모든 시험은 임시 폴더의 합성 경력 원본과 합성 설정 폴더만 사용
 """
 
 from __future__ import annotations
@@ -63,20 +63,20 @@ BUNDLE = f"""## {FIRST}
 """
 
 
-class SyntheticVault(unittest.TestCase):
-    """임시 Vault: 회사(+팀), 교육, 개인. 설정 폴더도 임시"""
+class SyntheticCareer(unittest.TestCase):
+    """임시 경력 원본: 회사(+팀), 교육, 개인. 설정 폴더도 임시"""
 
     def setUp(self) -> None:
         self.temp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.temp)
-        self.vault = self.temp / "vault"
-        self.root = self.vault / "career"
+        self.base = self.temp / "base"
+        self.root = self.base / "career"
         self.config = self.temp / "config"
         self.config.mkdir()
-        self.env = {**os.environ, "WOON_KNOWLEDGE_ROOT": str(self.vault), "WORK_CONTINUITY_CONFIG_DIR": str(self.config)}
-        self.old_env = {key: os.environ.get(key) for key in ("WOON_KNOWLEDGE_ROOT", "WORK_CONTINUITY_CONFIG_DIR")}
+        self.env = {**os.environ, "CAREER_ROOT": str(self.root), "SKILLS_CONFIG_DIR": str(self.config)}
+        self.old_env = {key: os.environ.get(key) for key in ("CAREER_ROOT", "SKILLS_CONFIG_DIR")}
         os.environ.update({key: self.env[key] for key in self.old_env})
-        self.addCleanup(self.restore_env)
+        self.addCleanup(self.reset_env)
         self.root.mkdir(parents=True)
         (self.root / "master.md").write_text("# 기본\n이름: 홍길동\n\n# 기술\n- Kafka: 실무\n\n# 기타\n- 정보처리기사, 2022\n", encoding="utf-8")
         self.org("예시페이", "재직")
@@ -90,7 +90,7 @@ class SyntheticVault(unittest.TestCase):
         self.cli("new-project", "부트캠프/미니-db", "--set", "저장소=git@github.com:me/mini-db.git")
         self.cli("new-project", "개인/블로그", "--set", "저장소=https://github.com/me/blog")
 
-    def restore_env(self) -> None:
+    def reset_env(self) -> None:
         for key, value in self.old_env.items():
             if value is None:
                 os.environ.pop(key, None)
@@ -116,11 +116,11 @@ class SyntheticVault(unittest.TestCase):
         return record.Project(self.root / project, self.root).lines
 
     def snapshot(self) -> dict:
-        return {str(path): path.read_bytes() for path in self.vault.rglob("*") if path.is_file()}
+        return {str(path): path.read_bytes() for path in self.base.rglob("*") if path.is_file()}
 
 
-class StructureTest(SyntheticVault):
-    def test_synthetic_vault_passes_check(self) -> None:
+class StructureTest(SyntheticCareer):
+    def test_synthetic_root_passes_check(self) -> None:
         self.cli("mode", "bypass")
         self.cli("add", "예시페이/정산팀/정산-이벤트-전환", "--first", FIRST, *self.sets(BASE_LINE), "--pr", "https://github.com/examplepay/settlement/pull/12")
         (self.root / "예시페이/정산팀/정산-이벤트-전환/포트폴리오.md").write_text(BUNDLE, encoding="utf-8")
@@ -184,7 +184,7 @@ class GradeTest(unittest.TestCase):
         self.assertEqual(record.grade({**full, "주체": "참여(리뷰만)"}), "하")
 
 
-class FlowTest(SyntheticVault):
+class FlowTest(SyntheticCareer):
     project = "예시페이/정산팀/정산-이벤트-전환"
 
     def test_normal_asks_before_add_and_writes_nothing(self) -> None:
@@ -276,7 +276,7 @@ class FlowTest(SyntheticVault):
         self.assertEqual(self.cli("check")["problems"], [])
 
 
-class LocateTest(SyntheticVault):
+class LocateTest(SyntheticCareer):
     def test_one_match(self) -> None:
         result = self.cli("locate", "--remote", "git@github.com:ExamplePay/settlement.git", "--author", "me")
         self.assertEqual(result, {"location": "예시페이/정산팀/정산-이벤트-전환", "personal": False})
@@ -319,16 +319,16 @@ class ScreenTest(unittest.TestCase):
             self.assertIn(reason, record.screen(pr, "me").get("skip", ""), pr)
 
 
-class LocationGuardTest(SyntheticVault):
-    def test_unregistered_vault_writes_zero_files(self) -> None:
-        env = {key: value for key, value in self.env.items() if key != "WOON_KNOWLEDGE_ROOT"}
+class LocationGuardTest(SyntheticCareer):
+    def test_unset_root_writes_zero_files(self) -> None:
+        env = {key: value for key, value in self.env.items() if key != "CAREER_ROOT"}
         before = self.snapshot()
         run = subprocess.run([sys.executable, str(SCRIPT), "new-project", "개인/x"], env=env, capture_output=True, text=True, timeout=30)
         self.assertEqual(run.returncode, 1)
-        self.assertIn("Vault 미등록", json.loads(run.stdout)["error"])
+        self.assertIn("경력 원본 위치 미설정", json.loads(run.stdout)["error"])
         self.assertEqual(self.snapshot(), before)
 
-    def test_outside_vault_writes_zero_files(self) -> None:
+    def test_outside_root_writes_zero_files(self) -> None:
         outside = self.temp / "outside" / "proj"
         outside.mkdir(parents=True)
         (outside / "이력서.md").write_text("---\n---\n", encoding="utf-8")
@@ -346,7 +346,7 @@ class LocationGuardTest(SyntheticVault):
         self.assertEqual(json.loads((self.config / "career-record.json").read_text(encoding="utf-8"))["mode"], "normal")
 
 
-class CareerBuildTest(SyntheticVault):
+class CareerBuildTest(SyntheticCareer):
     """원본에서 career 공고 폴더(#103 구조)를 만들고 versions.py check·Typst 컴파일까지"""
 
     def test_resume_and_portfolio_from_source(self) -> None:

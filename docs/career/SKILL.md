@@ -12,17 +12,17 @@ description: "자기소개서만 쓰는 작업 제외, 채용 공고(JD)에 맞�
 
 ## 입력
 
-- 필수: 새 JD(URL, 본문, 파일)와 경력 원본(`<Vault>/career/`, career-record 형식). 단계별 읽기 범위·양식 대응: [경력 원본 사용](references/source.md) 필수 확인. 비공개 원본 주소의 스킬 내 기재 금지
+- 필수: 새 JD(URL, 본문, 파일)와 경력 원본(`<경력 원본>/`, career-record 형식). 단계별 읽기 범위·양식 대응: [경력 원본 사용](references/source.md) 필수 확인. 비공개 원본 주소의 스킬 내 기재 금지
 - 원본 없음·옛 형식(master.md 프로젝트 절, `cases/`): career-record 초안 절차, 사용자 확인 전 사용 금지. 짧은 이력서·요약으로 원본 대체 금지
 - 미완성 원본: 있는 내용만 사용, 빈 곳 보고
 - 기본값: 이력서와 포트폴리오 둘 다, 한국어, 고정 양식(`assets/typst/`)
 
 ## 지원 폴더
 
-쓰기 전 Vault 확인: 공고 폴더를 만들기 전 `python3 <이 스킬 폴더>/scripts/versions.py place <공고 폴더>`로 등록 Vault의 `career/` 아래인지 검사(확정 `confirm`도 같은 검사). 종료 0이 아니면 파일 0개로 중단. Vault 등록 절차: repo-docs `references/project-context.md`. 등록 뒤 `<Vault>/career/` 없으면 생성
+쓰기 전 위치 확인: 공고 폴더를 만들기 전 `python3 <이 스킬 폴더>/scripts/versions.py place <공고 폴더>`로 경력 원본 아래인지 검사(확정 `confirm`도 같은 검사). 종료 0이 아니면 파일 0개로 중단. 경력 원본 위치: 환경 변수 `CAREER_ROOT`, 없으면 `~/.config/skills/career.json`의 `root`. 둘 다 없으면 사용자에게 한 번 묻고 `career.json`에 저장
 
 ```text
-<Vault>/career/
+<경력 원본>/
   master.md, {소속}/[{팀}/]{프로젝트}/   # 경력 원본, career-record 소유
   {마감일}-{회사명}-{직군명}/
     jd.md

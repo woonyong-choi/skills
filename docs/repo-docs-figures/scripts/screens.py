@@ -20,11 +20,6 @@ from pathlib import Path
 from typing import Callable, NamedTuple
 
 HERE = Path(__file__).resolve().parent
-# 설치본(스킬 폴더 나란히)과 원본 저장소(docs/·git/) 두 배치의 git-issue 위치
-for _scripts in (HERE.parents[1] / "git-issue" / "scripts", HERE.parents[2] / "git" / "git-issue" / "scripts"):
-    if (_scripts / "project_context.py").is_file():
-        sys.path.insert(0, str(_scripts))
-        break
 
 PAGE = 960
 SCALE = 2
@@ -309,13 +304,11 @@ def main(argv: list[str]) -> int:
         errors = check(config, out)
         print("\n".join(errors), file=sys.stderr) if errors else None
         return 1 if errors else 0
-    import project_context as pc  # 촬영할 때만 필요
-
-    try:
-        data = pc.resolve_vault() / "legacy" / "screenshots" / args.run_id
-    except pc.ContextError as error:
-        print(f"촬영 중단: {error}", file=sys.stderr)
+    top = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True, timeout=10)
+    if top.returncode or not top.stdout.strip():
+        print("촬영 중단: git 저장소 밖에서 실행됨(합성 데이터는 저장소 .local/runs/ 아래에 만든다)", file=sys.stderr)
         return 2
+    data = Path(top.stdout.strip()) / ".local" / "runs" / f"screenshots-{args.run_id}"
     data.mkdir(parents=True, exist_ok=True)
     os.environ["SCREENS_DATA"] = str(data.resolve())
     for entry in config.get("screens", []):

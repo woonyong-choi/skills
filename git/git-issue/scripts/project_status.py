@@ -26,7 +26,6 @@ STATE_COLORS = {
 }
 PAGE = "pageInfo { hasNextPage endCursor }"
 HOLD_DAYS = 30
-CHECKPOINT_MARKER = "<!-- work-checkpoint-v1 -->"
 ITEM_FIELDS = (
     'fieldValueByName(name:"Status"){... on ProjectV2ItemFieldSingleSelectValue{name updatedAt}}'
     ' hold: fieldValueByName(name:"보류 사유"){... on ProjectV2ItemFieldTextValue{text}}'
@@ -211,7 +210,7 @@ class ProjectStatus:
         data = self._query(
             "query($owner:String!,$name:String!,$number:Int!){"
             "repository(owner:$owner,name:$name){issueOrPullRequest(number:$number){"
-            "... on Issue{id number state comments(last:30){nodes{body}}} ... on PullRequest{id number state}}}}",
+            "... on Issue{id number state} ... on PullRequest{id number state}}}}",
             {**self.repository, "number": number},
         )
         content = (data.get("repository") or {}).get("issueOrPullRequest")
@@ -221,7 +220,7 @@ class ProjectStatus:
 
     def _issues(self) -> list[dict[str, Any]]:
         return self._pages(
-            "query($owner:String!,$name:String!,$cursor:String){repository(owner:$owner,name:$name){issues(first:100,after:$cursor){nodes{id number state comments(last:30){nodes{body}}}"
+            "query($owner:String!,$name:String!,$cursor:String){repository(owner:$owner,name:$name){issues(first:100,after:$cursor){nodes{id number state}"
             + PAGE
             + "}}}",
             self.repository,
@@ -299,8 +298,8 @@ class ProjectStatus:
                 changes.append((issue, target))
         return changes
 
-    # cost: time O(n + c), heap O(c), stack O(1)
-    # vars: n = 이슈 수, c = 이슈별 최근 댓글 바이트
+    # cost: time O(n), heap O(1), stack O(1)
+    # vars: n = 이슈 수
     # basis: estimate
     def _attention(
         self,
@@ -317,8 +316,6 @@ class ProjectStatus:
             item = items.get(issue["id"])
             status = self._status(item)
             reasons = []
-            if status == self.states["진행"] and not self._has_next(issue):
-                reasons.append("진행인데 작업 기록 다음 행동 없음")
             if status == self.states["보류"]:
                 if "재개 조건" not in ((item or {}).get("hold") or {}).get("text", ""):
                     reasons.append("보류인데 재개 조건 없음")
@@ -329,21 +326,6 @@ class ProjectStatus:
                 print(f"프로젝트 {project['number']} #{issue['number']}: 주의 {reason}")
             found += len(reasons)
         return found
-
-    @staticmethod
-    def _has_next(issue: dict[str, Any]) -> bool:
-        """최근 체크포인트 댓글 복구 데이터의 next 유무"""
-        for comment in reversed((issue.get("comments") or {}).get("nodes") or []):
-            body = (comment or {}).get("body") or ""
-            if not body.startswith(CHECKPOINT_MARKER):
-                continue
-            match = re.search(r"```json\n(.*?)\n```", body, re.S)
-            try:
-                record = json.loads(match.group(1)) if match else {}
-            except ValueError:
-                return False
-            return bool(str((record.get("data") or {}).get("next", "")).strip())
-        return False
 
     # cost: time O(n), heap O(n), stack O(1), io 3
     # vars: n = Status 선택지 수

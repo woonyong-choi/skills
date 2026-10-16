@@ -103,7 +103,7 @@ def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
         invalid = subprocess.run([sys.executable, str(reader), '--catalog', '--text'], capture_output=True, text=True)
         assert invalid.returncode == 2 and not invalid.stdout
         _check_code_style_language_reader(reader, installed.parent)
-        _check_installed_rule_hooks(installed.parent, install_home / 'orchestration')
+        _check_installed_rule_hooks(installed.parent, install_home / 'work' / installed.parent.parent.name)
 
     with zipfile.ZipFile(install_home / 'dist/skill-sync.zip') as archive:
         assert [name for name in archive.namelist() if Path(name).name == 'SKILL.md'] == ['skill-sync/SKILL.md']
@@ -183,35 +183,38 @@ def test_install_changed_zip_payload_rebuilt(install_home: Path, damage: str) ->
         assert {name: archive.read(name) for name in archive.namelist()} == expected
 
 
-def _check_installed_rule_hooks(skills: Path, root: Path) -> None:
-    # #58: 시작·압축 복구마다 정본 한 번, 미저장 checkpoint는 본문 재주입 사유가 아니다.
-    hook = skills / 'git-issue/scripts/continuity_hook.py'
-    root_rules = (skills / 'developer-thinking/SKILL.md').read_text()
-    env = {**os.environ, 'ISSUE_CONTINUITY_ROOT': str(root), 'ISSUE_CONTINUITY_TASK': ''}
-    folder = root / 'rule-entry'
-    folder.mkdir(parents=True, exist_ok=True)
+def _check_installed_rule_hooks(skills: Path, work: Path) -> None:
+    # 설치본 just-mode 훅: 세션 시작·압축 뒤 한 줄 안내(본문 주입 없음), 연결 과업이면 결정 기록 꼬리
+    hook = skills / 'just-mode/scripts/hooks/hook.py'
+    entry_line = f"코드를 바꾸는 개발 일이면 {skills / 'just-mode/SKILL.md'}를 읽고 그 순서로 진행한다."
+    body = (skills / 'just-mode/SKILL.md').read_text()
+    work.mkdir(parents=True, exist_ok=True)
+    subprocess.run(['git', 'init', '-q', str(work)], check=True)
+    (work / 'tool.py').write_text("import subprocess\n\ndef run():\n    raise ValueError('x')\n")
+    env = {**os.environ, 'SKILLS_CONFIG_DIR': str(work.parent / 'config')}
     for host in ('claude', 'codex'):
         for is_bound in (False, True):
             session = f'install-rules-{host}-{is_bound}-{skills.parent.name}'
-            binding = {'repo': str(ROOT), 'url': 'https://github.com/woonyong-choi/skills/issues/58', 'session_ids': [session]}
-            (folder / 'binding.json').write_text(json.dumps(binding if is_bound else {}))
-            events = [('SessionStart', 1), ('UserPromptSubmit', 0), ('UserPromptSubmit', 0)]
             if is_bound:
-                events += [('PostCompact', 0), ('UserPromptSubmit', 1), ('UserPromptSubmit', 0)]
-            for event, expected_count in events:
-                payload = {'hook_event_name': event, 'cwd': str(ROOT), 'session_id': session}
+                bound = subprocess.run([sys.executable, str(hook.with_name('task.py')), 'bind', '--session-id', session, '--task', 'install-check', '--issue', 'https://github.com/woonyong-choi/skills/issues/58', '--cwd', str(work)], capture_output=True, text=True, env=env)
+                assert bound.returncode == 0, bound.stderr
+            events = [('SessionStart', True), ('UserPromptSubmit', False), ('PostCompact', False), ('UserPromptSubmit', True), ('UserPromptSubmit', False)]
+            for event, expected in events:
+                payload = {'hook_event_name': event, 'cwd': str(work), 'session_id': session}
                 hooked = subprocess.run([sys.executable, str(hook), host], input=json.dumps(payload), capture_output=True, text=True, env=env)
                 assert hooked.returncode == 0 and not hooked.stderr, hooked.stderr
                 context = json.loads(hooked.stdout).get('hookSpecificOutput', {}).get('additionalContext', '')
-                assert context.count(root_rules) == expected_count, (host, is_bound, event)
+                assert context.startswith(entry_line) == expected, (host, is_bound, event, context)
+                assert body not in context
+                assert ('issues/58' in context) == (expected and is_bound), (host, is_bound, event)
             if is_bound:
-                _check_rule_gate(hook, env, host, session)
+                _check_rule_gate(hook, env, host, session, work)
 
 
-def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str) -> None:
+def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str, work: Path) -> None:
     # #58: 실제 설치 훅 → 누락 차단 → 원문 조회 → 출력 대조 → 원래 도구 재개. #62: 편집만 차단 대상
-    target = str(ROOT / 'git/git-issue/scripts/continuity_hook.py')
-    payload = {'cwd': str(ROOT), 'session_id': session, 'tool_name': 'Edit', 'tool_input': {'file_path': target, 'old_string': 'a', 'new_string': 'a'}}
+    target = str(work / 'tool.py')
+    payload = {'cwd': str(work), 'session_id': session, 'tool_name': 'Edit', 'tool_input': {'file_path': target, 'old_string': 'a', 'new_string': 'a'}}
     def invoke(event: str, **extra: object) -> dict:
         done = subprocess.run([sys.executable, str(hook), host], input=json.dumps({**payload, 'hook_event_name': event, **extra}), capture_output=True, text=True, env=env)
         assert done.returncode == 0 and not done.stderr, done.stderr
@@ -237,12 +240,12 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str) -
     repeated = subprocess.run(shlex.split(command), capture_output=True, text=True, env=env)
     assert '전달 완료' in repeated.stdout
     assert not invoke('PreToolUse')
-    reader = hook.parents[2] / 'developer-thinking/scripts/read_rules.py'
+    reader = hook.parents[3] / 'developer-thinking/scripts/read_rules.py'
     query = {'command': f'{sys.executable} {reader} implement'}
     rewritten = invoke('PreToolUse', tool_input=query)['hookSpecificOutput']['updatedInput']
     reused = subprocess.run(shlex.split(rewritten['command']), capture_output=True, text=True, env=env)
     assert reused.returncode == 0 and '전달 완료' in reused.stdout
-    style = hook.parents[2] / 'code-style/scripts/read_rules.py'
+    style = hook.parents[3] / 'code-style/scripts/read_rules.py'
     for arguments in ('--ids=CS-ERROR --text --language=python', '--ids CS-ERROR --text --language python'):
         query_input = {'command': f'{sys.executable} {style} {arguments}'}
         rewritten = invoke('PreToolUse', tool_input=query_input)['hookSpecificOutput']['updatedInput']
@@ -253,7 +256,7 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str) -
         assert not invoke('PreToolUse', tool_input={'command': invalid})
         failed = subprocess.run(shlex.split(invalid), capture_output=True, text=True, env=env)
         assert (failed.returncode, failed.stdout) == (2, '')
-    patch = '*** Begin Patch\n*** Update File: code/code-style/scripts/read_rules.py\n@@\n+def added():\n+    raise ValueError()\n*** End Patch'
+    patch = '*** Begin Patch\n*** Update File: tool.py\n@@\n+def added():\n+    raise ValueError()\n*** End Patch'
     for field in ('command', 'patch'):
         assert invoke('PreToolUse', session_id=session + '-patch-' + field, tool_name='apply_patch', tool_input={field: patch})['hookSpecificOutput']['permissionDecision'] == 'deny'
     assert invoke('PreToolUse', session_id=session + '-patch-combined', tool_name='apply_patch', tool_input={'command': 'apply_patch', 'patch': patch})['hookSpecificOutput']['permissionDecision'] == 'deny'
@@ -267,7 +270,7 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str) -
     blocked = invoke('PreToolUse', **fresh)['hookSpecificOutput']['permissionDecisionReason']
     remaining = subprocess.run(shlex.split(blocked.split('`')[1]), capture_output=True, text=True, env=env)
     assert remaining.returncode == 0 and '# Code Style\n' not in remaining.stdout
-    read_session = {'session_id': session + '-read', 'tool_name': 'Read', 'tool_input': {'file_path': str(ROOT / 'code/code-style/scripts/read_rules.py')}}
+    read_session = {'session_id': session + '-read', 'tool_name': 'Read', 'tool_input': {'file_path': target}}
     invoke('PostToolUse', tool_response='source inspected', **read_session)
     assert not invoke('Stop', **read_session)
     edit_session = {**read_session, 'session_id': session + '-edit', 'tool_name': 'Edit'}

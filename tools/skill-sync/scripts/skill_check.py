@@ -214,7 +214,7 @@ def main(argv: list[str]) -> int:
                 kinds[error.split(':')[0]] = kinds.get(error.split(':')[0], 0) + 1
             if errors and not args.json:
                 print(path.parent.name, len(errors), errors)
-        consistency = check_consistency(paths)
+        consistency = check_consistency(paths, vendored)
         for path in paths:
             errors = check(str(path), names) + consistency[path]
             total += len(errors)

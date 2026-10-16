@@ -23,18 +23,18 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 - 저장소 문서: 작업 언어 하나. 한국어 저장소의 기본은 한국어. `docs/README.md` 첫 문단에 작업 언어 명시
 - 번역판: README 하나만. `README.md`(작업 언어 정본) + `README.en.md`(영어판, repo-docs-readme 영어판). docs 전체, `AGENTS.md`, `CHANGELOG.md`, CONTRIBUTING, SECURITY 번역판 금지
 - 영어 작업 언어 저장소: 각 틀의 `영어 작업 언어의 절 이름` 줄 사용
-- `LICENSE`: 공식 원문 그대로. Vault 비공개 문서: 한국어
+- `LICENSE`: 공식 원문 그대로. 저장소 `.local/` 비공개 작업 파일: 한국어
 
 ## 파일·폴더 이름
 
-- 공개 Git 저장소의 파일·폴더(코드, `docs/`, 그림), Vault 안 홈페이지 발행 원고 → 영어 소문자 kebab-case. 언어가 강제하는 표기(Python `test_*.py`, Rust 모듈 snake_case 등)는 그 언어 우선
+- 공개 Git 저장소의 파일·폴더(코드, `docs/`, 그림) → 영어 소문자 kebab-case. 언어가 강제하는 표기(Python `test_*.py`, Rust 모듈 snake_case 등)는 그 언어 우선
 - 여러 기록이 한곳에 모이는 시스템 파일(색인, 설정, 모아 두는 정본) → 영어. 예: `principles.md`, `master.md`, 설정 파일
 - 그 밖 각 문서·폴더 → 한국어 가능, 공백은 `-`
-- 기존 Vault 상위 폴더(`worktree/`, `docs/`, `legacy/`, `inbox/` 등)는 Vault 규칙 소유라 유지. 새로 만드는 하위 이름부터 적용
+- `.local/` 아래 정해진 폴더(`decisions/`, `plans/`, `orch/`, `runs/`, `media/`, `tmp/`)는 이름 그대로 유지. 그 아래 새로 만드는 이름부터 적용
 
 ## 문서 목록
 
-등록 Vault 프로젝트: [프로젝트 맥락과 문서 위치](references/project-context.md) 필수 적용. 신규 문서는 아래 경로의 `docs/` 구조를 같은 영역 `docs/`에 두고 쓰기 전 경로 검사. 등록 판정: git-issue `scripts/project_context.py --project .` 종료 0. 루트·`.github/` 파일, 실행 필수 소스·설정은 index 메타데이터 `approved_documents`·`source_document_roots`에 사용자 승인으로 기록된 경로만 저장소 위치 유지. `--register-project`는 승인 미추가, 승인 기록 명령 없음 → 승인 안 된 경로(`check_doc.py --project` 종료 2)는 보고 후 사용자에게 승인 요청. repo-docs-llms는 저장소 안에 `docs/`를 둔 저장소만 적용
+repo-docs-llms는 저장소 안에 `docs/`를 둔 저장소만 적용
 
 새 문서는 사용자 요청·승인 범위에서만 생성. 아래 생성 조건·템플릿은 허락 대체 불가. 기존 정본 수정 우선, 적합한 절이 없으면 채팅 보고
 
@@ -55,10 +55,19 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 - `docs/experiments/README.md`, `docs/experiments/**` → 기여자 → 설계 값을 어떻게 확인했나 → 실험이 하나 이상 → experiment
 - `docs/notes/**` → 기여자 → 개발 중 무엇을 알게 됐나 → 기록할 insight나 reference가 있을 때 → note
 - `docs/assets/**` → 해당 없음 → 해당 없음 → 문서에 그림이 있을 때 → figures
-- Vault 판단·작업 일지·원칙(경로 정본: repo-docs-journal 저장 위치 절) → 본인 → 무엇을 왜 판단했나 → 기록 기준을 통과한 판단, 큰 작업, 교훈이 있을 때 → journal
+- `.local/journal/` 판단·작업 일지·원칙(경로 정본: repo-docs-journal 저장 위치 절) → 본인 → 무엇을 왜 판단했나 → 기록 기준을 통과한 판단, 큰 작업, 교훈이 있을 때 → journal
 
 - `docs/README.md` 목록 분류와 순서: (repo-docs-design references/index.md)
-- 비공개 문서·실행 임시물: 모두 Vault(위 목록의 Vault 경로, project-context). 저장소 안 `.local/`·`archive/` 사용 금지
+- 비공개 작업 파일·실행 임시물: 작업 저장소 `.local/`(git 무시 대상) 한 곳. `/tmp`·`archive/`·저장소 밖 개인 폴더 사용 금지
+
+`.local/` 위치 → 내용:
+
+- `decisions/<과업>.tsv` → 결정 기록(just show-me-your-work 형식, 열 `ts phase decision why evidence result`)
+- `plans/` → 계획 파일
+- `orch/<이름>/` → 오케스트레이션 장부
+- `runs/<종류>-<이름>/` → 실행 산출물(arena, swarm, prototype, eval, trace, visual-parity, 스크린샷)
+- `media/` → 그림·영상 작업 파일
+- `tmp/` → 그 밖 임시 파일
 - 공개 문서·이슈·PR·커밋에서 정책상 비공개 경로 링크와 내용 전재 금지
 - 비공개 설계서를 공개 문서로 옮길 때: 확인된 사실만 새로 작성, 원문 문장·내부 기호 복사 금지
 
@@ -125,7 +134,6 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 python3 <이 스킬 폴더>/scripts/check_doc.py README.md README.en.md
 ```
 
-- 등록 Vault 프로젝트: 파일 앞에 `--project <작업 경로>`(project-context)
 - 스크립트 실행 전 skill-sync `references/execution.md` 필수 확인
 - 실행 조건: Python 3.9 이상, 표준 라이브러리만. 위반이 있으면 종료 코드 1, 인자 오류·파일 읽기 실패는 2
 - 기계 검사 항목: 서식, 문장 끝, 쓰지 않는 말, 비공개 경로(기본 폴더 고정, 저장소 정책이 다르면 수동 확인), 절 이름 순서(종류별 스킬 목록에 있는 절끼리), 절 대응(`README.en.md`가 인자에 있을 때 `README.md`와)

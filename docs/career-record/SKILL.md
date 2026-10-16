@@ -6,7 +6,7 @@ description: "경력 원본에 프로젝트·성과를 추가·병합·수정하
 # Career Record
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
-- 범위: 경력 원본(`<Vault>/career/`)의 형식, 추가·병합·수정·삭제, 등급, PR 머지 뒤 기록 판단, 원본 초안과 빈칸 채우기. JD 없이 동작
+- 범위: 경력 원본(`<경력 원본>/`)의 형식, 추가·병합·수정·삭제, 등급, PR 머지 뒤 기록 판단, 원본 초안과 빈칸 채우기. JD 없이 동작
 - 필요할 때만 읽기: 질문·빈칸·완료 보고 문장 → repo-docs `references/plain-language.md`(쉬운 설명 규칙과 낯선 말 목록); 그림 원본 작성 → repo-docs-figures `references/syntax.md`
 
 ## 경계
@@ -19,7 +19,7 @@ description: "경력 원본에 프로젝트·성과를 추가·병합·수정하
 
 원본 파일 작성·수정·검사 전 [원본 형식](references/format.md) 필수 확인
 
-`python3 <이 스킬 폴더>/scripts/record.py <명령>`. Python 3.9+, git-issue 스킬 필요(Vault 해석·설정 폴더). stdout JSON, 종료 0 성공·1 검사 위반 또는 위치 거부·2 인자 오류·3 질문 필요
+`python3 <이 스킬 폴더>/scripts/record.py <명령>`. Python 3.9+, 표준 라이브러리. stdout JSON, 종료 0 성공·1 검사 위반 또는 위치 거부·2 인자 오류·3 질문 필요
 
 - `check`: 구조 검사(짝, 8칸 순서, 10줄, 등급, 파일 안 상위 이름, 폐지된 cases·master 절)
 - `new-project {소속}[/{팀}]/{프로젝트} --set 속성=값 [--org 구분=재직]`: 새 프로젝트 폴더와 없는 소속.md·팀.md
@@ -31,12 +31,12 @@ description: "경력 원본에 프로젝트·성과를 추가·병합·수정하
 - `locate --remote {원격} [--author {PR 작성자}]`, `screen {PR JSON} --user {계정}`, `blanks`, `mode [normal|bypass]`, `since`, `stamp`
 - `--pr`: 근거 칸에 PR 주소 자동 추가. 등급은 계산값만, `--set 등급` 금지
 - 종료 3: 출력 `ask` 문장을 그대로 사용자에게 질문, 답을 받으면 `--yes`로 다시 실행. 파일 0개 상태
-- 쓰기 전 검사: 등록 Vault 해석(project_context 함수 직접 호출) → 대상이 `<Vault>/career/` 아래·공고 폴더 밖. 실패면 파일 0개
+- 쓰기 전 검사: 경력 원본 위치 해석(`CAREER_ROOT`, 없으면 `~/.config/skills/career.json`의 `root`) → 대상이 경력 원본 아래·공고 폴더 밖. 실패면 파일 0개
 - 포트폴리오.md 묶음 본문: Write·Edit 도구로 작성 → `check`
 
 ## 모드
 
-설정: `<설정 폴더>/career-record.json`(`vault.json`과 같은 폴더, 기본 `~/.config/skills`). `mode`(기본 normal)와 `last_recorded`
+설정: `<설정 폴더>/career-record.json`(설정 폴더는 `SKILLS_CONFIG_DIR`, 기본 `~/.config/skills`). `mode`(기본 normal)와 `last_recorded`
 
 ```json
 {"mode": "bypass"}
@@ -49,7 +49,7 @@ description: "경력 원본에 프로젝트·성과를 추가·병합·수정하
 
 ## PR 머지 뒤
 
-세션 안 `gh pr merge`(또는 `gh api`의 PUT `pulls/N/merge`) 성공 뒤 Developer Thinking 훅이 안내 출력. 직접 요청("이거 경력에 추가해 줘")도 같은 순서
+세션 안 `gh pr merge`(또는 `gh api`의 PUT `pulls/N/merge`) 성공 뒤 just do 훅이 안내 한 줄 출력. 직접 요청("이거 경력에 추가해 줘")도 같은 순서
 
 1. 기계 제외: `gh pr view {번호} --json author,title,files,url | record.py screen - --user $(gh api user --jq .login)`. `skip`이면 묻지 않고 끝
 2. 기록 조건 셋 모두: 사용자 계정 PR, 동작·결과 변화(기능 추가, 성능 개선, 장애·버그 해결, 구조 변경, 운영 자동화), 검증(테스트, 측정, 운영 관찰). 제외: 문서·오타, 포맷, 의존성 버전만, 동작 변화 없는 이름 변경
