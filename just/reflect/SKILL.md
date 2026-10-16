@@ -51,8 +51,8 @@ Backlog 항목은 기다리지 않고 팀의 개발 경험 또는 백로그 트�
 승인된 행마다 Routing을 그대로 따른다.
 
 - 사소한 기존 스킬 수정(한 줄 항목, 다듬은 문장, 낡은 사실 고치기): 부모가 직접 한다.
-- 실질적인 기존 스킬 수정(새 절, 새 패턴 표, 약 10줄 넘음): `skill-creator` 스킬이 있으면 넘겨서 초안 / 시험 / 반복 고리를 돌린다. 없으면 부모가 SKILL.md 형식(frontmatter `name`·`description`)을 지켜 직접 고친다.
-- `tune description: <skill path>`(스킬은 있지만 떠야 할 때 뜨지 않음): `skill-creator`가 있으면 넘겨서 description 최적화 고리를 돌린다. 없으면 부모가 description을 직접 고친다.
+- 실질적인 기존 스킬 수정(새 절, 새 패턴 표, 약 10줄 넘음): `skill-creator` 스킬이 있으면 넘겨서 초안 / 테스트 / 반복 루프를 돌린다. 없으면 부모가 SKILL.md 형식(frontmatter `name`·`description`)을 지켜 직접 고친다.
+- `tune description: <skill path>`(스킬은 있지만 호출돼야 할 때 호출되지 않음): `skill-creator`가 있으면 넘겨서 description 최적화 루프를 돌린다. 없으면 부모가 description을 직접 고친다.
 - `new skill via skill-creator: <kebab-name>`: 생성을 `skill-creator`에 넘긴다. 없으면 SKILL.md 형식(frontmatter `name`·`description`)을 직접 작성한다. 모양을 즉석에서 지어내지 않는다.
 
 환경에 SKILL.md 검증기가 있으면 완료를 선언하기 전에 건드린 모든 스킬에 돌린다.
