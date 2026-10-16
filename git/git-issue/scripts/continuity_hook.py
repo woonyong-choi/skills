@@ -360,37 +360,62 @@ def tool_failed(value: Any) -> bool:
     return False
 
 
-# cost: time O(b), heap O(1), stack O(d), io O(3)
+# cost: time O(1), heap O(1), stack O(1), io O(2)
+# vars: 없음
+# basis: estimate
+def _skill_script(folder: str, name: str) -> Path | None:
+    """설치본(스킬 폴더 나란히) 또는 원본 저장소(docs/)의 스킬 스크립트"""
+    skill = Path(__file__).resolve().parents[1]
+    for candidate in (skill.parent / folder / "scripts" / name, skill.parents[1] / "docs" / folder / "scripts" / name):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+# cost: time O(1), heap O(1), stack O(1), io O(1)
+# vars: 없음
+# basis: estimate
+def _mode(name: str) -> str:
+    path = project_context.config_directory() / name
+    mode = json.loads(path.read_text(encoding="utf-8")).get("mode", "normal") if path.is_file() else "normal"
+    return mode if mode in ("normal", "bypass") else "normal"
+
+
+# cost: time O(b), heap O(1), stack O(d), io O(6)
 # vars: b = 명령·도구 응답 바이트, d = 응답 중첩 깊이
 # basis: estimate
-def career_notice(payload: dict[str, Any]) -> str:
-    """세션 안 PR 머지 성공 뒤 career-record 기록 판단 안내. 스킬·Vault career 폴더가 없으면 빈 문자열"""
+def merge_notice(payload: dict[str, Any]) -> str:
+    """세션 안 PR 머지 성공 뒤 안내 하나: career-record 기록 판단 → journal 판단 기록 순서. 스킬·Vault가 없는 쪽은 생략"""
     if payload.get("hook_event_name") != "PostToolUse":
         return ""
     command = tool_command(payload)
     if not (PR_MERGE.search(command) or API_MERGE.search(command)) or tool_failed(payload.get("tool_response")):
         return ""
-    skill = Path(__file__).resolve().parents[1]
-    record = skill.parent / "career-record/scripts/record.py"
-    if not record.is_file():
-        record = skill.parents[1] / "docs/career-record/scripts/record.py"
-    if not record.is_file():
-        return ""
     try:
-        if not (project_context.resolve_vault() / "career").is_dir():
-            return ""
-        config = project_context.config_directory() / "career-record.json"
-        mode = json.loads(config.read_text(encoding="utf-8")).get("mode", "normal") if config.is_file() else "normal"
+        vault = project_context.resolve_vault()
     except (project_context.ContextError, OSError, ValueError):
         return ""
-    mode = mode if mode in ("normal", "bypass") else "normal"
-    script = shlex.quote(str(record))
-    return (
-        f"PR 머지 성공: career-record 스킬의 머지 뒤 기록 절 적용(모드 {mode}). "
-        "기록 조건 세 가지(사용자 계정 PR, 동작·결과 변화, 검증 있음) 중 하나라도 아니면 묻지 않고 계속. "
-        f"해당하면 `python3 {script} locate --remote <저장소 원격> --author <PR 작성자>`로 위치 → 같은 상황·행동 줄이면 merge, 아니면 add(--pr <PR 주소>). "
-        f"끝나면 `python3 {script} stamp`."
-    )
+    parts = []
+    record = _skill_script("career-record", "record.py")
+    try:
+        if record and (vault / "career").is_dir():
+            script = shlex.quote(str(record))
+            parts.append(
+                f"1. career-record(모드 {_mode('career-record.json')}): 머지 뒤 기록 절 적용. "
+                "기록 조건 세 가지(사용자 계정 PR, 동작·결과 변화, 검증 있음) 중 하나라도 아니면 묻지 않고 다음. "
+                f"해당하면 `python3 {script} locate --remote <저장소 원격> --author <PR 작성자>`로 위치 → 같은 상황·행동 줄이면 merge, 아니면 add(--pr <PR 주소>). "
+                f"끝나면 `python3 {script} stamp`."
+            )
+        journal = _skill_script("repo-docs-journal", "journal.py")
+        if journal:
+            script = shlex.quote(str(journal))
+            parts.append(
+                f"{len(parts) + 1}. repo-docs-journal(모드 {_mode('journal.json')}): PR 본문·연결 이슈·PR 댓글·이 PR로 이어진 대화에서 기록 기준 세 칸(대안 인용, 가정 인용, 구조 목록 이름) 확인 → "
+                f"`python3 {script} screen --source <근거 파일> --alternative <인용> --assumption <인용> --structure <목록 이름>`. 미충족이면 이유 한 줄로 끝."
+            )
+    except (OSError, ValueError):
+        return ""
+    return "PR 머지 성공. 아래 순서로 처리:\n" + "\n".join(parts) if parts else ""
 
 
 # cost: time O(n), heap O(n), stack O(1), io O(n + 1)
@@ -398,7 +423,7 @@ def career_notice(payload: dict[str, Any]) -> str:
 # basis: estimate
 def handle(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
     result = _handle(host, payload, root)
-    notice = career_notice(payload)
+    notice = merge_notice(payload)
     if not notice or (result.get("hookSpecificOutput") or {}).get("permissionDecision"):
         return result
     output = result.setdefault("hookSpecificOutput", {"hookEventName": "PostToolUse"})

@@ -64,5 +64,5 @@ description: "IT 제품을 설계·구현·수정·검토·배포할 때 사용.
 - 맨 앞 두 줄(결론, 할 일)만 읽어도 다음 행동 파악 가능
 - PR 번호, 파일 경로, 시험 수, 바이트 수 같은 근거는 자세히 칸에만
 - 정할 것: 할 일 칸에 선택지와 각 선택의 결과를 한 줄씩. "A로 하면 ~, B로 하면 ~"
-- html-report 작성 규칙 3~7번과 낯선 말 목록(html-report `references/unfamiliar-words.md`) 같은 적용
+- 쉬운 설명 규칙 3~7번과 낯선 말 목록(repo-docs `references/plain-language.md`) 적용
 - 해당 칸이 없으면 칸째 생략
