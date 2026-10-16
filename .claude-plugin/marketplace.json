@@ -5,11 +5,11 @@
   },
   "plugins": [
     {
-      "name": "work-continuity",
-      "displayName": "Developer Thinking",
-      "source": "./git/git-issue",
-      "description": "개발 판단·검증과 이슈 기반 작업 복구",
-      "version": "0.1.18"
+      "name": "just-do",
+      "displayName": "just do",
+      "source": "./just",
+      "description": "just-mode 진입 안내와 결정 기록·편집 전 규칙 확인 훅",
+      "version": "0.2.0"
     }
   ]
 }

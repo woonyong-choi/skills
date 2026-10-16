@@ -1,9 +1,9 @@
 """repo-docs 규칙으로 저장소 Markdown 파일 검사.
 
-사용: python3 check_doc.py [--project 작업 경로] 파일 [파일 ...] (저장소 루트에서 실행)
+사용: python3 check_doc.py 파일 [파일 ...] (저장소 루트에서 실행)
 
-인자: 선택 --project 작업 경로(등록 Vault 프로젝트, project_context.py 쓰기 경로 검사), Markdown 파일 하나 이상
-출력: stdout 경로·줄별 위반, stderr 사용법·연결/경로 실패 JSON, 종료 0 통과·`--help`, 1 위반, 2 인자 오류·검사기 없음·경로 실패(문체 검사 전)·파일 읽기 실패
+인자: Markdown 파일 하나 이상
+출력: stdout 경로·줄별 위반, stderr 사용법, 종료 0 통과·`--help`, 1 위반, 2 인자 오류·파일 읽기 실패
 """
 import os
 import html
@@ -366,28 +366,12 @@ def check(path: str) -> int:
 def main(paths: list[str]) -> int:
     import argparse
     parser = argparse.ArgumentParser(prog="check_doc.py", description="repo-docs 규칙으로 저장소 Markdown 파일 검사 (저장소 루트에서 실행)")
-    parser.add_argument("--project", help="등록 Vault 프로젝트의 작업 경로. project_context.py 쓰기 경로 검사")
     parser.add_argument("files", nargs="+", metavar="FILE", help="Markdown 파일")
     try:
         arguments = parser.parse_args(paths)
     except SystemExit as stop:
         return int(stop.code or 0)
     paths = arguments.files
-    if arguments.project is not None:
-        from pathlib import Path
-        import subprocess
-        root = Path(__file__).resolve().parents[2]
-        checker = root / "git-issue/scripts/project_context.py"
-        if not checker.is_file():
-            checker = root.parent / "git/git-issue/scripts/project_context.py"
-        if not checker.is_file():
-            print("project context checker missing", file=sys.stderr)
-            return 2
-        for path in paths:
-            result = subprocess.run([sys.executable, str(checker), "--project", arguments.project, "--write", str(Path(path).resolve())], capture_output=True, text=True)
-            if result.returncode:
-                print(result.stdout or result.stderr, file=sys.stderr)
-                return 2
     count = 0
     for path in paths:
         try:

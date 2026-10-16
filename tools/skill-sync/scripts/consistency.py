@@ -202,9 +202,11 @@ def load_cost_checker() -> object:
 # cost: time O(n·t + b + s²), heap O(n + b), stack O(n), io O(f + l)
 # vars: n = 전체 글자 수, t = 용어 수, b = 링크 대상 글자 수 합계, s = 가장 긴 스크립트 줄 수, f = 파일 수, l = 링크 수
 # basis: estimate
-def check_consistency(paths: list[Path]) -> dict[Path, list[str]]:
+def check_consistency(paths: list[Path], linkable: list[Path] | None = None) -> dict[Path, list[str]]:
+    """paths는 문체·규칙 검사 대상, linkable은 참조 링크로 가리킬 수 있는 추가 스킬(형식만 검사하는 스킬 포함)"""
     skills = {path.parent.name: path.parent for path in paths}
     terms = read_terms(skills)
+    targets = {**{path.parent.name: path.parent for path in linkable or []}, **skills}
     errors = {path: [] for path in paths}
     duplicates = defaultdict(list)
     cost_checker = load_cost_checker()
@@ -213,7 +215,7 @@ def check_consistency(paths: list[Path]) -> dict[Path, list[str]]:
         for document in documents:
             text = document.read_text(encoding='utf-8')
             label = document.relative_to(path.parent)
-            found = check_prose(text, terms) + check_references(document, text, skills)
+            found = check_prose(text, terms) + check_references(document, text, targets)
             errors[path].extend(f'{error} ({label})' for error in found)
             for line, rule in collect_rules(text, include_intro=document != path):
                 duplicates[rule].append((path, f'{label}:{line}'))

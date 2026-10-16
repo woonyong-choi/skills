@@ -81,9 +81,10 @@ def test_shared_guides_have_one_owner() -> None:
     assert '(git-issue 닫기)' in commit
 
 
-def test_issue_binding_reads_continuity_before_bind() -> None:
-    # #82: bind를 정의한 continuity.md 확인이 bind 지시보다 먼저
+def test_issue_binding_reads_hooks_before_bind() -> None:
+    # #82: bind를 정의한 just-mode hooks.md 확인이 bind 지시보다 먼저
     lines = section('git/git-issue/SKILL.md', '과업 연결과 기록')
-    required = next(index for index, line in enumerate(lines) if 'references/continuity.md' in line)
+    required = next(index for index, line in enumerate(lines) if 'just-mode `references/hooks.md`' in line)
     bind = next(index for index, line in enumerate(lines) if 'bind(' in line)
     assert required < bind
+    assert (ROOT / 'just/just-mode/references/hooks.md').is_file()

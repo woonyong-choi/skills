@@ -10,19 +10,14 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
+import os
 import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-# 설치본(스킬 폴더 나란히)과 원본 저장소(docs/·git/) 두 배치의 git-issue 위치
-for _scripts in (HERE.parents[1] / "git-issue" / "scripts", HERE.parents[2] / "git" / "git-issue" / "scripts"):
-    if (_scripts / "project_context.py").is_file():
-        sys.path.insert(0, str(_scripts))
-        break
-import project_context as pc  # noqa: E402
 
 DOCUMENTS = ("이력서", "포트폴리오")
 SECTIONS = ("# 공고 분석", "# 구성 계획", "# 작성", "# 확인")
@@ -128,14 +123,24 @@ def compile_pdf(source: Path, root: Path) -> Path:
 # cost: time O(d), heap O(d), stack O(1), io O(1)
 # vars: d = 경로 깊이
 # basis: estimate
-def inside_vault(folder: Path) -> None:
-    """쓰기 전 등록 Vault의 career 아래인지 확인. 아니면 파일을 쓰지 않고 CareerError"""
-    try:
-        root = (pc.resolve_vault() / "career").resolve()
-    except pc.ContextError as error:
-        raise CareerError(f"Vault 미등록: {error}") from error
-    if not folder.resolve().is_relative_to(root):
-        raise CareerError(f"Vault career 폴더 밖: {folder}")
+def career_root() -> Path:
+    """경력 원본 폴더: CAREER_ROOT, 없으면 <설정 폴더>/career.json의 root. 설정 폴더는 SKILLS_CONFIG_DIR, 없으면 ~/.config/skills"""
+    value = os.environ.get("CAREER_ROOT")
+    if not value:
+        path = Path(os.environ.get("SKILLS_CONFIG_DIR") or Path.home() / ".config/skills").expanduser() / "career.json"
+        try:
+            value = json.loads(path.read_text(encoding="utf-8")).get("root") if path.is_file() else None
+        except ValueError as error:
+            raise CareerError(f"설정 형식 오류: {path}: {error}") from error
+    if not value:
+        raise CareerError("경력 원본 위치 미설정: CAREER_ROOT 또는 <설정 폴더>/career.json의 root")
+    return Path(value).expanduser().resolve()
+
+
+def inside_root(folder: Path) -> None:
+    """쓰기 전 경력 원본 아래인지 확인. 아니면 파일을 쓰지 않고 CareerError"""
+    if not folder.resolve().is_relative_to(career_root()):
+        raise CareerError(f"경력 원본 폴더 밖: {folder}")
 
 
 # cost: time O(c) + 컴파일 시간, heap O(c), stack O(1), io O(f)
@@ -143,7 +148,7 @@ def inside_vault(folder: Path) -> None:
 # basis: estimate
 def confirm(folder: Path, build: bool = True) -> list[Path]:
     """작업 파일을 깨끗하게 정리해 다음 번호로 저장하고 작업 파일도 같은 상태로 갱신"""
-    inside_vault(folder)
+    inside_root(folder)
     if folder.name not in DOCUMENTS:
         raise CareerError(f"문서 폴더는 {', '.join(DOCUMENTS)} 중 하나: {folder}")
     work = folder / f"{folder.name}.typ"
@@ -219,7 +224,7 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     try:
         if args.action == "place":
-            inside_vault(args.path)
+            inside_root(args.path)
             print(args.path.resolve())
         elif args.action == "confirm":
             for path in confirm(args.path.resolve(), build=not args.no_compile):

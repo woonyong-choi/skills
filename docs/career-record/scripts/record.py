@@ -1,9 +1,10 @@
-"""경력 원본(<Vault>/career/)의 프로젝트 줄을 추가·병합·채움·수정·삭제하고 구조·등급을 검사한다.
+"""경력 원본 폴더의 프로젝트 줄을 추가·병합·채움·수정·삭제하고 구조·등급을 검사한다.
 
 사용: python3 record.py <명령> ... (명령: check, add, merge, fill, edit, remove, new-project, locate, screen, blanks, mode, since, stamp)
 인자: 명령마다 프로젝트 폴더(경력 원본 기준 상대 경로 또는 절대 경로), --first·--line 줄 첫 줄, --set 칸=값(반복), --pr PR 주소, --yes 사용자 승인. screen의 PR JSON은 파일 또는 `-`(표준 입력)
 출력: stdout JSON. 종료 0 성공·1 검사 위반 또는 위치 거부(파일 0개)·2 인자 오류·3 질문 필요(파일 0개, ask에 질문 문장)
-설정: <설정 폴더>/career-record.json의 mode(normal|bypass, 기본 normal)와 last_recorded. 설정 폴더는 vault.json과 같은 곳
+설정: <설정 폴더>/career-record.json의 mode(normal|bypass, 기본 normal)와 last_recorded. 설정 폴더는 SKILLS_CONFIG_DIR, 없으면 ~/.config/skills
+경력 원본 위치: 환경 변수 CAREER_ROOT, 없으면 <설정 폴더>/career.json의 root
 """
 
 from __future__ import annotations
@@ -16,13 +17,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-# 설치본(스킬 폴더 나란히)과 원본 저장소(docs/·git/) 두 배치의 git-issue 위치
-for _scripts in (HERE.parents[1] / "git-issue" / "scripts", HERE.parents[2] / "git" / "git-issue" / "scripts"):
-    if (_scripts / "project_context.py").is_file():
-        sys.path.insert(0, str(_scripts))
-        break
-import project_context as pc  # noqa: E402
+from urllib.parse import urlsplit
 
 FIELDS = ("등급", "주체", "상황", "행동", "확인", "결과", "상태", "근거")
 ATTRIBUTES = ("기간", "인원", "역할", "공개", "저장소", "기술")
@@ -62,8 +57,12 @@ class Ask(Exception):
 # cost: time O(1), heap O(1), stack O(1), io O(1)
 # vars: 없음
 # basis: estimate
+def config_directory() -> Path:
+    return Path(os.environ.get("SKILLS_CONFIG_DIR") or Path.home() / ".config/skills").expanduser()
+
+
 def config_path() -> Path:
-    return pc.config_directory() / "career-record.json"
+    return config_directory() / "career-record.json"
 
 
 # cost: time O(1), heap O(1), stack O(1), io O(1)
@@ -90,18 +89,27 @@ def write_config(data: dict) -> None:
 # vars: 없음
 # basis: estimate
 def career_root() -> Path:
-    """등록 Vault의 career 폴더. Vault 미등록이면 RecordError"""
-    try:
-        return (pc.resolve_vault() / "career").resolve()
-    except pc.ContextError as error:
-        raise RecordError(f"Vault 미등록: {error}") from error
+    """경력 원본 폴더: CAREER_ROOT, 없으면 career.json의 root. 둘 다 없거나 폴더가 아니면 RecordError"""
+    value = os.environ.get("CAREER_ROOT")
+    if not value:
+        path = config_directory() / "career.json"
+        try:
+            value = json.loads(path.read_text(encoding="utf-8")).get("root") if path.is_file() else None
+        except ValueError as error:
+            raise RecordError(f"설정 형식 오류: {path}: {error}") from error
+    if not value:
+        raise RecordError("경력 원본 위치 미설정: CAREER_ROOT 또는 <설정 폴더>/career.json의 root")
+    root = Path(value).expanduser().resolve()
+    if not root.is_dir():
+        raise RecordError(f"경력 원본 폴더 없음: {root}")
+    return root
 
 
 # cost: time O(d), heap O(d), stack O(1), io O(1)
 # vars: d = 경로 깊이
 # basis: estimate
 def guard(target: Path, root: Path) -> Path:
-    """쓰기 위치 검사. <Vault>/career 아래 공고 폴더 밖만 허용"""
+    """쓰기 위치 검사. 경력 원본 아래 공고 폴더 밖만 허용"""
     target = (root / target if not target.is_absolute() else target).resolve()
     if target == root or not target.is_relative_to(root):
         raise RecordError(f"경력 원본 밖 위치 거부: {target} (허용: {root} 아래)")
@@ -510,10 +518,14 @@ def screen(pr: dict, user: str) -> dict:
 # basis: estimate
 def identity(remote: str) -> str:
     """원격 주소의 host/owner/repo 소문자. https·ssh·.git 차이 무시, 해석 불가면 원문"""
-    try:
-        return pc.normalize_remote(remote.strip()).lower()
-    except pc.ContextError:
+    value = remote.strip()
+    if re.match(r"^[^/@]+@[^:]+:", value):
+        value = "ssh://" + value.replace(":", "/", 1)
+    parsed = urlsplit(value)
+    if not parsed.hostname or not parsed.path:
         return remote.strip().lower()
+    host = parsed.hostname + (f":{parsed.port}" if parsed.port else "")
+    return (host + "/" + parsed.path.strip("/").removesuffix(".git")).lower()
 
 
 # cost: time O(f), heap O(f), stack O(d), io O(f)

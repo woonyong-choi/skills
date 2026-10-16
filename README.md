@@ -5,7 +5,7 @@
   <a href="#설치">설치</a> · <a href="#사용법">사용법</a> · <a href="#스킬-목록">스킬 목록</a> · <a href="#측정-결과">측정 결과</a>
 </p>
 
-개발 작업은 [Developer Thinking](code/developer-thinking/SKILL.md)에서 연결·조회·결정·구현·검증·종료 순서로 진행합니다. 각 단계는 기존 소유 스킬의 해당 규칙만 읽습니다. 원본은 역할별 폴더에 두고, Claude Code와 Codex에는 같은 이름과 내용으로 설치합니다.
+개발 작업은 [developer-thinking](code/developer-thinking/SKILL.md)에서 연결·조회·결정·구현·검증·종료 순서로 진행합니다. 각 단계는 기존 소유 스킬의 해당 규칙만 읽습니다. 원본은 역할별 폴더에 두고, Claude Code와 Codex에는 같은 이름과 내용으로 설치합니다.
 
 ## 작동 방식
 
@@ -44,29 +44,26 @@ $git-pull-request 현재 diff와 테스트 결과로 PR 본문을 작성해 줘.
 
 요청과 스킬 설명이 맞으면 도구가 자동으로 선택할 수도 있습니다. 명시 호출은 원하는 규칙을 지정하는 방법입니다. 파일 수정, Git 실행, 게시 범위는 함께 적은 요청에 따릅니다.
 
-### 압축 후 작업 복구
+### 작업 기록과 훅
 
-Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continuity`를 유지합니다. 연결한 이슈에 작업 기록을 저장하고 새 세션·압축 후 복구 명령을 안내합니다. 저장 완료는 실제 기록을 다시 읽어 판정하고, 원래 요청과 마지막 대화는 로컬 작업 기록에만 보관합니다. [판 상태](git/git-issue/references/project-status.md), [기록·복구](git/git-issue/references/continuity.md), [설치·호스트 연결](git/git-issue/references/continuity-hosts.md)은 해당 작업 때만 읽습니다. 판단은 소유 스킬, 저장·복구는 플러그인 코드가 담당합니다.
+just do 플러그인(설치 ID `just-do`)의 훅이 세션 시작과 압축 뒤에 just-mode 진입 안내를 한 줄로 넣습니다. 세션을 과업에 연결하면 이슈 주소와 결정 기록(`.local/decisions/<과업>.tsv`)의 마지막 줄도 함께 넣습니다. 코드 파일을 고치기 전에는 필요한 규칙 원문을 읽었는지 확인하고, 파일을 바꾼 요청이 결정 기록 없이 끝나려 하면 한 번 멈춥니다. 동작과 설치 방법은 [just do 훅](just/just-mode/references/hooks.md), 판 상태는 [판 상태](git/git-issue/references/project-status.md)에 있습니다.
 
-기존 `issue-continuity`는 이전 설치 ID입니다. 중복 활성화 여부를 먼저 확인하고, 활성 갱신은 설치·호스트 연결의 안정된 진입점 절차를 따릅니다.
+훅을 쓰려면 스킬 설치 뒤 플러그인도 설치합니다. Codex는 `codex plugin marketplace add`와 `codex plugin add just-do@woon-skills`를 씁니다.
 
-설치와 실제 훅 실행은 별개입니다. Codex는 대화형 TUI의 `/hooks`에서 새 훅 정의를 검토·신뢰해야 실행합니다. `codex exec`는 신뢰 전 훅을 알림 없이 건너뜁니다. 사용량 신호가 없으면 임계값은 미확인으로 남기고 작업 경계와 압축 훅을 사용합니다.
+```sh
+claude plugin marketplace add woonyong-choi/skills
+claude plugin install just-do@woon-skills
+```
 
-PR 머지 뒤 경력 기록은 [career-record](docs/career-record/SKILL.md)가 판단합니다. 세션 안에서 PR 머지(`gh pr merge`, `gh api` PUT 머지)가 성공하면 같은 훅이 기록 여부 판단을 안내합니다. Vault에 `career/` 폴더가 있을 때만 안내합니다. 기본 모드 normal은 추가·병합마다 묻습니다. 바로 기록하는 bypass로 바꾸려면 아래 명령을 실행합니다. bypass에서도 상·중 줄과 포트폴리오 묶음이 있는 줄을 지울 때, 넣을 프로젝트 후보가 여럿일 때는 묻습니다.
+설치와 실제 훅 실행은 별개입니다. Codex는 대화형 TUI의 `/hooks`에서 새 훅 정의를 검토·신뢰해야 실행합니다. `codex exec`는 신뢰 전 훅을 알림 없이 건너뜁니다. 사용량 신호가 없으면 80% 안내는 나오지 않습니다.
+
+PR 머지 뒤 경력 기록은 [career-record](docs/career-record/SKILL.md)가 판단합니다. 세션 안에서 PR 머지(`gh pr merge`, `gh api` PUT 머지)가 성공하면 같은 훅이 경력 원본에 남길 성과인지 확인하라고 한 줄로 안내합니다. 경력 원본 위치(`CAREER_ROOT` 또는 `~/.config/skills/career.json`의 `root`)가 있을 때만 안내합니다. 기본 모드 normal은 추가·병합마다 묻습니다. 바로 기록하는 bypass로 바꾸려면 아래 명령을 실행합니다. bypass에서도 상·중 줄과 포트폴리오 묶음이 있는 줄을 지울 때, 넣을 프로젝트 후보가 여럿일 때는 묻습니다.
 
 ```sh
 python3 <스킬 설치 폴더(~/.claude/skills 또는 ~/.codex/skills)>/career-record/scripts/record.py mode bypass
 ```
 
-설정은 `vault.json`과 같은 폴더(기본 `~/.config/skills`)의 `career-record.json`에 `{"mode": "bypass"}`로 저장됩니다.
-
-같은 훅은 career-record 다음 [repo-docs-journal](docs/repo-docs-journal/SKILL.md)의 판단 기록 여부도 안내합니다. 버린 대안 문장, 확인하지 못한 가정 문장, 구조 항목(저장 위치, 데이터 형식 등) 세 가지를 모두 댈 수 있는 판단만 기록합니다. 기본 normal은 세 가지 인용문을 보여 주고 묻습니다. 바로 저장하려면 bypass로 바꿉니다.
-
-```sh
-python3 <스킬 설치 폴더>/repo-docs-journal/scripts/journal.py mode bypass
-```
-
-설정은 같은 폴더의 `journal.json`에 저장됩니다.
+설정은 `~/.config/skills/career-record.json`에 `{"mode": "bypass"}`로 저장됩니다.
 
 ## 스킬 목록
 
@@ -107,8 +104,8 @@ python3 <스킬 설치 폴더>/repo-docs-journal/scripts/journal.py mode bypass
 | [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | 그림, 차트, 대체 글, 데모 GIF |
 | [repo-docs-root](docs/repo-docs-root/SKILL.md) | AGENTS.md와 저장소 루트 문서 |
 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 문서 색인 생성 |
-| [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | Vault 비공개 판단·작업 일지·원칙과 PR 머지 뒤 기록 기준 판정 |
-| [career](docs/career/SKILL.md) | JD 맞춤 이력서·포트폴리오와 Vault 지원 폴더 |
+| [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 저장소 `.local/journal/` 비공개 판단·작업 일지·원칙과 기록 기준 판정 |
+| [career](docs/career/SKILL.md) | JD 맞춤 이력서·포트폴리오와 지원 폴더 |
 | [career-record](docs/career-record/SKILL.md) | 경력 원본의 성과 추가·병합·등급과 PR 머지 뒤 기록 판단 |
 
 ### 디자인
@@ -128,6 +125,7 @@ python3 <스킬 설치 폴더>/repo-docs-journal/scripts/journal.py mode bypass
 작업 순서표(플레이북)·검토·검증 스킬 묶음입니다. Claude Code CLI, Codex CLI, OpenCode에서 같이 씁니다.
 
 - 입구: `/just-mode`(Codex는 `$just-mode`)에 요청을 붙이면 23개 플레이북 중 맞는 순서를 고릅니다. 도움말은 `/just-help`
+- 훅: 플러그인 just do(루트 `just/`)가 just-mode 진입 안내, 결정 기록 확인, 편집 전 규칙 확인을 맡습니다([just do 훅](just/just-mode/references/hooks.md))
 - 호스트 차이: 서브에이전트·주기적 깨우기·다른 회사 모델 검토는 [호스트 대응표](just/just-mode/references/hosts.md) 한 곳에서 정합니다
 - 모델: 본문은 역할 이름(`code`, `judgment`, `review`, `cheap`)만 씁니다. 실제 모델은 `/just-setup`이 만드는 `~/.config/skills/models.json`이 정합니다([역할별 모델](just/just-mode/references/models.md))
 - 부르는 법: 대부분 사람이 직접 부를 때만 켜집니다. Claude Code는 설명을 평소 문맥에 넣지 않고, Codex는 스킬마다 `agents/openai.yaml`이 자동 선택을 막습니다

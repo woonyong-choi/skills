@@ -9,7 +9,7 @@ description: "비공개 판단·판단 변경·작업 일지·원칙을 기록·
 - 기반: repo-docs 먼저 적용. 이 스킬 범위: 비공개 판단·판단 변경·작업 일지·원칙 양식, 기록 기준, 저장 위치, 표시, 놓친 것 분류, PR 머지 뒤 기록 판단
 - 필요할 때만 읽기: 판단이 공개 설계를 정했을 때 → repo-docs-decision
 
-- 진행·결정 상태는 이슈·Continuity 기록(git-issue). 이 스킬은 기록 기준을 통과한 판단과 사용자가 요청한 회고만
+- 진행·결정 상태는 이슈와 결정 기록(git-issue 과업 연결과 기록). 이 스킬은 기록 기준을 통과한 판단과 사용자가 요청한 회고만
 - 형식: 일반 Markdown과 Obsidian 속성(YAML)만
 - 문장: 쉬운 설명 규칙(repo-docs `references/plain-language.md`)
 - repo-docs-decision 대상 판정을 통과한 판단: 공개 결정 기록 작성 필요를 보고, 사용자 승인 시 작성 후 이 기록 `관련` 속성에 그 경로 추가
@@ -18,15 +18,15 @@ description: "비공개 판단·판단 변경·작업 일지·원칙을 기록·
 
 종류 → 쓰는 때 → 위치:
 
-- 판단 → 기록 기준 통과 → 등록 프로젝트 `<Vault>/worktree/<프로젝트>/docs/판단/`, 프로젝트 무관 `<Vault>/legacy/판단/`
+- 판단 → 기록 기준 통과 → 작업 저장소 `.local/journal/판단/`
 - 판단 변경 → 기록된 판단을 뒤집을 때만(기록 없는 판단 제외) → 판단과 같은 폴더
-- 작업 일지 → 사용자가 지정한 작업이나 여러 판단 변경을 잇는 작업의 처음부터 끝까지 → `docs/작업일지/`, 프로젝트 무관 `legacy/작업일지/`
-- 원칙 → 판단 변경의 `놓친 것` 분류·원인이 같은 것이 두 번째 나올 때(`journal.py misses`로 대조) → `<Vault>/principles.md` 하나
+- 작업 일지 → 사용자가 지정한 작업이나 여러 판단 변경을 잇는 작업의 처음부터 끝까지 → `.local/journal/작업일지/`
+- 원칙 → 판단 변경의 `놓친 것` 분류·원인이 같은 것이 두 번째 나올 때(`journal.py misses`로 대조) → `.local/journal/principles.md` 하나
 
 - 파일 이름: `{YYYY-MM-DD}-{주제}.md`, 주제는 한국어 2~5단어, 공백은 `-`
 - 목록: 속성(날짜, 종류, 이전 판단, 관련)으로 Obsidian이 생성. 손으로 관리하는 목록 파일 금지
-- 쓰기 전: `python3 <이 스킬 폴더>/scripts/journal.py path --kind {종류} --topic "{주제}"` → 출력 `path`에만 Write. 등록 Vault 해석·쓰기 검사를 git-issue `project_context.py` 함수 직접 호출로 수행, 등록 안 된 프로젝트면 legacy, 실패(Vault 미등록·등록 프로젝트 검사 실패·영역 밖)면 종료 1, 파일 0개로 중단
-- 쓴 뒤: `journal.py check` 출력 0건까지 수정. Python 3.9+, git-issue 스킬 필요
+- 쓰기 전: `python3 <이 스킬 폴더>/scripts/journal.py path --kind {종류} --topic "{주제}"` → 출력 `path`에만 Write. 작업 저장소는 `--project`(기본 현재 폴더)의 git 저장소, git 저장소 밖이면 종료 1, 파일 0개로 중단
+- 쓴 뒤: `journal.py check` 출력 0건까지 수정. Python 3.9+, git
 
 ## 기록 기준
 
@@ -42,11 +42,11 @@ description: "비공개 판단·판단 변경·작업 일지·원칙을 기록·
 
 ## PR 머지 뒤
 
-세션 안 PR 머지 성공 뒤 Developer Thinking 훅 하나가 career-record 안내 다음 이 스킬 안내 출력. career-record 처리 뒤 진행
+사용자가 PR 머지 뒤 판단 기록을 요청할 때 적용. 훅 자동 안내 없음
 
 1. 근거 수집: 머지된 PR 본문·연결 이슈·PR 댓글(`gh pr view {번호} --json body,comments,closingIssuesReferences`), 세션 대화에서 그 PR로 이어진 결정
 2. 기록 기준 판정(위 절)
-3. 모드: `journal.py mode`(설정 `<설정 폴더>/journal.json`, `vault.json`과 같은 폴더, 기본 normal). normal은 기준 세 칸 인용문을 보여 주고 질문 뒤 저장, bypass는 통과 시 바로 저장. 보고는 작성 시점 절
+3. 모드: `journal.py mode`(설정 `<설정 폴더>/journal.json`, 설정 폴더는 `SKILLS_CONFIG_DIR`, 기본 `~/.config/skills`, 모드 기본 normal). normal은 기준 세 칸 인용문을 보여 주고 질문 뒤 저장, bypass는 통과 시 바로 저장. 보고는 작성 시점 절
 4. 이전 판단을 뒤집으면 판단 변경 양식
 
 직접 요청("이거 기록해 줘")도 같은 기준. 미충족이면 이유를 말하고, 사용자가 그래도 원하면 저장
