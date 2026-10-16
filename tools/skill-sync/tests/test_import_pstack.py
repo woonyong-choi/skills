@@ -27,8 +27,8 @@ def upstream(root: Path, text: str = SKILL) -> Path:
 
 def test_refresh_keeps_translation_and_lists_changes(tmp_path: Path, capsys) -> None:
     dest = tmp_path / 'repo'
-    (dest / 'pstack/alpha').mkdir(parents=True)
-    (dest / 'pstack/alpha/SKILL.md').write_text('한국어 이식본\n', encoding='utf-8')
+    (dest / 'lazy-mode/alpha').mkdir(parents=True)
+    (dest / 'lazy-mode/alpha/SKILL.md').write_text('한국어 이식본\n', encoding='utf-8')
     source = upstream(tmp_path)
     assert import_pstack.main(['--source', str(source), '--dest', str(dest)]) == 0
     assert '+ skills/alpha/SKILL.md' in capsys.readouterr().out
@@ -36,13 +36,13 @@ def test_refresh_keeps_translation_and_lists_changes(tmp_path: Path, capsys) -> 
     assert import_pstack.main(['--source', str(source), '--dest', str(dest)]) == 0
     out = capsys.readouterr().out
     assert '~ skills/alpha/SKILL.md' in out and '바뀐 파일 1개' in out
-    assert (dest / 'pstack/alpha/SKILL.md').read_text(encoding='utf-8') == '한국어 이식본\n'
-    record = json.loads((dest / 'pstack/_upstream/SOURCE.json').read_text(encoding='utf-8'))
+    assert (dest / 'lazy-mode/alpha/SKILL.md').read_text(encoding='utf-8') == '한국어 이식본\n'
+    record = json.loads((dest / 'lazy-mode/_upstream/SOURCE.json').read_text(encoding='utf-8'))
     assert record['version'] == '9.9.9' and record['skills'] == 1 and len(record['commit']) == 40
 
 
 def test_vendored_check_reports_name_mismatch(tmp_path: Path) -> None:
-    skill = tmp_path / 'pstack/beta'
+    skill = tmp_path / 'lazy-mode/beta'
     skill.mkdir(parents=True)
     (skill / 'SKILL.md').write_text(SKILL, encoding='utf-8')
     assert skill_check.check_vendored(skill / 'SKILL.md') == ['원본 name: 폴더 이름과 다름']
