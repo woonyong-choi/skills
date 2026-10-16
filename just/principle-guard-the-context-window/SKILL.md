@@ -2,6 +2,7 @@
 name: principle-guard-the-context-window
 description: "컨텍스트가 차오를 때(큰 출력, 긴 파일, 반복해서 읽기, 병렬 분배 계획) 적용한다. 대량 작업은 서브에이전트로 보내고, 메인 흐름에는 원본 데이터가 아니라 요약을 둔다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 컨텍스트 창 지키기(Guard the Context Window)

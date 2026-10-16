@@ -2,6 +2,7 @@
 name: principle-type-system-discipline
 description: "타입을 설계하거나, 함수 시그니처를 리뷰하거나, 정적 타입 언어로 코드를 쓸 때 적용한다. 잘못된 상태를 표현할 수 없게 만들고, 의미 있는 원시값에 브랜드를 붙이고, 외부 데이터는 경계에서 파싱하고, 변형을 빠짐없이 다루고, 정본 스키마에서 타입을 도출한다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 타입 시스템 규율(Type System Discipline)

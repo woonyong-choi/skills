@@ -2,6 +2,7 @@
 name: principle-exhaust-the-design-space
 description: "코드베이스에 선례가 없는 새 UI 상호작용이나 아키텍처 결정을 마주했을 때 적용한다. 경쟁하는 프로토타입을 2~3개 만들어 나란히 비교한 뒤 결정한다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 설계 공간 다 훑기(Exhaust the Design Space)

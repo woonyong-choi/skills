@@ -2,6 +2,7 @@
 name: principle-fix-root-causes
 description: "디버깅할 때 적용한다. 각 증상을 시스템이 처음 잘못된 곳까지 거슬러 올라가 그곳을 고친다. 방어 코드는 그것이 다루는 상태가 정당할 때만 수정이다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 근본 원인 고치기(Fix Root Causes)

@@ -2,6 +2,7 @@
 name: principle-make-operations-idempotent
 description: "크래시, 재시작, 재시도 속에서 도는 명령, 수명 주기 단계, 처리 루프를 설계할 때 적용한다. 앞선 실행이 어디서 멈췄든 같은 최종 상태로 수렴하게 한다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 작업을 멱등으로 만들기(Make Operations Idempotent)

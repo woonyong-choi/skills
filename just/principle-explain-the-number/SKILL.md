@@ -2,6 +2,7 @@
 name: principle-explain-the-number
 description: "직접 잰 숫자(속도 향상, 회귀, 처리량, 지연 시간, 평가 결과)를 믿거나 보고하거나 그에 따라 행동하기 전에 적용한다. 그 숫자를 제한하는 것을 찾고, 생각하는 작업이 아닌 다른 것을 잰 게 아님을 배제한다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 숫자 설명하기(Explain the Number)
