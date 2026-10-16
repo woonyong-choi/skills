@@ -1,5 +1,6 @@
 interface:
   display_name: "architect"
+  short_description: "코드보다 먼저 타입·시그니처·모듈 구조를 스케치하고 그 스케치에 맞춰 구현"
   default_prompt: "$architect [요청]"
 policy:
   allow_implicit_invocation: false

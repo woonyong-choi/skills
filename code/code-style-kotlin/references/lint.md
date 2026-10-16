@@ -1,6 +1,9 @@
 # 린트 설정
 
-기존 빌드·버전 카탈로그의 호환 버전 사용. 새 설정은 Gradle·Kotlin·JDK 조합 확인 후 선택 버전·확인일 기록. 아래 버전 자리는 확인한 값으로 교체
+Gradle, detekt, ktlint 설정의 기준 값과 그 값을 정한 계산을 적는다.
+
+- 기존 빌드와 버전 카탈로그에 호환되는 버전을 쓴다.
+- 새로 설정할 때는 Gradle, Kotlin, JDK 조합을 확인한 뒤 고른 버전과 확인한 날짜를 적는다. 아래 버전 자리는 확인한 값으로 바꾼다.
 
 `build.gradle.kts`:
 
@@ -49,8 +52,10 @@ exceptions:
     active: true
 ```
 
-- detekt threshold는 이 값 이상이면 경고 → code-style 절대 최대 + 1
-- detekt 함수 길이에 선언 줄과 닫는 괄호 포함 → 본문 100줄 + 2 + 1 = 103
-- `ComplexCondition` 기준: 조건 개수 → `&&`·`||` 3개 = 조건 4개, 5개부터 경고
-- `!!` 검사(`UnsafeCallOnNullableType`)는 타입 정보가 필요해 `detektMain`·`detektTest`에서만 동작
-- 인지 복잡도 기준: detekt 점수
+## 값을 정한 계산
+
+- detekt threshold는 그 값 이상이면 경고하므로 code-style [수치 기준](../../code-style/references/structure.md#수치-기준)의 절대 최대에 1을 더한다.
+- detekt 함수 길이는 선언 줄과 닫는 괄호를 포함하므로 본문 100줄에 그 2줄과 경고 기준 1을 더해 103으로 둔다.
+- `ComplexCondition`은 조건 개수를 센다. `&&`, `||` 3개는 조건 4개이므로 5개부터 경고한다.
+- `!!` 검사(`UnsafeCallOnNullableType`)는 타입 정보가 필요해 `detektMain`과 `detektTest`에서만 돈다.
+- 인지 복잡도는 detekt 점수를 기준으로 삼는다.

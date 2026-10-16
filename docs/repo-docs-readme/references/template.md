@@ -1,6 +1,6 @@
 # README 틀
 
-절 이름은 `README.md` 기준. `README.en.md` 절 이름: SKILL.md 영어판 절
+README를 쓰거나 고칠 때 종류에 맞는 틀 하나를 고른다. 절 이름은 `README.md` 기준이고, `README.en.md` 절 이름은 [영어판 절](../SKILL.md#영어판)의 대응표를 쓴다.
 
 ## 오픈소스형
 

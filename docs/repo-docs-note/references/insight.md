@@ -1,5 +1,7 @@
 # insight
 
+insight 기록을 쓰거나 갱신할 때 이 틀을 쓴다.
+
 ````text
 ---
 type: insight

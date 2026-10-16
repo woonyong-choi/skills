@@ -1,5 +1,6 @@
 interface:
   display_name: "why"
+  short_description: "코드가 왜 지금 모양인지 증거 범주별 병렬 조사로 근거와 신뢰도 정리"
   default_prompt: "$why [요청]"
 policy:
   allow_implicit_invocation: false

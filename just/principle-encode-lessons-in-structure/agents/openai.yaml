@@ -1,5 +1,6 @@
 interface:
   display_name: "principle-encode-lessons-in-structure"
+  short_description: "반복되는 지시를 린트·검사·스크립트 같은 구조로 바꾸는 원칙"
   default_prompt: "$principle-encode-lessons-in-structure [요청]"
 policy:
   allow_implicit_invocation: false

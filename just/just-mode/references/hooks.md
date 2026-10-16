@@ -10,7 +10,7 @@
 ## 과업 연결과 결정 기록
 
 - 과업 연결은 "이 세션이 어느 과업·이슈인지"만 기록한다. 목표·제약·계획은 이슈 본문에, 진행 상태는 판 상태에 둔다. 이슈에 진행 로그 댓글을 달지 않는다.
-- 연결: `python3 <just-mode 폴더>/scripts/hooks/task.py bind --session-id <세션 ID> --task <과업> --issue <이슈 URL>`. 세션 ID는 세션 시작 안내에 나온다. Codex는 생략하면 `CODEX_THREAD_ID`를 쓴다. 확인은 `show`, 해제는 `unbind`다.
+- 연결은 `python3 <just-mode 폴더>/scripts/hooks/task.py bind --session-id <세션 ID> --task <과업> --issue <이슈 URL>`로 한다. 세션 ID는 세션 시작 안내에 나온다. Codex는 생략하면 `CODEX_THREAD_ID`를 쓴다. 확인은 `show`, 해제는 `unbind`다.
 - 결정 기록은 `.local/decisions/<과업>.tsv` 하나다. 열은 `ts phase decision why evidence result`이고 `bash <show-me-your-work 폴더>/scripts/log.sh <파일> <phase> <decision> <why> <evidence> <result>`로 한 줄씩 덧붙인다. 가설은 result 칸에 "가설", 다음 할 일은 phase 칸에 "다음"으로 적는다.
 - 상태 파일은 `.local/sessions/` 아래 세션마다 하나(연결, 요청 시작 지문, 사용량)와 세션·서브에이전트마다 하나(규칙 전달 기록)다. 지워도 연결과 규칙 전달 기록만 처음으로 돌아간다.
 - `.local/`이 git 무시 대상이 아니면 훅이 `.local/.gitignore`(`*`)를 만들어 스스로 무시되게 한다.

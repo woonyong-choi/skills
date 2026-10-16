@@ -6,14 +6,14 @@ Sentry MCP를 쓴다.
 
 1. **방향을 잡는다.** 프로젝트 슬러그와 조직을 모르면:
 
-   ```
+   ```text
    find_organizations
    find_projects
    ```
 
 2. **대상과 관련된 이슈를 검색한다.**
 
-   ```
+   ```text
    search_issues (natural language, e.g., "errors in PaymentService timeout", "unhandled exceptions in uploadFile")
    ```
 
@@ -21,7 +21,7 @@ Sentry MCP를 쓴다.
 
 3. **릴리스와 시간 범위로 좁힌다.**
 
-   ```
+   ```text
    search_issue_events (filter by release, time, environment, trace ID, tags)
    get_issue_tag_values (for an issue, see distribution across versions, users, environments)
    ```
@@ -30,7 +30,7 @@ Sentry MCP를 쓴다.
 
 4. **맥락을 위해 이벤트 전체를 가져온다.**
 
-   ```
+   ```text
    get_sentry_resource (pass a Sentry URL or type+ID)
    ```
 
@@ -38,7 +38,7 @@ Sentry MCP를 쓴다.
 
 5. **대상 근처에 나간 릴리스를 확인한다.**
 
-   ```
+   ```text
    find_releases (around the commit date of the target)
    ```
 
@@ -46,7 +46,7 @@ Sentry MCP를 쓴다.
 
 6. **Seer는 아껴 쓴다.**
 
-   ```
+   ```text
    analyze_issue_with_seer
    ```
 

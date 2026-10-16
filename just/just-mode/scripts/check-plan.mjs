@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+// 여러 단계·여러 PR 계획 파일이 multi-phase-plan 플레이북의 뼈대를 지켰는지 검사한다.
+// 인자: 계획 Markdown 파일 경로 하나(`node check-plan.mjs <plan.md>`)
+// 출력: stdout에 PR 절 요약과 개수, stderr에 `<파일>:<줄>: <문제>`. 종료 0 문제 없음, 1 문제 있음, 2 인자 없음
+// 실행 조건: Node 또는 Bun, 외부 패키지 없음
 import fs from "node:fs";
 import process from "node:process";
 

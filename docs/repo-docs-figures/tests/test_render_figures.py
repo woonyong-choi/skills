@@ -1,4 +1,4 @@
-"""render_figures의 녹화 실행 위치·ThinkFlow 경로·원본 확장자 계약 검증."""
+"""render_figures의 녹화 실행 위치·Torso 경로·원본 확장자 계약 검증."""
 
 from __future__ import annotations
 

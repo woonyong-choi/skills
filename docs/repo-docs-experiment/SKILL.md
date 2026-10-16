@@ -1,24 +1,21 @@
 ---
 name: repo-docs-experiment
-description: "모집단·표본·판정 기준을 정한 측정·비교 실험의 설계·수집·결과를 기록할 때 사용."
+description: "모집단, 표본, 판정 기준을 정한 측정이나 비교 실험의 설계, 수집, 결과를 기록할 때 쓴다."
 ---
 
 # Repo Docs Experiment
 
-- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
-- 기반: repo-docs 먼저 적용. 이 스킬 범위: 실험 대상, 폴더, 흐름, 템플릿, 통계 규칙, 검사
-- 필요할 때만 읽기: 결과 차트 → repo-docs-figures; 완료 조건의 범위 변경 → git-issue 범위 변경 절; 실험 이슈, PR, 커밋 실행 → git-issue, git-branch, git-pull-request, git-commit
+설계 값을 정하는 실험 하나를 폴더 하나로 남긴다. 수집 전에 계획을 커밋으로 고정하고, 수집한 뒤 결과를 보고한다. 공통 규칙은 [repo-docs](../repo-docs/SKILL.md)를 먼저 따르고, 이 스킬은 실험 대상, 폴더, 흐름, 템플릿, 통계 규칙, 검사를 맡는다.
 
-- 실험 하나 = 폴더 하나. 수집 전 계획 커밋 → 수집 → 결과 보고
-- 진행 상태: 흐름 1의 추적 항목. 문서에 기록 금지
+## 언제 쓰나
 
-## 대상
+| 실험으로 하는 것 | 실험으로 하지 않는 것 |
+|---|---|
+| 설계의 규칙이나 기본값이 측정 결과에 기댈 때 | 공식 문서로 알 수 있는 사실([repo-docs-note](../repo-docs-note/SKILL.md) reference) |
+| 외부 도구 동작을 비교하거나 추론할 모집단과 판정 기준이 있을 때 | 그 실행의 관측만 남길 때([repo-docs-note](../repo-docs-note/SKILL.md) insight) |
+| 두 방식 중 나은 쪽을 수치로 고를 때 | CI가 계속 재는 성능 회귀 |
 
-실험으로 하는 것 → 실험으로 하지 않는 것:
-
-- 설계의 규칙이나 기본값이 측정 결과에 기대는 경우 → 공식 문서로 알 수 있는 사실 (repo-docs-note reference)
-- 외부 도구 동작을 비교·추론할 모집단과 판정 기준이 있는 경우 → 해당 실행의 관측만 기록하는 경우 (repo-docs-note insight)
-- 두 방식 중 나은 쪽을 수치로 고르는 경우 → CI가 계속 재는 성능 회귀
+- 진행 상태는 단계 1의 추적 항목에만 둔다. 문서에 적지 않는다.
 
 ## 폴더
 
@@ -45,22 +42,22 @@ docs/experiments/
       tables/{이름}.csv
 ```
 
-이름 → 규칙:
+| 이름 | 규칙 |
+|---|---|
+| `{실험}` | 확인할 것을 영어 소문자 kebab-case로 쓴다(`cache-hit-ratio`). 번호와 날짜를 넣지 않는다 |
+| `{실행 id}` | `YYYYMMDDTHHMMSSZ-{커밋 7자리}` |
+| `raw/` | 수집한 그대로 두고 수집 뒤 고치지 않는다. 다시 수집하면 새 실행 id 파일로 둔다 |
+| `processed/` | 스크립트만 만든다. 지워도 `run.sh process`로 다시 만든다 |
+| `scripts/` | 번호가 실행 순서다. 입력은 앞 단계 파일만 쓴다 |
+| `results/summary.json` | 보고서의 모든 수치를 담는다. 보고서 수치는 이 파일에서만 가져온다 |
+| 결과 차트 | 원본과 산출물 위치, JSON 입력과 변환, 검사는 repo-docs-figures `references/charts.md`의 실험 차트를 따른다 |
+| `run.sh` | `collect`, `process`, `analyze`, `verify`, `all` 다섯 명령을 둔다. `./run.sh analyze`는 `raw/`에서 전처리를 다시 실행한 뒤 분석해 결과를 다시 만든다 |
+| `logs/` | `run.sh` 명령마다 실행 출력 전부를 남긴다. 고치지 않고 홈 경로는 `~`로 쓴다. 아래 `log` 함수로만 남기고, 같은 로그가 있으면 거부한다. 검사나 재현으로 다시 돌릴 때는 `RUN_ID={실행 id}-check`를 쓰고 그 로그는 커밋하지 않는다 |
+| 실행 id 공유 | `collect`가 첫 줄에 출력한 id를 같은 실행의 다음 명령에 `RUN_ID={실행 id} ./run.sh {명령}`으로 넘긴다. 빼면 새 id가 생긴다 |
+| `env.json` | 계획의 실험 환경 표와 같은 항목을 `collect`가 자동으로 남긴다. 계획 값과 다르면 보고서의 계획과 다른 점에 적는다 |
+| 파일 크기 | 저장소의 파일 크기 정책을 따른다. 밖에 저장하면 접근 경로, SHA-256, 재현 방법을 적는다 |
 
-- `{실험}` → 확인할 것, 영어 소문자 kebab-case: `cache-hit-ratio`. 번호, 날짜 금지
-- `{실행 id}` → `YYYYMMDDTHHMMSSZ-{커밋 7자리}`
-- `raw/` → 수집한 그대로, 수집 뒤 수정 금지. 재수집은 새 실행 id 파일
-- `processed/` → 스크립트만 생성. 지워도 `run.sh process`로 재생성
-- `scripts/` → 번호 = 실행 순서. 입력은 앞 단계 파일만
-- `results/summary.json` → 보고서의 모든 수치. 보고서 수치는 이 파일에서만
-- 결과 차트 → 원본·산출물 위치, JSON 입력과 변환·검사(repo-docs-figures references/charts.md 실험 차트)
-- `run.sh` → `collect`, `process`, `analyze`, `verify`, `all` 다섯 명령. `./run.sh analyze`는 `raw/`에서 전처리를 다시 실행한 뒤 분석해 결과 재생성
-- `logs/` → `run.sh` 명령마다 실행 출력 전부. 수정 금지, 홈 경로는 `~`로. 아래 `log` 함수로만 기록, 기존 로그면 거부. 검사·재현 재실행은 `RUN_ID={실행 id}-check`, 그 로그 커밋 제외
-- 실행 id 공유 → `collect`가 첫 줄에 출력한 id를 같은 실행의 이후 명령에 `RUN_ID={실행 id} ./run.sh {명령}`으로 전달. 생략하면 새 id
-- `env.json` → 계획의 실험 환경 표와 같은 항목을 `collect`가 자동 기록. 계획 값과 다르면 보고서 계획과 다른 점에
-- 파일 크기 → 저장소의 파일 크기 정책 적용. 외부 저장 시 접근 경로·SHA-256·재현 방법 기록
-
-`run.sh` 머리(명령마다 `log 명령 실행할 것`). 실패한 명령은 비영 종료로 전달, 어느 폴더에서 실행해도 실험 폴더 기준:
+`run.sh` 머리는 다음과 같이 쓰고 명령마다 `log 명령 실행할 것`으로 부른다. 실패한 명령은 0이 아닌 코드로 끝나고, 어느 폴더에서 실행해도 실험 폴더를 기준으로 돈다.
 
 ```sh
 #!/usr/bin/env bash
@@ -70,65 +67,68 @@ id=${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$(git -C "${PROJECT_DIR:-.}" rev-parse -
 log() { local f="logs/$1-$id.log"; [[ ! -e $f ]] || { echo "$f exists; use another RUN_ID" >&2; return 1; }; mkdir -p logs; { printf '$ RUN_ID=%s ./run.sh %s\n' "$id" "$1"; "${@:2}"; } 2>&1 | sed "s|$HOME|~|g" | tee "$f"; }
 ```
 
-## 흐름
+## 단계
 
-1. 저장소 추적 정책에 따라 실험 식별자 생성. GitHub 사용 시 `experiment` 이슈(git-issue), 추적기가 없으면 설계 문서 내부 식별자 사용
-2. `design.md`, `run.sh`, `scripts/` 작성, 수집 전 계획·가설·판정 기준을 커밋으로 고정
-3. 일반 실측: 2번 계획 커밋을 같은 PR의 첫 기준점으로 두고, 수집·결과를 더해 함께 머지
-4. 수집 전 승인해야 할 데이터 접근·판정 조건이 있는 실험만 2번을 저장소 승인 절차로 먼저 확정. PR 사용 시 사전 등록 PR 머지. 이슈 연결은 git-issue 닫기 절
-5. `./run.sh collect`로 수집, 출력 첫 줄의 실행 id 기록. 사전 열람 데이터는 계획에 기록하고 가설 검증용 자료와 구분
-6. `RUN_ID={실행 id} ./run.sh verify`, `RUN_ID={실행 id} ./run.sh analyze` 후 결과 차트 변환(repo-docs-figures references/conversion.md 변환)
-7. `report.md`, `data/README.md` 작성, `docs/experiments/README.md` 결론 칸 기입
-8. 결론이 설계를 바꾸면 같은 PR에서 설계 문서 수정
+1. 저장소 추적 정책에 따라 실험 식별자를 만든다. GitHub를 쓰면 `experiment` 이슈(**git-issue** 스킬)를, 추적기가 없으면 설계 문서 안 식별자를 쓴다.
+2. `design.md`, `run.sh`, `scripts/`를 쓰고 수집 전에 계획, 가설, 판정 기준을 커밋으로 고정한다.
+3. 일반 실측은 2번의 계획 커밋을 같은 PR의 첫 기준점으로 두고, 수집과 결과를 더해 함께 머지한다.
+4. 수집 전에 승인받아야 할 데이터 접근이나 판정 조건이 있는 실험만 2번을 저장소 승인 절차로 먼저 확정한다. PR을 쓰면 사전 등록 PR을 머지한다. 이슈 연결은 **git-issue** 스킬의 닫기 절을 따른다.
+5. `./run.sh collect`로 수집하고 출력 첫 줄의 실행 id를 남긴다. 미리 본 데이터는 계획에 적고 가설 검증용 자료와 가른다.
+6. `RUN_ID={실행 id} ./run.sh verify`, `RUN_ID={실행 id} ./run.sh analyze`를 돌린 뒤 결과 차트를 변환한다(repo-docs-figures `references/conversion.md`).
+7. `report.md`, `data/README.md`를 쓰고 `docs/experiments/README.md`의 결론 칸을 채운다.
+8. 결론이 설계를 바꾸면 같은 PR에서 설계 문서를 고친다.
 
-- 수집 시작 뒤 `design.md`의 가설·판정 기준 수정 금지
-- 결과를 본 뒤 계획·가설·판정 기준을 바꾸면 보고서 `계획과 다른 점`에 기록. 바뀐 부분의 분석은 `추가 분석`으로 구분하고 가설 검증 판정에 사용 금지
+- 수집을 시작한 뒤에는 `design.md`의 가설과 판정 기준을 고치지 않는다.
+- 결과를 본 뒤 계획, 가설, 판정 기준을 바꾸면 보고서의 `계획과 다른 점`에 적는다. 바뀐 부분의 분석은 `추가 분석`으로 가르고 가설 검증 판정에 쓰지 않는다.
 
 ## 문체
 
-문서 → 시제:
+| 문서 | 시제 |
+|---|---|
+| `design.md` | 할 일을 현재형 `-한다`로 쓴다 |
+| `report.md`의 실험 환경, 데이터 처리, 가설 검증, 추가 분석 | 과거형 `-했다`, `-였다` |
+| `report.md`의 요약, 해석, 위험 요소 점검, 한계, 결론 | 현재형 `-다` |
 
-- `design.md` → 현재형 `-한다`, 할 일
-- `report.md` 실험 환경, 데이터 처리, 가설 검증, 추가 분석 → 과거형 `-했다`, `-였다`
-- `report.md` 요약, 해석, 위험 요소 점검, 한계, 결론 → 현재형 `-다`
+## 템플릿
 
-## docs/experiments/README.md
-
-작성·갱신·검토 전 [index.md](references/index.md) 필수 확인
-
-## design.md
-
-작성·갱신·검토 전 [design.md](references/design.md) 필수 확인
-
-## data/README.md
-
-작성·갱신·검토 전 [data.md](references/data.md) 필수 확인
-
-## report.md
-
-작성·갱신·검토 전 [report.md](references/report.md) 필수 확인
+- `docs/experiments/README.md`를 쓰거나 갱신하거나 검토하기 전에 [references/index.md](references/index.md)를 반드시 읽는다.
+- `design.md`를 쓰거나 갱신하거나 검토하기 전에 [references/design.md](references/design.md)를 반드시 읽는다.
+- `data/README.md`를 쓰거나 갱신하거나 검토하기 전에 [references/data.md](references/data.md)를 반드시 읽는다.
+- `report.md`를 쓰거나 갱신하거나 검토하기 전에 [references/report.md](references/report.md)를 반드시 읽는다.
 
 ## 통계 규칙
 
-대상 → 규칙:
-
-- 비율 → `k/n`과 비율, 표본·대응 구조에 맞는 신뢰구간. 방법·가정·출처는 계획에 기록
-- 같은 입력의 두 방식 비교 → 대응 관계 보존, 불일치 수와 효과 차이·신뢰구간. 검정 선택은 자료 유형과 표본 가정에 근거
-- 연속값 → 분포와 판정 목적에 맞는 요약량·차이·불확실성을 사전 지정
-- 시간 측정 → 반복 수, 예열 수, 이상치 분류 함께. 여러 비율의 집계법과 각 값 기록
-- 개수 대조(토큰 등) → 정확한 개수, 차이의 절댓값과 백분율, 항목별 분포
-- 검정 → 계산한 p값과 효과 크기 함께, 판정 임계값만 보고 금지
-- 다중 비교 → 확인 가설과 선택 절차에 맞는 보정 방법·근거를 사전 고정
-- 유효 숫자 → 측정 정밀도와 판정 목적에 맞게 사전 고정
-- 무작위 → 시드는 계획의 실험 환경과 `env.json`에. LLM 샘플링처럼 고정 불가한 부분은 시드 칸에 이유
+| 대상 | 규칙 |
+|---|---|
+| 비율 | `k/n`과 비율, 표본과 대응 구조에 맞는 신뢰구간을 쓴다. 방법, 가정, 출처는 계획에 적는다 |
+| 같은 입력에서 두 방식 비교 | 대응 관계를 지키고 불일치 수와 효과 차이, 신뢰구간을 쓴다. 검정은 자료 유형과 표본 가정을 근거로 고른다 |
+| 연속값 | 분포와 판정 목적에 맞는 요약량, 차이, 불확실성을 미리 정한다 |
+| 시간 측정 | 반복 수, 예열 수, 이상치 분류를 함께 쓴다. 여러 비율을 모은 방법과 각 값을 적는다 |
+| 개수 대조(토큰 등) | 정확한 개수, 차이의 절댓값과 백분율, 항목별 분포를 쓴다 |
+| 검정 | 계산한 p값과 효과 크기를 함께 쓴다. 판정 임계값만 보고하지 않는다 |
+| 다중 비교 | 확인 가설과 선택 절차에 맞는 보정 방법과 근거를 미리 고정한다 |
+| 유효 숫자 | 측정 정밀도와 판정 목적에 맞게 미리 고정한다 |
+| 무작위 | 시드는 계획의 실험 환경과 `env.json`에 적는다. LLM 샘플링처럼 고정할 수 없는 부분은 시드 칸에 이유를 적는다 |
 
 ## 검사
 
-보고서 머지 전 확인:
+보고서를 머지하기 전에 다음을 확인한다.
 
-1. 수집 전 계획 커밋이 첫 `raw/` 파일 커밋의 조상
-2. `RUN_ID={실행 id}-check ./run.sh verify` 통과
-3. `RUN_ID={실행 id}-check ./run.sh analyze` 뒤 `results/`가 커밋본과 같은 바이트, 차트 재현 검사(repo-docs-figures references/validation.md 검사)
-4. 보고서의 모든 수치가 `results/summary.json`에 존재
-5. 실패, 제외한 실행 전부 데이터 처리 표에
-6. `logs/`에 보고한 실행 id의 명령별 로그 존재
+1. 수집 전 계획 커밋이 첫 `raw/` 파일 커밋의 조상이다.
+2. `RUN_ID={실행 id}-check ./run.sh verify`가 통과한다.
+3. `RUN_ID={실행 id}-check ./run.sh analyze` 뒤 `results/`가 커밋본과 바이트까지 같다. 차트 재현 검사는 repo-docs-figures `references/validation.md`를 따른다.
+4. 보고서의 모든 수치가 `results/summary.json`에 있다.
+5. 실패하거나 뺀 실행이 모두 데이터 처리 표에 있다.
+6. `logs/`에 보고한 실행 id의 명령별 로그가 있다.
+
+## 답변
+
+- 실험 폴더 경로, 단계 진행 위치, 실행 id를 적는다.
+- 보고서를 썼으면 가설별 판정과 설계에 반영한 문서를 적는다.
+- 통과하지 못한 검사 항목이 있으면 그 항목을 적는다.
+
+## 구분
+
+- 결과 차트는 [repo-docs-figures](../repo-docs-figures/SKILL.md)가 맡는다.
+- 완료 조건의 범위 변경은 **git-issue** 스킬의 범위 변경 절이 맡는다.
+- 실험 이슈, 브랜치, PR, 커밋 실행은 **git-issue**, **git-branch**, **git-pull-request**, **git-commit** 스킬이 맡는다.

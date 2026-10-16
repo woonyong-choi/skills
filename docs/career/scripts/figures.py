@@ -1,7 +1,7 @@
-"""폴더의 ThinkFlow 원본을 정지 SVG와 인쇄용 PNG(그림 영역만, 라이트, 2배, 캔버스 배경 투명)로 만든다.
+"""폴더의 Torso 원본을 정지 SVG와 인쇄용 PNG(그림 영역만, 라이트, 2배, 캔버스 배경 투명)로 만든다.
 
-사용: python3 figures.py <공고 폴더>/figures --thinkflow <ThinkFlow 체크아웃>. 결과는 원본 옆에 생성, 문서는 /figures/{이름}.png로 참조
-인자: 그림 폴더, ThinkFlow 체크아웃(없으면 THINKFLOW_PATH). Chrome 경로는 CHROME_PATH(없으면 playwright 기본)
+사용: python3 figures.py <공고 폴더>/figures --thinkflow <Torso 체크아웃>. 결과는 원본 옆에 생성, 문서는 /figures/{이름}.png로 참조
+인자: 그림 폴더, Torso 체크아웃(없으면 THINKFLOW_PATH). Chrome 경로는 CHROME_PATH(없으면 playwright 기본)
 출력: 원본마다 {이름}.svg·{이름}.png, stdout 만든 PNG 경로, 종료 0 성공·1 실패·2 인자 오류
 """
 
@@ -34,7 +34,7 @@ def main() -> int:
     parser.add_argument("--thinkflow", type=Path, default=os.environ.get("THINKFLOW_PATH"))
     args = parser.parse_args()
     if args.thinkflow is None or not (args.thinkflow / "src" / "cli.js").is_file():
-        parser.error("--thinkflow must be a ThinkFlow checkout")
+        parser.error("--thinkflow must be a Torso checkout")
     folder = args.folder.resolve()
     sources = sorted(folder.glob("*.thinkflow"))
     if not sources:

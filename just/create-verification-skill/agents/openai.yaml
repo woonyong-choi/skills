@@ -1,5 +1,6 @@
 interface:
   display_name: "create-verification-skill"
+  short_description: "앱을 사용자처럼 조작해 동작을 증명하는 프로젝트 전용 검증 스킬 만들기"
   default_prompt: "$create-verification-skill [요청]"
 policy:
   allow_implicit_invocation: false

@@ -1,4 +1,4 @@
 interface:
   display_name: "Career"
-  short_description: "경력 원본과 JD로 고정 양식 이력서·포트폴리오를 지원 폴더에 완성"
+  short_description: "경력 원본과 JD로 고정 양식 이력서와 포트폴리오를 지원 폴더에 완성"
   default_prompt: "$career 스킬로 처리해 줘: [JD와 요청]"

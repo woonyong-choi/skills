@@ -14,16 +14,16 @@
 
 ## 코드 기준점
 
-**대상 파일:** {FILES_WITH_LINE_RANGES}
+**대상 파일.** {FILES_WITH_LINE_RANGES}
 
-**핵심 심볼:** {SYMBOLS}
+**핵심 심볼.** {SYMBOLS}
 
-**조사 출발점으로 모은, 이 코드를 건드린 커밋 목록(최신순):**
+**조사 출발점으로 모은, 이 코드를 건드린 커밋 목록(최신순).**
 {COMMIT_LIST}
 
-**커밋 메시지에서 뽑은 PR 번호:** {PR_NUMBERS}
+**커밋 메시지에서 뽑은 PR 번호.** {PR_NUMBERS}
 
-**커밋이나 PR 본문에 언급된 티켓 ID(있으면):** {TICKET_IDS}
+**커밋이나 PR 본문에 언급된 티켓 ID(있으면).** {TICKET_IDS}
 
 ## 맡은 출처
 

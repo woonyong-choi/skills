@@ -1,6 +1,6 @@
 # protocol.md
 
-아래는 JSON 요청·응답 프로토콜의 예. 인코딩·메시지 유형·순서·예시는 실제 구현 계약으로 대체
+`docs/protocol.md`를 쓰거나 갱신하거나 검토할 때 이 틀을 쓴다. 아래는 JSON 요청과 응답 프로토콜의 예이고, 인코딩, 메시지 유형, 순서, 예시는 실제 구현 계약으로 바꿔 쓴다.
 
 ````text
 # 프로토콜
@@ -71,9 +71,9 @@
 - {버전 규칙}
 ````
 
-- 영어 작업 언어의 절 이름: `프로토콜` → `Protocol`, `전송 방식` → `Transport`, `연결 순서` → `Connection lifecycle`, `요청` → `Requests`, `매개변수` → `Parameters`, `결과` → `Result`, `오류` → `Errors`, `사용 예` → `Example`, `알림` → `Notifications`, `호환성` → `Compatibility`
-- 알림: 요청과 같은 형식, `#### 결과`만 제외
-- 요청과 알림: 도메인 접두사로 묶고 `{도메인}/{동작}` 알파벳순: `session/start`, `session/stop`
-- 부작용이 없으면 `없음`, 순서 조건이 없으면 `없음`
-- 오류 코드의 뜻: `errors.md`에만. 여기는 조건만
-- 사용 예: 실제로 주고받을 수 있는 값. 한 메서드에 요청 하나, 응답 하나
+- 작업 언어가 영어인 저장소는 `프로토콜`을 `Protocol`, `전송 방식`을 `Transport`, `연결 순서`를 `Connection lifecycle`, `요청`을 `Requests`, `매개변수`를 `Parameters`, `결과`를 `Result`, `오류`를 `Errors`, `사용 예`를 `Example`, `알림`을 `Notifications`, `호환성`을 `Compatibility`로 쓴다.
+- 알림은 요청과 같은 형식이고 `#### 결과`만 뺀다.
+- 요청과 알림은 도메인 접두사로 묶고 `{도메인}/{동작}` 알파벳순으로 놓는다(`session/start`, `session/stop`).
+- 부작용이나 순서 조건이 없으면 `없음`으로 쓴다.
+- 오류 코드의 뜻은 `errors.md`에만 쓰고 여기에는 조건만 쓴다.
+- 사용 예는 실제로 주고받을 수 있는 값으로 쓴다. 한 메서드에 요청 하나, 응답 하나를 둔다.

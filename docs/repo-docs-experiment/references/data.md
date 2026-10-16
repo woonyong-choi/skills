@@ -1,5 +1,7 @@
 # data/README.md
 
+실험의 `data/README.md`를 쓰거나 갱신하거나 검토할 때 이 틀을 쓴다.
+
 ```text
 # 데이터
 
@@ -31,6 +33,6 @@
 | `{필드}` | {string, integer, number, boolean, datetime} | {단위, 또는 없음} | {필수, 고유, 범위, 값 목록} | {뜻} | `{예}` |
 ```
 
-- 정규화 관측 행의 필수 필드: `run_id`, `trial_id`, `condition`, `ts_utc`, 입력 식별자. 문서·이미지·원시 로그는 원본 그대로 보존하고 같은 실행 메타데이터를 별도 manifest에 기록
-- 정규화 관측 행: JSON Lines(UTF-8, BOM 없음, 한 줄에 JSON 하나, `\n`). 표: CSV(머리 행, UTF-8, RFC 4180)
-- 결측값 표기: JSON `null`, CSV 빈 칸
+- 정규화한 관측 행에는 `run_id`, `trial_id`, `condition`, `ts_utc`, 입력 식별자 필드가 반드시 있다. 문서, 이미지, 원시 로그는 원본 그대로 두고 같은 실행 메타데이터를 따로 manifest에 남긴다.
+- 정규화한 관측 행은 JSON Lines(UTF-8, BOM 없음, 한 줄에 JSON 하나, `\n`)로 쓴다. 표는 CSV(머리 행, UTF-8, RFC 4180)로 쓴다.
+- 결측값은 JSON에서 `null`, CSV에서 빈 칸으로 쓴다.

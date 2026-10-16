@@ -1,9 +1,10 @@
 ---
 name: principle-build-the-lever
-description: "대량 작업만이 아니라 사소하지 않은 모든 작업(수정, 마이그레이션, 분석, 확인)에 적용한다. 손으로 하지 말고 그 일을 하거나 증명하는 도구(코드모드, 스크립트, 생성기, 서브에이전트가 따르는 스킬)를 만든다. 그 도구가 리뷰어가 다시 돌려 볼 수 있는 산출물이다."
+description: "대량 작업만이 아니라 사소하지 않은 모든 작업(수정, 마이그레이션, 분석, 확인)에 쓴다. 손으로 하지 말고 그 일을 하거나 증명하는 도구(코드모드, 스크립트, 생성기, 서브에이전트가 따르는 스킬)를 만든다. 그 도구가 리뷰어가 다시 돌려 볼 수 있는 산출물이다."
 disable-model-invocation: true
 user-invocable: false
 ---
+
 # 도구부터 만들기(Build the Lever)
 
 사소하지 않은 작업이면 손으로 하지 말고 그 일을 하는 도구를 만든다.
@@ -21,4 +22,4 @@ user-invocable: false
 
 기준은 반복이 아니라 사소함이다. 한 번뿐인 작업이라도 도구가 있어야 작업을 확인할 수 있다면 도구를 만든다. [게으름 규약](../principle-laziness-protocol/SKILL.md)에 따라 일을 하거나 증명하는 가장 작은 스크립트를 만들고, 프레임워크는 만들지 않는다.
 
-**구분:** [교훈을 구조로 남기기](../principle-encode-lessons-in-structure/SKILL.md)는 반복되는 지시를 오래가는 안전장치로 만든다. 이 원칙은 눈앞의 작업을 빨리 처리하고 리뷰하기 쉽게 만드는 일을 다룬다. 검증 자체를 스크립트로 만드는 일은 [실제로 동작함을 증명](../principle-prove-it-works/SKILL.md)을 본다.
+**구분.** [교훈을 구조로 남기기](../principle-encode-lessons-in-structure/SKILL.md)는 반복되는 지시를 오래가는 안전장치로 만든다. 이 원칙은 눈앞의 작업을 빨리 처리하고 리뷰하기 쉽게 만드는 일을 다룬다. 검증 자체를 스크립트로 만드는 일은 [실제로 동작함을 증명](../principle-prove-it-works/SKILL.md)을 본다.

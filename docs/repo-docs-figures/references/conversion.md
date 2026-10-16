@@ -1,15 +1,21 @@
 # 변환
 
-- 기존 호출 경로 유지, `.thinkflow`는 ThinkFlow, `.tape`는 VHS 호출
+`render_figures.py`로 그림 원본을 SVG와 GIF로 바꾼다. 기존 호출 경로를 그대로 두고, `.thinkflow`는 Torso를, `.tape`는 VHS를 부른다.
 
 ```sh
-python3 <이 스킬 폴더>/scripts/render_figures.py --thinkflow <ThinkFlow 경로> docs/assets/architecture.thinkflow
+python3 <이 스킬 폴더>/scripts/render_figures.py --thinkflow <Torso 경로> docs/assets/architecture.thinkflow
 ```
 
-- `--thinkflow`: 작업본 루트 또는 `src/cli.js`. 생략 시 `THINKFLOW_PATH`, 없으면 PATH의 `thinkflow`. `--static`은 ThinkFlow에 전달. 옛 이름 별칭 없음
-- 원본 인자 생략: 하위 폴더에서도 저장소 루트의 `docs/assets/` 아래 git 추적 원본만 탐색. 공백 포함 경로 지원. 새 원본은 경로 지정 또는 git 추가 후 실행. 추적 원본 없음·git 밖·git 오류는 stderr 출력 후 종료 1. 탐색한 `.tape`는 저장소 루트에서 VHS 실행, 경로 지정 `.tape`는 현재 위치 실행
-- 옛 형식(`.dap`) 원본은 인자·탐색 모두 목록 출력 후 변환 전 실패. `.thinkflow`로 문법 이전 필요, 확장자만 변경 금지
-- `.tape`가 있고 PATH에 `vhs`가 없으면 렌더 전 실패
-- 모든 `.thinkflow`의 strict 검사 뒤 렌더. 검사 실패 시 이 호출의 렌더 시작 금지. 렌더 중 I/O 실패의 전체 파일 원자성 보장 없음
-- `.tape`와 그림 전용 옵션 동시 사용 금지. VHS 실행 위치와 결과 계약: [VHS](vhs.md)
-- 실패 시 원본 수정 후 재실행. 실패 전부터 있던 SVG를 새 성공 결과로 간주 금지
+## 인자
+
+- `--thinkflow`는 작업본 루트나 `src/cli.js`다. 빼면 `THINKFLOW_PATH`를, 그것도 없으면 PATH의 `thinkflow`를 쓴다. `--static`은 Torso에 그대로 넘긴다. 옛 이름 별칭은 없다.
+- 원본 인자를 빼면 하위 폴더에서 실행해도 저장소 루트 `docs/assets/` 아래의 git 추적 원본만 찾는다. 공백이 든 경로도 된다. 새 원본은 경로를 주거나 git에 추가한 뒤 실행한다. 추적 원본이 없거나, git 밖이거나, git 오류가 나면 stderr에 쓰고 종료 코드 1로 끝난다.
+- 찾아낸 `.tape`는 저장소 루트에서 VHS를 실행하고, 경로를 준 `.tape`는 지금 위치에서 실행한다.
+
+## 실패 조건
+
+- 옛 형식(`.dap`) 원본은 인자로 주든 찾아내든 목록을 출력하고 변환 전에 실패한다. `.thinkflow`로 문법을 옮겨야 하고, 확장자만 바꾸지 않는다.
+- `.tape`가 있는데 PATH에 `vhs`가 없으면 렌더 전에 실패한다.
+- 모든 `.thinkflow`를 strict로 검사한 뒤 렌더한다. 검사가 실패하면 그 호출에서 렌더를 시작하지 않는다. 렌더 중 I/O가 실패할 때 모든 파일이 한꺼번에 바뀌거나 그대로 남는다는 보장은 없다.
+- `.tape`와 그림 전용 옵션을 함께 쓰지 않는다. VHS 실행 위치와 결과 계약은 [VHS](vhs.md)를 따른다.
+- 실패하면 원본을 고친 뒤 다시 실행한다. 실패 전부터 있던 SVG를 새로 성공한 결과로 보지 않는다.

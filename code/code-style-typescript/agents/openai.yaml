@@ -1,4 +1,4 @@
 interface:
   display_name: "Code Style TypeScript"
-  short_description: "JavaScript·TypeScript 이름, 모듈, 에러, 로그, 타입, node:test, ESLint·tsc 기준"
+  short_description: "JavaScript·TypeScript 이름, 모듈, 오류, 로그, 타입, node:test, ESLint·tsc 기준"
   default_prompt: "$code-style-typescript 스킬로 처리해 줘: [요청]"

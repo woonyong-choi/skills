@@ -4,10 +4,12 @@
 
 ## 역할
 
-- `code`: 기능·리팩터링·버그·성능 코드 작성, 기계적 수정, 검증 워커
-- `judgment`: 설계 판단, 가장 어려운 변경(여러 모듈에 걸친 설계, 까다로운 동시성, 미묘한 알고리즘), 글쓰기
-- `review`: 교차 검토 패널. 서로 다른 회사 모델 두 개 이상(예: Claude 하나, GPT 하나)
-- `cheap`: 읽기 검토·요약처럼 가벼운 일
+| 역할 | 맡는 일 |
+|---|---|
+| `code` | 기능·리팩터링·버그·성능 코드 작성, 기계적 수정, 검증 워커 |
+| `judgment` | 설계 판단, 가장 어려운 변경(여러 모듈에 걸친 설계, 까다로운 동시성, 미묘한 알고리즘), 글쓰기 |
+| `review` | 교차 검토 패널. 서로 다른 회사 모델 두 개 이상(예: Claude 하나, GPT 하나) |
+| `cheap` | 읽기 검토·요약처럼 가벼운 일 |
 
 ## 기본값
 
@@ -32,11 +34,11 @@
 }
 ```
 
-- 빈 문자열은 호스트 기본 모델
-- `review` 목록의 `codex:<모델>`, `claude:<모델>`은 다른 회사 CLI를 셸로 부른다는 뜻. `codex:gpt-6.1-sol`은 `codex exec -m gpt-6.1-sol`, `claude:opus`는 `claude -p --model opus`
-- `effort`는 추론 수준. Claude Code는 `/effort`, Codex는 `-c model_reasoning_effort=<값>`, OpenCode는 에이전트 설정 `reasoningEffort`
+- 빈 문자열은 호스트 기본 모델을 뜻한다.
+- `review` 목록의 `codex:<모델>`, `claude:<모델>`은 다른 회사 CLI를 셸로 부른다는 뜻이다. `codex:gpt-6.1-sol`은 `codex exec -m gpt-6.1-sol`, `claude:opus`는 `claude -p --model opus`로 부른다.
+- `effort`는 추론 수준이다. Claude Code는 `/effort`, Codex는 `-c model_reasoning_effort=<값>`, OpenCode는 에이전트 설정 `reasoningEffort`로 정한다.
 
 ## 고르는 규칙
 
-- 일의 난이도에 따라 추론 수준만 한 단계 올리거나 내림. 모델 계열은 역할이 정한 대로 유지해 교차 검토의 다양성을 지킴
-- 지정한 모델이 거부되면 다른 이름을 추측하지 말고 호스트 기본 모델로 진행하고 답변에 한 줄로 알림
+- 일의 난이도에 따라 추론 수준만 한 단계 올리거나 내린다. 모델 계열은 역할이 정한 대로 유지해 교차 검토의 다양성을 지킨다.
+- 지정한 모델이 거부되면 다른 이름을 추측하지 않고 호스트 기본 모델로 진행하고, 답변에 한 줄로 알린다.
