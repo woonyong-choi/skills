@@ -140,7 +140,7 @@ class ProjectBootstrap(ProjectStatus):
         )
 
     def _marker(self) -> str:
-        return f"Work Continuity initialization pending: {self.repo}"
+        return f"Developer Thinking initialization pending: {self.repo}"
 
     @staticmethod
     def _select(projects: list[dict[str, Any]], number: int | None) -> dict[str, Any]:
