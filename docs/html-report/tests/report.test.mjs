@@ -1,8 +1,9 @@
 // html-report 생성기 시험. 원문 해석·판정 절·결과 형식·CSS 토큰은 의존성 없이, 생성은 npm ci 뒤에 실행한다.
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync, cpSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 
@@ -21,6 +22,19 @@ function files(folder) {
     .filter((entry) => entry.isFile())
     .map((entry) => relative(folder, join(entry.parentPath, entry.name)))
     .sort();
+}
+
+// cost: time O(1), heap O(1), stack O(1), io O(1)
+// vars: 없음
+// basis: estimate
+/** 합성 Vault와 프로젝트 아닌 작업 폴더. 실제 사용자 Vault·설정은 읽지 않는다 */
+function syntheticVault() {
+  const base = mkdtempSync(join(tmpdir(), 'report-vault-'));
+  const vault = join(base, 'vault');
+  const plain = join(base, 'plain');
+  for (const folder of [vault, plain, join(base, 'config')]) mkdirSync(folder, { recursive: true });
+  const env = { ...process.env, WORK_CONTINUITY_CONFIG_DIR: join(base, 'config'), WOON_KNOWLEDGE_ROOT: vault };
+  return { base, vault, plain, env, context: { cwd: plain, env }, cleanup: () => rmSync(base, { recursive: true, force: true }) };
 }
 
 test('front matter와 첫 문단을 머리 정보와 요약으로 나눈다', () => {
@@ -87,11 +101,12 @@ test('report.css에는 토큰 변수 밖의 색·길이 값이 없다', () => {
 test('세 종류 원문으로 생성하고 출력 폴더 파일 목록이 맞다', { skip: NEEDS_DEPS }, async () => {
   const { buildReport } = await import('../scripts/build_report.mjs');
   for (const kind of ['explain', 'decision', 'result']) {
-    const work = mkdtempSync(join(tmpdir(), 'report-'));
+    const synthetic = syntheticVault();
+    const work = join(synthetic.vault, 'legacy', 'reports', `2026-10-16-${kind}`);
     try {
       cpSync(join(EXAMPLES, kind), work, { recursive: true });
-      const out = join(work, 'out');
-      await buildReport(join(work, 'report.md'), out);
+      const out = work;
+      await buildReport(join(work, 'report.md'), undefined, synthetic.context);
       const list = files(out);
       for (const name of ['index.html', 'report.md', 'report.css', 'report.js', 'theme/tokens.css', 'theme/styles.css']) assert.ok(list.includes(name), `${kind}: ${name}`);
       assert.ok(list.some((name) => name.startsWith('theme/assets/fonts/')), `${kind}: 글꼴`);
@@ -101,25 +116,25 @@ test('세 종류 원문으로 생성하고 출력 폴더 파일 목록이 맞다
       if (kind === 'explain') assert.ok(list.some((name) => /^diagrams\/[0-9a-f]{64}\.html$/.test(name)));
       else assert.deepEqual(list.filter((name) => name.startsWith('assets/')), ['assets/a.png', 'assets/b.png']);
     } finally {
-      rmSync(work, { recursive: true, force: true });
+      synthetic.cleanup();
     }
   }
 });
 
 test('도표 실패면 생성 실패, 기존 출력 보존', { skip: NEEDS_DEPS }, async () => {
   const { buildReport } = await import('../scripts/build_report.mjs');
-  const work = mkdtempSync(join(tmpdir(), 'report-'));
+  const synthetic = syntheticVault();
+  const work = join(synthetic.vault, 'legacy', 'reports', '2026-10-16-explain');
   try {
     cpSync(join(EXAMPLES, 'explain'), work, { recursive: true });
-    const out = join(work, 'out');
-    await buildReport(join(work, 'report.md'), out);
-    const before = readFileSync(join(out, 'index.html'), 'utf8');
+    await buildReport(join(work, 'report.md'), undefined, synthetic.context);
+    const before = readFileSync(join(work, 'index.html'), 'utf8');
     const source = readFileSync(join(work, 'report.md'), 'utf8').replace('session -> hook "상태"', 'session -> missing "상태"');
     writeFileSync(join(work, 'report.md'), source);
-    await assert.rejects(buildReport(join(work, 'report.md'), out), /도표/);
-    assert.equal(readFileSync(join(out, 'index.html'), 'utf8'), before);
+    await assert.rejects(buildReport(join(work, 'report.md'), undefined, synthetic.context), /도표/);
+    assert.equal(readFileSync(join(work, 'index.html'), 'utf8'), before);
   } finally {
-    rmSync(work, { recursive: true, force: true });
+    synthetic.cleanup();
   }
 });
 
@@ -231,4 +246,89 @@ test('도표 높이는 문서 전체 높이로, 늦은 그리기와 창 크기 �
   assert.match(RUNTIME, /documentElement\??\.scrollHeight/);
   assert.match(RUNTIME, /addEventListener\('resize'/);
   assert.match(RUNTIME, /setTimeout\(\s*\(\)\s*=>\s*fit/);
+});
+
+// ---- 보고서 저장 위치: Vault로 통일 ----
+const CONTEXT = join(ROOT, '..', '..', 'git', 'git-issue', 'scripts', 'project_context.py');
+
+// cost: time O(1), heap O(1), stack O(1), io O(1)
+// vars: 없음
+// basis: estimate
+/** 합성 프로젝트를 합성 Vault에 등록. 원격 주소는 지어낸 값 */
+function registerProject(synthetic) {
+  const project = join(synthetic.base, 'catalog');
+  mkdirSync(project);
+  const run = (args, cwd) => {
+    const result = spawnSync(args[0], args.slice(1), { cwd, env: synthetic.env, encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    return result.stdout;
+  };
+  run(['git', 'init', '-q', project]);
+  run(['git', 'remote', 'add', 'origin', 'https://example.org/alpha/catalog.git'], project);
+  const registered = JSON.parse(run(['python3', CONTEXT, '--project', project, '--register-project']));
+  return { project, area: dirname(dirname(registered.index)) };
+}
+
+// cost: time O(s), heap O(s), stack O(1), io O(f)
+// vars: s = 원문 글자 수, f = 출력 파일 수
+// basis: estimate
+/** CLI로 생성 시도. 위치 검사는 의존성 설치 전에도 동작 */
+function cli(source, out, synthetic, cwd) {
+  return spawnSync('node', [join(ROOT, 'scripts', 'build_report.mjs'), source, ...(out ? [out] : [])], { cwd, env: synthetic.env, encoding: 'utf8' });
+}
+
+test('등록 프로젝트 보고서는 Vault의 프로젝트 docs/reports 아래만 허용', async () => {
+  const { checkDestination } = await import('../scripts/build_report.mjs');
+  const synthetic = syntheticVault();
+  try {
+    const { project, area } = registerProject(synthetic);
+    const folder = join(area, 'docs', 'reports', '2026-10-16-lag-table');
+    assert.equal(checkDestination(folder, { cwd: project, env: synthetic.env }).kind, 'project');
+    assert.throws(() => checkDestination(join(area, 'docs', '2026-10-16-lag-table'), { cwd: project, env: synthetic.env }), /보고서 위치 거부/);
+  } finally {
+    synthetic.cleanup();
+  }
+});
+
+test('프로젝트 무관 보고서는 Vault의 legacy/reports 아래 허용', async () => {
+  const { checkDestination } = await import('../scripts/build_report.mjs');
+  const synthetic = syntheticVault();
+  try {
+    assert.equal(checkDestination(join(synthetic.vault, 'legacy', 'reports', '2026-10-16-memo'), synthetic.context).kind, 'legacy');
+    assert.throws(() => checkDestination(join(synthetic.vault, 'legacy', '2026-10-16-memo'), synthetic.context), /보고서 위치 거부/);
+  } finally {
+    synthetic.cleanup();
+  }
+});
+
+test('Vault 미등록이면 파일 0개, 종료 1', () => {
+  const synthetic = syntheticVault();
+  try {
+    delete synthetic.env.WOON_KNOWLEDGE_ROOT;
+    const folder = join(synthetic.plain, 'report');
+    cpSync(join(EXAMPLES, 'explain'), folder, { recursive: true });
+    const before = files(folder);
+    const result = cli(join(folder, 'report.md'), undefined, synthetic, synthetic.plain);
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stderr, /vault unregistered/);
+    assert.deepEqual(files(folder), before);
+  } finally {
+    synthetic.cleanup();
+  }
+});
+
+test('저장소 안 경로는 파일 0개, 종료 1', () => {
+  const synthetic = syntheticVault();
+  try {
+    const { project } = registerProject(synthetic);
+    const folder = join(project, '.local', 'reports', '2026-10-16-lag-table');
+    cpSync(join(EXAMPLES, 'explain'), folder, { recursive: true });
+    const before = files(folder);
+    const result = cli(join(folder, 'report.md'), undefined, synthetic, project);
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stderr, /보고서 위치 거부/);
+    assert.deepEqual(files(folder), before);
+  } finally {
+    synthetic.cleanup();
+  }
 });

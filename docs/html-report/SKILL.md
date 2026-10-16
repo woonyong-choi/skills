@@ -133,8 +133,11 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 
 ## 저장 위치
 
-- 프로젝트: repo-docs 문서 목록의 `.local/reports/{YYYY-MM-DD}-{주제}/` 위치·비공개 규칙(등록 Vault 위치, git 제외 확인)
-- 프로젝트 밖: 사용자·워크스페이스 지정 폴더, 없으면 현재 폴더의 git 제외된 `.local/reports/`. 제외를 확인할 수 없으면 저장 중단
+- 등록 프로젝트: `<Vault>/worktree/<프로젝트>/docs/reports/{YYYY-MM-DD}-{주제}/`
+- 프로젝트 무관: `<Vault>/legacy/reports/{YYYY-MM-DD}-{주제}/`
+- Vault 미등록·접근 불가: 저장 중단. 사용자에게 Vault 절대 경로 요청 → git-issue `project_context.py --register-vault <경로>`
+- 저장소 안 저장 금지(git 제외 여부와 무관)
+- 생성기 검사: 파일을 쓰기 전에 git-issue `project_context.py`의 Vault 해석·쓰기 검사로 출력 폴더 확인. 위 두 위치가 아니면 HTML·그림·도표 포함 어떤 파일도 쓰지 않고 종료 1. 출력 폴더 인자가 없으면 원문 폴더가 검사 대상
 - 폴더 내용: `report.md`(원문), `assets/`(그림), 생성물 `index.html`, `report.css`, `report.js`, `theme/`(정본 CSS·글꼴), `diagrams/`(도표). 외부 네트워크 없이 열기 가능
 
 ## 생성
@@ -157,7 +160,7 @@ node <이 스킬 폴더>/scripts/build_report.mjs <보고서 폴더>/report.md
 
 ## 전달
 
-- 열기 위치: 사용자 컴퓨터의 보고서 폴더. 원격·클라우드 세션이면 폴더 전체를 사용자 폴더로 복사 후 그 경로 사용
+- 열기 위치: 사용자 컴퓨터의 위 Vault 보고서 폴더. 원격·클라우드 세션이면 사용자 컴퓨터의 같은 Vault 경로에 폴더 전체 저장 후 그 경로 사용. 저장 불가하면 미저장으로 보고
 - 결과에 열기 명령 그대로 제공, 경로는 따옴표로 감싼 절대 경로: macOS `open -a "Google Chrome" "<폴더>/index.html"`, Linux `google-chrome "<폴더>/index.html"`, Windows `start chrome "<폴더>\index.html"`
 - 사용자 컴퓨터에서 명령 실행 가능하면 직접 실행. 앱 실행이 막힌 실행 환경(Codex 기본 보호 모드 등)이면 명령만 제공, 권한 우회 금지
 
