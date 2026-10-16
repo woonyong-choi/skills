@@ -1,20 +1,20 @@
-# Architect runner prompt
+# Architect 러너 프롬프트
 
-The orchestrator passes this file through to every parallel candidate runner during Phase B and fills in the variable inputs around it: the task, the Phase A grounding artifacts, the isolated working directory, and the path to write outputs. The working directory is a git worktree when available, otherwise a per-runner subdirectory under the sketch dir. What matters is independence between candidates.
+B단계에서 조율자는 이 파일을 병렬 후보 러너 모두에게 그대로 넘기고, 바뀌는 입력을 주변에 채운다. 작업, A단계 사전 조사 결과물, 격리된 작업 디렉터리, 출력을 쓸 경로다. 작업 디렉터리는 가능하면 git 워크트리, 아니면 스케치 디렉터리 아래 러너별 하위 디렉터리다. 중요한 것은 후보끼리 독립된 것이다.
 
-You are producing one candidate design in architect's parallel exploration. Read the **architect** skill in full first. That's the workflow you're inside. Output a candidate design package: type sketch, function signatures, module map, and prose rationale shaped per [`rationale-template.md`](rationale-template.md).
+architect의 병렬 탐색에서 후보 설계 하나를 만든다. 먼저 **architect** 스킬을 끝까지 읽는다. 지금 그 작업 흐름 안에 있다. 후보 설계 묶음을 낸다. 타입 스케치, 함수 시그니처, 모듈 지도, 그리고 [`rationale-template.md`](rationale-template.md) 모양의 근거 글이다.
 
-Apply the following discipline. The orchestrator compares candidates on these axes to pick a base.
+다음 규율을 적용한다. 조율자는 이 축으로 후보를 비교해 기준안을 고른다.
 
-- Caller's usage first. Write the README-style usage and two or three real call sites before the types, then derive the type sketch from them. The usage is the spec. The two must agree, so reconcile the sketch to the usage, not the reverse.
-- Data structures first. Get the core types right and the code becomes obvious. Trace each dominant access pattern through the proposed structure. If the answer is "we'll add a map / index / cache later," the structure is wrong.
-- Interface depth. Compare the capability hidden behind the public surface relative to the size of that surface. Prefer a simple interface that pulls complexity into the callee, even when the implementation becomes less simple. Do not put transport or wire types on the public API. Parse into domain types behind the interface.
-- Shared state: if two actors might both write, ask "what happens?" If the answer isn't "nothing," default to per-actor state with a merge at the read boundary, per the **separate-before-serializing-shared-state** principle skill.
-- Make boundaries visible. `not implemented` errors for bodies, `// TODO` pseudocode for tricky logic, doc comments stating intent and invariants. A reader should trace data from input to output by reading types and signatures alone.
-- Encode invariants in types: hard-to-misuse types > runtime checks > prose comments, per the **encode-lessons-in-structure** principle skill.
-- Validate at boundaries, trust types inside, per the **boundary-discipline** principle skill. Business logic as pure functions. The shell stays thin.
-- Single source of truth per invariant. Derive instead of sync.
-- Idempotent state transitions where applicable, per the **make-operations-idempotent** principle skill. Ask what happens if the operation runs twice or crashes halfway.
-- Short call chains. If tracing the flow needs more than three files, flatten the hierarchy, per the **laziness-protocol** and **minimize-reader-load** principle skills.
+- 호출부 사용 예 먼저. 타입보다 먼저 README 형식의 사용 예와 실제 호출 위치 두세 곳을 쓰고, 타입 스케치는 거기서 도출한다. 사용 예가 명세다. 둘은 일치해야 하므로 사용 예가 아니라 스케치를 맞춘다.
+- 데이터 구조 먼저. 핵심 타입이 맞으면 코드는 뻔해진다. 주된 접근 패턴마다 제안한 구조를 따라가 본다. 답이 "나중에 맵 / 인덱스 / 캐시를 더하면 된다"면 구조가 틀린 것이다.
+- 인터페이스 깊이. 공개 면 크기에 비해 그 뒤에 숨긴 기능을 비교한다. 구현이 덜 단순해지더라도 복잡도를 호출되는 쪽으로 끌어들이는 단순한 인터페이스를 고른다. 전송·와이어 타입을 공개 API에 두지 않는다. 인터페이스 뒤에서 도메인 타입으로 파싱한다.
+- 공유 상태: 두 행위자가 함께 쓸 수 있으면 "무슨 일이 생기나?"를 묻는다. 답이 "아무 일도 없다"가 아니면 **separate-before-serializing-shared-state** 원칙 스킬에 따라 기본을 행위자별 상태로 두고 읽기 경계에서 합친다.
+- 경계를 보이게 한다. 본문에는 `not implemented` 오류, 까다로운 로직에는 `// TODO` 의사 코드, 의도와 불변 조건을 밝히는 문서 주석. 독자가 타입과 시그니처만 읽고 입력에서 출력까지 데이터를 따라갈 수 있어야 한다.
+- **encode-lessons-in-structure** 원칙 스킬에 따라 불변 조건을 타입에 담는다. 잘못 쓰기 어려운 타입 > 실행 시 검사 > 글 주석.
+- **boundary-discipline** 원칙 스킬에 따라 경계에서 검증하고 안에서는 타입을 믿는다. 비즈니스 로직은 순수 함수로. 바깥 껍데기는 얇게 둔다.
+- 불변 조건마다 정본은 하나. 맞추지 말고 도출한다.
+- 해당하면 **make-operations-idempotent** 원칙 스킬에 따라 상태 전이를 멱등으로 만든다. 작업이 두 번 실행되거나 중간에 죽으면 어떻게 되는지 묻는다.
+- 짧은 호출 사슬. 흐름을 따라가는 데 파일 세 개 넘게 필요하면 **laziness-protocol**과 **minimize-reader-load** 원칙 스킬에 따라 계층을 평평하게 한다.
 
-You are one of the parallel runners, each on a different model. Produce the best design your model can make. Don't hedge against the others. Differences between candidates are the signal used to pick a base and graft. Converging on a safe-looking middle defeats the exploration.
+이 러너는 병렬 러너 중 하나이고, 러너마다 다른 모델에서 돈다. 지금 모델이 만들 수 있는 가장 좋은 설계를 낸다. 다른 러너를 의식해 몸을 사리지 않는다. 후보 사이의 차이가 기준안을 고르고 이식할 것을 정하는 신호다. 안전해 보이는 중간으로 수렴하면 탐색의 의미가 없어진다.

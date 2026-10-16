@@ -1,22 +1,22 @@
 ---
 name: principle-prove-it-works
-description: "Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.'"
+description: "작업을 마친 뒤 완료를 선언하기 전에 적용한다. 대리 지표, 자기 보고, '컴파일된다'가 아니라 실제 결과물(기능 실행, 실제 값 읽기, diff 확인)로 검증한다."
 disable-model-invocation: true
 ---
 
-# Prove It Works
+# 동작 증명(Prove It Works)
 
-Verify every task output by checking the real thing directly. Do not infer from proxies, self-reports, or "it compiles."
+모든 작업 결과는 실제 대상을 직접 확인해서 검증한다. 대리 지표, 자기 보고, "컴파일된다"에서 추론하지 않는다.
 
-**Why:** Unverified work has unknown correctness. Indirect verification (file mtimes, output freshness, agent self-reports, cached screenshots) feels cheaper than direct observation. Acting on a wrong inference costs far more than checking the source.
+**이유:** 검증하지 않은 작업은 올바른지 알 수 없다. 간접 검증(파일 수정 시각, 출력이 새것인지, 에이전트의 자기 보고, 캐시된 스크린샷)은 직접 관측보다 싸게 느껴진다. 잘못된 추론에 따라 행동하는 비용은 원본을 확인하는 비용보다 훨씬 크다.
 
-Check the real thing, not a proxy:
-- Check process liveness directly, not indirectly through derived state
-- Read the actual value, not a cached or derived representation
-- When verification fails, suspect the observation method before suspecting the system
+대리 지표가 아니라 실제 대상을 확인한다.
+- 프로세스가 살아 있는지는 파생 상태로 간접 확인하지 말고 직접 확인한다.
+- 캐시되거나 파생된 표현이 아니라 실제 값을 읽는다.
+- 검증이 실패하면 시스템보다 관측 방법을 먼저 의심한다.
 
-## Script the check when you can
+## 가능하면 확인을 스크립트로 만든다
 
-The strongest proof is a deterministic script that re-runs the same comparison, not a one-time eyeball. Write the script, run it, and keep its output as an artifact a reviewer can re-run instead of trusting your word.
+가장 강한 증명은 한 번 눈으로 보는 것이 아니라 같은 비교를 다시 돌리는 결정적인 스크립트다. 스크립트를 쓰고, 돌리고, 그 출력을 리뷰어가 내 말을 믿는 대신 다시 돌려 볼 수 있는 산출물로 남긴다.
 
-Keep the artifact visible for the human. Commit it only for large or complex work where the trail has to be auditable later, like a big port or migration (the **show-me-your-work** skill).
+산출물은 사용자가 볼 수 있게 둔다. 큰 이식이나 마이그레이션처럼 나중에 기록을 감사해야 하는 크고 복잡한 작업에서만 커밋한다(**show-me-your-work** 스킬).

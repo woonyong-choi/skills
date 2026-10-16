@@ -1,50 +1,50 @@
 ---
 name: blast-radius
-description: "Find what a change could break somewhere else before it ships, beyond the diff, and prove the one fact it's safe because of by running real code instead of writing it up. Use for 'blast radius of X', 'what could this break', or reviewing a small diff you don't trust."
+description: "배포 전에 변경이 diff 밖 다른 곳에서 무엇을 깨뜨릴 수 있는지 찾고, 안전의 근거가 되는 사실 하나를 글이 아니라 실제 코드를 돌려 증명한다. 'X의 영향 범위', '이거 뭐 깨질 수 있어?', 믿음이 안 가는 작은 diff 검토에 쓴다."
 disable-model-invocation: true
 ---
 
-# Blast radius
+# 영향 범위
 
-Find what a change breaks somewhere else, before it ships. Use for "blast radius of X", "what could this break", or reviewing a small diff you don't trust yet.
+배포 전에 변경이 다른 곳에서 무엇을 깨뜨리는지 찾는다. "X의 영향 범위", "이거 뭐 깨질 수 있어?", 아직 믿음이 안 가는 작은 diff 검토에 쓴다.
 
-Companion to `how` and `why`. `how` tells you what the code does. `why` tells you why it's shaped that way. Blast radius tells you what it breaks somewhere else.
+`how`, `why`와 짝을 이룬다. `how`는 코드가 무엇을 하는지 알려 준다. `why`는 왜 그런 모양인지 알려 준다. 영향 범위는 다른 곳에서 무엇을 깨뜨리는지 알려 준다.
 
-Listing the callers is not the job. The agent can grep those in a second. The job is the breakage grep won't show you.
+호출부 나열은 할 일이 아니다. 그건 에이전트가 grep으로 1초면 한다. 할 일은 grep이 보여 주지 않는 깨짐이다.
 
-## Don't trust your own writeup
+## 내가 쓴 글을 믿지 않는다
 
-A blast-radius writeup that sounds right is worthless. It reads as convincing whether or not it's true. So don't hand back the writeup. Find the one or two facts the whole thing depends on and prove them by running code.
+그럴듯하게 들리는 영향 범위 분석 글은 가치가 없다. 참이든 아니든 설득력 있게 읽힌다. 그러니 글을 돌려주지 않는다. 전체가 기대고 있는 사실 한두 개를 찾아 코드를 돌려 증명한다.
 
-### How sure are you
+### 얼마나 확실한가
 
-For each fact the change's safety depends on, get it as far down this list as is cheap, and say where it stopped.
+변경의 안전이 기대는 사실마다, 싸게 갈 수 있는 만큼 이 목록 아래로 내려가고, 어디서 멈췄는지 밝힌다.
 
-1. You said so. Worthless on its own.
-2. You pointed at the line. A real `file:line`, or the library's own source.
-3. You showed the bad case can't happen. You walked the failure step by step and it doesn't reach.
-4. You ran it. A script or test that calls the real code and fails loud if you're wrong.
-5. You reproduced it in the running app.
+1. 내가 그렇다고 말했다. 그것만으로는 가치가 없다.
+2. 해당 줄을 가리켰다. 실제 `file:line`, 또는 라이브러리 자체 소스.
+3. 나쁜 경우가 일어날 수 없음을 보였다. 실패를 단계별로 따라가 보니 닿지 않는다.
+4. 돌려 봤다. 실제 코드를 호출하고 내가 틀리면 크게 실패하는 스크립트나 테스트.
+5. 실행 중인 앱에서 재현했다.
 
-Step 4 is usually one small script that imports the same library the app ships and calls the exact function you're worried about.
+4단계는 보통 앱이 배포하는 것과 같은 라이브러리를 가져와 걱정되는 바로 그 함수를 부르는 작은 스크립트 하나다.
 
-## Steps
+## 단계
 
-1. Read the change. The diff, the symbols it adds, changes, and deletes, and what it now does differently, including the part the diff doesn't spell out. Use `why` step 2 to pull the PR and commits.
-2. Find the one fact it's safe because of. Most changes that look risky are safe because of a single fact, like "this call only drops already-dead cache entries and does nothing else". Find that fact. If it holds, most risky cases are cleared at once. Spend your time here, not on a long list of maybes.
-3. Look where grep stops. Read the source of the library you call, and check its pinned version and any local patch. Work out when things run: microtasks, unmount and teardown, Solid versus React. Follow what a symbol search misses: the JSON an API returns, a DB column, a wire format, another language reading the same bytes, a feature flag, code three hops downstream.
-4. Be honest about each risk. Give it a real chance of happening and a real cost if it does. Keep the risks you confirmed. List the ones you checked and cleared separately. Same rules as `why`. Cite a real `file:line`, a search that finds nothing is still an answer, and never make up a caller or an API.
-5. Prove the one fact. Write a script or test that runs the real code, run it, and paste what happened.
-6. For a big or wide change, run it as an `arena`. Ask more than one model the same question and merge the answers. Different models catch different real bugs.
+1. 변경을 읽는다. diff, 추가·변경·삭제한 심볼, 그리고 이제 무엇을 다르게 하는지. diff가 드러내지 않는 부분도 포함한다. PR과 커밋은 `why` 2단계로 가져온다.
+2. 안전의 근거가 되는 사실 하나를 찾는다. 위험해 보이는 변경 대부분은 사실 하나 덕분에 안전하다. "이 호출은 이미 죽은 캐시 항목만 지우고 다른 일은 하지 않는다" 같은 것이다. 그 사실을 찾는다. 그것이 성립하면 위험해 보이는 경우 대부분이 한 번에 정리된다. 긴 가능성 목록이 아니라 여기에 시간을 쓴다.
+3. grep이 멈추는 곳을 본다. 호출하는 라이브러리의 소스를 읽고, 고정된 버전과 로컬 패치를 확인한다. 언제 실행되는지 따져 본다. 마이크로태스크, 언마운트와 정리, Solid와 React의 차이. 심볼 검색이 놓치는 것을 따라간다. API가 돌려주는 JSON, DB 열, 와이어 형식, 같은 바이트를 읽는 다른 언어, 기능 플래그, 세 단계 아래의 코드.
+4. 위험마다 정직하게 따진다. 실제로 일어날 확률과 일어났을 때의 실제 비용을 매긴다. 확인된 위험은 남긴다. 확인해서 정리한 것은 따로 나열한다. 규칙은 `why`와 같다. 실제 `file:line`을 인용하고, 아무것도 찾지 못한 검색도 답이며, 호출부나 API를 절대 지어내지 않는다.
+5. 사실 하나를 증명한다. 실제 코드를 돌리는 스크립트나 테스트를 쓰고, 돌리고, 결과를 붙인다.
+6. 크거나 넓은 변경은 `arena`로 돌린다. 같은 질문을 여러 모델에 묻고 답을 합친다. 모델마다 잡는 실제 버그가 다르다.
 
-## What to hand back
+## 돌려줄 것
 
-- **What it does.** What changed, including the part that isn't obvious.
-- **The one fact it's safe because of.** State it, say which step you got it to, and show the proof. If you couldn't prove it, write unproven.
-- **Risks.** Each names how it breaks, the `file:line`, how likely and how bad, and how to check. Paste the proof for the ones that matter.
-- **Cleared.** What you checked and why it's fine.
-- **Before you merge.** The cheapest test or repro that catches the real bug, including the script you wrote.
+- **무엇을 하나.** 무엇이 바뀌었는지. 뻔하지 않은 부분도 포함한다.
+- **안전의 근거가 되는 사실 하나.** 밝히고, 몇 단계까지 갔는지 말하고, 증명을 보여 준다. 증명하지 못했으면 미증명이라고 쓴다.
+- **위험.** 각각 어떻게 깨지는지, `file:line`, 얼마나 일어나기 쉽고 얼마나 나쁜지, 어떻게 확인하는지 적는다. 중요한 것은 증명을 붙인다.
+- **정리됨.** 확인한 것과 괜찮은 이유.
+- **머지 전에.** 실제 버그를 잡는 가장 싼 테스트나 재현. 직접 쓴 스크립트도 포함한다.
 
-Write it through `unslop`, cite real code, and strip anything private before it goes anywhere public.
+`unslop`을 거쳐 쓰고, 실제 코드를 인용하고, 공개되는 곳에 가기 전에 비공개 내용은 지운다.
 
-**Reply:** the writeup above, with the one safety fact either proven or marked unproven.
+**답변:** 위의 분석 글. 안전의 근거가 되는 사실 하나는 증명됐거나 미증명으로 표시돼 있어야 한다.

@@ -1,16 +1,16 @@
 ---
 name: principle-redesign-from-first-principles
-description: "Apply when integrating a new requirement into an existing design."
+description: "새 요구사항을 기존 설계에 넣을 때 적용한다."
 disable-model-invocation: true
 ---
 
-# Redesign From First Principles
+# 처음부터 다시 설계(Redesign From First Principles)
 
-When integrating a change, don't bolt it onto the existing design. Redesign as if the requirement had been a foundational assumption from the start.
+변경을 넣을 때 기존 설계에 덧대지 않는다. 그 요구사항이 처음부터 기본 가정이었던 것처럼 다시 설계한다.
 
-- Read all affected files and understand the current design
-- Ask: "if we were writing this from scratch with this new requirement, what would we build?"
-- Propagate the change through every reference: types, docs, examples, rationale sections
-- Think about the whole redesign, then deliver it incrementally
+- 영향받는 파일을 모두 읽고 현재 설계를 이해한다.
+- "이 새 요구사항을 안고 처음부터 쓴다면 무엇을 만들까?"를 묻는다.
+- 변경을 모든 참조(타입, 문서, 예시, 근거 절)에 전파한다.
+- 다시 설계한 전체를 생각한 뒤 조금씩 나눠 전달한다.
 
-This is the method for preserving option value when integrating changes into an existing design.
+기존 설계에 변경을 넣으면서 선택지의 가치를 지키는 방법이 이것이다.

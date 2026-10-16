@@ -1,62 +1,64 @@
 ---
 name: unslop
-description: Cut AI tells from any writing.
+description: 글에서 AI 티 나는 군더더기를 걷어 낼 때 쓴다. 어떤 글에든 쓴다.
 disable-model-invocation: true
 ---
 
 # Unslop
 
-Edit text to remove AI patterns. Scan for the patterns below, then rewrite. Preserve meaning and match the intended tone.
+글을 고쳐 AI 패턴을 없앤다. 아래 패턴을 훑은 뒤 다시 쓴다. 뜻은 지키고 의도한 어조에 맞춘다.
 
-## Patterns to detect and fix
+규칙은 한국어 글과 영어 글에 모두 적용한다. "영어 글일 때"라고 적은 규칙은 영어 글에만 적용한다.
 
-Rule numbers are stable ids that other skills cite. A removed rule leaves a gap.
+## 찾아서 고칠 패턴
 
-### Content
+규칙 번호는 다른 스킬이 인용하는 고정 식별자다. 지운 규칙은 번호를 비워 둔다.
 
-3. **Superficial -ing phrases.** "highlighting...", "ensuring...", "reflecting...", "showcasing...", "fostering...". Delete or expand with real sources.
-5. **Vague attributions.** "Experts believe", "Industry reports suggest", "Some critics argue". Name the source or delete.
+### 내용
 
-### Language
+3. **겉도는 꼬리 구.** "~를 강조하며", "~를 보장하면서", "~를 반영하여", "~를 보여 주며", "~를 북돋우며". 영어 글에서는 "highlighting...", "ensuring...", "reflecting...", "showcasing...", "fostering...". 지우거나 실제 근거를 들어 풀어 쓴다.
+5. **흐릿한 출처.** "전문가들은 ~라고 본다", "업계 보고에 따르면", "일부 비평가는 ~라고 주장한다". 출처를 밝히거나 지운다.
 
-7. **AI vocabulary.** Additionally, crucial, delve, enduring, enhance, fostering, garner, interplay, intricate, landscape (abstract), pivotal, showcase, tapestry (abstract), testament, underscore, vibrant. Replace with plain words.
-8. **Fancy ways to say "is".** "serves as", "stands as", "boasts", "features". Say "is" or "has".
-9. **"Not just X, but Y."** State the point directly instead.
-10. **Rule of three.** Don't force ideas into groups of three. Use the natural number.
-11. **Synonym cycling.** Protagonist, main character, central figure, hero all in one paragraph. Pick one, repeat it.
-12. **False ranges.** "from X to Y" where X and Y aren't on a meaningful scale. List topics directly.
+### 말
 
-### Style
+7. **AI 어휘.** 영어 글에서는 Additionally, crucial, delve, enduring, enhance, fostering, garner, interplay, intricate, landscape(추상적 의미), pivotal, showcase, tapestry(추상적 의미), testament, underscore, vibrant. 한국어 글에서는 이 낱말의 번역어(게다가, 결정적인, 파고들다, 지속적인, 향상시키다, 촉진하는, 이끌어 내다, 상호작용, 복잡한, 지형(추상적 의미), 중추적인, 선보이다, 태피스트리(추상적 의미), 방증, 강조하다, 활기찬)가 같은 신호다. 평범한 말로 바꾼다.
+8. **"이다"를 꾸며 말하기.** "~로서 역할을 한다", "~로 자리매김한다", "~을 자랑한다", "~을 갖추고 있다". "~이다"나 "~가 있다"로 말한다.
+9. **"X뿐만 아니라 Y도".** 요점을 바로 말한다.
+10. **셋 맞추기.** 생각을 억지로 세 개씩 묶지 않는다. 자연스러운 개수를 쓴다.
+11. **동의어 돌려 쓰기.** 한 문단에 주인공, 주요 인물, 중심인물, 영웅을 모두 쓰는 식. 하나를 골라 되풀이한다.
+12. **가짜 범위.** X와 Y가 의미 있는 척도 위에 있지 않은데 "X에서 Y까지"라고 쓴다. 주제를 바로 나열한다.
 
-13. **Em dash overuse.** Avoid em dashes entirely. Use periods or commas only (no parentheses, no en dashes, no hyphen-as-dash substitutes). If a thought needs separation, end the sentence or use a comma.
-14. **Colon overuse.** Colons are fine before a list or example, not as mid-sentence connectors. "If you're coming from traditional automation: instead of registering event handlers, you describe conditions" adds nothing with the colon. Rewrite to let the point stand on its own without comparison framing. "Describing when the scheduler should fire works best as plain English." Same meaning, no crutch punctuation.
-15. **Boldface overuse.** Don't bold every proper noun or acronym.
-16. **Inline-header lists.** The tell is a bold label and colon that restates the line: "**Performance:** Performance improved...". Convert those to prose. A bold lead-in that ends in a period, names the item, and is followed by genuinely new detail ("**Schema in TypeScript.** Tables live in one file.") is fine, not a tell.
-17. **Title case headings.** Use sentence case.
-18. **Decorative emojis.** Remove from headings and bullets.
-19. **Curly quotes.** Use straight quotes.
+### 문체
 
-### Communication artifacts
+13. **엠 대시 남용(영어 글일 때).** 엠 대시를 아예 쓰지 않는다. 마침표나 쉼표만 쓴다(괄호, 엔 대시, 하이픈으로 대시를 대신하는 것도 안 된다). 생각을 끊어야 하면 문장을 끝내거나 쉼표를 쓴다.
+14. **쌍점 남용.** 쌍점은 목록이나 예 앞에서는 괜찮지만 문장 중간의 연결어로 쓰지 않는다. "기존 자동화에 익숙하다면: 이벤트 핸들러를 등록하는 대신 조건을 기술한다"에서 쌍점은 아무것도 더하지 않는다. 비교 틀 없이 요점이 혼자 서게 다시 쓴다. "스케줄러가 언제 실행될지는 평범한 말로 기술하는 것이 가장 잘 통한다." 뜻은 같고 문장 부호에 기대지 않는다.
+15. **굵은 글씨 남용.** 고유 명사나 약어마다 굵게 하지 않는다.
+16. **줄머리 목록.** 굵은 꼬리표와 쌍점이 그 줄을 되풀이하는 것이 신호다. "**성능:** 성능이 개선됐다...". 이런 줄은 글로 바꾼다. 마침표로 끝나 항목 이름을 대고 뒤에 정말 새로운 세부가 오는 굵은 머리말("**TypeScript 스키마.** 테이블은 한 파일에 있다.")은 신호가 아니라 괜찮다.
+17. **타이틀 케이스 제목(영어 글일 때).** 문장 케이스를 쓴다.
+18. **장식용 이모지.** 제목과 글머리 기호에서 지운다.
+19. **둥근 따옴표(영어 글일 때).** 곧은 따옴표를 쓴다.
 
-20. **Chatbot phrases.** "I hope this helps!", "Let me know if...", "Of course!", "Certainly!", "Found the smoking gun!" Remove.
-22. **Sycophantic tone.** "Great question! You're absolutely right!" Respond directly.
+### 대화 흔적
 
-### Filler
+20. **챗봇 말투.** "도움이 되셨길 바랍니다!", "궁금한 점이 있으면 알려 주세요", "물론이죠!", "당연합니다!", "결정적 증거를 찾았습니다!" 지운다.
+22. **아첨하는 어조.** "좋은 질문입니다! 정말 맞는 말씀이에요!" 바로 답한다.
 
-23. **Filler phrases.** "In order to" becomes "To". "Due to the fact that" becomes "Because". Delete "It is important to note that".
-24. **Excessive hedging.** "could potentially possibly be argued that it might" becomes "may".
-25. **Generic conclusions.** "The future looks bright." State specific plans or facts.
+### 채우기 말
 
-### Jargon
+23. **채우기 구절.** "~하기 위해서는"은 "~하려면"이 된다. "~라는 사실로 인해"는 "~때문에"가 된다. "~라는 점에 유의하는 것이 중요하다"는 지운다. 영어 글에서는 "In order to"가 "To", "Due to the fact that"이 "Because"가 되고, "It is important to note that"은 지운다.
+24. **지나친 얼버무림.** "~할 가능성이 있을 수도 있다고 볼 수도 있다"는 "~일 수 있다"가 된다.
+25. **뻔한 결론.** "앞으로가 기대된다." 구체적인 계획이나 사실을 말한다.
 
-26. **Abstract metaphor nouns.** Substrate (base), wedge, wedge in (add), vector (way, method), locus, vantage, nexus, primitive as a noun, harness as a metaphor, surface as in "API surface", bedrock, scaffolding as a metaphor, modality, paradigm, gold-plating (more than the job needs), ratchet as a metaphor (the mechanism's real name, or a limit that only tightens), evacuate for moving code (move out), endgame (the last phase), north star, flywheel. These read as technical but usually have a plainer concrete word. Pick the concrete word.
+### 전문어 흉내
 
-### Plain speech
+26. **추상적 비유 명사.** Substrate(기반), wedge, wedge in(더하다), vector(방법, 방식), locus, vantage, nexus, 명사로 쓴 primitive, 비유로 쓴 harness, "API surface"의 surface, bedrock, 비유로 쓴 scaffolding, modality, paradigm, gold-plating(일에 필요한 것보다 많음), 비유로 쓴 ratchet(장치의 진짜 이름, 또는 조이기만 하는 한도), 코드를 옮길 때 쓰는 evacuate(옮겨 내다), endgame(마지막 단계), north star, flywheel. 한국어 글에서는 이 낱말의 음역(서브스트레이트, 프리미티브, 하네스, API 서피스, 스캐폴딩, 모달리티, 패러다임, 골드 플레이팅, 래칫, 엔드게임, 노스스타, 플라이휠)과 직역(기반층, 쐐기, 벡터, 거점, 결절점)이 같은 신호다. 기술적으로 들리지만 대개 더 평범하고 구체적인 말이 있다. 구체적인 말을 고른다.
 
-27. **Say what it does, not how it feels.** "the database stays close at hand", "SQL you can read", "types that follow your schema" name a feeling. The fix names the mechanism or a number: "`.toSQL()` returns the exact string sent to the database", "a column rename fails the build". Ask what the sentence tells the reader to do or know, then write that. If you can't restate it as a concrete instruction, fact, or number, cut it. One more check: if the sentence could appear unchanged in another project's docs, it says nothing about this one. Cut it.
-28. **Shorten or split dense sentences.** If the reader has to backtrack to parse a sentence, break it in two or drop clauses. One idea per sentence.
-29. **Active voice.** Prefer it. Catch "is/are/was/were + past participle" and name the actor: "queries are validated" becomes "the compiler validates queries", "the file is parsed by the loader" becomes "the loader parses the file". Passive is fine only when the actor is unknown or genuinely doesn't matter.
-30. **Cut adverbs, or use a stronger verb.** "runs quickly" becomes "is fast" or the number, and "significantly improves" becomes the measured delta. An adverb propping up a weak verb means the verb is wrong.
-31. **Prefer the plain word.** "utilize" and "leverage" become "use", "facilitate" becomes "help", "numerous" becomes "many", "in the event that" becomes "if". The fancier synonym is rarely clearer.
-32. **Mannered prose.** Metaphor or flourish where a literal phrase exists: aphorisms ("wire it or delete it"), rhetorical fragments for effect, personified code ("the plan holds it"), figurative verbs ("rides along", "stands on"), stock framing phrases. "A dial worth turning" becomes "a parameter worth varying". Say what you mean. Rule 26 covers the metaphor nouns.
-33. **Over-compression.** Dropped articles, verbless fragments, symbol-speak, and abbreviations that make the reader decode instead of read. "Parser rejects bad date → exit 2, no write" becomes "The parser rejects a bad date, exits with code 2, and writes nothing." Write whole sentences with their articles and verbs, and spell out arrows and abbreviations.
+### 평범한 말
+
+27. **느낌이 아니라 하는 일을 말한다.** "데이터베이스가 늘 가까이 있다", "읽을 수 있는 SQL", "스키마를 따르는 타입"은 느낌을 이름 붙인다. 고친 문장은 장치나 숫자를 이름 붙인다. "`.toSQL()`은 데이터베이스로 보내는 정확한 문자열을 돌려준다", "열 이름을 바꾸면 빌드가 실패한다". 문장이 독자에게 무엇을 하거나 알라고 말하는지 묻고, 그것을 쓴다. 구체적인 지시, 사실, 숫자로 다시 말할 수 없으면 지운다. 확인 하나 더. 그 문장이 다른 프로젝트 문서에 그대로 들어가도 말이 되면, 이 프로젝트에 대해 아무것도 말하지 않는 것이다. 지운다.
+28. **빽빽한 문장은 줄이거나 나눈다.** 독자가 문장을 해석하려고 되돌아가야 하면 둘로 나누거나 절을 뺀다. 한 문장에 생각 하나.
+29. **능동태.** 능동태를 택한다. "~된다", "~되어진다", "~에 의해 ~된다"를 잡아내고 행위자를 밝힌다. "쿼리가 검증된다"는 "컴파일러가 쿼리를 검증한다"가 되고, "파일이 로더에 의해 파싱된다"는 "로더가 파일을 파싱한다"가 된다. 영어 글에서는 "is/are/was/were + 과거분사"가 신호다. 수동태는 행위자를 모르거나 정말 중요하지 않을 때만 괜찮다.
+30. **부사를 빼거나 더 강한 동사를 쓴다.** "빠르게 실행된다"는 "빠르다"나 숫자가 되고, "크게 개선한다"는 잰 차이가 된다. 약한 동사를 부사가 받치고 있으면 동사가 틀린 것이다.
+31. **평범한 말을 택한다.** "활용하다"는 "쓰다", "용이하게 하다"는 "돕다", "다수의"는 "많은", "~하는 경우에"는 "~하면"이 된다. 영어 글에서는 "utilize"와 "leverage"가 "use", "facilitate"가 "help", "numerous"가 "many", "in the event that"이 "if"가 된다. 더 화려한 동의어가 더 분명한 경우는 드물다.
+32. **멋 부린 글.** 문자 그대로의 말이 있는데 비유나 수사를 쓴다. 경구("연결하거나 지워라"), 효과를 노린 수사적 토막글, 의인화한 코드("계획이 그것을 붙들고 있다"), 비유적 동사("함께 타고 간다", "~ 위에 서 있다"), 판에 박힌 틀 구절. "돌려 볼 만한 다이얼"은 "바꿔 볼 만한 매개변수"가 된다. 뜻하는 바를 말한다. 비유 명사는 26번 규칙이 다룬다.
+33. **지나친 압축.** 조사나 관사를 뺀 말, 서술어 없는 토막, 기호 말투, 독자가 읽지 않고 해독하게 만드는 약어. "파서 잘못된 날짜 거부 → exit 2, 쓰기 없음"은 "파서는 잘못된 날짜를 거부하고, 코드 2로 끝나고, 아무것도 쓰지 않는다."가 된다. 조사와 서술어를 갖춘 온전한 문장을 쓰고, 화살표와 약어는 풀어 쓴다.

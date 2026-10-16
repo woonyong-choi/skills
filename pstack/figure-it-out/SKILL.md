@@ -1,52 +1,52 @@
 ---
 name: figure-it-out
-description: "Design an auditable playbook when no narrower one fits: a large migration, an ambitious multi-part change, or work a human reviews after stepping away. Scales rigor to the task, runs a hypothesis loop, and logs decisions. Use for /figure-it-out or 'figure it out'."
+description: "더 좁은 플레이북이 맞지 않을 때 감사할 수 있는 플레이북을 설계한다. 큰 마이그레이션, 야심 찬 여러 부분짜리 변경, 사용자가 자리를 비웠다가 돌아와 검토할 작업에 쓴다. 작업에 맞게 엄격도를 정하고, 가설 반복을 돌리고, 결정을 기록한다. /figure-it-out이나 '알아서 해결해 줘'에 쓴다."
 disable-model-invocation: true
 ---
 
 # Figure it out
 
-When the task matches no playbook, design one. The deliverable before any code is the workflow itself: a sequence of phases that scales rigor to the task, runs the scientific method, and leaves a decision trail a human can audit after stepping away.
+작업에 맞는 플레이북이 없으면 하나를 설계한다. 코드보다 먼저 내놓을 산출물은 작업 흐름 자체다. 작업에 맞게 엄격도를 정하고, 과학적 방법을 돌리고, 자리를 비운 사용자가 나중에 감사할 수 있는 결정 기록을 남기는 단계 순서다.
 
-## Start
+## 시작
 
-Open a todolist whose first item is to read the Principles section of the **poteto-mode** skill. Then add the phases below as todos.
+할 일 목록을 열고 첫 항목을 **pstack-mode** 스킬의 원칙 절 읽기로 둔다. 그다음 아래 단계를 할 일로 더한다.
 
-## Phase A: Frame
+## A단계: 틀 잡기
 
-Ground first, then commit. Don't start the run until you can state:
+먼저 사전 조사하고, 그다음 확정한다. 다음을 말할 수 있기 전에는 실행을 시작하지 않는다.
 
-- The definition of done as a falsifiable predicate (the **prove-it-works** principle skill).
-- Scope, quantified: rough units and effort, plus the blockers grounding surfaced.
-- The rigor level, biased high. One-way doors and high blast radius get more. Reversible low-stakes steps get less. Rigor is gates and artifacts, not "try harder".
+- 완료 정의를 반증 가능한 종료 조건으로(**prove-it-works** 원칙 스킬).
+- 범위를 수치로: 대략의 단위와 노력, 그리고 사전 조사에서 드러난 막힘.
+- 엄격도. 높은 쪽으로 기운다. 되돌릴 수 없는 결정과 넓은 영향 범위는 더 높이고, 되돌릴 수 있는 위험 낮은 단계는 낮춘다. 엄격도는 "더 열심히"가 아니라 관문과 산출물이다.
 
-Present the framing and tradeoffs before committing to a long run. Reversible work proceeds (the **never-block-on-the-human** principle skill), but a multi-hour run earns one checkpoint.
+긴 실행에 들어가기 전에 틀과 트레이드오프를 보여 준다. 되돌릴 수 있는 일은 진행하지만(**never-block-on-the-human** 원칙 스킬), 몇 시간짜리 실행에는 확인 지점 하나를 둔다.
 
-## Phase B: Design the workflow
+## B단계: 작업 흐름 설계
 
-Decompose into atomic, independently-landable units. Sequence riskiest-unknown-first. Scaffold and verification come before features (the **foundational-thinking** principle skill).
+원자적이고 독립적으로 머지할 수 있는 단위로 쪼갠다. 가장 위험한 미지수부터 순서를 정한다. 뼈대와 검증이 기능보다 먼저다(**foundational-thinking** 원칙 스킬).
 
-- Build the verification harness before the work, with the baseline captured from the pre-change state, so the check reads as "old value vs new value".
-- For one-way-door design decisions, run the **architect** skill (it runs **arena**). Skip it for mechanical work whose shape is already concrete. A second arena over a settled design is over-engineering (the **laziness-protocol** principle skill).
-- Decide what fans out. Parallelize only across seams, and give each worker its own worktree or branch (the **separate-before-serializing-shared-state** principle skill). Don't over-fan. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.
-- Write the designed phase list down. That list is what the human reviews.
+- 일보다 검증 장치를 먼저 만들고, 기준값은 변경 전 상태에서 잡아 확인이 "이전 값 대 새 값"으로 읽히게 한다.
+- 되돌릴 수 없는 설계 결정에는 **architect** 스킬을 돌린다(**arena**를 돌린다). 모양이 이미 구체적인 기계적 작업에는 건너뛴다. 정해진 설계에 아레나를 또 돌리는 것은 과설계다(**laziness-protocol** 원칙 스킬).
+- 무엇을 병렬 분배할지 정한다. 이음매를 따라서만 병렬로 나누고, 작업자마다 별도 워크트리나 브랜치를 준다(**separate-before-serializing-shared-state** 원칙 스킬). 지나치게 나누지 않는다. 서브에이전트마다 추론 수준은 **pstack-mode** 스킬의 서브에이전트 절에 따라 일에 맞게 고른다.
+- 설계한 단계 목록을 적어 둔다. 사용자가 검토하는 것이 그 목록이다.
 
-Then execute the design. Add its steps to the todolist as concrete items between the Phase C and Phase D entries. Run each under the Phase C loop discipline, and weave the Phase D log through them, a row as each step lands, rather than saving the whole trail for the end.
+그다음 설계대로 실행한다. 설계의 단계를 할 일 목록의 C단계와 D단계 항목 사이에 구체적인 항목으로 넣는다. 각각 C단계 반복 규율로 돌리고, D단계 기록은 마지막에 몰아 쓰지 말고 단계가 끝날 때마다 한 줄씩 엮어 넣는다.
 
-## Phase C: Run the loop
+## C단계: 반복 돌리기
 
-Each unit is an experiment. State the hypothesis, make the smallest change, measure against the predicate on the real artifact, keep it if it advanced, revert it if it didn't. Apply the **sequence-verifiable-units** principle skill, verifying each unit before starting the next instead of batching checks at the end.
+단위 하나하나가 실험이다. 가설을 밝히고, 가장 작은 변경을 하고, 실제 산출물에서 종료 조건으로 측정하고, 나아갔으면 남기고 아니면 되돌린다. **sequence-verifiable-units** 원칙 스킬을 적용해 확인을 끝에 몰지 않고 단위마다 검증한 뒤 다음으로 간다.
 
-- Verify by inspecting the artifact, never a self-report. When something passes too easily, suspect the observation method before the system.
-- Pair delegated work with a judge. If a worker games the gate, reset and harden the contract. If the gate itself is wrong, fix the gate in its own change rather than routing around it.
-- A verdict is VERIFIED, NOT VERIFIED, or INCONCLUSIVE. Inconclusive is not a pass. Don't hide a negative.
+- 자기 보고가 아니라 산출물을 살펴 검증한다. 너무 쉽게 통과하면 시스템보다 관찰 방법을 먼저 의심한다.
+- 맡긴 일에는 심사자를 붙인다. 작업자가 관문을 속이면 초기화하고 계약을 단단하게 한다. 관문 자체가 틀렸으면 우회하지 말고 별도 변경으로 관문을 고친다.
+- 판정은 VERIFIED, NOT VERIFIED, INCONCLUSIVE 중 하나다. INCONCLUSIVE는 통과가 아니다. 부정적인 결과를 숨기지 않는다.
 
-## Phase D: Keep the audit trail
+## D단계: 감사 기록 남기기
 
-Log the run via the **show-me-your-work** skill. figure-it-out's work is usually ambitious enough to commit the trail so the reviewer can read it in the PR. The trail plus the diff is what lets the human come back and trust the work.
+**show-me-your-work** 스킬로 실행을 기록한다. figure-it-out의 작업은 대개 야심 찬 일이라 기록을 커밋해 검토자가 PR에서 읽을 수 있게 한다. 기록과 diff가 있어야 사용자가 돌아와서 작업을 믿을 수 있다.
 
-## Phase E: Verify and hand back
+## E단계: 검증하고 돌려주기
 
-Check the whole against the Phase A predicate on the real product, not just the harness. Encode any recurring correction as a gate, a lint rule, a check, or a script (the **encode-lessons-in-structure** principle skill).
+검증 장치만이 아니라 실제 제품에서 전체를 A단계 종료 조건으로 확인한다. 되풀이되는 수정은 관문, 린트 규칙, 검사, 스크립트로 담는다(**encode-lessons-in-structure** 원칙 스킬).
 
-**Reply:** the playbook you designed, the rigor level and why, the decision-trail path, what's verified against the predicate, and what's still open.
+**답변:** 설계한 플레이북, 엄격도와 그 이유, 결정 기록 경로, 종료 조건으로 검증된 것, 아직 열린 것.

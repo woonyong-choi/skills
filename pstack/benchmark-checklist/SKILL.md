@@ -1,39 +1,39 @@
 ---
 name: benchmark-checklist
-description: "Vet a perf measurement (limiter, tuning, limits, errors, repeatability, relevance, and whether the work happened) before you report or act on it. Use when you run a benchmark or report a speedup or regression you measured."
+description: "성능 측정을 보고하거나 그에 따라 행동하기 전에 검증할 때 쓴다(병목, 튜닝, 한계, 오류, 재현성, 관련성, 일이 실제로 일어났는지). 벤치마크를 돌리거나 직접 잰 속도 향상이나 회귀를 보고할 때 쓴다."
 disable-model-invocation: true
 ---
 
-# Benchmark checklist
+# 벤치마크 체크리스트
 
-Use this when you produce a performance number: a PR's before and after, a regression claim, a hillclimb harness, or a library or config choice. Answer each question with evidence from a run, not a guess about the code.
+성능 숫자를 낼 때 쓴다. PR의 전후 비교, 회귀 주장, 힐클라이밍 측정 도구, 라이브러리나 설정 선택이다. 각 질문에 코드에 대한 추측이 아니라 실행에서 얻은 증거로 답한다.
 
-For a quick ballpark the user asked for, one run is enough. Still check questions 4 and 7, and say that it is one run. Skip the rest unless that run looks wrong. A choice between options is never a ballpark.
+사용자가 요청한 대략적인 어림이면 한 번 실행으로 충분하다. 그래도 질문 4와 7은 확인하고, 한 번 실행이라고 밝힌다. 그 실행이 이상해 보이지 않으면 나머지는 건너뛴다. 선택지 사이의 선택은 결코 어림이 아니다.
 
-## Before you run anything
+## 무엇이든 돌리기 전에
 
-- Write down the claim you expect to make, in the words you would ship ("export is 30% faster at p50 on the 60k-row dataset"). The questions test that sentence.
-- Read the measurement script. Note what it times, counts, and ignores.
-- Check the load average with `uptime` and the core count with `nproc`. If the machine is busy, find out what is running. If you cannot stop it, interleave the sides so both see the same noise, and say so in the report.
+- 하게 될 주장을 배포할 말 그대로 적어 둔다("60k행 데이터셋에서 내보내기가 p50 기준 30% 빠르다"). 질문들은 그 문장을 시험한다.
+- 측정 스크립트를 읽는다. 무엇을 재고, 세고, 무시하는지 적는다.
+- `uptime`으로 부하 평균을, `nproc`로 코어 수를 확인한다. 기계가 바쁘면 무엇이 돌고 있는지 알아낸다. 멈출 수 없으면 양쪽을 번갈아 돌려 같은 잡음을 겪게 하고, 보고에 그렇게 밝힌다.
 
-## The questions
+## 질문
 
-1. **Why not double?** Name the limiter. Profile in a run you do not report, because profilers and tracers slow the work down. Use CPU per process (`top`, `pidstat`), a runtime profiler (`node --cpu-prof`, `py-spy`, `perf`), I/O wait, and syscall counts (`strace -c` on Linux), then map the hot spot to source. Watch the load generator too: if it saturates first, you measured the load generator. If a change did not move the number, the limiter explains why, so find it before you call the change useless.
-2. **Was it tuned?** Run every side the way production runs it: release builds, production flags and env, batching and transaction settings, connection pools, caches as warm or cold as production sees them, and the same versions and data. If one side runs on defaults, you compared configurations, not implementations. A limiter that is a setting (a commit per row, a debug build, a missing index) means that side is untuned. Tune it and measure again before you pick a winner. If you cannot tune it, do not pick a winner from that run. When the user is choosing what to adopt, narrowing the claim to the code as it ships today does not fix this, because they adopt the option, not today's settings.
-3. **Did it break limits?** Do the arithmetic. Compare bytes per second with disk and network bandwidth, operations per second times cost per operation with your cores, and the time saved with the time the changed piece took. Removing a piece that takes 10% of the run can make the run at most about 11% faster. A result past a limit measured something other than the work, such as a cache, a no-op, or a bug.
-4. **Did it error?** Count failures and non-success responses, and check that outputs are correct, not just present. Rejections are often fast, and timeouts and retries are slow. If the script does not count errors, add the count.
-5. **Does it reproduce?** Run each side at least 5 times, alternating (A, B, A, B, and so on) so warmup, lazy initialization, caches, and drift favor neither. Report the median and range. A gap smaller than the run-to-run variation is no measurable difference. When the call is close, use a rank-sum test or the harness's own statistics.
-6. **Does it matter?** Next to any micro result, measure the end-to-end path a user waits on, with realistic data sizes and concurrency, and report the micro result as a share of the whole. A helper that takes 1% of a request can make the request at most 1% faster, however fast the helper gets.
-7. **Did it even happen?** Confirm the work ran inside the timed region: the request reached the server, the rows were written, the bytes were read, and the code used the result. Lazy code (generators nobody iterates, promises nobody awaits, results the JIT can discard) and timeouts produce numbers for work that never happened.
+1. **왜 두 배가 아닌가?** 병목을 이름 붙인다. 프로파일러와 트레이서는 일을 느리게 하므로 보고하지 않을 실행에서 프로파일링한다. 프로세스별 CPU(`top`, `pidstat`), 런타임 프로파일러(`node --cpu-prof`, `py-spy`, `perf`), I/O 대기, 시스템 호출 수(Linux에서 `strace -c`)를 쓰고, 뜨거운 지점을 소스에 연결한다. 부하 생성기도 지켜본다. 부하 생성기가 먼저 포화되면 부하 생성기를 잰 것이다. 변경이 숫자를 움직이지 못했으면 병목이 그 이유를 설명하므로, 변경을 쓸모없다고 하기 전에 병목을 찾는다.
+2. **튜닝했는가?** 모든 쪽을 프로덕션이 돌리는 방식대로 돌린다. 릴리스 빌드, 프로덕션 플래그와 환경 변수, 배치와 트랜잭션 설정, 연결 풀, 프로덕션이 겪는 만큼 데워졌거나 식은 캐시, 같은 버전과 데이터다. 한쪽이 기본값으로 돌면 구현이 아니라 설정을 비교한 것이다. 병목이 설정(행마다 커밋, 디버그 빌드, 빠진 인덱스)이면 그쪽은 튜닝되지 않은 것이다. 승자를 고르기 전에 튜닝하고 다시 잰다. 튜닝할 수 없으면 그 실행으로 승자를 고르지 않는다. 사용자가 무엇을 도입할지 고르는 중이라면, 주장을 "오늘 배포된 코드 기준"으로 좁혀도 이 문제는 풀리지 않는다. 사용자는 오늘의 설정이 아니라 그 선택지를 도입하기 때문이다.
+3. **한계를 넘었는가?** 산수를 한다. 초당 바이트를 디스크와 네트워크 대역폭과, 초당 작업 수 곱하기 작업당 비용을 코어 수와, 아낀 시간을 바뀐 부분이 걸린 시간과 비교한다. 실행의 10%를 차지하는 부분을 없애도 실행은 최대 약 11%만 빨라진다. 한계를 넘은 결과는 일이 아닌 다른 것을 잰 것이다. 캐시, 아무것도 안 하는 동작, 버그 같은 것이다.
+4. **오류가 났는가?** 실패와 성공이 아닌 응답을 세고, 출력이 있기만 한 게 아니라 올바른지 확인한다. 거부는 대개 빠르고, 시간 초과와 재시도는 느리다. 스크립트가 오류를 세지 않으면 세는 코드를 더한다.
+5. **재현되는가?** 각 쪽을 최소 5번, 번갈아(A, B, A, B 식으로) 돌려 예열, 지연 초기화, 캐시, 흐름 변화가 어느 쪽에도 유리하지 않게 한다. 중앙값과 범위를 보고한다. 실행 간 변동보다 작은 차이는 측정 가능한 차이가 아니다. 판정이 아슬아슬하면 순위합 검정이나 측정 도구 자체의 통계를 쓴다.
+6. **중요한가?** 미시 결과 옆에, 사용자가 기다리는 종단 간 경로를 현실적인 데이터 크기와 동시성으로 재고, 미시 결과를 전체 중 비율로 보고한다. 요청의 1%를 차지하는 헬퍼는 아무리 빨라져도 요청을 최대 1%만 빠르게 한다.
+7. **일이 일어나기는 했는가?** 잰 구간 안에서 일이 돌았는지 확인한다. 요청이 서버에 닿았고, 행이 쓰였고, 바이트를 읽었고, 코드가 결과를 썼는지다. 지연 실행 코드(아무도 순회하지 않는 제너레이터, 아무도 기다리지 않는 프로미스, JIT가 버릴 수 있는 결과)와 시간 초과는 일어나지 않은 일에 대한 숫자를 만든다.
 
-## Report
+## 보고
 
-- Lead with the verdict: faster, slower, no measurable difference, or inconclusive.
-- Give the number with its unit, the run count, the range, and the limiter. For example, "p50 41 ms → 33 ms, median of 7 runs per side, range 32 to 35 ms after, bound by JSON parsing on one core."
-- Call the verdict inconclusive when you claim a difference but cannot name the limiter, when a side ran untuned, or when you could not check questions 4 and 7. Name the gap.
-- Keep a PR body to one primary number, per the **Opening a PR** playbook. Put the runs, range, and limiter evidence in a linked artifact or notes file.
+- 판정을 먼저 쓴다. 빨라짐, 느려짐, 측정 가능한 차이 없음, 판정 불가.
+- 단위를 붙인 숫자, 실행 횟수, 범위, 병목을 준다. 예: "p50 41 ms → 33 ms, 쪽마다 7회 실행의 중앙값, 이후 범위 32~35 ms, 코어 하나의 JSON 파싱이 병목."
+- 차이를 주장하는데 병목을 이름 붙이지 못하거나, 한쪽이 튜닝 없이 돌았거나, 질문 4와 7을 확인하지 못했으면 판정 불가라고 한다. 빈틈을 이름 붙인다.
+- PR 본문에는 대표 숫자 하나만 둔다(PR 열기 플레이북, `../pstack-mode/playbooks/opening-a-pr.md`). 실행 기록, 범위, 병목 증거는 링크한 산출물이나 메모 파일에 둔다.
 
-## Other perf material
+## 다른 성능 자료
 
-- Vet the **Perf issue** playbook's baseline before the playbook plans from it, and every number after that.
-- Vet the **Hillclimb** playbook's harness before it is frozen. The frozen harness then prints error and work counts, so each keep-or-revert checks questions 4 and 7 for free.
+- 성능 문제 플레이북(`../pstack-mode/playbooks/perf-issue.md`)이 기준선으로 계획을 세우기 전에 그 기준선을 검증하고, 그 뒤의 모든 숫자도 검증한다.
+- 힐클라이밍 플레이북(`../pstack-mode/playbooks/hillclimb.md`)의 측정 도구를 고정하기 전에 검증한다. 그러면 고정된 측정 도구가 오류 수와 일의 양을 출력하므로, 유지하거나 되돌릴 때마다 질문 4와 7을 공짜로 확인한다.

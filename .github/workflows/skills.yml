@@ -57,7 +57,7 @@ jobs:
         with:
           bun-version: 1.4.2
       - name: Run imported pstack script tests
-        working-directory: pstack/poteto-mode/scripts
+        working-directory: pstack/pstack-mode/scripts
         run: |
           bun install --frozen-lockfile
           bun test

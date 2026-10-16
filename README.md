@@ -124,15 +124,17 @@ python3 <스킬 설치 폴더>/repo-docs-journal/scripts/journal.py mode bypass
 |---|---|
 | [skill-sync](tools/skill-sync/SKILL.md) | 원본 검사, 도구별 설치, Claude 계정용 zip |
 
-### 가져온 묶음: pstack
+### pstack(한국어 이식본)
 
-[pstack](https://github.com/cursor/plugins/tree/main/pstack)(Lauren Tan, MIT) 스킬 54개를 `pstack/` 아래에 원문 그대로 둡니다. 원본 commit·버전과 고친 곳은 [SOURCE.json](pstack/_upstream/SOURCE.json), 원본 README·하위 에이전트·안내서·라이선스는 [pstack/_upstream](pstack/_upstream/README.md)에 있습니다.
+[pstack](https://github.com/cursor/plugins/tree/main/pstack)(Lauren Tan, MIT) 0.15.25를 한국어로 옮기고 Claude Code CLI, Codex CLI, OpenCode 공용으로 바꾼 스킬 53개를 `pstack/` 아래에 둡니다. 영어 원본과 출처는 [pstack/_upstream](pstack/_upstream/SOURCE.json)에 그대로 보관합니다.
 
-- 부르는 법: 대부분 사람이 직접 부를 때만 켜집니다. Claude Code는 `/poteto-mode`, Codex는 `$poteto-mode`. 자동 선택 목록에 들어가지 않아 평소 문맥을 쓰지 않습니다
-- 원문 수정: 폴더와 이름이 다른 `poteto-mode`, `make-bot-ui`의 `name`만 폴더 이름으로 맞춥니다. Codex가 자동으로 고르지 않게 수동 스킬마다 `agents/openai.yaml`을 덧붙입니다
-- 이 저장소 작성 규칙 검사는 적용하지 않고 형식(frontmatter, 이름, 설명 길이)만 검사합니다. 스킬 폴더의 `UPSTREAM.json`이 그 표시입니다
-- Cursor 전용 기능(Task 도구 인자, `/loop`, 클라우드 에이전트, `~/.cursor` 경로, Bugbot)에 기대는 지시는 그대로라 Claude Code·Codex에서는 일부만 동작합니다. 하위 에이전트 정의(`poteto-agent`, `comment-sicko`)는 아직 설치하지 않습니다
-- 다시 가져오기: cursor/plugins를 받은 뒤 아래 명령. 이전 `pstack/`을 지우고 다시 만듭니다
+- 입구: `/pstack-mode`(Codex는 `$pstack-mode`)에 요청을 붙이면 23개 플레이북 중 맞는 순서를 고릅니다. 도움말은 `/pstack-help`
+- 원본과 달라진 점: Cursor 전용 기능과 Grok 지정을 뺐습니다. 서브에이전트·주기적 깨우기·다른 회사 모델 검토는 [호스트 대응표](pstack/pstack-mode/references/hosts.md) 한 곳에서 호스트별로 정합니다. Grok Bot 전용 `make-bot-ui`는 뺐습니다
+- 모델: 본문은 역할 이름(`code`, `judgment`, `review`, `cheap`)만 씁니다. 실제 모델은 `/setup-pstack`이 만드는 `~/.config/skills/models.json`이 정합니다([역할별 모델](pstack/pstack-mode/references/models.md))
+- 부르는 법: 대부분 사람이 직접 부를 때만 켜집니다. Claude Code는 설명을 평소 문맥에 넣지 않고, Codex는 스킬마다 `agents/openai.yaml`이 자동 선택을 막습니다
+- 하위 에이전트 정의(`pstack-agent`, `comment-sicko`)는 [pstack/_agents](pstack/_agents/pstack-agent.md)에 있고 아직 자동 설치하지 않습니다. 설치되지 않은 호스트에서는 스킬이 같은 지시를 프롬프트에 넣습니다
+- 검사: 스킬 폴더의 `UPSTREAM.json`이 있으면 이 저장소 작성 규칙 대신 형식만 검사합니다
+- 원본 갱신 따라가기: cursor/plugins를 받은 뒤 아래 명령. `_upstream`만 갱신하고 바뀐 원본 파일 목록을 출력하니, 목록을 보고 이식본에 옮깁니다
 
 ```sh
 python3 tools/skill-sync/scripts/import_pstack.py --source <cursor/plugins 작업본>

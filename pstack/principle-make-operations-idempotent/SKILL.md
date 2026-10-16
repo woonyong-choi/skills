@@ -1,22 +1,22 @@
 ---
 name: principle-make-operations-idempotent
-description: "Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs."
+description: "크래시, 재시작, 재시도 속에서 도는 명령, 수명 주기 단계, 처리 루프를 설계할 때 적용한다. 앞선 실행이 어디서 멈췄든 같은 최종 상태로 수렴하게 한다."
 disable-model-invocation: true
 ---
 
-# Make Operations Idempotent
+# 작업을 멱등으로 만들기(Make Operations Idempotent)
 
-Design operations so they converge to the correct state regardless of how many times they run or where the previous run stopped. Every state-mutating operation should answer: "What happens if this runs twice? What happens if the previous run crashed halfway?"
+몇 번 실행되든, 앞선 실행이 어디서 멈췄든 올바른 상태로 수렴하도록 작업을 설계한다. 상태를 바꾸는 모든 작업은 "이것이 두 번 돌면 어떻게 되는가? 앞선 실행이 중간에 죽었다면 어떻게 되는가?"에 답해야 한다.
 
-**Why:** Commands, lifecycle operations, and processing loops run where crashes, restarts, and retries are normal. If partial state changes the next run's outcome, every restart becomes a debugging session.
+**이유:** 명령, 수명 주기 작업, 처리 루프는 크래시, 재시작, 재시도가 일상인 곳에서 돈다. 중간 상태가 다음 실행의 결과를 바꾼다면 재시작할 때마다 디버깅이 된다.
 
-**The idea:** derive each step from the state that exists, not from what the previous run meant to do. Read the current state, compare it to the goal, and apply only the difference. A step written this way is safe to repeat, because a repeat finds nothing left to do.
+**핵심:** 각 단계를 앞선 실행이 하려던 일이 아니라 지금 있는 상태에서 끌어낸다. 현재 상태를 읽고, 목표와 비교하고, 차이만 적용한다. 이렇게 쓴 단계는 반복해도 안전하다. 반복하면 남은 일이 없기 때문이다.
 
-Anything a run leaves behind, such as a lock, a temporary file, a half-written record, or a claimed job, must be recognizable as stale by the next run. Judge staleness by evidence that stays true wherever the previous run could have stopped, not only in the common case. A marker that the next run cannot judge turns every crash into manual cleanup. For example, write to a temporary path and rename it into place, or compare artifacts by content instead of by creation order.
+실행이 남기는 것(락, 임시 파일, 반쯤 쓴 기록, 가져간 작업 등)은 모두 다음 실행이 낡은 것으로 알아볼 수 있어야 한다. 낡았는지는 흔한 경우만이 아니라 앞선 실행이 멈췄을 수 있는 모든 지점에서 참인 증거로 판단한다. 다음 실행이 판단할 수 없는 표식은 크래시마다 손으로 정리하게 만든다. 예를 들어 임시 경로에 쓰고 rename으로 제자리에 옮기거나, 산출물을 생성 순서가 아니라 내용으로 비교한다.
 
-**The test:**
-1. What happens if this runs twice in a row?
-2. What happens if the previous run crashed at every possible point?
-3. Does re-execution converge to the same end state?
+**판단:**
+1. 연달아 두 번 돌면 어떻게 되는가?
+2. 앞선 실행이 가능한 모든 지점에서 죽었다면 어떻게 되는가?
+3. 다시 실행하면 같은 최종 상태로 수렴하는가?
 
-If any answer is "it depends on what state was left behind," the operation needs a reconciliation step.
+하나라도 답이 "어떤 상태가 남았느냐에 달렸다"라면 그 작업에는 상태를 맞추는 단계가 필요하다.

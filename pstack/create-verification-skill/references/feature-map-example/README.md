@@ -1,47 +1,47 @@
-# Notes verification map
+# Notes 검증 맵
 
-This directory is the maintained source for verifying the user-facing behavior of Notes. Read the index before driving the app, then use the matching feature file as the recipe.
+이 폴더는 Notes의 사용자 대상 동작을 검증하는 관리 정본이다. 앱을 조작하기 전에 색인을 읽고, 맞는 기능 파일을 조작 방법으로 쓴다.
 
-## Baseline preconditions
+## 기본 전제 조건
 
-- Launch Notes at `http://127.0.0.1:4173` with a disposable data directory.
-- Set `NOTES_DATA_DIR=/tmp/notes-verify-$RUN_ID` so concurrent runs do not share state.
-- Seed notes titled `Quarterly plan` and `Grocery list`.
-- Put `control-notes` and the `notes` CLI on `PATH`.
-- Run `control-notes doctor` and require the expected URL, data directory, and build revision.
-- Never drive an instance that was not started by this verification run.
+- 버리는 데이터 폴더로 Notes를 `http://127.0.0.1:4173`에서 띄운다.
+- 동시에 도는 실행이 상태를 공유하지 않도록 `NOTES_DATA_DIR=/tmp/notes-verify-$RUN_ID`를 설정한다.
+- 제목이 `Quarterly plan`과 `Grocery list`인 노트를 시드로 넣는다.
+- `control-notes`와 `notes` CLI를 `PATH`에 둔다.
+- `control-notes doctor`를 돌리고 기대한 URL, 데이터 폴더, 빌드 리비전을 요구한다.
+- 이번 검증 실행이 띄우지 않은 인스턴스는 조작하지 않는다.
 
-## Driving conventions
+## 조작 관례
 
-- Start every recipe from the baseline state unless its preconditions say otherwise.
-- Prefer ARIA roles and accessible names over CSS selectors or DOM position.
-- Treat every command as literal. Keep quoted names and flags unchanged.
-- Run browser actions through `control-notes browser`.
-- Run terminal actions through `control-notes cli -- <command>`.
-- Restore seeded data after a mutation. Do not remove proof artifacts during cleanup.
+- 전제 조건이 달리 말하지 않으면 모든 조작 방법을 기본 상태에서 시작한다.
+- CSS 선택자나 DOM 위치보다 ARIA 역할과 접근 가능한 이름을 택한다.
+- 모든 명령을 글자 그대로 다룬다. 따옴표 안의 이름과 플래그를 바꾸지 않는다.
+- 브라우저 동작은 `control-notes browser`로 돌린다.
+- 터미널 동작은 `control-notes cli -- <command>`로 돌린다.
+- 변경 뒤에는 시드 데이터를 되돌린다. 정리하면서 증명 산출물을 지우지 않는다.
 
-## Proof and skip reporting
+## 증명과 건너뜀 보고
 
-- Capture the user action and the resulting state, not only the final screen.
-- UI proof includes an ARIA snapshot and a screenshot with the app identity visible.
-- CLI proof includes the command, stdout, stderr, and exit code.
-- Mutation proof includes a read-only second view of the stored value.
-- Record the feature ID and entry point used with every artifact.
-- Report an unreachable path with the attempted command and the unmet precondition.
-- Do not report a skipped entry point as verified through a different path.
+- 마지막 화면만이 아니라 사용자 동작과 그 결과 상태를 남긴다.
+- UI 증명에는 ARIA 스냅샷과 앱 정체가 보이는 스크린샷이 들어간다.
+- CLI 증명에는 명령, stdout, stderr, 종료 코드가 들어간다.
+- 변경 증명에는 저장된 값을 읽기 전용으로 다시 본 두 번째 화면이 들어간다.
+- 모든 산출물에 기능 ID와 쓴 진입점을 기록한다.
+- 닿을 수 없는 경로는 시도한 명령과 충족되지 않은 전제 조건으로 보고한다.
+- 건너뛴 진입점을 다른 경로로 검증했다고 보고하지 않는다.
 
-## Feature entry contract
+## 기능 항목 계약
 
-Each feature file starts with an H1 title and one paragraph describing the user-visible behavior. It then uses exactly four H2 sections in this order.
+각 기능 파일은 H1 제목과 사용자에게 보이는 동작을 설명하는 문단 하나로 시작한다. 그다음 정확히 H2 절 넷을 이 순서로 쓴다.
 
-1. `Sub-features` lists short IDs with one line for each behavior.
-2. `How to get to it (user POV)` lists every user entry point.
-3. `Driving it with <harness>` starts with `Preconditions:` and uses labeled bullets that pair each user action with an exact command and observable result.
-4. `Gotchas` lists traps that can waste or invalidate a verification run.
+1. `하위 기능`은 짧은 ID와 동작마다 한 줄을 나열한다.
+2. `들어가는 방법(사용자 관점)`은 사용자 진입점을 모두 나열한다.
+3. `<harness>로 조작하기`는 `전제 조건:`으로 시작하고, 사용자 동작마다 정확한 명령과 관찰 가능한 결과를 짝지은 꼬리표 달린 항목을 쓴다.
+4. `주의할 점`은 검증 실행을 낭비하거나 무효로 만들 수 있는 함정을 나열한다.
 
-Keep implementation details out of the map. Name only user paths, stable handles, required state, commands, and observable proof.
+구현 세부는 맵에 넣지 않는다. 사용자 경로, 안정적인 손잡이, 필요한 상태, 명령, 관찰 가능한 증명만 적는다.
 
-## Features
+## 기능
 
-- [Create a note](./create-note.md) covers browser and CLI creation, cancellation, persistence, and cleanup.
-- [Search notes](./search.md) covers toolbar, keyboard, and CLI search with matching, empty, and clear states.
+- [노트 만들기](./create-note.md)는 브라우저와 CLI에서 만들기, 취소, 저장 유지, 정리를 다룬다.
+- [노트 검색](./search.md)은 도구 막대, 키보드, CLI 검색과 일치, 빈 결과, 지우기 상태를 다룬다.

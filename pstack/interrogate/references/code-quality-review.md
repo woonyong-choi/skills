@@ -1,47 +1,47 @@
-# Code Quality Review
+# 코드 품질 검토
 
-Each reviewer applies this code-quality lens in addition to the rubric. It is a strict standard focused on implementation quality, maintainability, abstraction quality, and codebase health.
+각 검토자는 채점 기준에 더해 이 코드 품질 관점을 적용한다. 구현 품질, 유지보수성, 추상화 품질, 코드베이스 건강에 집중하는 엄격한 기준이다.
 
-Above all, be ambitious about code structure. Do not merely identify local cleanup. Actively search for "code judo" moves, restructurings that preserve behavior while making the implementation dramatically simpler, smaller, more direct, and more elegant.
+무엇보다 코드 구조에 야심을 갖는다. 국소적인 정리만 찾고 끝내지 않는다. "코드 유도" 수를 적극적으로 찾는다. 동작은 그대로 두면서 구현을 훨씬 단순하고, 작고, 직접적이고, 우아하게 만드는 재구성이다.
 
-## Core Prompt
+## 핵심 프롬프트
 
-Start from this baseline:
+이 기준에서 시작한다.
 
-> Perform a deep code quality audit of the current branch's changes.
-> Rethink how to structure / implement the changes to meaningfully improve code quality without impacting behavior.
-> Work to improve abstractions, modularity, reduce Spaghetti code, improve succinctness and legibility.
-> Be ambitious, if there is a clear path to improving the implementation that involves restructuring some of the codebase, go for it.
-> Be extremely thorough and rigorous. Measure twice, cut once.
+> 현재 브랜치 변경의 코드 품질을 깊이 감사한다.
+> 동작에 영향을 주지 않으면서 코드 품질을 의미 있게 높이도록 변경의 구조와 구현을 다시 생각한다.
+> 추상화와 모듈성을 개선하고, 스파게티 코드를 줄이고, 간결함과 가독성을 높인다.
+> 야심을 갖는다. 코드베이스 일부를 재구성해 구현을 개선할 분명한 길이 있으면 그 길로 간다.
+> 아주 철저하고 엄밀하게 한다. 두 번 재고 한 번 자른다.
 
-## Dimensions
+## 관점
 
-Each dimension is stated once. Apply the ones that are relevant.
+각 관점은 한 번만 적는다. 관련 있는 것만 적용한다.
 
-0. **Be ambitious about structural simplification.** Do not stop at "this could be a bit cleaner." Look for reframings that make whole branches, helpers, modes, conditionals, or layers disappear. Assume a "code judo" move is often available. It uses the existing architecture more effectively and makes the change dramatically simpler. If you can delete complexity rather than rearrange it, push hard for that.
+0. **구조 단순화에 야심을 갖는다.** "조금 더 깔끔할 수 있다"에서 멈추지 않는다. 분기, 헬퍼, 모드, 조건문, 계층을 통째로 없애는 관점 전환을 찾는다. "코드 유도" 수가 대개 있다고 가정한다. 그런 수는 기존 아키텍처를 더 잘 활용해 변경을 훨씬 단순하게 만든다. 복잡도를 재배치하지 않고 지울 수 있으면 강하게 밀어붙인다.
 
-1. **Do not let a PR push a file from under 1k lines to over 1k lines without a very strong reason.** Treat this as a strong smell. Prefer extracting helpers, subcomponents, or modules. If the diff crosses that threshold, ask whether the code should be decomposed first. Waive only for a compelling structural reason where the resulting file stays clearly organized.
+1. **아주 강한 이유 없이 PR이 1천 줄 미만 파일을 1천 줄 넘게 만들지 않게 한다.** 강한 악취로 본다. 헬퍼, 하위 구성 요소, 모듈로 떼어 내는 쪽을 택한다. diff가 그 선을 넘으면 먼저 쪼개야 하는지 묻는다. 결과 파일이 분명히 잘 정리된 상태로 남는 설득력 있는 구조적 이유가 있을 때만 예외로 둔다.
 
-2. **Do not allow spaghetti growth in existing code.** Be suspicious of new ad-hoc conditionals, scattered special cases, or one-off branches inserted into unrelated flows. Treat "weird if statements in random places" as a design problem, not a style nit. Prefer pushing the logic into a dedicated helper, state machine, or module instead of tangling an existing path.
+2. **기존 코드에 스파게티가 자라지 않게 한다.** 즉석 조건문, 흩어진 특수 사례, 상관없는 흐름에 끼워 넣은 일회성 분기를 의심한다. "엉뚱한 곳의 이상한 if 문"은 스타일 지적이 아니라 설계 문제로 본다. 기존 경로를 엉키게 하지 말고 전용 헬퍼, 상태 기계, 모듈로 로직을 옮기는 쪽을 택한다.
 
-3. **Bias toward cleaning the design, not just accepting working code.** If behavior can stay the same while the structure becomes meaningfully cleaner, push for the cleaner version. Prefer simplifications that remove moving pieces over refactors that spread the same complexity around.
+3. **동작하는 코드를 그냥 받아들이지 말고 설계를 정리하는 쪽으로 기운다.** 동작은 같게 두고 구조를 의미 있게 깔끔하게 만들 수 있으면 깔끔한 쪽을 밀어붙인다. 같은 복잡도를 여기저기 퍼뜨리는 리팩터링보다 움직이는 부품을 없애는 단순화를 택한다.
 
-4. **Prefer direct, boring, maintainable code over hacky or magical code.** Treat brittle, ad-hoc, or "magic" behavior as a problem. Be skeptical of generic mechanisms that hide simple data-shape assumptions. Flag thin abstractions, identity wrappers, or pass-through helpers that add indirection without buying clarity.
+4. **꼼수나 마법 같은 코드보다 직접적이고 지루하고 유지보수하기 쉬운 코드를 택한다.** 깨지기 쉽거나, 즉석이거나, "마법" 같은 동작을 문제로 본다. 단순한 데이터 모양 가정을 숨기는 범용 장치를 의심한다. 명확성을 주지 못하고 간접 단계만 더하는 얇은 추상화, 항등 래퍼, 그대로 넘기기만 하는 헬퍼를 짚는다.
 
-5. **Push on type and boundary cleanliness when it affects maintainability.** Question unnecessary optionality, `unknown`, `any`, or cast-heavy code when a clearer type boundary could exist. Prefer explicit typed models over loosely-shaped ad-hoc objects. If a branch leans on a silent fallback to paper over an unclear invariant, ask whether the boundary should be made explicit.
+5. **유지보수성에 영향을 줄 때는 타입과 경계의 깔끔함을 따진다.** 더 분명한 타입 경계가 있을 수 있는데 쓸데없는 선택적 값, `unknown`, `any`, 캐스트가 많은 코드가 있으면 묻는다. 느슨한 모양의 즉석 객체보다 명시적인 타입 모델을 택한다. 분기가 불분명한 불변 조건을 덮으려고 조용한 대체값에 기대면 경계를 명시해야 하는지 묻는다.
 
-6. **Keep logic in the canonical layer and reuse existing helpers.** Call out feature logic leaking into shared paths or implementation details leaking through APIs. Prefer existing canonical utilities over bespoke one-offs. Push code toward the right package, service, or module instead of normalizing drift.
+6. **로직은 정본 계층에 두고 기존 헬퍼를 재사용한다.** 기능 로직이 공유 경로로 새거나 구현 세부가 API로 새는 것을 짚는다. 맞춤형 일회성 코드보다 기존 정본 유틸리티를 택한다. 어긋남을 당연하게 두지 말고 코드를 알맞은 패키지, 서비스, 모듈로 옮기게 한다.
 
-7. **Treat unnecessary sequential orchestration and non-atomic updates as design smells when the cleaner structure is obvious.** If independent work is serialized for no reason, ask whether it should run in parallel. If related updates can leave state half-applied, push for a more atomic structure. Do not over-index on micro-optimizations, but do flag avoidable orchestration complexity that makes the code more brittle.
+7. **더 깔끔한 구조가 뻔할 때 불필요한 순차 조율과 원자적이지 않은 갱신을 설계 악취로 본다.** 독립적인 일이 이유 없이 순서대로 돌면 병렬로 돌려야 하는지 묻는다. 관련된 갱신이 상태를 반쯤 적용된 채로 남길 수 있으면 더 원자적인 구조를 밀어붙인다. 미시 최적화에 지나치게 매달리지 않되, 코드를 더 깨지기 쉽게 만드는 피할 수 있는 조율 복잡도는 짚는다.
 
-## Output Expectations
+## 출력 기대
 
-Prioritize structural code-quality regressions and missed simplifications first, then spaghetti and branching complexity, then boundary, type, and file-size concerns, then smaller modularity and legibility issues.
+구조적 코드 품질 회귀와 놓친 단순화를 먼저 다룬다. 다음은 스파게티와 분기 복잡도, 그다음은 경계, 타입, 파일 크기 문제, 마지막으로 작은 모듈성과 가독성 문제다.
 
-## Approval Bar
+## 승인 기준
 
-Do not approve merely because behavior seems correct. Treat these as presumptive blockers unless the author can justify them: the PR keeps a lot of incidental complexity when a code-judo move would delete it. Pushes a file from below 1000 lines to above 1000 lines. Adds ad-hoc branching that tangles an existing flow. Scatters feature checks across shared code. Adds an unnecessary abstraction, wrapper, or cast-heavy contract, or duplicates an existing helper or puts logic in the wrong layer when there is a clear canonical home. If those conditions are not met, leave explicit, actionable feedback and push for a cleaner decomposition.
+동작이 맞아 보인다는 이유만으로 승인하지 않는다. 작성자가 정당화하지 못하면 다음을 머지를 막는 문제로 추정한다. 코드 유도 수로 지울 수 있는 부수적 복잡도를 많이 남긴 PR. 1000줄 미만 파일을 1000줄 넘게 만든 PR. 기존 흐름을 엉키게 하는 즉석 분기를 더한 PR. 기능 검사를 공유 코드 곳곳에 흩뿌린 PR. 불필요한 추상화, 래퍼, 캐스트가 많은 계약을 더하거나, 기존 헬퍼를 중복하거나, 분명한 정본 자리가 있는데 로직을 엉뚱한 계층에 둔 PR. 이 조건에 해당하지 않으면 명시적이고 실행 가능한 피드백을 남기고 더 깔끔한 분해를 밀어붙인다.
 
-## Review Tone
+## 검토 어조
 
-Be direct, serious, and demanding about quality. Do not be rude, but do not soften major maintainability issues into mild suggestions. If the code is making the codebase messier, say so. If the implementation missed an obvious dramatic simplification, say that too. Do not be satisfied with "maybe rename this" when the real issue is structural.
+품질에 대해 직접적이고, 진지하고, 까다롭게 군다. 무례하지 않되, 큰 유지보수 문제를 가벼운 제안으로 누그러뜨리지 않는다. 코드가 코드베이스를 더 지저분하게 만들면 그렇다고 말한다. 구현이 뻔한 극적인 단순화를 놓쳤으면 그것도 말한다. 진짜 문제가 구조인데 "이름을 바꾸면 어떨까" 수준에서 만족하지 않는다.

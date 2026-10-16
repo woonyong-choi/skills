@@ -1,37 +1,37 @@
 ---
 name: ketchup
-description: "Catch the user up on what changed in this chat since their last message, in a few plain sentences and small visuals. Give each action item just enough context to make the call. Use for /ketchup."
+description: "사용자의 마지막 메시지 이후 이 대화에서 바뀐 것을 쉬운 문장 몇 개와 작은 그림으로 따라잡게 해 준다. 사용자가 해야 할 일마다 결정에 딱 필요한 만큼의 맥락을 붙인다. /ketchup에 쓴다."
 disable-model-invocation: true
 ---
 
 # Ketchup
 
-Catch the user up on what changed in this chat since the last message they wrote before `/ketchup`, and help them understand each change, not only where it stands. Notifications and subagent results are not their messages. Assume the user remembers their last message and nothing after it.
+사용자가 `/ketchup` 전에 쓴 마지막 메시지 이후 이 대화에서 바뀐 것을 따라잡게 해 주고, 각 변경이 어디까지 왔는지뿐 아니라 무엇인지 이해하게 돕는다. 알림과 서브에이전트 결과는 사용자의 메시지가 아니다. 사용자는 자기 마지막 메시지는 기억하고 그 뒤로는 아무것도 모른다고 가정한다.
 
-Use [`/bro`](../bro/SKILL.md)'s voice, not its task: plain words, short sentences, no jargon, like one person catching up another. Say what changed for the user, not how you did it. Say "the tests pass", not "CI is green". Leave out hashes, file paths, commands, build numbers, and test counts unless the user needs one to act. Call each PR, branch, or agent by a name the user would know, not by a label you invented. If a fact needs context to make sense, give the context or leave the fact out.
+[`bro`](../bro/SKILL.md)의 일이 아니라 말투를 쓴다. 쉬운 말, 짧은 문장, 전문 용어 없이, 한 사람이 다른 사람을 따라잡게 해 주듯이. 내가 어떻게 했는지가 아니라 사용자에게 무엇이 바뀌었는지 말한다. "CI가 초록이다"가 아니라 "테스트가 통과한다"라고 말한다. 사용자가 행동하는 데 필요하지 않으면 해시, 파일 경로, 명령, 빌드 번호, 테스트 개수는 뺀다. PR, 브랜치, 에이전트는 내가 지어낸 라벨이 아니라 사용자가 알 만한 이름으로 부른다. 어떤 사실이 맥락 없이 이해되지 않으면 맥락을 주거나 그 사실을 뺀다.
 
-## Gather what changed
+## 바뀐 것 모으기
 
-Keep this turn read-only. Make visuals only from what you already have: do not change code, start an app or a job, or post anything. Collect your own work since that message, reports from subagents, and messages from anyone else in this chat. Check the current state of each PR, CI run, or agent this chat touched. Check each number you will show against the facts it comes from, and say so when you correct one.
+이번 차례는 읽기 전용으로 한다. 그림은 이미 가진 것으로만 만든다. 코드를 바꾸거나, 앱이나 작업을 시작하거나, 무엇을 올리지 않는다. 그 메시지 이후 내가 한 일, 서브에이전트 보고, 이 대화의 다른 사람이 보낸 메시지를 모은다. 이 대화가 건드린 PR, CI 실행, 에이전트마다 현재 상태를 확인한다. 보여 줄 숫자는 모두 그 근거 사실과 대조하고, 고친 숫자가 있으면 고쳤다고 말한다.
 
-An action item is a decision or step only the user can take, such as a product choice, an approval, an irreversible action, or access you lack. Include any still waiting on the user, even one raised before their last message. Work you can still do yourself is not an action item. Never make up a call to fill the reply. A step the user did not ask for and the work does not need is not an action item, unless it is irreversible and waiting on the user: give it one action line, no visual, and skip what happens if the user does not answer.
+사용자가 할 일은 사용자만 할 수 있는 결정이나 단계다. 제품 선택, 승인, 되돌릴 수 없는 행동, 나에게 없는 접근 권한 같은 것이다. 마지막 메시지 전에 나왔더라도 아직 사용자를 기다리는 것은 넣는다. 내가 아직 할 수 있는 일은 사용자가 할 일이 아니다. 답변을 채우려고 결정거리를 지어내지 않는다. 사용자가 요청하지 않았고 작업에도 필요 없는 단계는 사용자가 할 일이 아니다. 단, 되돌릴 수 없고 사용자를 기다리는 것이면 할 일 한 줄로 쓰고, 그림은 붙이지 않고, 사용자가 답하지 않으면 어떻게 되는지는 생략한다.
 
-## Write the reply
+## 답변 쓰기
 
-Keep the whole reply well under 150 words, not counting visuals. When something is easier to grasp as a picture than as sentences, draw it: how a design or system works, a PR stack or dependency chain with each PR's state, a before and after of a fix, or options side by side. Never draw a status list or boxes with nothing connecting them. Never give a fact twice, in text or across visuals. Leave out work that changed nothing for the user. When words run short, cut from what happened before you cut from the action items.
+그림을 빼고 답변 전체를 150단어보다 한참 적게 쓴다. 문장보다 그림이 이해하기 쉬우면 그린다. 설계나 시스템이 어떻게 동작하는지, PR 스택이나 의존 사슬과 각 PR의 상태, 수정 전후, 나란히 놓은 선택지. 상태 목록이나 아무 연결 없는 상자는 절대 그리지 않는다. 같은 사실을 글로든 그림끼리든 두 번 주지 않는다. 사용자에게 아무것도 바꾸지 않은 작업은 뺀다. 분량이 모자라면 할 일보다 일어난 일에서 먼저 줄인다.
 
-Open with one sentence that says how many things need the user, or that nothing does. If nothing happened and nothing waits on the user, say so and stop.
+사용자가 처리할 것이 몇 개인지, 또는 하나도 없는지 한 문장으로 연다. 일어난 일도 없고 사용자를 기다리는 것도 없으면 그렇게 말하고 멈춘다.
 
-Then show what happened, pictures first. Embed inline the screenshots and videos the work produced, then any diagram that explains a change. Then sum up in one short bullet per thing the user asked for: what came of it, and whether it is done, still running, failed, or not checked. Write each line the way you would say it out loud: "Search was slow from a missing index", not "Search review: done" or "Slow search: missing index". Name any bug found and fixed on the way. Each line must stay true when read alone. Never mark something done that still waits on the user, and leave out anything the action items say. Under the summary, give at most three short lines that change what the user knows or must do. Then name in one line any work left that you can do yourself.
+그다음 일어난 일을 그림부터 보여 준다. 작업이 만든 스크린샷과 영상을 본문에 넣고, 그다음 변경을 설명하는 다이어그램을 넣는다. 그다음 사용자가 요청한 것마다 짧은 항목 하나로 정리한다. 무엇이 나왔고, 끝났는지, 아직 도는지, 실패했는지, 확인하지 않았는지. 각 줄은 소리 내어 말하듯 쓴다. "검색 검토: 완료"나 "느린 검색: 인덱스 누락"이 아니라 "인덱스가 없어서 검색이 느렸다"라고 쓴다. 도중에 찾아 고친 버그도 이름을 댄다. 각 줄은 따로 읽어도 참이어야 한다. 아직 사용자를 기다리는 것을 끝났다고 표시하지 않고, 할 일에서 말할 것은 여기서 빼낸다. 정리 아래에는 사용자가 아는 것이나 해야 할 것을 바꾸는 짧은 줄을 최대 세 개 둔다. 그다음 내가 직접 할 수 있는 남은 일을 한 줄로 적는다.
 
-Then list the action items as plain bullets, never as a diagram or box. Give each two lines, or one for an unasked irreversible step: the decision with your recommendation and why, then what happens if the user does not answer. Ask the call the user owns, such as merge, approve, or pick. A step you would take first goes in your recommendation. So does anything that must happen first, and anything that cannot be undone. Write "unknown" for a part you do not know. Link to the detail.
+그다음 할 일을 평범한 글머리 항목으로 나열한다. 다이어그램이나 상자로 만들지 않는다. 각각 두 줄로 쓴다(요청하지 않은 되돌릴 수 없는 단계는 한 줄). 내 추천과 그 이유를 담은 결정, 그리고 사용자가 답하지 않으면 어떻게 되는지. 머지, 승인, 고르기처럼 사용자가 가진 결정을 묻는다. 내가 먼저 할 단계는 추천에 넣는다. 먼저 일어나야 하는 것, 되돌릴 수 없는 것도 추천에 넣는다. 모르는 부분은 "모름"이라고 쓴다. 세부로 가는 링크를 단다.
 
-Show a choice after the list. If the screenshots above already show its options, write each option's gain and cost under its screenshot instead of drawing a new visual; otherwise, compare the options side by side, with the current state when there is one. Give every option the work weighed, each with what it gets the user and what it costs. Keep them out of the rest of the text.
+목록 뒤에 선택지를 보여 준다. 위 스크린샷이 이미 선택지를 보여 주면 새 그림을 그리지 말고 각 스크린샷 아래에 선택지마다 얻는 것과 드는 비용을 적는다. 아니면 현재 상태가 있으면 그것과 함께 선택지를 나란히 비교한다. 작업에서 저울질한 모든 선택지를, 각각 사용자에게 무엇을 주고 무엇이 드는지와 함께 보여 준다. 선택지는 글의 다른 부분에 넣지 않는다.
 
-## Visuals
+## 그림
 
-A visual is a picture: a screenshot, a video, a Mermaid diagram, a chart or diagram from `/visualize`, or a generated image. A Markdown table is not a visual, even with before and after columns.
+그림은 스크린샷, 영상, Mermaid 다이어그램, 차트·다이어그램 도구로 만든 차트나 도표, 생성 이미지다. Markdown 표는 전후 열이 있어도 그림이 아니다.
 
-Keep each visual small enough to read at a glance: at most six boxes, with at most eight words in each. Write labels as plain words a person would say, not tags like "Tests: pass". A fact that needs a sentence belongs in the text, or nowhere.
+그림은 한눈에 읽을 만큼 작게 한다. 상자는 최대 여섯 개, 상자마다 최대 여덟 단어. 라벨은 "Tests: pass" 같은 태그가 아니라 사람이 말할 법한 쉬운 말로 쓴다. 문장이 필요한 사실은 글에 두거나 아예 뺀다.
 
-Embed screenshots and videos inline when the change is visible, not only as links. If a visible change has none, mark its summary line "No screenshot yet," and say there what changed on screen. Draw diagrams and charts from facts you have: a Mermaid diagram for how things connect and a `/visualize` chart for numbers. Never invent a number, and never draw or generate a picture of a screen you did not capture. Link only artifacts that exist.
+변경이 눈에 보이면 스크린샷과 영상을 링크만이 아니라 본문에 넣는다. 눈에 보이는 변경인데 스크린샷이 없으면 그 정리 줄에 "아직 스크린샷 없음"이라고 표시하고 화면에서 무엇이 바뀌었는지 말한다. 다이어그램과 차트는 가진 사실로 그린다. 연결 관계는 Mermaid 다이어그램으로, 숫자는 차트 도구로 그린다. 숫자를 지어내지 않고, 캡처하지 않은 화면을 그리거나 생성하지 않는다. 실제로 있는 산출물만 링크한다.

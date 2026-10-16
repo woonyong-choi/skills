@@ -1,71 +1,71 @@
-# Epistemics
+# 인식론
 
-How to reason about confidence when evidence is historical, fragmentary, and sometimes contradictory, and how to tell the user without flattening it into false certainty. Code shows what it does, not *why it exists*. The why lives in commits, PRs, tickets, docs, and conversations, all incomplete, biased, and sometimes missing. Pretending otherwise produces confident-sounding guesses that mislead the user.
+증거가 지난 기록이고, 조각나 있고, 가끔 서로 어긋날 때 신뢰도를 어떻게 판단하는지, 그리고 그것을 거짓 확신으로 뭉개지 않고 사용자에게 어떻게 전하는지 다룬다. 코드는 무엇을 하는지는 보여 주지만 *왜 존재하는지*는 보여 주지 않는다. 이유는 커밋, PR, 티켓, 문서, 대화에 있다. 모두 불완전하고, 치우쳐 있고, 때로는 없다. 그렇지 않은 척하면 자신 있게 들리는 추측이 나오고 사용자를 오도한다.
 
-## Confidence Tiers
+## 신뢰도 단계
 
-Every claim in the output must sit in one tier. The tier sets its section and its phrasing.
+출력의 모든 주장은 한 단계에 속한다. 단계가 그 주장이 들어갈 절과 표현을 정한다.
 
-### 1. Direct
+### 1. 직접
 
-An explicit, textual citation answers the question: something an author actually *wrote* that says why, not "the code does X so the author must have wanted X." For example, a PR description "this fixes the bug where users with >1000 items couldn't paginate", a ticket "we're adding this because customer Acme requested it in their security review", a code comment "// clamp to 100 because the upstream API rejects larger values", a design doc "we chose option A over option B because we need persistence across restarts", or a chat message from the author "switching to this approach since the old one was flaky in tests".
+명시적인 글 인용이 질문에 답한다. "코드가 X를 하니 작성자가 X를 원했을 것"이 아니라 작성자가 왜인지 실제로 *쓴* 것이다. 예를 들어 PR 설명 "항목이 1000개를 넘는 사용자가 페이지를 넘기지 못하던 버그를 고침", 티켓 "고객 Acme가 보안 검토에서 요청해서 추가함", 코드 주석 "// 상위 API가 더 큰 값을 거부하므로 100으로 제한", 설계 문서 "재시작 후에도 유지되어야 해서 B 대신 A를 고름", 작성자의 채팅 메시지 "예전 방식이 테스트에서 플래키해서 이 방식으로 바꿈".
 
-Phrasing: confident, present tense, cited. "This exists because X."
+표현: 확신 있게, 현재형으로, 출처와 함께. "이것은 X 때문에 존재한다."
 
-### 2. Supported
+### 2. 뒷받침됨
 
-Multiple pieces of indirect evidence converge on one conclusion. No single source states it explicitly, but the pattern across sources makes it likely. For example, the PR title says "improve performance", the ticket is labeled "perf", and the surrounding commits all touch the same hot path. Or several tests added with the change all exercise very large inputs. Or the author's other PRs from the same week all name the same incident.
+여러 간접 증거가 한 결론으로 모인다. 어느 출처도 명시하지 않지만 출처들의 패턴이 그럴 가능성을 높인다. 예를 들어 PR 제목은 "성능 개선"이고, 티켓에는 "perf" 라벨이 있고, 주변 커밋은 모두 같은 핫 경로를 건드린다. 또는 변경과 함께 추가된 테스트 여러 개가 모두 아주 큰 입력을 다룬다. 또는 같은 주에 작성자가 올린 다른 PR들이 모두 같은 장애를 언급한다.
 
-Phrasing: confident but clearly derived, citing each item. "The evidence points strongly to X: [the specific pieces]."
+표현: 확신 있게, 그러나 도출한 결론임을 분명히 하고 각 항목을 인용한다. "증거는 X를 강하게 가리킨다: [구체적인 항목들]."
 
-### 3. Inferred
+### 3. 추론
 
-A reasonable reading of the context that nothing explicitly supports. It is *your interpretation*, not a fact from the record. For example, the PR doesn't say why, but the error was happening in production (per the incident channel timing) and the fix was rushed (merged the same day), so it was likely a hotfix. Or the function name suggests retry logic, and its retry count of 3 matches the team's 3-retry convention elsewhere in the codebase.
+명시적으로 뒷받침하는 것은 없지만 맥락에서 합리적으로 읽어 낸 것. 기록상의 사실이 아니라 *내 해석*이다. 예를 들어 PR은 이유를 말하지 않지만, 장애 채널 시각으로 보면 오류가 운영 환경에서 나고 있었고 수정은 서둘러(같은 날 머지) 이뤄졌으니 핫픽스였을 가능성이 높다. 또는 함수 이름이 재시도 로직을 암시하고, 재시도 횟수 3은 코드베이스 다른 곳의 팀 관례(3회 재시도)와 같다.
 
-Phrasing: hedged, with the chain explicit. "Given A and B, C seems likely because D."
+표현: 단정하지 않고 추론 사슬을 드러낸다. "A와 B를 보면, D 때문에 C일 가능성이 높아 보인다."
 
-### 4. Speculative
+### 4. 추측
 
-A plausible hypothesis on thin evidence, where other explanations fit equally well. Worth presenting, since the user may know which is right, but mark it as a guess. For example, "This might be a workaround for a browser bug that's since been fixed, but we found no contemporary evidence of that", or "It's possible this threshold was chosen to match an SLA commitment, but no SLA doc references it."
+증거는 얇고 다른 설명도 똑같이 들어맞는 그럴듯한 가설. 사용자가 무엇이 맞는지 알 수도 있으니 제시할 가치는 있지만 추측이라고 표시한다. 예를 들어 "이후에 고쳐진 브라우저 버그의 우회책일 수 있지만 당시 증거는 찾지 못했다", "이 임곗값은 SLA 약속에 맞춘 것일 수 있지만 그것을 언급하는 SLA 문서는 없다".
 
-Phrasing: "One possibility is X, but we have no direct evidence." Usually lives in Competing Hypotheses, alongside other possibilities.
+표현: "한 가지 가능성은 X지만 직접 증거는 없다." 보통 경쟁 가설 절에 다른 가능성과 함께 둔다.
 
-### 5. Unknown
+### 5. 모름
 
-You looked and couldn't find out. A valid, important outcome. Document it.
+찾아봤지만 알아내지 못했다. 타당하고 중요한 결과다. 기록한다.
 
-Phrasing: "We searched X, Y, and Z and found no evidence of why." Be specific about *what* you searched. "We couldn't find out" is less useful than "We searched the ticket tracker with keywords A and B, scanned the 6 PRs that touched this file since 2023, and grep'd the repo for string literals matching the threshold. None surfaced a rationale."
+표현: "X, Y, Z를 검색했지만 이유에 대한 증거를 찾지 못했다." *무엇을* 검색했는지 구체적으로 쓴다. "알아내지 못했다"보다 "티켓 트래커에서 키워드 A와 B로 검색했고, 2023년 이후 이 파일을 건드린 PR 6개를 훑었고, 임곗값과 일치하는 문자열 리터럴을 저장소에서 grep했다. 근거는 하나도 나오지 않았다"가 쓸모 있다.
 
-## Phrasing Guide
+## 표현 지침
 
-**Confidence words** imply Direct or Supported evidence and need a citation immediately adjacent. Never use them for inferences: "because", "the reason is", "was designed to" (claims author intent), "fixes" / "addresses" / "solves" (claims the change achieved its goal), "the team decided" (claims a group decision happened).
+**확신을 나타내는 말**은 직접이나 뒷받침됨 증거를 뜻하므로 바로 옆에 인용이 있어야 한다. 추론에는 절대 쓰지 않는다. "때문에", "이유는", "~하도록 설계됐다"(작성자 의도를 주장함), "고친다" / "해결한다" / "다룬다"(변경이 목적을 이뤘다고 주장함), "팀이 결정했다"(집단 결정이 있었다고 주장함).
 
-**Hedges** signal interpretation, not report. Use them liberally in What We Can Reasonably Infer: "appears to", "seems to", "likely", "suggests", "is consistent with", "one reading is", "plausibly", "may have been", "the evidence points toward".
+**단정하지 않는 말**은 보고가 아니라 해석임을 알린다. 합리적으로 추론할 수 있는 것 절에서 넉넉히 쓴다. "~로 보인다", "~인 것 같다", "가능성이 높다", "시사한다", "~와 들어맞는다", "한 가지 읽기는", "그럴 법하게", "~였을 수 있다", "증거는 ~ 쪽을 가리킨다".
 
-**Words to avoid:**
+**피할 말:**
 
-- "obviously". If it were obvious, the user wouldn't be asking
-- "clearly". Almost always precedes a claim that isn't clear
-- "of course". Same
-- "just" (as in "it's just X for performance"). Dismissive and usually hides uncertainty
-- "I think" / "I believe". You're synthesizing evidence, not giving a personal opinion. Use "the evidence suggests" instead.
+- "당연히". 당연했다면 사용자가 묻지 않았다
+- "분명히". 거의 언제나 분명하지 않은 주장 앞에 붙는다
+- "물론". 같은 이유
+- "그냥"("그냥 성능 때문에 X다" 같은 것). 깎아내리는 말이고 대개 불확실성을 숨긴다
+- "제 생각에는" / "저는 믿는다". 개인 의견이 아니라 증거를 종합하는 것이다. 대신 "증거는 ~를 시사한다"를 쓴다.
 
-## Avoid Rationalization
+## 합리화 피하기
 
-Code that "makes sense" today may have been written for reasons that no longer apply, or that were wrong at the time. Don't retrofit a clean rationale onto messy history. Don't assume the author did the "right" thing and work backward to justify it. Don't assume a consistent pattern was intentional when it might be copy-paste. Don't turn an absence of evidence into evidence of absence ("no one mentioned security concerns, so it must not have been a concern").
+지금 "말이 되는" 코드도 더는 맞지 않거나 당시에도 틀렸던 이유로 쓰였을 수 있다. 지저분한 이력에 깔끔한 근거를 덧씌우지 않는다. 작성자가 "옳은" 일을 했다고 가정하고 거꾸로 정당화하지 않는다. 일관된 패턴이 복사·붙여넣기일 수 있는데 의도였다고 가정하지 않는다. 증거가 없다는 것을 없다는 증거로 바꾸지 않는다("아무도 보안 문제를 언급하지 않았으니 문제가 아니었을 것").
 
-## The Sycophancy Trap
+## 맞장구 함정
 
-Users often embed a hypothesis: "Why do we do it this way, I assume it's for performance?" Don't simply confirm it. The guess is a prompt for investigation, not a conclusion to validate. Treat it as one candidate among others and check the evidence independently. If the evidence supports it, say so with citations. If not, say so, and present what the evidence *does* support.
+사용자는 질문에 가설을 넣어 오곤 한다. "왜 이렇게 하는 거야, 성능 때문이겠지?" 그냥 맞다고 하지 않는다. 그 짐작은 확인할 결론이 아니라 조사할 단서다. 여러 후보 중 하나로 보고 증거를 독립적으로 확인한다. 증거가 뒷받침하면 인용과 함께 그렇다고 한다. 아니면 아니라고 하고, 증거가 *실제로* 뒷받침하는 것을 제시한다.
 
-## When Evidence Contradicts
+## 증거가 어긋날 때
 
-Surface both sources in the output, with citations. Don't pick the one that fits a tidier narrative. For example, the ticket says "we need this for customer X's compliance requirement" and the PR says "cleaning up tech debt in this area". Both may be true (the ticket motivated the work, the PR gave the author's framing), or one may be wrong. Let the user make the call.
+두 출처를 모두 인용과 함께 출력에 드러낸다. 더 깔끔한 이야기에 맞는 쪽을 고르지 않는다. 예를 들어 티켓은 "고객 X의 규정 준수 요건 때문에 필요함"이라 하고 PR은 "이 영역의 기술 부채 정리"라고 한다. 둘 다 맞을 수도 있고(티켓이 일의 계기, PR은 작성자의 관점), 하나가 틀릴 수도 있다. 판단은 사용자에게 맡긴다.
 
-## When Evidence Is Missing
+## 증거가 없을 때
 
-An honest "we don't know" is one of the most valuable outputs. The user learns the answer isn't in the obvious places, that they'll need to ask a human (the original author, the product owner, the team lead), or that they can decide the question isn't worth pursuing further. Failing to mark a gap, and instead filling it with a confident guess, actively harms the user, because they'll act on the guess. Name each gap concretely: the question, the sources searched, what you searched for in each, and what you found (nothing, or only tangential material).
+정직한 "모른다"는 가장 가치 있는 결과 중 하나다. 사용자는 답이 뻔한 곳에 없다는 것, 사람(원래 작성자, 제품 담당자, 팀 리드)에게 물어야 한다는 것, 또는 더 파고들 가치가 없다고 정해도 된다는 것을 알게 된다. 빈 곳을 표시하지 않고 자신 있는 추측으로 메우면 사용자에게 적극적으로 해를 끼친다. 사용자는 그 추측대로 움직이기 때문이다. 빈 곳마다 구체적으로 이름 붙인다. 질문, 검색한 출처, 각 출처에서 무엇을 검색했는지, 무엇을 찾았는지(없음, 또는 관련이 약한 자료뿐).
 
-## Before Finalizing
+## 마무리 전에
 
-Before the synthesizer delivers the output, it checks every claim in "What We Found" and "What We Can Reasonably Infer". Each claim has a citation or moves to Inferred or Hypotheses. Its phrasing matches its tier. It doesn't treat code as evidence for its own intent (if it does, remove or reclassify it). The output has a "What We Don't Know" section. If no gaps are mentioned, that's suspicious. Either the evidence was unusually complete or something is being swept under the rug.
+종합자는 결과를 내기 전에 "찾은 것"과 "합리적으로 추론할 수 있는 것"의 모든 주장을 확인한다. 각 주장은 인용이 있거나 추론이나 가설로 옮긴다. 표현은 단계에 맞는다. 코드를 그 코드 자신의 의도에 대한 증거로 쓰지 않는다(그랬다면 빼거나 다시 분류한다). 출력에 "모르는 것" 절이 있다. 빈 곳이 하나도 언급되지 않으면 의심스럽다. 증거가 유난히 완전했거나 무언가를 덮고 있는 것이다.
