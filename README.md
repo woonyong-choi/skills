@@ -86,7 +86,7 @@ Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continu
 | [repo-docs-design](docs/repo-docs-design/SKILL.md) | 아키텍처, 기능 설계, 용어, 문서 안내 |
 | [repo-docs-spec](docs/repo-docs-spec/SKILL.md) | 구현된 인터페이스와 명령·설정·오류 명세 |
 | [repo-docs-decision](docs/repo-docs-decision/SKILL.md) | 공개 결정 기록 |
-| [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md) | 실험 설계, 수집, 분석, 결과 보고 |
+| [repo-docs-experiment](docs/repo-docs-experiment/SKILL.md) | 실험 계획, 수집, 분석, 결과 보고 |
 | [repo-docs-note](docs/repo-docs-note/SKILL.md) | 개발 중 확인한 사실과 참고 자료 |
 | [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | 그림, 차트, 대체 글, 데모 GIF |
 | [repo-docs-root](docs/repo-docs-root/SKILL.md) | AGENTS.md와 저장소 루트 문서 |

@@ -4,7 +4,7 @@
 
 - 구조도, 순서도, 상태도, 데이터 관계도, 차트 → ThinkFlow → `docs/assets/{이름}.thinkflow` → `docs/assets/{이름}.svg`
 - 문서 안에서 관리하는 그림 → `thinkflow md` → Markdown의 `thinkflow` 코드 블록 → 문서의 이미지 줄과 SVG(markdown 정본)
-- 터미널 데모 → VHS → `docs/assets/{이름}.tape` → `docs/assets/{이름}.gif`. 실험 녹화만 `docs/experiments/{실험}/results/terminal.tape` → 같은 폴더 `terminal.gif`·`.png`(repo-docs-experiment 폴더)
+- 터미널 데모 → VHS → `docs/assets/{이름}.tape` → `docs/assets/{이름}.gif`
 
 - `.thinkflow` 하나에 그림 하나. 실험 차트 입력: [실험 차트](charts.md)
 - 문법 정본: [figure-syntax](https://github.com/woonyong-choi/thinkflow/blob/main/docs/design/figure-syntax.md)와 [reference](https://github.com/woonyong-choi/thinkflow/blob/main/docs/reference). 문법·기본값 복제 금지
