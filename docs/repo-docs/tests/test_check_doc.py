@@ -75,7 +75,7 @@ class DocumentStyleTest(unittest.TestCase):
                 self.assertEqual(code, 1 if messages else 0)
         for name, source, expected in (
             ("README.md", "설계 단계입니다.\n", 0),
-            ("README.ko.md", "설계 단계입니다.\n", 0),
+            ("README.md", "설계 단계입니다.\n", 0),
             ("guide.md", "설계 단계입니다.\n", 1),
             ("README.md", "설계 단계다.\n", 1),
             ("/vault/worktree/p/docs/design/a.md", "# 가\n\n## 사용 예\n\n## 요약\n", 1),
@@ -93,16 +93,16 @@ class DocumentStyleTest(unittest.TestCase):
             ("guide.md", "1. 엔진이 입력을 저장해요.\n", ["문체"]),
             ("guide.md", "- 입력을 저장함.\n", ["문체"]),
             ("guide.md", "2. 엔진이 입력을 저장합니다.\n", ["문체(평서)"]),
-            ("README.ko.md", "1. 엔진이 입력을 저장한다.\n", ["문체(합쇼)"]),
+            ("README.md", "1. 엔진이 입력을 저장한다.\n", ["문체(합쇼)"]),
             ("guide.md", "1. 엔진이 입력을 저장한다.\n", []),
-            ("README.ko.md", "1. 다음 명령으로 설치하세요.\n", []),
+            ("README.md", "1. 다음 명령으로 설치하세요.\n", []),
             ("guide.md", "- 입력 기록 보존\n", []),
             ("guide.md", "- 기본값: 없음\n", []),
             # #64: 끝 괄호 보충 앞 종결
             ("guide.md", "엔진이 입력을 저장합니다(기본값).\n", ["문체(평서)"]),
             ("guide.md", "- 엔진이 입력을 저장합니다 (기본값).\n", ["문체(평서)"]),
             ("guide.md", "- 입력을 저장함(기본값).\n", ["문체"]),
-            ("README.ko.md", "엔진이 입력을 저장한다(기본값).\n", ["문체(합쇼)"]),
+            ("README.md", "엔진이 입력을 저장한다(기본값).\n", ["문체(합쇼)"]),
             ("guide.md", "엔진이 입력을 저장한다(기본값).\n", []),
         ]
         for name, source, expected in cases:
@@ -175,6 +175,31 @@ class DocsOrderTest(unittest.TestCase):
         self.assertEqual(self.errors("docs/architecture.md", "# 아키텍처\n\n## 지켜야 할 규칙\n\n## 구성 요소\n"), ["절 순서"])
         self.assertEqual(self.errors("docs/design/input.md", "# 입력\n\n## 작동 방식\n\n## 사용 예\n"), ["절 순서"])
         self.assertEqual(self.errors("docs/decisions/2026-10-16-x.md", "# x\n\n## 다시 볼 조건\n\n## 영향\n"), ["절 순서"])
+
+
+class EnglishReadmeTest(unittest.TestCase):
+    """#96 언어 기조: README.md 한국어 정본(합쇼), README.en.md 영어판과 절 대응."""
+
+    def run_in(self, files: dict[str, str], name: str) -> list[str]:
+        import tempfile
+        with tempfile.TemporaryDirectory() as folder:
+            previous = Path.cwd()
+            os.chdir(folder)
+            try:
+                for path, text in files.items():
+                    Path(path).write_text(text, encoding="utf-8")
+                return check_doc.structure_errors(name, name)
+            finally:
+                os.chdir(previous)
+
+    def test_english_readme_must_match_korean_sections(self) -> None:
+        korean = "# T\n\n## 빠른 시작\n\n## 작동 방식\n"
+        self.assertEqual(self.run_in({"README.md": korean, "README.en.md": "# T\n\n## Quick start\n\n## How it works\n"}, "README.en.md"), [])
+        self.assertEqual(self.run_in({"README.md": korean, "README.en.md": "# T\n\n## Quick start\n"}, "README.en.md"), ["README.md와 절 대응 불일치"])
+
+    def test_korean_readme_is_formal(self) -> None:
+        self.assertIn("README.md", check_doc.FORMAL_FILES)
+        self.assertNotIn("README.en.md", check_doc.FORMAL_FILES)
 
 
 if __name__ == "__main__":

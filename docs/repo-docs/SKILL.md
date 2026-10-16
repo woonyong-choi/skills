@@ -18,6 +18,13 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 5. 이름과 자리로 통일: 같은 내용이면 같은 절 이름, 같은 순서, 같은 용어, 같은 상태 표기. 절의 유무, 길이, 예시 수는 문서마다 자유
 6. 절 이름: 독자가 찾는 것을 일상어 명사구로. 영어 절 이름 직역 금지. 같은 뜻은 README·이슈·docs에서 같은 말
 
+## 언어
+
+- 저장소 문서: 작업 언어 하나. 한국어 저장소의 기본은 한국어. `docs/README.md` 첫 문단에 작업 언어 명시
+- 번역판: README 하나만. `README.md`(작업 언어 정본) + `README.en.md`(영어판, repo-docs-readme 영어판). docs 전체, `AGENTS.md`, `CHANGELOG.md`, CONTRIBUTING, SECURITY 번역판 금지
+- 영어 작업 언어 저장소: 각 틀의 `영어 작업 언어의 절 이름` 줄 사용
+- `LICENSE`: 공식 원문 그대로. `.local/**`: 한국어
+
 ## 문서 목록
 
 등록 Vault 프로젝트: [프로젝트 맥락과 문서 위치](references/project-context.md) 필수 적용. 신규 문서는 아래 경로의 `docs/`·`.local/` 아래 구조를 같은 영역 `docs/`에 두고 git 제외 확인 대신 쓰기 경로 검사. 등록 판정: git-issue `scripts/project_context.py --project .` 종료 0. 루트·`.github/` 파일, 실행 필수 소스·설정은 index 메타데이터 `approved_documents`·`source_document_roots`에 사용자 승인으로 기록된 경로만 저장소 위치 유지. `--register-project`는 승인 미추가, 승인 기록 명령 없음 → 승인 안 된 경로(`check_doc.py --project` 종료 2)는 보고 후 사용자에게 승인 요청. repo-docs-llms는 저장소 안에 `docs/`를 둔 저장소만 적용
@@ -26,8 +33,8 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 
 위치 → 독자 → 답할 질문 → 만드는 조건 → 스킬 `repo-docs-*`:
 
-- `README.md` → 처음 온 사람 → 무엇인가, 왜 필요한가, 어떻게 쓰이나, 지금 쓸 수 있나, 어디서 더 보나 → 항상. 언어는 저장소 정책 우선, 기본 영어 원본 → readme
-- `README.ko.md` → 한국어 독자 → `README.md`와 동일 → 저장소 번역 정책에 해당할 때. 기본 `README.md`의 한국어 번역 → readme
+- `README.md` → 처음 온 사람 → 무엇인가, 왜 필요한가, 어떻게 쓰이나, 지금 쓸 수 있나, 어디서 더 보나 → 항상. 작업 언어 정본(언어 절) → readme
+- `README.en.md` → 영어 독자 → `README.md`와 동일 → 한국어 저장소에서 영어판을 둘 때(언어 절) → readme
 - `AGENTS.md`, `CLAUDE.md`(링크) → 코딩 에이전트 → 무엇이 어디에 있나, 무엇을 지켜야 하나 → 해당 지침 파일을 읽는 도구 사용 시 → root
 - `CHANGELOG.md`, `.github/CONTRIBUTING.md`, `.github/SECURITY.md` → 사용자, 기여자 → 무엇이 바뀌었나, 어떻게 기여하나, 취약점은 어디로 알리나 → README 단계별(repo-docs-root 파일 표) → root
 - `LICENSE` → 모두 → 어떤 조건으로 쓸 수 있나 → 라이선스를 정했을 때(repo-docs-root 파일 표) → root
@@ -108,17 +115,17 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 - 결론 변경: 주장·새 근거 또는 해석 오류·영향 범위 명시. 질문만으로 전체 철회 금지, 반증된 주장 정정
 
 ```sh
-python3 <이 스킬 폴더>/scripts/check_doc.py README.md README.ko.md
+python3 <이 스킬 폴더>/scripts/check_doc.py README.md README.en.md
 ```
 
 - 등록 Vault 프로젝트: 파일 앞에 `--project <작업 경로>`(project-context)
 - 스크립트 실행 전 skill-sync `references/execution.md` 필수 확인
 - 실행 조건: Python 3.9 이상, 표준 라이브러리만. 위반이 있으면 종료 코드 1, 인자 오류·파일 읽기 실패는 2
-- 기계 검사 항목: 서식, 문장 끝, 쓰지 않는 말, 비공개 경로(기본 폴더 고정, 저장소 정책이 다르면 수동 확인), 절 이름 순서(종류별 스킬 목록에 있는 절끼리), 절 대응(`README.ko.md`가 인자에 있을 때 `README.md`와)
+- 기계 검사 항목: 서식, 문장 끝, 쓰지 않는 말, 비공개 경로(기본 폴더 고정, 저장소 정책이 다르면 수동 확인), 절 이름 순서(종류별 스킬 목록에 있는 절끼리), 절 대응(`README.en.md`가 인자에 있을 때 `README.md`와)
 - 문체 신호 검사: 문장을 잇는 em dash, 이모지, 안내 말(영문 대소문자·직선/곡선 아포스트로피 포함), 굵게
 - 문체 신호 검사 제외: 코드 블록·인라인 코드, 인용 블록(직접 작성하는 GitHub 알림 본문 제외), 링크 대상, HTML 태그·주석. 표의 빈 값 `—`, 범위의 en dash(`–`), 화살표 같은 일반 기호 제외
-- 영어 파일 판정: 언어 표와 저장소의 선언 우선. 검사기의 문자 비율 추정은 보조 신호, 선언과 다르면 수동 확인
-- 합쇼 파일: 한국어 루트 `README.md`·`README.ko.md`. 그 밖 한국어 파일은 평서로 검사
+- 영어 파일 판정: 언어 절과 저장소의 선언 우선. 검사기의 문자 비율 추정은 보조 신호, 선언과 다르면 수동 확인
+- 합쇼 파일: 한국어 루트 `README.md`. 그 밖 한국어 파일은 평서로 검사
 - 스크립트 밖이라 손으로 확인: 문장 길이, 목록 안 문장과 명사구 혼용, 명사형 어미 `-ㅁ`, `-기`, 번역본 문장의 뜻
 - 독자 검사에 포함: 셋씩 맞추려고 늘린 항목, 반복 마무리, 근거 없는 확신. 항목 수·특정 단어만으로 자동 위반 판정 금지
 - `llms.txt`: 생성물로 문체 검사 제외. 그림 원본은 사람이 작성하는 입력, 도구 검사와 라벨·대체 글의 기존 문체 검사 적용
