@@ -1,17 +1,17 @@
 ---
 name: principle-explain-the-number
-description: "Apply before you trust, report, or act on a number you measured: a speedup, a regression, a throughput, a latency, or an eval result. Find what limits it, and rule out that it measured something other than the work you think."
+description: "직접 잰 숫자(속도 향상, 회귀, 처리량, 지연 시간, 평가 결과)를 믿거나 보고하거나 그에 따라 행동하기 전에 적용한다. 그 숫자를 제한하는 것을 찾고, 생각하는 작업이 아닌 다른 것을 잰 게 아님을 배제한다."
 disable-model-invocation: true
 ---
 
-# Explain the Number
+# 숫자 설명하기(Explain the Number)
 
-- **Ask "why not double?"** Name the resource or code path that bounds the result, such as a core, a lock, the disk, the network, or the load generator itself. Get it from a profile or from system counters taken during a run, then map it to source. A guess from reading the code is not a limiter. If you cannot say why the number is not twice as good, you do not know what you measured.
-- **List what else the number could be measuring, and rule out each one with evidence.** The usual suspects are errors, skipped or cached work, code that never ran, an untuned side (one left on default settings), noise, and a piece too small to matter end to end.
-- **Keep the evidence with the number.** Put the run count, the spread, and the limiter in the notes or a linked artifact.
+- **"왜 두 배가 아닌가?"를 묻는다.** 결과를 묶어 두는 자원이나 코드 경로를 지목한다. 코어, 락, 디스크, 네트워크, 부하 생성기 자체가 그 예다. 실행 중에 뜬 프로파일이나 시스템 카운터에서 찾고 소스 코드에 대응시킨다. 코드를 읽고 짐작한 것은 제한 요인이 아니다. 숫자가 왜 두 배로 좋지 않은지 말할 수 없다면 무엇을 쟀는지 모르는 것이다.
+- **그 숫자가 달리 무엇을 재고 있을 수 있는지 나열하고, 하나씩 증거로 배제한다.** 흔한 용의자는 오류, 건너뛰었거나 캐시된 작업, 실행되지 않은 코드, 튜닝하지 않은 쪽(기본 설정으로 남은 쪽), 노이즈, 그리고 전체로 보면 영향이 없을 만큼 작은 부분이다.
+- **증거를 숫자와 함께 둔다.** 실행 횟수, 편차, 제한 요인을 노트나 연결된 산출물에 적는다.
 
-For a performance number, run the full procedure with the [benchmark-checklist](../benchmark-checklist/SKILL.md) skill. For an eval result, ask the same of the trials: did every run do the task, does the gap hold across trials and models, and does the scenario matter.
+성능 숫자는 [benchmark-checklist](../benchmark-checklist/SKILL.md) 스킬로 전체 절차를 밟는다. 평가 결과는 시행에 같은 질문을 한다. 모든 실행이 과제를 수행했는가, 차이가 시행과 모델을 가로질러 유지되는가, 시나리오가 결과에 영향을 주는가.
 
-You skipped this when the evidence behind a number has no run count, no spread, or no named limiter, or when the time saved is larger than the time the changed piece took.
+숫자 뒤의 증거에 실행 횟수, 편차, 지목된 제한 요인 중 하나라도 없거나, 줄었다는 시간이 바꾼 부분이 원래 쓰던 시간보다 크다면 이 원칙을 건너뛴 것이다.
 
-Distinct from [Prove It Works](../principle-prove-it-works/SKILL.md), which checks that an output is real.
+**구분:** [실제로 동작함을 증명](../principle-prove-it-works/SKILL.md)은 출력이 진짜인지 확인한다.

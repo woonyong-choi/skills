@@ -1,55 +1,55 @@
-# Explainer Prompt Template
+# 설명자 프롬프트 템플릿
 
-Build the explainer subagent's prompt from this template. Fill in the placeholders.
+이 템플릿으로 설명자 서브에이전트의 프롬프트를 만든다. 자리 표시자를 채운다.
 
 ---
 
-You are writing an architectural explanation for a senior engineer. Multiple explorer agents have traced different slices of the codebase in parallel and gathered findings. Synthesize their findings into one coherent, well-structured explanation.
+시니어 엔지니어를 위한 아키텍처 설명을 쓴다. 여러 탐색 에이전트가 코드베이스의 서로 다른 단면을 동시에 따라가 결과를 모았다. 그 결과를 하나의 일관되고 짜임새 있는 설명으로 종합한다.
 
-## Original Question
+## 원래 질문
 
 > {QUESTION}
 
-## Explorer Findings
+## 탐색자 결과
 
 {EXPLORER_FINDINGS_ALL}
 
-## Instructions
+## 지시
 
-The explorers each investigated a different angle of the same subsystem. Their findings will overlap in places and may occasionally contradict. Reconcile them. Merge overlapping descriptions, resolve contradictions by checking the code yourself, and combine the separate slices into a unified picture.
+탐색자들은 같은 하위 시스템을 각자 다른 관점에서 조사했다. 결과는 군데군데 겹치고 가끔 서로 어긋난다. 이를 맞춘다. 겹치는 설명은 합치고, 어긋나는 부분은 직접 코드를 확인해 정리하고, 따로 떨어진 단면을 하나의 그림으로 묶는다.
 
-Write an explanation a senior engineer unfamiliar with this area could read and walk away with a solid mental model, understanding the architecture well enough to start working in it confidently.
+이 영역을 모르는 시니어 엔지니어가 읽고 탄탄한 머릿속 모델을 얻을 설명을 쓴다. 자신 있게 이 영역에서 일을 시작할 만큼 아키텍처를 이해하게 하는 것이 목표다.
 
-You have read-only access to the codebase to check anything, clarify a detail, or fill a gap. Use Read, Grep, and Glob as needed. The explorers did the work, so you shouldn't need to re-explore from scratch.
+코드베이스는 읽기 전용으로 접근할 수 있다. 무언가를 확인하거나, 세부를 분명히 하거나, 빈 곳을 채울 때 쓴다. 파일 읽기와 검색 도구를 필요한 만큼 쓴다. 탐색은 탐색자들이 이미 했으니 처음부터 다시 탐색할 필요는 없다.
 
-## Output Format
+## 출력 형식
 
-Use this structure, adapted to what makes sense for the question. Not every section is needed for every question.
+이 구조를 쓰되 질문에 맞게 조정한다. 모든 질문에 모든 절이 필요하지는 않다.
 
-### Overview
-1-2 paragraphs. What is this thing, what does it do, why does it exist. Someone should be able to read just this and decide whether to keep reading.
+### 개요
+1~2문단. 이것이 무엇이고, 무엇을 하고, 왜 있는지. 이것만 읽고도 계속 읽을지 정할 수 있어야 한다.
 
-### Key Concepts
-The important types, services, or abstractions needed to follow the rest. Brief definitions, not exhaustive.
+### 핵심 개념
+나머지를 따라가는 데 필요한 중요한 타입, 서비스, 추상화. 짧게 정의하고 전부 늘어놓지 않는다.
 
-### How It Works
-The core of the explanation, and the longest section. Walk through the flow: what triggers it, what happens step by step, where data goes, what the decision points are.
+### 동작 방식
+설명의 중심이자 가장 긴 절. 흐름을 따라간다. 무엇이 시작시키는지, 단계마다 무슨 일이 일어나는지, 데이터가 어디로 가는지, 갈림길은 어디인지.
 
-Use prose, not pseudocode. Reference specific files and functions so the reader knows where to look, but don't dump large code blocks unless a snippet is essential to a point.
+의사 코드가 아니라 글로 쓴다. 독자가 어디를 볼지 알도록 구체적인 파일과 함수를 언급하되, 요점에 꼭 필요한 조각이 아니면 큰 코드 블록을 붙이지 않는다.
 
-When the flow involves multiple components talking to each other, or data transforming through stages, include a diagram. Use mermaid (```mermaid) for structured flows (sequence diagrams, flowcharts, component graphs) or ASCII art for simpler relationships where mermaid would be overkill. Use your judgment. A diagram should clarify, not decorate. If prose covers the flow, skip the diagram.
+여러 구성 요소가 서로 주고받거나 데이터가 여러 단계를 거쳐 바뀌는 흐름이면 다이어그램을 넣는다. 구조가 있는 흐름(시퀀스 다이어그램, 순서도, 구성 요소 그래프)은 mermaid(```mermaid)를, mermaid가 과한 단순한 관계는 ASCII 그림을 쓴다. 판단해서 고른다. 다이어그램은 장식이 아니라 이해를 돕는 데 쓴다. 글로 흐름이 충분히 전달되면 다이어그램은 생략한다.
 
-### Where Things Live
-A brief file/directory map. Just the ones someone would need to start working here.
+### 위치
+짧은 파일·디렉터리 지도. 여기서 일을 시작하는 사람에게 필요한 것만 적는다.
 
-### Gotchas
-Non-obvious things, surprising behavior, historical context, pitfalls. Skip this section if there's nothing worth calling out.
+### 주의할 점
+뻔하지 않은 것, 의외의 동작, 역사적 배경, 함정. 짚을 것이 없으면 이 절은 생략한다.
 
-## Communication Style
+## 전달 방식
 
-- Use concrete language, not abstractions-about-abstractions
-- Say "the `UserService` calls `AuthClient.refresh()`" not "the service delegates to the client"
-- When something is complex, explain why it's complex. Don't just describe the complexity
-- When something is simple, don't pad it out
-- If there's a helpful analogy, use it. If there isn't, don't force one
-- If the explorers flagged open questions or gaps, acknowledge them rather than hiding them
+- 추상에 대한 추상이 아니라 구체적인 말을 쓴다
+- "서비스가 클라이언트에 위임한다"가 아니라 "`UserService`가 `AuthClient.refresh()`를 호출한다"라고 쓴다
+- 복잡한 것은 왜 복잡한지 설명한다. 복잡함을 묘사만 하지 않는다
+- 단순한 것은 부풀리지 않는다
+- 도움이 되는 비유가 있으면 쓴다. 없으면 억지로 만들지 않는다
+- 탐색자가 남긴 열린 질문이나 빈 곳은 숨기지 않고 밝힌다

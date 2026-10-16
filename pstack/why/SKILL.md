@@ -1,98 +1,98 @@
 ---
 name: why
-description: "Use for 'why does X work this way', 'why we picked Y', design rationale, regressions, postmortems, or data-backed thresholds. Discovers available MCPs and queries each evidence category (source control, issue tracker, long-form docs, real-time chat, infrastructure observability, error tracking, product analytics warehouse) in parallel, then returns a cited read on decisions and tradeoffs. Use how for runtime behavior."
+description: "'X는 왜 이렇게 동작하나', '왜 Y를 골랐나', 설계 근거, 회귀, 포스트모템, 데이터에 근거한 임곗값 질문에 쓴다. 쓸 수 있는 MCP를 찾아 증거 범주(소스 관리, 이슈 트래커, 장문 문서, 실시간 채팅, 인프라 관측, 오류 추적, 제품 분석 웨어하우스)마다 병렬로 조사하고, 결정과 트레이드오프를 출처와 함께 정리해 돌려준다. 실행 중 동작은 how를 쓴다."
 disable-model-invocation: true
 ---
 
 # Why
 
-Investigate the motivation and intent behind code. The companion `how` skill answers what the code does and how it works. `why` answers what forces led to its shape.
+코드 뒤의 동기와 의도를 조사한다. 짝이 되는 `how` 스킬은 코드가 무엇을 하고 어떻게 동작하는지 답한다. `why`는 어떤 힘이 코드를 지금 모양으로 만들었는지 답한다.
 
-Each spawn below names a role line in the `pstack-models.mdc` rule and a default. Set `model` to that line's value, or to the default if the rule or the line is missing. Leave `model` unset when the value is `auto` or `inherit-parent`. If the Task tool rejects a slug, use the default and say so. If it rejects the default, use the closest valid slug of the same family from its error message. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.
+아래 서브에이전트마다 역할 이름을 적었다. 모델은 [역할별 모델](../pstack-mode/references/models.md)에서 그 역할로 고르고, 지정한 모델이 거부될 때의 처리도 그 문서를 따른다. 서브에이전트마다 추론 수준은 **pstack-mode** 스킬의 서브에이전트 절에 따라 일에 맞게 고른다.
 
-Every spawn is `generalPurpose` with `readonly: false` (agent mode). **Do not use readonly/Ask mode.** It strips MCP access, which disables the MCP-backed investigators and the synthesizer's citation spot-checks. Investigators still shouldn't write anything.
+모든 서브에이전트는 MCP 도구를 쓸 수 있는 일반 서브에이전트로 띄운다([호스트 대응표](../pstack-mode/references/hosts.md)). **읽기 전용 모드로 띄우지 않는다.** 읽기 전용 모드는 호스트에 따라 MCP 접근을 막는다. 그러면 MCP 기반 조사자와 종합자의 인용 확인이 동작하지 않는다. 그래도 조사자는 아무것도 쓰지 않는다. 이 제약은 프롬프트에 적는다.
 
-## Operating Posture
+## 조사 자세
 
-Operate as a **careful, cautious, and precise investigator**. Be honest about what you know vs what you're inferring. Read `references/epistemics.md` for the full confidence framework and phrasing guide. The synthesizer must follow it.
+**신중하고 조심스럽고 정확한 조사자**로 일한다. 아는 것과 추론한 것을 정직하게 구분한다. 신뢰도 체계와 표현 지침 전체는 `references/epistemics.md`에 있다. 종합자는 이를 반드시 따른다.
 
-## Step 1. Understand the Target and the Question
+## 1단계. 대상과 질문 파악
 
-The **target** is usually a chunk of code, a pattern, a feature, or a named design decision. The **question** is usually a design rationale, a tradeoff, a motivating edge case, an external constraint, dead code, or a broad history sweep.
+**대상**은 보통 코드 덩어리, 패턴, 기능, 이름이 붙은 설계 결정이다. **질문**은 보통 설계 근거, 트레이드오프, 계기가 된 엣지 케이스, 외부 제약, 죽은 코드, 넓은 이력 훑기다.
 
-If the target is vague ("why do we do it this way?" with no clear referent), make your best guess from conversation context (open files, recent edits, cursor location, what was just discussed). State your interpretation briefly so the user can redirect if you're off, then proceed.
+대상이 모호하면("왜 이렇게 하는 거야?"인데 가리키는 것이 분명하지 않으면) 대화 맥락(열린 파일, 최근 수정, 편집기 커서 위치, 방금 논의한 것)으로 가장 그럴듯하게 짐작한다. 빗나갔을 때 사용자가 바로잡을 수 있게 해석을 짧게 밝히고 진행한다.
 
-## Step 2. Establish the Code Anchor
+## 2단계. 코드 기준점 세우기
 
-Before spawning investigators, build the seed context inline: file paths and line ranges, key symbols (functions, classes, constants), the last few commits touching the target, PR numbers from merge commits (pattern `(#1234)` in the subject line), and any linked ticket IDs. Run `git blame -L <start>,<end> <file>` for last-touch commits, `git log --follow -p -- <file>` for full history with patches through renames, `git log --oneline -20 -- <file>` for recent commits with PR numbers visible, and `git log -1 --format=%B <commit>` to extract PR numbers. Then pull the PR bodies and discussion for any substantive commit: `gh pr view <number> --json title,body,author,createdAt,mergedAt,labels,closingIssuesReferences,comments,reviews`. This anchor goes to every investigator and to the synthesizer.
+조사자를 띄우기 전에 출발 맥락을 직접 만든다. 파일 경로와 줄 범위, 핵심 심볼(함수, 클래스, 상수), 대상을 건드린 최근 커밋 몇 개, 머지 커밋에서 뽑은 PR 번호(제목 줄의 `(#1234)` 패턴), 연결된 티켓 ID를 모은다. 마지막으로 건드린 커밋은 `git blame -L <start>,<end> <file>`, 이름 변경을 넘어선 패치 포함 전체 이력은 `git log --follow -p -- <file>`, PR 번호가 보이는 최근 커밋은 `git log --oneline -20 -- <file>`, PR 번호 추출은 `git log -1 --format=%B <commit>`로 한다. 그다음 의미 있는 커밋마다 PR 본문과 논의를 가져온다. `gh pr view <number> --json title,body,author,createdAt,mergedAt,labels,closingIssuesReferences,comments,reviews`. 이 기준점은 모든 조사자와 종합자에게 넘긴다.
 
-## Step 3. Spawn Parallel Investigators
+## 3단계. 조사자 병렬 실행
 
-**Default to the full parallel investigation.** The goal is a complete coverage map, not a minimal one. Document the null, don't skip the search.
+**기본은 전체 병렬 조사다.** 목표는 최소한의 지도가 아니라 빠짐없는 범위 지도다. 검색을 건너뛰지 말고, 찾은 것이 없으면 없다고 기록한다.
 
-### Discovery
+### 찾기
 
-Before spawning investigators, list the available MCPs from the Cursor environment. Use the available-tools map when present. Otherwise inspect the `mcps/` directory Cursor exposes for enabled MCP servers.
+조사자를 띄우기 전에 현재 세션에서 쓸 수 있는 MCP 서버를 확인한다. 도구 목록에 보이는 MCP 도구를 기준으로 하고, 목록이 없으면 호스트의 MCP 설정에 등록된 서버를 확인한다.
 
-Map each available MCP to one evidence category:
+쓸 수 있는 MCP마다 증거 범주 하나에 대응시킨다.
 
-1. Source control history
-2. Issue / ticket tracker
-3. Long-form documents
-4. Real-time team chat
-5. Infrastructure observability
-6. Error / exception tracking
-7. Product analytics warehouse
+1. 소스 관리 이력
+2. 이슈·티켓 트래커
+3. 장문 문서
+4. 실시간 팀 채팅
+5. 인프라 관측
+6. 오류·예외 추적
+7. 제품 분석 웨어하우스
 
-Source control is always available through git and `gh`. For the other six, classify using the MCP name, server instructions, tool names, and resource descriptors. If an MCP could fit more than one category, choose the one matching its primary evidence. Record ambiguous cases in the coverage map.
+소스 관리는 git과 `gh`로 늘 쓸 수 있다. 나머지 여섯은 MCP 이름, 서버 안내문, 도구 이름, 리소스 설명으로 분류한다. 한 MCP가 여러 범주에 맞으면 주된 증거에 맞는 범주를 고른다. 애매했던 경우는 범위 지도에 기록한다.
 
-Spawn one investigator per category that has a matching MCP, all in a single message so they run concurrently, each owning exactly one tool or MCP. Don't ask one agent to cover multiple MCPs. `model`: the `why investigators` line, default `grok-4.7-xhigh-fast`.
+대응하는 MCP가 있는 범주마다 조사자 하나를 띄운다. 모두 동시에 띄워 함께 돌게 하고, 각 조사자는 도구나 MCP를 정확히 하나만 맡는다. 한 에이전트에게 여러 MCP를 맡기지 않는다. 모델은 `code` 역할이다.
 
-Each investigator's prompt is `references/investigator-prompt.md` filled in, plus:
-- the category playbook `references/sources/<source>.md` for the selected MCP, adapted from the examples in `references/source-playbook.md`
-- `references/sources/incident-postmortem.md` **if the target code looks defensive** (null checks, retry logic, timeout handling, rate limiting, feature flags, egress guards, OOM handlers)
-- the code anchor and the user's original question
+각 조사자의 프롬프트는 `references/investigator-prompt.md`를 채운 것에 다음을 더한다.
+- 고른 MCP에 맞는 범주 플레이북 `references/sources/<source>.md`. `references/source-playbook.md`의 예시를 바탕으로 맞춰 쓴다
+- **대상 코드가 방어적으로 보이면**(null 검사, 재시도 로직, 타임아웃 처리, 속도 제한, 기능 플래그, 외부 송신 방어 코드, OOM 처리) `references/sources/incident-postmortem.md`
+- 코드 기준점과 사용자의 원래 질문
 
-### Investigator roster, one per available evidence category
+### 조사자 목록, 쓸 수 있는 증거 범주마다 하나
 
-Each category below is uniquely positioned to surface one shape of "why", shown after "Best at". Use it to know what to expect back, to name a gap when a category returns empty, and, only in the rare provably-irrelevant case, to justify a skip.
+아래 범주는 각자 한 가지 모양의 "왜"를 드러내는 데 유리하다. "강점" 뒤에 적었다. 무엇이 돌아올지 예상하고, 범주가 빈손으로 돌아왔을 때 빈 곳을 이름 붙이고, 아주 드물게 관련 없음이 입증된 경우에만 건너뛰는 근거로 쓴다.
 
-1. **Source control** (git history, `gh` for PRs, code comments, tests). Always spawn, the only guaranteed source. Best at *implementation-time rationale captured during review*.
-2. **Issue / ticket tracker** (e.g. Linear, Jira, GitHub Issues, Plane, Shortcut MCP). Best at *the product or business forcing function*. Strongest when the why is external to engineering.
-3. **Long-form documents** (e.g. Notion, Confluence, Google Docs, Coda MCP). Best at *long-form design rationale*, written out before it becomes code.
-4. **Real-time team chat** (e.g. Slack, Discord, Microsoft Teams, Mattermost MCP). Best at *real-time deliberation that never reached a doc*. Especially important when the source control, ticket, and doc paper trail is thin.
-5. **Infrastructure observability** (e.g. Datadog, New Relic, Honeycomb, Grafana, Splunk MCP). Best at *infrastructure and runtime reality that motivated the code*. Strongest when the target reacts to an infra signal (timeouts, retries, rate limits, circuit breakers).
-6. **Error / exception tracking** (e.g. Sentry, Rollbar, Bugsnag, Airbrake MCP). Best at *the specific exceptions and error trajectories that motivated defensive or corrective code*. Strongest for catch blocks, null guards, type checks, retries, and other defenses.
-7. **Product analytics warehouse** (e.g. Databricks, Snowflake, BigQuery, ClickHouse, dbt, Redshift MCP). Best at *product and data reality that shaped the code*. Strongest for flag-gated code, experiment-driven ships, data migrations, and "where did this number come from" questions.
+1. **소스 관리**(git 이력, PR용 `gh`, 코드 주석, 테스트). 늘 띄운다. 유일하게 보장된 출처다. 강점: *리뷰 중에 남은 구현 당시의 근거*.
+2. **이슈·티켓 트래커**(예: Linear, Jira, GitHub Issues, Plane, Shortcut MCP). 강점: *제품이나 사업 쪽의 강제 요인*. 이유가 엔지니어링 밖에 있을 때 가장 강하다.
+3. **장문 문서**(예: Notion, Confluence, Google Docs, Coda MCP). 강점: *코드가 되기 전에 글로 쓴 장문의 설계 근거*.
+4. **실시간 팀 채팅**(예: Slack, Discord, Microsoft Teams, Mattermost MCP). 강점: *문서까지 가지 못한 실시간 논의*. 소스 관리, 티켓, 문서 기록이 빈약할 때 특히 중요하다.
+5. **인프라 관측**(예: Datadog, New Relic, Honeycomb, Grafana, Splunk MCP). 강점: *코드를 만든 인프라와 실행 환경의 실제 상황*. 대상이 인프라 신호(타임아웃, 재시도, 속도 제한, 서킷 브레이커)에 반응할 때 가장 강하다.
+6. **오류·예외 추적**(예: Sentry, Rollbar, Bugsnag, Airbrake MCP). 강점: *방어 코드나 수정 코드를 만든 구체적인 예외와 오류 흐름*. catch 블록, null 방어 코드, 타입 검사, 재시도 같은 방어에 가장 강하다.
+7. **제품 분석 웨어하우스**(예: Databricks, Snowflake, BigQuery, ClickHouse, dbt, Redshift MCP). 강점: *코드를 만든 제품과 데이터의 실제 상황*. 플래그로 막은 코드, 실험으로 결정한 배포, 데이터 마이그레이션, "이 숫자는 어디서 왔나" 질문에 가장 강하다.
 
-### When to skip an investigator
+### 조사자를 건너뛸 때
 
-Only with an **explicit, written justification** that goes in the final Sources Consulted. Two valid reasons:
+최종 "조사한 출처"에 들어갈 **명시적이고 글로 쓴 근거**가 있을 때만 건너뛴다. 타당한 이유는 둘이다.
 
-- **No MCP is available for that category** in this environment. Flag it as a gap, not a choice: "Real-time team chat skipped. No matching MCP available, so the conversational record was not searchable."
-- **The source is provably irrelevant**, not just "probably irrelevant." A high bar: "Error / exception tracking skipped. Target is a build-time script with no runtime code path."
+- 이 환경에 **그 범주에 맞는 MCP가 없다.** 선택이 아니라 빈 곳으로 표시한다. "실시간 팀 채팅 건너뜀. 맞는 MCP가 없어 대화 기록을 검색할 수 없었음."
+- **출처가 관련 없음이 입증됐다.** "아마 관련 없음"이 아니다. 기준은 높다. "오류·예외 추적 건너뜀. 대상은 실행 경로가 없는 빌드 시점 스크립트."
 
-If your scope assessment suggests a single-commit trivial target where the PR description already contains the complete answer, you may answer inline **only after** confirming all seven available category searches would be redundant. Say so explicitly. This should be rare.
+범위를 판단해 보니 커밋 하나짜리 사소한 대상이고 PR 설명에 답이 다 있으면, 쓸 수 있는 일곱 범주 검색이 모두 불필요하다고 **확인한 뒤에만** 바로 답해도 된다. 그렇다고 명시한다. 드문 경우여야 한다.
 
-## Step 4. Synthesize
+## 4단계. 종합
 
-Spawn one synthesizer. `model`: the `why synthesizer` line, default `claude-opus-5-5-xhigh`. It gets:
-1. The investigator findings, including any null results and any categories skipped with justification
-2. The code anchor
-3. The user's original question
-4. The epistemics framework from `references/epistemics.md`
-5. The synthesizer prompt template from `references/synthesizer-prompt.md`
+종합자 하나를 띄운다. 모델은 `judgment` 역할이다. 종합자는 다음을 받는다.
+1. 조사자 결과. 빈 결과와 근거를 적고 건너뛴 범주 포함
+2. 코드 기준점
+3. 사용자의 원래 질문
+4. `references/epistemics.md`의 신뢰도 체계
+5. `references/synthesizer-prompt.md`의 종합자 프롬프트 템플릿
 
-## Step 5. Present
+## 5단계. 전달
 
-Present the synthesizer's output to the user. You may lightly edit for clarity or add context from the conversation, but **do not rewrite the confidence language**.
+종합자의 결과를 사용자에게 전달한다. 명확하게 다듬거나 대화 맥락을 덧붙이는 가벼운 수정은 해도 되지만 **신뢰도 표현은 다시 쓰지 않는다**.
 
-## Output Format
+## 출력 형식
 
-The structure is the one in `references/synthesizer-prompt.md`: The Question, The Code in Question, What We Found, What We Can Reasonably Infer, Competing Hypotheses, What We Don't Know, Sources Consulted, Confidence Summary. Adapt as needed, but keep the confidence separation intact, and keep Sources Consulted as one line per investigator, including the ones that returned nothing or were skipped, with the reason.
+구조는 `references/synthesizer-prompt.md`에 있다. 질문, 대상 코드, 찾은 것, 합리적으로 추론할 수 있는 것, 경쟁 가설, 모르는 것, 조사한 출처, 신뢰도 요약. 필요하면 조정하되 신뢰도 구분은 지키고, 조사한 출처는 조사자마다 한 줄로 둔다. 빈손으로 돌아오거나 건너뛴 조사자도 이유와 함께 넣는다.
 
-After Sources Consulted, if the user's `why` question is a precursor to changing this code, convert the lineage findings into a Preserve / Change / Avoid / Risk constraint set for planning the change.
+조사한 출처 다음에, 사용자의 `why` 질문이 이 코드를 바꾸기 위한 사전 조사라면 이력 결과를 변경 계획용 제약 묶음(유지 / 변경 / 피함 / 위험)으로 바꿔 적는다.
 
-## Common Failure Modes to Avoid
+## 피해야 할 흔한 실패
 
-- **Recency bias**. Assuming the most recent commit is authoritative. The current shape is often the accretion of many earlier decisions. Trace back.
+- **최신 편향**. 가장 최근 커밋이 정답이라고 가정하는 것. 지금 모양은 대개 훨씬 이전 결정들이 쌓인 결과다. 거슬러 올라간다.

@@ -1,21 +1,21 @@
-# Code Archaeology (git + in-repo)
+# 코드 고고학(git과 저장소 안)
 
-## What this source contains
+## 이 출처에 있는 것
 
-- Commit history (messages, dates, authors, diffs)
-- PR descriptions, review comments, and discussion threads (via `gh`)
-- Inline code comments, TODOs, FIXMEs, deprecation notes
-- ADRs (architectural decision records) if the repo keeps them
-- Tests, whose names and assertions often encode the edge cases that motivated a change
-- Related files modified in the same commits (co-change signal)
-- CHANGELOG entries and release notes in the repo
-- Issue/ticket IDs in commit messages and PR bodies
+- 커밋 이력(메시지, 날짜, 작성자, diff)
+- PR 설명, 리뷰 댓글, 논의 스레드(`gh`로)
+- 인라인 코드 주석, TODO, FIXME, 폐기 안내
+- 저장소가 관리한다면 ADR(아키텍처 결정 기록)
+- 테스트. 이름과 단언에 변경의 계기가 된 엣지 케이스가 담긴 경우가 많다
+- 같은 커밋에서 함께 바뀐 관련 파일(동시 변경 신호)
+- 저장소 안의 CHANGELOG 항목과 릴리스 노트
+- 커밋 메시지와 PR 본문의 이슈·티켓 ID
 
-The most trustworthy source, tied directly to the code, and the most complete. Everything that went through the repo should be here.
+코드와 직접 묶여 있어 가장 믿을 만하고, 가장 완전한 출처다. 저장소를 거친 모든 것은 여기에 있어야 한다.
 
-## How to search it
+## 검색하는 법
 
-Expand the seed commit list:
+출발 커밋 목록을 넓힌다.
 
 ```bash
 # History through renames
@@ -37,7 +37,7 @@ git show <hash>
 git log <old>..<new> -p -- <file>
 ```
 
-Look for out-of-band docs:
+코드 밖 문서를 찾는다.
 
 ```bash
 # ADRs often live in docs/adr/ or similar

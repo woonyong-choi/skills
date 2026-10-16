@@ -1,21 +1,21 @@
 ---
 name: principle-attack-the-premise
-description: "Apply when two or more fixes that share one premise have failed the same gate. Write the premise down and test it directly before you write another fix that assumes it."
+description: "같은 전제를 공유한 수정이 두 번 이상 같은 관문에서 실패했을 때 적용한다. 그 전제를 가정한 수정을 또 쓰기 전에 전제를 글로 적고 직접 검증한다."
 disable-model-invocation: true
 ---
 
-# Attack the Premise
+# 전제부터 의심하기(Attack the Premise)
 
-When two or more fixes that share one premise have failed the same gate, suspect the premise, not the fixes.
+같은 전제를 공유한 수정이 두 번 이상 같은 관문에서 실패했다면 수정이 아니라 전제를 의심한다.
 
-**Why:** Each failed fix is evidence against the belief it assumed. A third fix on the same premise spends effort where the evidence already says the cause is not.
+**이유:** 실패한 수정 하나하나는 그 수정이 가정한 믿음에 대한 반대 증거다. 같은 전제 위에 세 번째 수정을 하면 증거가 이미 원인이 아니라고 말하는 곳에 힘을 쓰게 된다.
 
-**Pattern:**
-- **Write the premise down.** The premise is the one sentence that every failed fix assumed.
-- **Test the premise before the next fix.** Find an observation that would come out differently if the premise were false, and make it. Look at how the failures are distributed, not only at how large they are. Make the check rerunnable per [Build the Lever](../principle-build-the-lever/SKILL.md).
-- **Follow the evidence.** If it contradicts the premise, the cause is elsewhere. Look for what the failures have in common that the premise did not predict. If it confirms the premise, ask the next "why" per [Fix Root Causes](../principle-fix-root-causes/SKILL.md). The earlier fixes may have treated a consequence instead of the cause.
-- **Remove the condition instead of compensating for it**, per the [Laziness Protocol](../principle-laziness-protocol/SKILL.md). If the evidence shows that one part always lands on the losing side, change what puts it there. A mechanism that cleans up after it leaves the cause in place and adds work on every run.
+**방법:**
+- **전제를 글로 적는다.** 전제는 실패한 수정이 모두 가정한 한 문장이다.
+- **다음 수정 전에 전제를 검증한다.** 전제가 거짓이라면 결과가 달라질 관측을 찾아서 실제로 해 본다. 실패의 크기만 보지 말고 실패가 어떻게 분포하는지 본다. [도구부터 만들기](../principle-build-the-lever/SKILL.md)에 따라 이 확인을 다시 돌릴 수 있게 만든다.
+- **증거를 따라간다.** 증거가 전제와 어긋나면 원인은 다른 곳에 있다. 전제가 예측하지 못한, 실패들의 공통점을 찾는다. 증거가 전제를 뒷받침하면 [근본 원인 고치기](../principle-fix-root-causes/SKILL.md)에 따라 다음 "왜"를 묻는다. 앞의 수정들은 원인이 아니라 결과를 다뤘을 수 있다.
+- **조건을 보정하지 말고 없앤다.** [게으름 규약](../principle-laziness-protocol/SKILL.md)을 따른다. 증거가 어떤 부분이 늘 지는 쪽에 놓인다고 보여 주면 그 부분을 거기에 놓는 것을 바꾼다. 뒤처리하는 장치는 원인을 그대로 두고 실행마다 일을 늘린다.
 
-**Stop:** Do not start the next fix before the premise is written down and tested.
+**판단:** 전제를 글로 적고 검증하기 전에는 다음 수정을 시작하지 않는다.
 
-This principle is distinct from [Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md), which rebuilds a design around a new requirement. It questions a fact the current design assumes.
+**구분:** [처음부터 다시 설계](../principle-redesign-from-first-principles/SKILL.md)는 새 요구사항을 중심으로 설계를 다시 짠다. 이 원칙은 현재 설계가 가정한 사실을 의심한다.

@@ -1,17 +1,17 @@
-# Slack Conversations
+# Slack 대화
 
-## How to search it
+## 검색하는 법
 
-Slack MCP tools vary. Check which Slack MCP is available and inspect its tool schema first. It may require `mcp_auth`. If authentication fails, stop and report the gap.
+Slack MCP 도구는 제각각이다. 어떤 Slack MCP가 있는지 확인하고 도구 스키마부터 살핀다. `mcp_auth`가 필요할 수 있다. 인증이 실패하면 멈추고 빈 곳으로 보고한다.
 
-1. **Author-bounded search.** Messages from the PR author around the PR merge date. Limits scope dramatically and often hits gold.
-3. **PR URL search.** Slack often links PRs when they're reviewed or discussed. Search for the PR URL (or just `/pull/<number>`).
-4. **Error string search.** If the code handles a specific error, search for the error string. Incident threads often surface.
+1. **작성자로 좁힌 검색.** PR 머지일 즈음 PR 작성자가 쓴 메시지. 범위가 크게 줄고 금맥에 닿는 경우가 많다.
+3. **PR URL 검색.** Slack에는 리뷰나 논의 때 PR 링크가 자주 올라온다. PR URL(또는 `/pull/<number>`만)로 검색한다.
+4. **오류 문자열 검색.** 코드가 특정 오류를 처리하면 그 오류 문자열로 검색한다. 장애 스레드가 나오는 경우가 많다.
 
-## Common pitfalls
+## 흔한 함정
 
-- **Channel archaeology limits.** Very old messages may be gone due to retention policies. If you can't find anything before a certain date, note the retention cliff.
-- **Unsearched DMs.** Many decisions happen in DMs that aren't searchable. You'll miss them. That's a known limitation.
-- **Speculative jokes as "decisions."** Slack is casual. "Lol just do the thing" isn't a decision, even if it preceded the commit. Look for considered discussion.
-- **Context collapse in single messages.** Without the thread, a single message often reads differently than in context. Always fetch threads.
-- **Auth failures.** If the MCP isn't authenticated, stop. Don't make up findings. Report that Slack wasn't searchable.
+- **채널 발굴의 한계.** 아주 오래된 메시지는 보존 정책 때문에 사라졌을 수 있다. 특정 날짜 이전이 하나도 안 나오면 보존 기간 절벽을 적는다.
+- **검색되지 않는 DM.** 많은 결정이 검색되지 않는 DM에서 일어난다. 놓치게 된다. 알려진 한계다.
+- **농담을 "결정"으로 읽기.** Slack은 가볍다. "ㅋㅋ 그냥 그거 해"는 커밋 직전에 있었더라도 결정이 아니다. 숙고한 논의를 찾는다.
+- **단일 메시지의 맥락 손실.** 스레드 없이 메시지 하나만 보면 맥락 안에서와 다르게 읽히는 경우가 많다. 스레드는 늘 가져온다.
+- **인증 실패.** MCP가 인증되지 않았으면 멈춘다. 결과를 지어내지 않는다. Slack을 검색할 수 없었다고 보고한다.

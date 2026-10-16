@@ -1,35 +1,35 @@
 ---
 name: recall
-description: "Reconstruct your recent working context from your own chat history, live state, and the shared record (user reports, prior fixes, incidents), then hand back a tight current-state brief. Use for 'recall my work on X', 'catch me up', 'what have I been working on', 'where did I leave off', before starting or resuming work."
+description: "내 대화 기록, 현재 상태, 공유 기록(사용자 보고, 이전 수정, 장애)에서 최근 작업 맥락을 다시 세우고 현재 상태를 간결하게 정리해 돌려준다. 'X 작업 떠올려 줘', '따라잡게 해 줘', '나 뭐 하고 있었지', '어디까지 했더라' 같은 요청이나 작업을 시작·재개하기 전에 쓴다."
 disable-model-invocation: true
 ---
 
 # Recall
 
-**Before you start or resume work, you rebuild the user's recent working context and hand back a tight capsule of where things stand now and what to do next.**
+**작업을 시작하거나 재개하기 전에 사용자의 최근 작업 맥락을 다시 세우고, 지금 어디까지 왔고 다음에 무엇을 할지 간결한 요약으로 돌려준다.**
 
-Keep it tight and on-topic. Read only what the in-scope threads need, then stop.
+간결하게, 주제에 맞게 한다. 범위 안 스레드에 필요한 것만 읽고 멈춘다.
 
-Your context lives in two records. Your own chat history holds what you did and decided. The shared record holds everything that happened around the same code under other names: the symptoms users keep reporting, the fixes that shipped and got reverted, the errors still firing in prod. That second record is what the **why** skill searches, across source control, the issue tracker, chat and issue channels, long-form docs, and error tracking. A feature with a long bug tail keeps most of its story there, so don't reconstruct it from your transcripts alone.
+맥락은 두 기록에 있다. 내 대화 기록에는 내가 한 일과 정한 것이 있다. 공유 기록에는 같은 코드를 두고 다른 이름으로 일어난 모든 일이 있다. 사용자가 계속 보고하는 증상, 배포됐다가 되돌려진 수정, 운영 환경에서 아직 나는 오류. 이 두 번째 기록은 **why** 스킬이 소스 관리, 이슈 트래커, 채팅과 이슈 채널, 장문 문서, 오류 추적에 걸쳐 검색하는 것이다. 버그 꼬리가 긴 기능은 이야기 대부분이 거기 있으니 내 대화 기록만으로 다시 세우지 않는다.
 
-Transcripts live at `~/.cursor/projects/<slug>/agent-transcripts/<uuid>/<uuid>.jsonl`, where `<slug>` is the workspace path with the leading slash dropped and each "/" turned into "-" (so `/Users/you/proj` becomes `Users-you-proj`). Every line is one chat message.
+대화 기록의 위치와 파일 이름 규칙은 [호스트 대응표](../pstack-mode/references/hosts.md)의 "대화 기록 위치"에 있다. 파일은 JSONL이고 한 줄이 메시지 하나다.
 
-1. Classify, then route. One specific prior chat to resume is the `session-pickup` playbook, not this. Turning habits into a durable skill is `automate-me`. A human-readable summary of your work is a different task. Recall loads working context across recent chats before you act. If the user already gave you a full state capsule (paths, branch, the change), use it and skip the mining.
-2. Lock the scope before searching. Pin the window ("recent" is a real range, default the last 7 days), the topic if named, and the workspace (default the active one. Never read another project's transcripts without being asked). State the scope back. Never quietly turn "all" into "recent N".
-3. Fan out across your chat history. Spawn parallel subagents on a fast, cheap model, each taking a slice of the corpus. Tell every subagent to order candidates by real modification time (`ls -t`) and never by UUID name, grep the topic first and then read only the matching chats and only their relevant regions, and skip the current chat plus obvious noise (subagent, eval, and test chats). Each returns the same schema, one block per chat: topic, the user's goal, decisions, open threads, struggles and corrections, and artifacts (PRs, tickets, branches), each citing the chat UUID. For one or two chats, skip the fan-out and search directly. The raw transcripts stay in the subagents. The main thread gets only their findings. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.
-4. Sweep the shared record whenever the topic names a feature, file, subsystem, area, or bug. This is the default, not a judgment call, and "my work on X" does not exempt it. Hand it to the **why** skill's source investigators, but steer their question from "why was this built this way" to "what's the current state, what's been tried and didn't hold, and what are users still reporting". Reuse its per-source playbooks, run the investigators in parallel with the chat-history mining, and inherit its posture: one investigator per source, null results are findings, skip an unavailable MCP and say so. Fold what comes back into the brief. Skip this step only for pure activity recall with no named target ("what did I do this week"), where your own history and live state are the entire answer.
-5. Verify against live state. Take the PRs, branches, and tickets that the mining and the sweep surfaced and check them with `git` and `gh`. When the answer hinges on what an agent actually did (the tools it ran, files it read, errors it hit), read the full transcript, not just a trimmed local copy.
-6. Write the brief to the contract below. Group by thread. Stay on the named topic.
+1. 분류하고 보낼 곳을 정한다. 이전 대화 하나를 이어 가는 것은 이 스킬이 아니라 `session-pickup` 플레이북이다. 습관을 오래 쓸 스킬로 만드는 것은 `automate-me`다. 사람이 읽을 작업 요약은 다른 일이다. Recall은 행동하기 전에 최근 여러 대화의 작업 맥락을 불러온다. 사용자가 이미 완전한 상태 요약(경로, 브랜치, 변경)을 줬으면 그것을 쓰고 발굴은 건너뛴다.
+2. 검색 전에 범위를 정한다. 기간("최근"은 실제 범위다. 기본은 최근 7일), 주제가 있으면 주제, 작업 공간(기본은 현재 작업 공간. 요청 없이는 다른 프로젝트의 대화 기록을 읽지 않는다)을 정한다. 범위를 다시 말해 준다. "전부"를 조용히 "최근 N개"로 바꾸지 않는다.
+3. 대화 기록에 병렬 분배한다. `cheap` 역할 모델([역할별 모델](../pstack-mode/references/models.md))로 서브에이전트를 동시에 여럿 띄우고, 각자 기록 묶음의 한 조각을 맡긴다. 모든 서브에이전트에게 다음을 지시한다. 후보는 UUID 이름이 아니라 실제 수정 시각(`ls -t`) 순으로 정렬한다. 먼저 주제로 grep하고 일치한 대화의 관련 부분만 읽는다. 현재 대화와 뻔한 잡음(서브에이전트, 평가, 테스트 대화)은 건너뛴다. 각자 같은 형식으로, 대화마다 블록 하나씩 돌려준다. 주제, 사용자의 목표, 결정, 열린 스레드, 막힌 곳과 바로잡힌 것, 산출물(PR, 티켓, 브랜치). 각 항목에 대화 UUID를 인용한다. 대화가 한두 개면 병렬 분배 없이 직접 검색한다. 원본 대화 기록은 서브에이전트 안에 머문다. 메인 스레드는 결과만 받는다. 서브에이전트마다 추론 수준은 **pstack-mode** 스킬의 서브에이전트 절에 따라 일에 맞게 고른다.
+4. 주제가 기능, 파일, 하위 시스템, 영역, 버그를 가리키면 공유 기록을 훑는다. 판단할 일이 아니라 기본이고, "내 X 작업"이라고 해서 면제되지 않는다. **why** 스킬의 출처 조사자에게 맡기되, 질문을 "왜 이렇게 만들었나"에서 "지금 상태는 어떤가, 무엇을 시도했다가 버티지 못했나, 사용자는 아직 무엇을 보고하나"로 돌린다. why의 출처별 플레이북을 재사용하고, 대화 기록 발굴과 병렬로 조사자를 돌리고, why의 자세를 이어받는다. 출처마다 조사자 하나, 빈 결과도 결과, 쓸 수 없는 MCP는 건너뛰고 그렇다고 말한다. 돌아온 것을 요약에 녹인다. 이 단계를 건너뛰는 것은 대상 없이 순수하게 활동만 떠올리는 경우("이번 주에 뭐 했지")뿐이다. 그때는 내 기록과 현재 상태가 답의 전부다.
+5. 현재 상태와 대조한다. 발굴과 훑기에서 나온 PR, 브랜치, 티켓을 `git`과 `gh`로 확인한다. 답이 에이전트가 실제로 한 일(실행한 도구, 읽은 파일, 만난 오류)에 달렸으면 줄인 로컬 사본이 아니라 전체 대화 기록을 읽는다.
+6. 아래 계약대로 요약을 쓴다. 스레드별로 묶는다. 지정한 주제에서 벗어나지 않는다.
 
-## Output contract
+## 출력 계약
 
-Lead with the capsule, then the thread status, then the problems, then the next move. Deeper detail goes below or gets cut.
+요약 캡슐, 스레드 상태, 문제, 다음 행동 순으로 쓴다. 더 깊은 세부는 아래에 두거나 뺀다.
 
-- **Capsule.** At most 5 bullets. What this work is and where it stands overall.
-- **Threads.** One line each, prefixed with exactly one status tag: `[merged #N]`, `[open PR #N]`, `[in flight <branch>]`, `[verified, uncommitted]`, `[reverted #N]`, or `[planned, not started]`. A thread with no tag is not done yet, so tag it.
-- **Problems.** At most 5, the recurring ones. Include the symptoms users keep reporting and any fix that shipped and was reverted, so the next attempt starts where the last one failed.
-- **Next move.** The single most useful next action, concrete.
+- **캡슐.** 최대 5개 항목. 이 작업이 무엇이고 전체적으로 어디까지 왔는지.
+- **스레드.** 한 줄씩, 상태 태그를 정확히 하나 앞에 붙인다. `[merged #N]`, `[open PR #N]`, `[in flight <branch>]`, `[verified, uncommitted]`, `[reverted #N]`, `[planned, not started]`. 태그가 없는 스레드는 아직 끝나지 않은 것이므로 태그를 붙인다.
+- **문제.** 최대 5개, 되풀이되는 것. 사용자가 계속 보고하는 증상과 배포됐다가 되돌려진 수정을 넣어, 다음 시도가 지난번 실패한 곳에서 출발하게 한다.
+- **다음 행동.** 가장 쓸모 있는 다음 행동 하나, 구체적으로.
 
-An adjacent feature or ticket stays out unless it blocks this one. When the capsule and thread lines outgrow a screen, cut detail before you cut threads. Write the brief through the **unslop** skill, cite chat findings by UUID and shared-record findings by their source (PR #, ticket ID, chat permalink, error-tracker issue), and sanitize private context before any public output.
+인접한 기능이나 티켓은 이것을 막지 않는 한 넣지 않는다. 캡슐과 스레드 줄이 한 화면을 넘으면 스레드를 빼기 전에 세부를 뺀다. 요약은 **unslop** 스킬을 거쳐 쓰고, 대화 결과는 UUID로, 공유 기록 결과는 그 출처(PR #, 티켓 ID, 채팅 고유 링크, 오류 추적 이슈)로 인용하고, 공개 출력 전에 비공개 맥락을 지운다.
 
-**Reply:** the brief, to the contract above.
+**답변:** 위 계약대로 쓴 요약.

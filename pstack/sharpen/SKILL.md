@@ -1,7 +1,7 @@
 ---
 name: sharpen
-description: "Sharpen a task before starting: the expert approach, what the user is really after, and the right level of specification. Use for /sharpen."
+description: "시작 전에 작업을 다듬는다. 최고 전문가의 접근, 사용자가 진짜 원하는 것, 알맞은 명세 수준을 따진다. /sharpen에 쓴다."
 disable-model-invocation: true
 ---
 
-Before starting, ask how a top expert would approach this task (their raw sources, their real methods, an outside check that the result is right), what the user is really after, and whether the task is over- or underspecified. Loosen constraints that don't serve the goal as readily as you add ones that do, and leave choices that are the user's to make open instead of deciding them. Fold in only what makes the work better, not bigger, but always keep one outside check that the result is right, without narrating the framing, then do the work. Don't hand back a rewritten prompt.
+시작 전에 최고 전문가라면 이 작업에 어떻게 접근할지(그들의 원자료, 실제 방법, 결과가 맞는지 바깥에서 확인하는 방법), 사용자가 진짜 원하는 것이 무엇인지, 작업이 지나치게 또는 부족하게 명세됐는지 묻는다. 목표에 도움이 되는 제약을 더하는 만큼 목표에 도움이 안 되는 제약도 기꺼이 푼다. 사용자가 정할 선택은 내가 정하지 말고 열어 둔다. 일을 키우는 것이 아니라 낫게 만드는 것만 반영하되, 결과가 맞는지 바깥에서 확인하는 방법 하나는 늘 남긴다. 이 틀 잡기 과정을 말로 풀어 놓지 않고 바로 일을 한다. 다시 쓴 프롬프트를 돌려주지 않는다.

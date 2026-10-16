@@ -1,17 +1,17 @@
 ---
 name: principle-sequence-verifiable-units
-description: "Apply to multi-step work (sweeps, migrations, runs of similar edits) and to how you stack commits and PRs. Break work into small units that each end in a verifiable state, check each before the next, and order delivery so the sequence proves itself to a reviewer."
+description: "여러 단계로 된 작업(일괄 수정, 마이그레이션, 비슷한 수정의 연속)과 커밋·PR을 스택으로 쌓는 방식에 적용한다. 작업을 각각 검증 가능한 상태로 끝나는 작은 단위로 나누고, 다음으로 가기 전에 하나씩 확인하고, 순서 자체가 리뷰어에게 증명이 되도록 전달한다."
 disable-model-invocation: true
 ---
 
-# Sequence work into verifiable units
+# 검증 가능한 단위로 순서 짓기(Sequence Verifiable Units)
 
-Order work as a sequence of small units, each ending in a state you can check, and don't advance until the current one is green.
+작업을 작은 단위의 순서로 짜고 각 단위는 확인할 수 있는 상태로 끝낸다. 지금 단위가 통과하기 전에는 다음으로 넘어가지 않는다.
 
-**Why:** A break caught at the unit that caused it is cheap to localize. A break caught after a batch is buried, and you have already built further on a broken base. Sequencing those same units into a delivery a reviewer can replay turns "trust me" into "watch it go red, then green."
+**이유:** 깨짐을 그것을 일으킨 단위에서 잡으면 위치를 좁히기 쉽다. 묶음이 끝난 뒤에 잡으면 깨짐이 묻히고, 이미 깨진 기반 위에 더 쌓은 뒤다. 같은 단위들을 리뷰어가 다시 재생해 볼 수 있는 전달 순서로 짜면 "믿어 주세요"가 "빨간불이 됐다가 초록불이 되는 걸 보세요"로 바뀐다.
 
-**Execution.** In a sweep, migration, or any run of similar edits, verify each change before starting the next. Each unit is a before/after bracket: known-good state, one change, run the check, then proceed. Rebase onto clean trunk first so every check measures against the real baseline. When a lever does the edits, the per-unit check is nearly free. Run it anyway.
+**실행.** 일괄 수정, 마이그레이션, 비슷한 수정의 연속에서는 각 변경을 검증한 뒤 다음을 시작한다. 각 단위는 앞뒤를 묶는 괄호다. 정상으로 알려진 상태, 변경 하나, 확인 실행, 그다음 진행. 먼저 깨끗한 trunk 위로 rebase해서 모든 확인이 실제 기준선과 비교되게 한다. 도구가 수정을 한다면 단위별 확인은 거의 공짜다. 그래도 돌린다.
 
-**Delivery.** Stack commits and PRs in the order that proves the work. The canonical shape is the failing test first, then the fix on top. Other story orders are a subtraction before the reshape, a baseline capture before the treatment, the scaffold before the feature. Each commit lands on its own and the sequence reads as an argument.
+**전달.** 커밋과 PR은 작업을 증명하는 순서로 스택에 쌓는다. 기본 모양은 실패하는 시험이 먼저, 그 위에 수정이다. 다른 이야기 순서로는 모양 바꾸기 전의 빼기, 처리 전의 기준선 기록, 기능 전의 뼈대가 있다. 각 커밋은 혼자서도 머지될 수 있고, 순서 전체가 하나의 논증으로 읽힌다.
 
-The sequencing complement to the **prove-it-works** principle skill, which keeps each check real, and the **build-the-lever** principle skill, which makes the per-unit check cheap.
+**구분:** 이 원칙은 순서를 맡는다. 각 확인을 진짜로 유지하는 **prove-it-works** 원칙 스킬, 단위별 확인을 싸게 만드는 **build-the-lever** 원칙 스킬과 짝을 이룬다.

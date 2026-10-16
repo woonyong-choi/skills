@@ -1,34 +1,34 @@
 ---
 name: principle-boundary-discipline
-description: "Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions."
+description: "검증, 오류 처리, 프레임워크 어댑터를 연결할 때 적용한다. 방어 코드는 시스템 경계(CLI, 설정, 네트워크, 외부 API)에 모으고, 내부 타입은 믿으며, 비즈니스 로직은 순수 함수에 둔다."
 disable-model-invocation: true
 ---
 
-# Boundary Discipline
+# 경계 규율(Boundary Discipline)
 
-Place validation, type narrowing, and error handling at system boundaries. Trust internal code unconditionally. Business logic lives in pure functions. The shell is thin and mechanical.
+검증, 타입 좁히기, 오류 처리는 시스템 경계에 둔다. 내부 코드는 조건 없이 믿는다. 비즈니스 로직은 순수 함수에 둔다. 바깥 껍데기는 얇고 기계적으로 만든다.
 
-**Why:** Scattered validation is noisy, redundant, and gives a false sense of safety. Keep logic out of framework wiring so it can be tested without the framework.
+**이유:** 여기저기 흩어진 검증은 시끄럽고 중복되며 안전하다는 착각을 준다. 로직을 프레임워크 연결 코드 밖에 두어야 프레임워크 없이 시험할 수 있다.
 
-**The pattern:**
-- **At boundaries** (CLI args, config files, external APIs, network protocols): validate, return errors, handle defensively.
-- **Inside the system:** typed data, error propagation, no re-validation. Trust the types.
-- **Across the boundary.** Expose domain concepts, not the boundary's private representation. Keep general-purpose mechanism inside and special-purpose policy at the edge.
+**방법:**
+- **경계에서는**(CLI 인자, 설정 파일, 외부 API, 네트워크 프로토콜) 검증하고, 오류를 반환하고, 방어적으로 처리한다.
+- **시스템 안에서는** 타입이 있는 데이터를 쓰고, 오류를 전파하고, 다시 검증하지 않는다. 타입을 믿는다.
+- **경계를 넘을 때는** 경계 내부의 표현이 아니라 도메인 개념을 드러낸다. 범용 메커니즘은 안쪽에, 특수 목적 정책은 가장자리에 둔다.
 
-**Applications:**
+**적용:**
 
-Validation and error handling:
-- Validate config at parse time (the boundary), not inside business logic
-- Parse raw data into domain types at the boundary
-- Do not re-export transport, storage, framework, or wire types through the public surface
-- No redundant nil checks deep in call chains if the boundary already validated
+검증과 오류 처리:
+- 설정은 비즈니스 로직 안이 아니라 파싱 시점(경계)에서 검증한다.
+- 원시 데이터는 경계에서 도메인 타입으로 파싱한다.
+- 전송, 저장소, 프레임워크, 직렬화 타입을 공개 표면으로 다시 내보내지 않는다.
+- 경계에서 이미 검증했다면 호출 체인 깊은 곳에 중복 nil 검사를 두지 않는다.
 
-Code organization:
-- Business logic in pure functions with no framework dependencies
-- Parse functions: pure transforms from raw bytes to typed state
-- Prompt construction: structured state in, string out
-- Scoring and assessment: pure transforms from state to results
+코드 구성:
+- 비즈니스 로직은 프레임워크 의존이 없는 순수 함수에 둔다.
+- 파싱 함수는 원시 바이트를 타입 있는 상태로 바꾸는 순수 변환으로 만든다.
+- 프롬프트 생성은 구조화된 상태를 받아 문자열을 내놓는다.
+- 점수 매기기와 평가는 상태를 결과로 바꾸는 순수 변환으로 만든다.
 
-**The tests:**
-- "Is this data crossing a system boundary right now?" If not, validation is redundant.
-- "Can this be a pure function that the shell just calls?" If yes, extract it.
+**판단:**
+- "이 데이터가 지금 시스템 경계를 넘고 있는가?" 아니라면 검증은 중복이다.
+- "이것을 껍데기가 그냥 부르는 순수 함수로 만들 수 있는가?" 그렇다면 뽑아낸다.

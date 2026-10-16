@@ -1,23 +1,23 @@
 ---
 name: principle-build-the-lever
-description: "Apply to any non-trivial work, not just bulk work: edits, migrations, analyses, checks. Build the tool that does it or proves it (codemod, script, generator, or a skill your subagents follow) instead of working by hand. The tool is the artifact a reviewer can rerun."
+description: "대량 작업만이 아니라 사소하지 않은 모든 작업(수정, 마이그레이션, 분석, 확인)에 적용한다. 손으로 하지 말고 그 일을 하거나 증명하는 도구(코드모드, 스크립트, 생성기, 서브에이전트가 따르는 스킬)를 만든다. 그 도구가 리뷰어가 다시 돌려 볼 수 있는 산출물이다."
 disable-model-invocation: true
 ---
-# Build the Lever
+# 도구부터 만들기(Build the Lever)
 
-When the work isn't trivial, build the tool that does it instead of doing it by hand.
+사소하지 않은 작업이면 손으로 하지 말고 그 일을 하는 도구를 만든다.
 
-A codemod, generator, or script does the work the same way every time and reruns for free. The tool is one artifact a reviewer can read and rerun to check the work. Hand-done changes can only be re-verified by redoing them. A deterministic script turns "trust me" into "run this".
+코드모드, 생성기, 스크립트는 매번 같은 방식으로 일하고 공짜로 다시 돌릴 수 있다. 도구는 리뷰어가 읽고 다시 돌려서 작업을 확인할 수 있는 산출물 하나다. 손으로 한 변경은 다시 해 봐야만 재검증할 수 있다. 결정적인 스크립트는 "믿어 주세요"를 "이걸 돌려 보세요"로 바꾼다.
 
-Default to building the lever. Skip it only when the task is trivial, a couple of obvious edits you can see at a glance.
+기본은 도구를 만드는 것이다. 한눈에 보이는 뻔한 수정 몇 개처럼 작업이 사소할 때만 건너뛴다.
 
-- Do the first unit by hand to learn the recipe, then build the tool. Prove it by rerunning it on that unit and diffing against your hand-done version. Make the lever safe to rerun.
-- Codemod or script for edits, generator for repetitive files, a dump-to-sqlite query for analysis, a rerunnable check for verification.
-- A deterministic lever beats fan-out. If the tool can process every unit in one pass, run it yourself. Don't fan out delegates to hand-apply what a script can do.
-- When you fan work out to subagents, write the lever as a skill they all read: the recipe, the verification contract, and the do-not-touch fences in one artifact. Keep it outside the delegates' write scope so they can't quietly edit the contract.
-- Applying this principle produces a file. If you cited it and there is no codemod, script, generator, or delegate skill in the diff, you didn't apply it.
-- Commit the lever when the work outlives the session.
+- 첫 단위는 손으로 해서 방법을 익힌 뒤 도구를 만든다. 그 단위에 도구를 다시 돌려 손으로 한 결과와 diff를 떠서 도구를 증명한다. 다시 돌려도 안전하게 만든다.
+- 수정에는 코드모드나 스크립트, 반복 파일에는 생성기, 분석에는 sqlite에 덤프한 뒤 쿼리, 검증에는 다시 돌릴 수 있는 확인을 쓴다.
+- 결정적인 도구가 병렬 분배보다 낫다. 도구가 모든 단위를 한 번에 처리할 수 있다면 직접 돌린다. 스크립트가 할 수 있는 일을 서브에이전트에게 나눠 손으로 적용하게 하지 않는다.
+- 서브에이전트에게 작업을 나눠 줄 때는 도구를 모두가 읽는 스킬로 쓴다. 방법, 검증 계약, 건드리지 말 범위를 한 산출물에 담는다. 서브에이전트가 계약을 몰래 고치지 못하게 그들의 쓰기 범위 밖에 둔다.
+- 이 원칙을 적용하면 파일이 생긴다. 이 원칙을 인용했는데 diff에 코드모드, 스크립트, 생성기, 서브에이전트용 스킬이 없다면 적용하지 않은 것이다.
+- 작업이 세션보다 오래 남으면 도구를 커밋한다.
 
-The bar is triviality, not repetition. A one-off still earns a lever when the lever is what makes the work checkable. Per the [Laziness Protocol](../principle-laziness-protocol/SKILL.md), build the smallest script that does or proves the job, never a framework.
+기준은 반복이 아니라 사소함이다. 한 번뿐인 작업이라도 도구가 있어야 작업을 확인할 수 있다면 도구를 만든다. [게으름 규약](../principle-laziness-protocol/SKILL.md)에 따라 일을 하거나 증명하는 가장 작은 스크립트를 만들고, 프레임워크는 만들지 않는다.
 
-Distinct from [Encode Lessons in Structure](../principle-encode-lessons-in-structure/SKILL.md), which makes a recurring instruction a durable guardrail. This is throughput and reviewability on the work in front of you. For scripting the verification itself, see [Prove It Works](../principle-prove-it-works/SKILL.md).
+**구분:** [교훈을 구조로 남기기](../principle-encode-lessons-in-structure/SKILL.md)는 반복되는 지시를 오래가는 안전장치로 만든다. 이 원칙은 눈앞의 작업의 처리량과 리뷰 가능성을 다룬다. 검증 자체를 스크립트로 만드는 일은 [실제로 동작함을 증명](../principle-prove-it-works/SKILL.md)을 본다.
