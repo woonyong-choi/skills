@@ -10,7 +10,7 @@ import re
 import sys
 from pathlib import Path
 
-from install import source_skills
+from install import VENDORED_MARKER, source_skills
 from consistency import PRIORITY, check_consistency
 
 NOUN_OK = ('흐름', '알림', '없음', '다음', '포함', '결함', '마음', '처음', '이름', '모음', '요금', '그림', '묶음', '느낌', '믿음', '물음', '걸음', '기본값', '보관함', '수신함', '책임',
@@ -165,6 +165,27 @@ def declarative(word):
     prev = word[-2] if len(word) > 1 else ''
     return '가' <= prev <= '힣' and (ord(prev) - 0xAC00) % 28 == 4
 
+# cost: time O(n), heap O(n), stack O(1), io 1
+# vars: n = SKILL.md 바이트
+# basis: estimate
+def check_vendored(path: Path) -> list[str]:
+    """가져온 원본 스킬의 형식만 검사: frontmatter, name과 폴더 일치, description 1~1024자"""
+    text = path.read_text(encoding='utf-8')
+    parts = text.split('---', 2)
+    if not text.startswith('---\n') or len(parts) != 3:
+        return ['원본 frontmatter 형식']
+    errors = []
+    name = re.search(r'^name: ([a-z0-9-]+)$', parts[1], re.M)
+    if not name or name.group(1) != path.parent.name:
+        errors.append('원본 name: 폴더 이름과 다름')
+    description = re.search(r'^description: (.+)$', parts[1], re.M)
+    if not description:
+        errors.append('원본 description: 없음')
+    elif description.group(1).strip() not in ('>-', '>', '|') and len(description.group(1).strip().strip('"')) > 1024:
+        errors.append('원본 description: 1024자 초과')
+    return errors
+
+
 # cost: time O(s·n·k), heap O(s + n), stack O(1), io O(s)
 # vars: s = 스킬 수, n = 스킬 줄 수, k = 스킬 이름 수
 # basis: estimate
@@ -174,7 +195,9 @@ def main(argv: list[str]) -> int:
     parser.add_argument('root', type=Path)
     args = parser.parse_args(argv)
     try:
-        paths = [skill / 'SKILL.md' for skill in source_skills(args.root)]
+        skills = source_skills(args.root)
+        paths = [skill / 'SKILL.md' for skill in skills if not (skill / VENDORED_MARKER).is_file()]
+        vendored = [skill / 'SKILL.md' for skill in skills if (skill / VENDORED_MARKER).is_file()]
     except (OSError, ValueError) as error:
         print(f'검사 입력 오류: {error}', file=sys.stderr)
         return 2
@@ -184,6 +207,13 @@ def main(argv: list[str]) -> int:
     names = [path.parent.name for path in paths]
     total, kinds = 0, {}
     try:
+        for path in vendored:
+            errors = check_vendored(path)
+            total += len(errors)
+            for error in errors:
+                kinds[error.split(':')[0]] = kinds.get(error.split(':')[0], 0) + 1
+            if errors and not args.json:
+                print(path.parent.name, len(errors), errors)
         consistency = check_consistency(paths)
         for path in paths:
             errors = check(str(path), names) + consistency[path]
