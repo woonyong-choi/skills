@@ -169,20 +169,20 @@ def declarative(word):
 # vars: n = SKILL.md 바이트
 # basis: estimate
 def check_vendored(path: Path) -> list[str]:
-    """가져온 원본 스킬의 형식만 검사: frontmatter, name과 폴더 일치, description 1~1024자"""
+    """FORMAT_ONLY 표시 스킬의 형식만 검사: frontmatter, name과 폴더 일치, description 1~1024자"""
     text = path.read_text(encoding='utf-8')
     parts = text.split('---', 2)
     if not text.startswith('---\n') or len(parts) != 3:
-        return ['원본 frontmatter 형식']
+        return ['형식 frontmatter']
     errors = []
     name = re.search(r'^name: ([a-z0-9-]+)$', parts[1], re.M)
     if not name or name.group(1) != path.parent.name:
-        errors.append('원본 name: 폴더 이름과 다름')
+        errors.append('형식 name: 폴더 이름과 다름')
     description = re.search(r'^description: (.+)$', parts[1], re.M)
     if not description:
-        errors.append('원본 description: 없음')
+        errors.append('형식 description: 없음')
     elif description.group(1).strip() not in ('>-', '>', '|') and len(description.group(1).strip().strip('"')) > 1024:
-        errors.append('원본 description: 1024자 초과')
+        errors.append('형식 description: 1024자 초과')
     return errors
 
 
