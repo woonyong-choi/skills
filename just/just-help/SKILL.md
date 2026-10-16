@@ -8,9 +8,9 @@ disable-model-invocation: true
 
 just에 관한 사용자 질문에 답하고, 사용자가 보낼 수 있는 프롬프트를 건네고, 답의 출처 파일을 링크한다. 도움말 질문이면 작업을 시작하지 않는다. 사용자는 방법을 물었고 just 실행은 실제 토큰을 쓰므로, 프롬프트는 사용자가 보내게 한다.
 
-"just으로 이 버그 고쳐 줘"처럼 작업을 요청하는 메시지는 도움말 질문이 아니다. [`just-mode`](../just-mode/SKILL.md)를 읽고 그 방식으로 작업하고, 항상 적용 규칙에 넣으면 매 턴 켜 둘 수 있다고 한 번 알린다.
+"just로 이 버그 고쳐 줘"처럼 작업을 요청하는 메시지는 도움말 질문이 아니다. [`just-mode`](../just-mode/SKILL.md)를 읽고 그 방식으로 작업하고, 항상 적용 규칙에 넣으면 매 턴 켜 둘 수 있다고 한 번 알린다.
 
-이 파일은 질문을 답이 있는 스킬로 연결하는 지도다. 세부 내용은 그 파일들이 소유한다. 인용하기 전에 연결한 파일을 읽고, 이 지도와 다르면 그 파일을 믿는다. 여기의 링크는 설치된 스킬 폴더를 가리키므로 사용자가 열지 못할 수 있다. 사용자에게는 공개 사본을 준다. 주소는 `https://github.com/woonyong-choi/skills/blob/main/just/` 뒤에 스킬 폴더 기준 경로를 붙인 것이다.
+이 파일은 질문을 답이 있는 스킬로 연결하는 지도다. 세부 내용은 그 파일들에 있다. 인용하기 전에 연결한 파일을 읽고, 이 지도와 다르면 그 파일을 믿는다. 여기의 링크는 설치된 스킬 폴더를 가리키므로 사용자가 열지 못할 수 있다. 사용자에게는 공개 사본을 준다. 주소는 `https://github.com/woonyong-choi/skills/blob/main/just/` 뒤에 스킬 폴더 기준 경로를 붙인 것이다.
 
 호스트마다 다른 동작(스킬 부르기, 서브에이전트, 주기적으로 다시 깨우기, 규칙 파일)은 [호스트 대응표](../just-mode/references/hosts.md)에, 역할별 모델은 [역할별 모델](../just-mode/references/models.md)에 있다. 아래의 `/이름`은 Claude Code와 OpenCode 표기다. Codex에서는 `$이름`으로 바꿔 안내한다.
 
@@ -22,16 +22,16 @@ just에 관한 사용자 질문에 답하고, 사용자가 보낼 수 있는 프
 - `/just-mode`로 작업 시작하기
 - 상황에 맞는 스킬 고르기
 - 잘못된 실행 고치기
-- just을 내 것으로 만들기
+- just를 내 것으로 만들기
 
 답을 바꾸는 상태를 확인하고, 답이 바뀔 때만 언급한다.
 
 - `~/.config/skills/models.json`이 없으면 이 사용자는 `/just-setup`을 돌리지 않았고, 모든 역할이 기본 모델을 쓴다.
-- 프로젝트에 `verify-*` 스킬이나 다른 앱 검증 도구가 없으면 에이전트가 앱을 스크립트로 움직일 방법이 없다. 질문이 변경이 동작함을 증명하는 일에 관한 것이면 `/create-verification-skill`을 언급한다.
+- 프로젝트에 `verify-*` 스킬이나 다른 앱 검증 도구가 없으면 에이전트가 앱을 스크립트로 조작할 방법이 없다. 질문이 변경이 동작함을 증명하는 일에 관한 것이면 `/create-verification-skill`을 언급한다.
 
 모델 설정이 없고 그것이 중요하면, 지금 역할마다 모델과 추론 예산을 고를지 사용자에게 질문한다. 사용자가 처음이거나, 질문이 설정이나 비용에 관한 것이거나, 답이 어떤 모델이 도는지에 달렸으면 중요하다. 대화당 한 번만 묻는다. 필요도 불분명하면 두 질문을 함께 묻는다. 선택지는 둘이다.
 
-- 지금: 칠 명령으로 `/just-setup`을 주고 질문에도 답한다.
+- 지금: 입력할 명령으로 `/just-setup`을 주고 질문에도 답한다.
 - 나중에: 질문에 답하고, `/just-setup`을 돌리기 전까지 모든 역할이 기본 모델을 쓴다는 줄을 하나 더한다.
 
 ## 설정하기
@@ -42,7 +42,7 @@ just에 관한 사용자 질문에 답하고, 사용자가 보낼 수 있는 프
 
 설치만으로는 아무것도 바뀌지 않고, 사용자가 스킬을 불러야 동작한다. 사용자의 말만으로 호출되는 스킬은 `/just-setup` 하나다. 첫 프롬프트를 [`references/prompting.md`](references/prompting.md)에 따라 함께 다듬어 주겠다고 제안한다.
 
-비용이 걱정이면 토큰이 어디에 쓰이고 어떻게 줄이는지 말한다. just은 서브에이전트와 검토 패널에 토큰을 더 쓴다. `/just-setup`을 다시 돌려 더 작은 예산이나 더 싼 모델을 고른다. 역할 값을 빈 문자열로 두면 호스트 기본 모델을 쓰므로, 호스트를 싼 모델로 돌릴 때 토큰이 준다. `review` 목록이 짧을수록 서브에이전트가 덜 돈다. 항목 하나마다 하나가 돈다. `/just-mode`는 엄격함이 필요한 작업에만 쓴다.
+비용이 걱정이면 토큰이 어디에 쓰이고 어떻게 줄이는지 말한다. just는 서브에이전트와 검토 패널에 토큰을 더 쓴다. `/just-setup`을 다시 돌려 더 작은 예산이나 더 싼 모델을 고른다. 역할 값을 빈 문자열로 두면 호스트 기본 모델을 쓰므로, 호스트를 싼 모델로 돌릴 때 토큰이 줄어든다. `review` 목록의 항목 하나마다 서브에이전트 하나가 돌므로, 목록이 짧을수록 서브에이전트가 적게 돈다. `/just-mode`는 엄격함이 필요한 작업에만 쓴다.
 
 just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 읽는다. 서브에이전트, 다른 회사 모델 검토, 주기적으로 다시 깨우기는 호스트마다 방법이 다르고, 호스트에 없는 기능은 [호스트 대응표](../just-mode/references/hosts.md)의 대체 방법으로 한다.
 
@@ -52,7 +52,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 
 `/just-mode`가 계속 켜져 있는지는 시작 방법에 달렸다.
 
-- `/just-mode`로 메시지를 보내면 그 메시지에 스킬이 붙는다. 대화가 길어지면 흐려진다.
+- `/just-mode`로 메시지를 보내면 그 메시지에 스킬이 붙는다. 대화가 이어질수록 효과가 약해진다.
 - 항상 적용 규칙 파일(호스트 대응표)에 "사소하지 않은 작업은 just-mode 스킬 방식으로 한다"를 넣으면 매 턴 적용된다.
 - 둘 다 아니면 새 작업마다 `/just-mode`로 시작한다.
 
@@ -60,7 +60,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 
 ## 스킬 고르기
 
-기본 답은 `/just-mode`다. 단계가 필요로 할 때 다른 스킬 대부분을 돌린다. 사용자가 플레이북보다 무언가를 더 원하거나 덜 원할 때 스킬을 직접 이름 댄다. 추천하기 전에 그 스킬을 읽고, 예시 프롬프트 하나를 준다.
+기본 답은 `/just-mode`다. 단계가 필요로 할 때 다른 스킬 대부분을 돌린다. 사용자가 플레이북이 하는 것보다 무언가를 더 원하거나 덜 원할 때 스킬을 직접 추천한다. 추천하기 전에 그 스킬을 읽고, 예시 프롬프트 하나를 준다.
 
 | 사용자가 원하는 것 | 스킬 |
 |---|---|
@@ -83,7 +83,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 | 글에서 AI 티 걷어 내기 | [`/unslop`](../unslop/SKILL.md) |
 | 문서, RFC, README, PR 설명, 커밋 메시지를 기준에 맞게 쓰기 | [`/technical-writing`](../technical-writing/SKILL.md) |
 | 마지막 답변을 쉬운 말로 다시 듣기 | [`/bro`](../bro/SKILL.md) |
-| 에이전트가 앱을 스크립트로 움직여 동작을 증명할 수단 만들기 | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
+| 에이전트가 앱을 스크립트로 조작해 동작을 증명할 수단 만들기 | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
 | 검증 스킬과 그 기능 맵을 앱에 다시 맞추기 | [`/maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
 | 성능 숫자를 보고하거나 그 숫자로 행동하기 전에 검증하기 | [`/benchmark-checklist`](../benchmark-checklist/SKILL.md) |
 | 크거나 여러 곳에 걸친 변경, 또는 자리를 비웠다가 검토할 변경 돌리기 | [`/figure-it-out`](../figure-it-out/SKILL.md) |
@@ -140,13 +140,13 @@ just에는 계획 스킬이 없다. 호스트의 계획 모드가 있으면 함�
 | 밤새 돌았는데 움직이기만 하고 끝난 게 없음 | 주기적으로 다시 깨우기에는 시간이 아니라 통과하거나 실패할 수 있는 확인 조건이 필요하다. [`references/prompting.md`](references/prompting.md)의 자리 비우기 전 절을 본다. |
 | 빌드의 CI 통과만으로 성공했다고 답함 | 실제 명령, 흐름, 저장된 값, 프로파일을 요구한다. 동작 증명 원칙이다. |
 
-흔들리는 실행에는 [`references/prompting.md`](references/prompting.md)에 한 줄 방향 잡기가 있다. 따라 쓸 만한 프롬프트는 [`references/recipes.md`](references/recipes.md)에 있다.
+방향이 어긋난 실행을 한 줄로 바로잡는 말은 [`references/prompting.md`](references/prompting.md)에 있다. 따라 쓸 만한 프롬프트는 [`references/recipes.md`](references/recipes.md)에 있다.
 
-## just을 내 것으로 만들기
+## just를 내 것으로 만들기
 
 - [`/automate-me`](../automate-me/SKILL.md)는 사용자 자신의 기록으로 `/just-mode`와 함께 쓸 개인 모드 스킬 초안을 만든다.
 - 세션 뒤 [`/reflect`](../reflect/SKILL.md)는 그 세션의 교훈을 사용자가 승인하는 스킬 수정으로 바꾼다.
-- `/just-mode <작업 흐름> 스킬 써 줘`는 스킬 작성·수정 플레이북을 돌린다. 평가 플레이북은 스킬 변경을 블라인드로 시험한다.
+- `/just-mode <작업 흐름> 스킬 써 줘`는 스킬 작성·수정 플레이북을 돌린다. 평가 플레이북은 스킬 변경을 블라인드로 테스트한다.
 - 이상하게 동작하는 스킬은 문제가 난 기능 작업 안에서가 아니라 별도 PR로 고친다.
 
 ## 답변

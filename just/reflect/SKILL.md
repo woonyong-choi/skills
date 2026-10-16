@@ -12,13 +12,13 @@ disable-model-invocation: true
 
 ## 1. 현재 대화 기록 찾기
 
-병렬 분배 전에 이 대화의 대화 기록을 현재 호스트의 대화 기록 위치([호스트 대응표](../just-mode/references/hosts.md))에서 찾는다. 현재 프로젝트의 폴더만 본다. 모든 프로젝트의 대화 기록 폴더를 가로질러 glob하지 않는다. 그러면 작업 공간 경계를 넘어 상관없는 프로젝트의 비공개 대화를 읽게 된다.
+검토자를 띄우기 전에 이 대화의 대화 기록을 현재 호스트의 대화 기록 위치([호스트 대응표](../just-mode/references/hosts.md))에서 찾는다. 현재 프로젝트의 폴더만 본다. 모든 프로젝트의 대화 기록 폴더를 가로질러 glob하지 않는다. 그러면 작업 공간 경계를 넘어 상관없는 프로젝트의 비공개 대화를 읽게 된다.
 
 ```bash
 ls -t <transcripts>/*.jsonl <transcripts>/*/*.jsonl <transcripts>/*/subagents/*.jsonl 2>/dev/null | head -10
 ```
 
-이 명령은 평평한 배치(`<id>.jsonl`), 중첩 배치(`<id>/<id>.jsonl`), 서브에이전트 배치(`<parent>/subagents/<child>.jsonl`)를 모두 다룬다. 호스트가 날짜별 폴더 같은 다른 배치를 쓰면 호스트 대응표의 패턴으로 바꾼다. 후보마다 첫 사용자 메시지를 읽는다. 그 메시지가 이 대화의 첫 사용자 프롬프트와 같은 파일을 고른다. 맞는 파일이 없으면 대신 세션을 간추린 요약을 넘긴다.
+이 명령은 평평한 폴더 구조(`<id>.jsonl`), 중첩 구조(`<id>/<id>.jsonl`), 서브에이전트 구조(`<parent>/subagents/<child>.jsonl`)를 모두 다룬다. 호스트가 날짜별 폴더 같은 다른 구조를 쓰면 호스트 대응표의 패턴으로 바꾼다. 후보마다 첫 사용자 메시지를 읽는다. 그 메시지에 이 대화의 첫 사용자 프롬프트가 들어 있는 파일을 고른다. 맞는 파일이 없으면 대신 세션을 간추린 요약을 넘긴다.
 
 ## 2. 검토자 셋을 병렬로 띄우기
 
@@ -44,7 +44,7 @@ ls -t <transcripts>/*.jsonl <transcripts>/*/*.jsonl <transcripts>/*/subagents/*.
 
 ## 5. 적용
 
-종합자의 Accepted / Rejected / Backlog 출력 전체를 보여 주고, Accepted 수정을 적용하기 전에 명시적인 승인을 기다린다. 사용자가 일부를 고르고 연결 대상을 바꿀 수도 있다. 스킬 변경은 조직의 앞으로의 모든 에이전트에 영향을 준다. 자동으로 적용하지 않는다.
+종합자의 Accepted / Rejected / Backlog 출력 전체를 보여 주고, Accepted 수정을 적용하기 전에 명시적인 승인을 기다린다. 사용자가 일부를 고르고 연결 대상을 바꿀 수도 있다. 스킬 변경은 조직에서 앞으로 일할 모든 에이전트에 영향을 준다. 자동으로 적용하지 않는다.
 
 Backlog 항목은 기다리지 않고 팀의 개발 경험 또는 백로그 트래커에 등록한다. 승인을 기다리는 것은 Accepted 목록뿐이다.
 
@@ -53,7 +53,7 @@ Backlog 항목은 기다리지 않고 팀의 개발 경험 또는 백로그 트�
 - 사소한 기존 스킬 수정(한 줄 항목, 다듬은 문장, 낡은 사실 고치기): 부모가 직접 한다.
 - 실질적인 기존 스킬 수정(새 절, 새 패턴 표, 약 10줄 넘음): `skill-creator` 스킬이 있으면 넘겨서 초안 / 테스트 / 반복 루프를 돌린다. 없으면 부모가 SKILL.md 형식(frontmatter `name`·`description`)을 지켜 직접 고친다.
 - `tune description: <skill path>`(스킬은 있지만 호출돼야 할 때 호출되지 않음): `skill-creator`가 있으면 넘겨서 description 최적화 루프를 돌린다. 없으면 부모가 description을 직접 고친다.
-- `new skill via skill-creator: <kebab-name>`: 생성을 `skill-creator`에 넘긴다. 없으면 SKILL.md 형식(frontmatter `name`·`description`)을 직접 작성한다. 모양을 즉석에서 지어내지 않는다.
+- `new skill via skill-creator: <kebab-name>`: 생성을 `skill-creator`에 넘긴다. 없으면 SKILL.md 형식(frontmatter `name`·`description`)을 직접 작성한다. 형식을 즉석에서 지어내지 않는다.
 
 환경에 SKILL.md 검증기가 있으면 완료를 선언하기 전에 건드린 모든 스킬에 돌린다.
 

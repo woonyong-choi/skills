@@ -4,7 +4,7 @@
 
 ## 브랜드 타입
 
-원시 타입에 브랜드를 붙여 서로 섞이지 않게 한다. 경계에서 한 번 검증한다. 하류 코드는 타입을 믿는다.
+원시 타입에 브랜드를 붙여 서로 섞이지 않게 한다. 경계에서 한 번 검증한다. 그 뒤의 코드는 타입을 믿는다.
 
 ```ts
 type AgentId = string & { readonly __brand: "AgentId" };
@@ -40,7 +40,7 @@ type DiffState =
 
 ## 구성적 모델링
 
-느슨한 타입을 런타임 검사로 제한하지 말고, 모두 합법인 부품으로 타입을 짠다.
+느슨한 타입을 런타임 검사로 제한하지 말고, 하나하나가 모두 유효한 부품으로 타입을 짠다.
 
 비어 있지 않음, 가변 길이 튜플로:
 
@@ -59,7 +59,7 @@ function pickWinner(entries: NonEmpty<string>): string {
 }
 ```
 
-평범한 `T[]`가 들어오는 곳에서는 가드로 한 번 좁힌다. 그러면 그 사실이 타입에 실려 다닌다.
+평범한 `T[]`가 들어오는 곳에서는 가드로 한 번 좁힌다. 그 뒤로는 타입이 그 사실을 담고 다닌다.
 
 ```ts
 const isNonEmpty = <T>(arr: T[]): arr is NonEmpty<T> => arr.length > 0;
@@ -81,17 +81,17 @@ type TimeRange = { start: Date; end: Date }; // start <= end
 type TimeRange = { start: Date; durationMs: number };
 ```
 
-`durationMs`는 평범한 숫자로 둔다. 길이를 기대하는 곳에 날 숫자가 넘어올 수 있을 때만 브랜드 타입 절에 따라 브랜드를 붙이고, 습관적으로 붙이지 않는다. 나쁜 상태를 만들 수 없게 하는 표현을 고른 뒤, 필요한 읽기 방식을 그 위에 드러낸다(`pairs.flat()`, `rangeEnd()` 헬퍼).
+`durationMs`는 평범한 숫자로 둔다. 길이를 기대하는 곳에 아무 숫자나 넘어올 수 있을 때만 브랜드 타입 절에 따라 브랜드를 붙이고, 습관적으로 붙이지 않는다. 나쁜 상태를 만들 수 없게 하는 표현을 고른 뒤, 필요한 형태로 읽는 방법을 그 위에 제공한다(`pairs.flat()`, `rangeEnd()` 헬퍼).
 
-## 가장 단순한 전함수 타입
+## 모든 입력을 처리하는(total) 가장 단순한 타입
 
-모든 것을 강화하지 않는다. 그 위의 모든 연산이 전함수이면 `T[]`를 유지한다.
+모든 것을 강화하지 않는다. 그 타입을 쓰는 모든 연산이 모든 입력을 처리할 수 있으면 `T[]`를 유지한다.
 
 ```ts
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0); // [] is 0, fine
 ```
 
-느슨한 타입이 사용 지점에서 거짓말을 강요할 때 강화한다. 신호는 `!`, `arr[0] as T`, "일어날 리 없음" throw다.
+느슨한 타입 때문에 쓰는 곳에서 사실과 다른 단언을 해야 할 때 강화한다. 신호는 `!`, `arr[0] as T`, "일어날 리 없음" throw다.
 
 ```ts
 // Don't: partiality smuggled past the compiler
@@ -105,7 +105,7 @@ function newestSession(sessions: NonEmpty<Session>): Session {
 }
 ```
 
-결과를 `Session | undefined`로 약하게 하는 것이 또 하나의 전함수 시그니처다.
+결과를 `Session | undefined`로 약하게 하는 것도 모든 입력을 처리하는 시그니처를 만드는 다른 방법이다.
 
 ## `any`보다 `unknown`
 
@@ -146,11 +146,11 @@ function parseUser(input: unknown): User {
 }
 ```
 
-실패가 예상되는 갈래이면 `safeParse`를 쓴다. 저장소가 다른 스키마 라이브러리를 쓰면 그 라이브러리의 같은 추론 헬퍼를 쓴다. 가드 하나를 위해 새 스키마 의존성을 더하지 않는다. 이 규칙은 코드베이스가 이미 믿는 스키마 체계를 택한다.
+실패가 예상되는 분기이면 `safeParse`를 쓴다. 저장소가 다른 스키마 라이브러리를 쓰면 그 라이브러리의 같은 추론 헬퍼를 쓴다. 가드 하나를 위해 새 스키마 의존성을 더하지 않는다. 이 규칙은 코드베이스가 이미 믿는 스키마 체계를 택한다.
 
 ## `as` 캐스트 금지
 
-모든 `as`는 잠재적 런타임 충돌이다. 타입 시스템이 주장을 확인한 뒤에만 캐스트한다.
+모든 `as`는 언젠가 터질 수 있는 런타임 오류다. 타입 시스템이 주장을 확인한 뒤에만 캐스트한다.
 
 ```ts
 import { z } from "zod";
@@ -218,7 +218,7 @@ function isCircle(s: Shape): s is Shape & { kind: "circle" } {
 
 ## 빠짐없음 검사
 
-default 갈래에서 판별 대상을 `never` 타입 지역 변수에 대입한다.
+default 분기에서 판별 대상을 `never` 타입 지역 변수에 대입한다.
 
 ```ts
 // Value-returning switch
@@ -271,8 +271,8 @@ const config = { theme: "dark", cols: 3 } satisfies Config;
 
 데이터가 들어오는 곳에서 한 번 검증한다. 안에서는 타입을 믿는다. **boundary-discipline** 원칙 스킬을 본다.
 
-- **전송 형식**(proto, JSON-RPC): 앞으로 호환되는 변경이 옛 클라이언트를 깨지 않도록 `ignoreUnknownFields`로 파싱한다.
-- **저장된 JSON:** 버전이 붙은 덩어리로 두고 파싱을 try/catch로 감싼다.
+- **전송 형식**(proto, JSON-RPC): 상위 호환(forward-compatible) 변경이 옛 클라이언트를 깨지 않도록 `ignoreUnknownFields`로 파싱한다.
+- **저장된 JSON:** 버전 정보를 붙여 저장하고 파싱을 try/catch로 감싼다.
 - 호출 사슬 깊은 곳에서 **다시 검증하지 않는다**.
 
 ## 스키마에서 도출한 타입
