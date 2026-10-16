@@ -1,21 +1,35 @@
 ---
 name: repo-docs-figures
-description: "README·docs에 넣는 구조도·차트·대체 글·데모 GIF를 만들거나 고칠 때 사용."
+description: "README·docs·PR에 넣는 구조도·차트·스크린샷·데모 GIF와 대체 글을 만들거나 고칠 때 사용."
 ---
 
 # Repo Docs Figures
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
-- 기반: repo-docs 먼저 적용. 이 스킬 범위: 그림 원본 형식, 변환, 검사, 대체 글. 그림을 넣는 자리는 종류별 스킬 담당
+- 기반: repo-docs 먼저 적용. 이 스킬 범위: 이미지 규격, 그림 원본 형식, 촬영, 변환, 검사, 대체 글. 그림을 넣는 자리는 종류별 스킬 담당
 - 필요할 때만 읽기: README 그림 배치 → repo-docs-readme의 머리·절 규칙; 실험 차트의 통계·신뢰구간 → repo-docs-experiment의 통계 규칙
 
 - 원본·입력 JSON·만든 그림 함께 커밋. 만든 그림의 손 수정 금지
 - 순서·전이·시간 변화가 전달할 정보이면 움직이는 SVG, 최종 구조·값만 전달하면 정지 SVG
 
+## 규격
+
+이미지 규격의 정본. 다른 스킬은 숫자를 옮기지 않고 이 절 링크
+
+종류 → 형식 → 위치 → 크기 → 길이·용량:
+
+- 로고 → SVG, 없으면 PNG(투명 배경) → `docs/assets/logo-light.*`, `logo-dark.*` → 표시 72~96px, PNG면 그 2배 → 100KB 이하
+- 데모 GIF → GIF → `docs/assets/demo.gif` → 폭 960px 이하 → 15초 이하, 10MB 이하
+- 스크린샷 → PNG → `docs/assets/{이름}-light.png`, `{이름}-dark.png` → 파일 폭 1920px → 1장 1MB 이하
+- 구조도·차트 → SVG + 원본 → `docs/assets/{이름}.svg` → 제한 없음 → 해당 없음
+- PR 화면 비교 → PNG → `pr-assets` 브랜치 → 스크린샷과 같음 → 스크린샷 용량과 동일
+
+- 이름: 보여 주는 것을 영어 소문자 kebab-case. 예: `lag-table-growing-light.png`. `image1`, 날짜·한글 이름 금지
+
 ## 도구와 파일
 
 - 렌더러: 저장소의 그림 도구와 원본 형식 우선. 원본·입력·변환 명령·도구 버전을 보존하고 같은 입력으로 재현
-- 원본과 산출물: `docs/assets/{이름}.{원본 확장자}`, `docs/assets/{이름}.svg`. 이름은 영어 소문자 kebab-case
+- 원본과 산출물: `docs/assets/{이름}.{원본 확장자}`, `docs/assets/{이름}.svg`. 이름은 규격 절
 - 실험 차트: 분석 결과에서 생성한 입력 사용. 원자료·추출 경로·생성 명령 보존, 수치 재입력 금지
 - 색·글꼴·크기·아이콘: 대상 저장소 디자인 정본에서 결정. 정본 값 복사 금지, 사용자 아이콘 세트는 경로 참조
 - 면 위계: 판과 그룹은 무채색, 중첩 깊이별 밝기 단계. 그룹 테두리 없음, 도형 외곽선 유지, 강조 그룹도 무채색
@@ -29,7 +43,10 @@ description: "README·docs에 넣는 구조도·차트·대체 글·데모 GIF�
 
 ## 대체 글
 
-- 결론 한 문장, 마침표 없음. 문체는 해당 문서 기준. 그림 이름·종류만 적기 금지
+- 그 그림을 봐야 알 수 있는 결론 한 문장, 마침표 없음. 문체는 해당 문서 기준. 고정 문장 금지, 그림마다 새로 작성
+- 그림 종류·파일 이름만 적기 금지. 예: `queuewatch 스크린샷` 금지, `지연이 늘어나는 토픽이 표 맨 위에 표시된다` 허용
+- 라이트·다크 두 장은 같은 대체 글. 두 장면을 합친 그림은 두 장면을 비교한 결론 한 문장
+- `README.en.md`: 같은 그림 파일, 대체 글만 영어
 - 문서 이미지 대체 글 필수. SVG 내부 제목만으로 대체 금지, 생성 이미지 줄까지 확인
 - 데이터 출처·구현 여부 표시와 파일 이름: (repo-docs 자리표시). 그림 제목·부제·단계 설명에도 같은 사실 상태 적용. 예시 차트 부제의 접두사도 정본 기준
 
@@ -46,6 +63,7 @@ description: "README·docs에 넣는 구조도·차트·대체 글·데모 GIF�
 - ThinkFlow Markdown 그림 또는 CI 연결 변경 전 → [Markdown과 CI](references/markdown.md)
 - ThinkFlow 그림 원본 작성·변경 전 → [그림 작성](references/syntax.md)
 - ThinkFlow 실험 차트 작성·변경 전 → [실험 차트](references/charts.md)
+- 스크린샷 촬영·합성 또는 `screens.json` 작성·변경 전 → [스크린샷](references/screenshots.md)
 - VHS 녹화 원본 작성·실행 전 → [VHS](references/vhs.md)
 - render_figures.py 변환 실행 전 → [변환](references/conversion.md)
 - ThinkFlow 변환·검사 또는 변환 도구 교체 전 → [검사](references/validation.md)

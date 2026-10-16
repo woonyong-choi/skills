@@ -7,7 +7,7 @@ Output {실행 위치 기준 경로}.gif
 Set Shell "bash"
 Set FontFamily "JetBrains Mono"
 Set FontSize 16
-Set Width 1200
+Set Width 960
 Set Height 640
 Set Padding 24
 Set TypingSpeed 40ms
