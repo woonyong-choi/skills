@@ -10,6 +10,7 @@ from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 import io
 import json
+import tempfile
 import os
 from pathlib import Path
 import shutil
@@ -27,10 +28,7 @@ import continuity as core  # noqa: E402
 import continuity_hook as hook  # noqa: E402
 import continuity_window as window  # noqa: E402
 
-RUNTIME = (
-    PLUGIN.parents[2]
-    / ".local/orchestration/issue-continuity/test-runtime/continuity-routing"
-)
+RUNTIME = Path(tempfile.gettempdir()) / "skills-test-runtime" / "continuity-routing"
 REPO = core.run(["git", "rev-parse", "--show-toplevel"], cwd=str(PLUGIN)).strip()
 OTHER_REPO = "/nonexistent/other-repo"
 ACTIVE_REPO = str(Path(REPO).parent)  # 활성 task의 작업본: 시작 cwd의 저장소와 다름

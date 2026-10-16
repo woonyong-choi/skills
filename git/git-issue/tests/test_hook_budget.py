@@ -66,7 +66,27 @@ class RecordRootTest(TemporaryCase):
         self.assertEqual(core.default_root(), self.base / "elsewhere")
         self.assertEqual(window.root(), self.base / "elsewhere")
         del os.environ["ISSUE_CONTINUITY_ROOT"]
-        self.assertEqual(core.default_root(), core.ROOT)
+        vault = self.base / "vault"
+        vault.mkdir()
+        old = os.environ.get("WOON_KNOWLEDGE_ROOT")
+        os.environ["WOON_KNOWLEDGE_ROOT"] = str(vault)
+        legacy = core.LEGACY_ROOT
+        core.LEGACY_ROOT = self.base / "old-root"
+        (core.LEGACY_ROOT / "task").mkdir(parents=True)
+        try:
+            target = vault.resolve() / "legacy" / "orchestration"
+            self.assertEqual(core.default_root(), target)
+            self.assertTrue((target / "task").is_dir())
+            self.assertFalse(core.LEGACY_ROOT.exists())
+            del os.environ["WOON_KNOWLEDGE_ROOT"]
+            with self.assertRaises(core.ContinuityError):
+                core.default_root()
+        finally:
+            core.LEGACY_ROOT = legacy
+            if old is None:
+                os.environ.pop("WOON_KNOWLEDGE_ROOT", None)
+            else:
+                os.environ["WOON_KNOWLEDGE_ROOT"] = old
         for name in ("continuity_hook.py", "continuity_window.py", "continuity_statusline.py"):
             self.assertNotIn("ISSUE_CONTINUITY_ROOT", (SCRIPTS / name).read_text(), name)
 
