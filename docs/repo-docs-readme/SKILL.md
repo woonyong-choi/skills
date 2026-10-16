@@ -75,14 +75,14 @@ description: "저장소 루트 README.md와 영어판 README.en.md를 작성·�
 
 ## 이미지·아이콘
 
-두 종류 공통. 종류 → 언제 → 위치·형식 → 크기:
+두 종류 공통. 형식·위치·크기·용량은 규격: repo-docs-figures 규격 절. 종류 → 넣는 자리:
 
-- 로고 → 로고 파일이 있을 때 → `docs/assets/logo-light.png`, `logo-dark.png`, `<picture>`로 테마별 → 높이 72~96px
-- 데모 GIF → 실행되는 화면이 있을 때, 머리 바로 아래 → `docs/assets/demo.gif` → 가로 960px 이하, 15초 이내, 10MB 이하
-- 스크린샷 → GIF가 필요 없는 정지 화면 → `docs/assets/{이름}.png` → 가로 960px 이하
-- 흐름·구조 그림 → 작동 방식·구현 절에 한 장 → ThinkFlow 원본과 SVG, `docs/assets/` → 본문 폭
+- 로고 → 로고 파일이 있을 때 머리. `<picture>`로 테마별
+- 데모 GIF → 실행되는 화면이 있을 때 머리 바로 아래
+- 스크린샷 → GIF가 필요 없는 정지 화면. 라이트·다크 `<picture>`(repo-docs-figures 스크린샷)
+- 흐름·구조 그림 → 작동 방식·구현 절에 한 장
 
-- 대체 글: 모든 이미지에 결론 한 문장, 마침표 없음. 모형·합성 화면이면 대체 글과 캡션에 `모형`(repo-docs 자리표시)
+- 대체 글: repo-docs-figures 대체 글 절. 모형·합성 화면이면 대체 글과 캡션에 `모형`(repo-docs 자리표시)
 - 아이콘: shields.io 뱃지의 공식 로고(`logo=` 값)에만. 절 제목·목록·본문에 아이콘·이모지 금지
 
 ## 영어판
