@@ -28,10 +28,10 @@
 - "`encodingForModel`에서 `gpt-4`를 `gpt-4o`로 이름을 바꿈"
 
 남길 것(오래 남을 패턴):
-- "계기 감지용 닫힌 정규식 열거는 깨지기 쉬움. 스키마로 검증한 구조를 택함"
-- "스킬 description은 계기 낱말을 앞에 둠(계기 대 동작 60/40)"
+- "호출 조건 감지용 닫힌 정규식 열거는 깨지기 쉬움. 스키마로 검증한 구조를 택함"
+- "스킬 description은 호출 조건 낱말을 앞에 둠(호출 조건 대 동작 60/40)"
 - "스킬에 딸린 스크립트는 pnpm 워크스페이스가 아니라 자체 잠금 파일을 가진 bun으로 돎"
-- "경로 모양의 계기는 description 글이 아니라 `paths:`에 둠"
+- "경로 모양의 호출 조건은 description 글이 아니라 `paths:`에 둠"
 
 정확히 아래 형식으로 출력한다. 서두도, 서술도 없다. 칸마다 한 문장. 검토자가 Problem/Proposal 한 쌍을 5초 안에 읽을 수 있어야 한다.
 
@@ -40,7 +40,7 @@
 | Problem | Proposal | Routing |
 |---|---|---|
 | <부모가 쓴 스킬의 실패 양상> | <그 스킬 본문의 변경> | <skill path + 절> |
-| <스킬은 있었지만 뜨지 않음> | <다음에 뜨도록 스킬 description 다듬기> | <tune description: <skill path>> |
+| <스킬은 있었지만 호출되지 않음> | <다음에 호출되도록 스킬 description 다듬기> | <tune description: <skill path>> |
 | <새 패턴, 진짜 자리가 되는 기존 스킬 없음> | <skill-creator로 새 스킬 초안 작성> | <skill-creator로 만들 새 스킬: <kebab-name>> |
 
 지적마다 한 행. 사용자는 행 단위로 승인한다.
