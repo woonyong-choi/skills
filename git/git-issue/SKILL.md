@@ -42,7 +42,7 @@ description: "GitHub 이슈의 제목·본문·완료 조건을 작성하거나 
 
 ## 본문
 
-- 종류별 틀(코드 블록 안)을 채워 `gh issue create --body-file {파일}`. 절 이름·순서 유지. 올리기 전 주석과 해당 없는 절 삭제
+- 종류별 틀(코드 블록 안)을 채워 `gh issue create --body-file -`(표준 입력, 임시 파일 금지). 절 이름·순서 유지. 올리기 전 주석과 해당 없는 절 삭제
 - 틀 정본: 아래 파일만. 저장소별 `.github` 틀·계정 `.github` 저장소 생성 금지
 - 이슈 연결: GitHub 하위 이슈·막힘 관계
 
@@ -54,7 +54,7 @@ description: "GitHub 이슈의 제목·본문·완료 조건을 작성하거나 
 - experiment → [experiment.md](references/experiment.md)
 - docs → [docs.md](references/docs.md)
 
-- 댓글 틀(결정·범위 변경): 채워서 `gh issue comment --body-file`. 개조식 명사 끝, 처리 확인 항목은 체크박스와 증거(경로·#번호·링크), 주석과 해당 없는 줄 삭제
+- 댓글 틀(결정·범위 변경): 채워서 `gh issue comment --body-file -`. 개조식 명사 끝, 처리 확인 항목은 체크박스와 증거(경로·#번호·링크), 주석과 해당 없는 줄 삭제
 
 ## 공개 웹 링크
 

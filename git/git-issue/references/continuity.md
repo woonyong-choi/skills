@@ -42,7 +42,9 @@
 
 ```sh
 python3 <이 스킬 폴더>/scripts/continuity.py bind --task 작업명 --repo 저장소경로 --issue 번호 --project 번호
-python3 <이 스킬 폴더>/scripts/continuity.py checkpoint --task 작업명 --input 기록.json --sync --status 진행
+python3 <이 스킬 폴더>/scripts/continuity.py checkpoint --task 작업명 --input - --sync --status 진행 <<'EOF'
+{기록 JSON}
+EOF
 python3 <이 스킬 폴더>/scripts/continuity.py restore --task 작업명
 python3 <이 스킬 폴더>/scripts/continuity.py doctor --task 작업명
 ```

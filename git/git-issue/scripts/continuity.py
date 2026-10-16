@@ -1438,7 +1438,7 @@ def main() -> int:
                         checkpoint(
                             folder,
                             binding,
-                            read(args.input),
+                            json.loads(sys.stdin.read()) if str(args.input) == "-" else read(args.input),
                             args.sync,
                             reconcile=args.reconcile,
                             board_status=args.status,

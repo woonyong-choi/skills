@@ -55,8 +55,8 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 - `docs/experiments/README.md`, `docs/experiments/**` → 기여자 → 설계 값을 어떻게 확인했나 → 실험이 하나 이상 → experiment
 - `docs/notes/**` → 기여자 → 개발 중 무엇을 알게 됐나 → 기록할 insight나 reference가 있을 때 → note
 - `docs/assets/**` → 해당 없음 → 해당 없음 → 문서에 그림이 있을 때 → figures
-- `<Vault>/worktree/<프로젝트>/docs/판단/`, `docs/작업일지/`, 프로젝트 무관은 `<Vault>/legacy/판단/`, `legacy/작업일지/`, 원칙은 `<Vault>/principles.md` → 본인 → 무엇을 왜 판단했나 → 기록 기준을 통과한 판단, 큰 작업, 교훈이 있을 때 → journal
-- `<Vault>/worktree/<프로젝트>/docs/보고서/{YYYY-MM-DD}-{주제}/`, 프로젝트 무관은 `<Vault>/legacy/보고서/{YYYY-MM-DD}-{주제}/` → 본인 → 개념 설명, 시각 후보 선택, 전후 결과 확인 → 브라우저로 볼 보고서가 있을 때 → html-report
+- Vault 판단·작업 일지·원칙(경로 정본: repo-docs-journal 저장 위치 절) → 본인 → 무엇을 왜 판단했나 → 기록 기준을 통과한 판단, 큰 작업, 교훈이 있을 때 → journal
+- Vault 보고서(경로 정본: html-report 저장 위치 절) → 본인 → 개념 설명, 시각 후보 선택, 전후 결과 확인 → 브라우저로 볼 보고서가 있을 때 → html-report
 
 - `docs/README.md` 목록 분류와 순서: (repo-docs-design references/index.md)
 - 비공개 문서·실행 임시물: 모두 Vault(위 목록의 Vault 경로, project-context). 저장소 안 `.local/`·`archive/` 사용 금지
