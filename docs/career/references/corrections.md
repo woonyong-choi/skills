@@ -14,7 +14,7 @@
 
 ## 저장 위치
 
-교정 기록 하나 = 파일 하나 `<Vault>/career/corrections/{YYYYMMDD-HHMMSS}-career-feedback.md`(Claude·Codex 공통)
+교정 기록 하나 = 파일 하나 `<Vault>/career/corrections/{YYYYMMDD-HHMMSS}-career-feedback.md`
 
 - 저장 불가: 최종 응답에 같은 블록 출력, 저장 안 됨 명시
 - 비밀·민감한 원값 저장 금지. 실수를 막을 규칙만 기록
@@ -24,7 +24,7 @@
 끝내기 전 같은 키의 기존 기록 검색. 한 작업 안 여러 번은 교차 승격에 1회로 세고 반복 수는 따로 기록:
 
 - 1회 작업: `observed`
-- 서로 다른 2회 이상: 선호·작업 방식은 `durable-memory-candidate`, 사실·근거는 `career-master-candidate`(반복만으로 사실 확정 금지, 사용자 명시 승인과 출처가 있을 때만 원본 수정)
+- 서로 다른 2회 이상: 선호·작업 방식은 `durable-memory-candidate`(작업 보고 할 일 칸에 "작업 규칙으로 저장할지" 한 줄), 사실·근거는 `career-master-candidate`(반복만으로 사실 확정 금지, 사용자 명시 승인과 출처가 있을 때만 원본 수정)
 - 한 작업에서 같은 키 2회 이상 교정: 횟수와 무관하게 `public-skill-candidate` 추가, 사적 정보 없는 일반 교훈을 따로 기록
 - 지원 작업 중 이 스킬 수정 금지(별도 요청 시만). 회사 한정·모순·근거 없는 항목은 `run-only` 또는 `needs-review`
 - 원본 수정 승인 시: career-record로 별도 작업 변경, 출처·개정 기록, 원본 전체 재읽기, 무효화된 단계 전부 재실행
