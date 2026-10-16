@@ -332,3 +332,9 @@ test('저장소 안 경로는 파일 0개, 종료 1', () => {
     synthetic.cleanup();
   }
 });
+
+test('좁은 화면 필터 묶음은 스크롤 칸 폭에 갇히지 않는다', () => {
+  const rule = STYLE.match(/\.report-bar-scroll \.app-tablist\.is-segmented\s*\{([^}]*)\}/);
+  assert.ok(rule, '필터 묶음 규칙 없음');
+  assert.match(rule[1], /max-width:\s*none/);
+});

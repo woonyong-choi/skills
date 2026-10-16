@@ -5,6 +5,8 @@
 .report-bar-start { grid-area: start; }
 .report-bar-judge { grid-area: judge; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--spacing-gap-sm); min-width: 0; }
 .report-bar-scroll { min-width: 0; overflow-x: auto; scrollbar-width: thin; }
+/* 정본 분할 버튼의 max-width: 100%가 묶음을 스크롤 칸 폭에 가둬 첫 버튼이 왼쪽 밖으로 밀리는 문제 방지 */
+.report-bar-scroll .app-tablist.is-segmented { max-width: none; }
 .report-bar-theme { grid-area: theme; display: flex; justify-content: flex-end; min-width: 0; overflow-x: auto; }
 .report-progress { flex: none; font-size: var(--text-small-text); color: var(--color-ui-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
