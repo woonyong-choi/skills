@@ -2,6 +2,7 @@
 name: principle-subtract-before-you-add
 description: "추가, 리팩터링, 재작성의 순서를 정할 때 적용한다. 죽은 코드, 중복 검증기, 빈 참조를 먼저 지우고 더 단순해진 기반 위에 쌓는다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 더하기 전에 빼기(Subtract Before You Add)

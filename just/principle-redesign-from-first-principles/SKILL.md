@@ -2,6 +2,7 @@
 name: principle-redesign-from-first-principles
 description: "새 요구사항을 기존 설계에 넣을 때 적용한다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 처음부터 다시 설계(Redesign From First Principles)

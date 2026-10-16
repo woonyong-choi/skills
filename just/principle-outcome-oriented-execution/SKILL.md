@@ -2,6 +2,7 @@
 name: principle-outcome-oriented-execution
 description: "단계 경계가 명시된 계획된 재작성과 마이그레이션 중에 적용한다. 목표 아키텍처로 수렴하고, 버릴 호환 코드로 매끄러운 중간 상태를 지키지 않는다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 결과 중심 실행(Outcome-Oriented Execution)

@@ -2,6 +2,7 @@
 name: principle-separate-before-serializing-shared-state
 description: "동시에 움직이는 주체들이 같은 파일, 브랜치, 키, 상태 객체에 쓸 수 있을 때 적용한다. 먼저 공유를 없애고, 쓰는 쪽이 하나여야 하는 것이 진짜 불변 조건일 때만 구조로 직렬화한다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 공유 상태는 직렬화 전에 분리(Separate Before Serializing Shared State)

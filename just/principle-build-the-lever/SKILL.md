@@ -2,6 +2,7 @@
 name: principle-build-the-lever
 description: "대량 작업만이 아니라 사소하지 않은 모든 작업(수정, 마이그레이션, 분석, 확인)에 적용한다. 손으로 하지 말고 그 일을 하거나 증명하는 도구(코드모드, 스크립트, 생성기, 서브에이전트가 따르는 스킬)를 만든다. 그 도구가 리뷰어가 다시 돌려 볼 수 있는 산출물이다."
 disable-model-invocation: true
+user-invocable: false
 ---
 # 도구부터 만들기(Build the Lever)
 

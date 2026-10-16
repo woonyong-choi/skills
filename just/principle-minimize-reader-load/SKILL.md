@@ -2,6 +2,7 @@
 name: principle-minimize-reader-load
 description: "따라가기 어려운 코드를 리뷰하거나 다듬을 때 적용한다. 질문과 답 사이의 계층 수와 읽는 사람이 머릿속에 들고 있어야 하는 숨은 상태를 세고, 호출부가 하나인 래퍼는 합치고 바뀔 수 있는 상태의 범위는 줄인다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 읽는 사람 부담 줄이기(Minimize Reader Load)
