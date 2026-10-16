@@ -2,7 +2,8 @@
 // 보고서 원문 Markdown을 document-engine으로 그려 정본 문서 배치에 조립한 보고서 폴더를 만든다.
 // 인자: 원문 Markdown 경로, 선택 출력 폴더(기본 원문 폴더)
 // 출력: 출력 폴더의 index.html, 원문 Markdown, theme/(정본 CSS·글꼴), report.css, report.js, diagrams/, assets/. stdout index.html 경로, stderr 실패 이유, 종료 0 성공·1 실패·2 인자 오류
-// 실행 조건: Node.js 22.12 이상, 이 폴더에서 npm ci. 설명 검사·원문 규칙·도표 실패면 기존 출력 폴더의 파일 유지
+// 실행 조건: Node.js 22.12 이상, 이 폴더에서 npm ci, git-issue 스킬과 등록 Vault. 출력은 Vault의 보고서 위치만. 설명 검사·원문 규칙·도표 실패면 기존 출력 폴더의 파일 유지
+import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -14,6 +15,61 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ASSETS = join(HERE, '..', 'assets');
 const WORDS = join(HERE, '..', 'references', 'unfamiliar-words.md');
 const ASSET_PREFIX = '/__report__/assets/';
+// 설치본(스킬 폴더 나란히)과 원본 저장소(docs/·git/) 두 배치의 git-issue 위치
+const CONTEXT_SCRIPTS = [join(HERE, '..', '..', 'git-issue', 'scripts'), join(HERE, '..', '..', '..', 'git', 'git-issue', 'scripts')];
+// project_context의 Vault 해석·쓰기 검사를 그대로 쓰고 보고서 폴더 위치만 더 좁힌다
+const DESTINATION_CHECK = `
+import json, sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+import project_context as pc
+cwd, target = Path(sys.argv[2]), Path(sys.argv[3]).resolve()
+def done(**value):
+    print(json.dumps(value, ensure_ascii=False))
+    raise SystemExit(0)
+try:
+    vault = pc.resolve_vault()
+except Exception as error:
+    done(ok=False, error=str(error))
+legacy = (vault / "legacy" / "reports").resolve()
+try:
+    project = pc.check_project(cwd)
+except Exception:
+    project = None
+if project:
+    try:
+        pc.check_write(project, target)
+    except Exception as error:
+        done(ok=False, error=str(error))
+    reports = (Path(project["area"]) / "docs" / "reports").resolve()
+    if target.parent.parent == reports:
+        done(ok=True, kind="project", root=str(reports))
+if target.parent.parent == legacy:
+    done(ok=True, kind="legacy", root=str(legacy))
+expected = str((Path(project["area"]) / "docs" / "reports").resolve()) + "/{YYYY-MM-DD}-{주제}/ 또는 " if project else ""
+done(ok=False, error=f"보고서 폴더는 {expected}{legacy}/{{YYYY-MM-DD}}-{{주제}}/ 아래만")
+`;
+
+// cost: time O(p) + Python 실행 시간, heap O(1), stack O(1), io O(p)
+// vars: p = 등록 프로젝트 수
+// basis: estimate
+/**
+ * 보고서 폴더 위치 검사. 등록 프로젝트는 <Vault>/worktree/<프로젝트>/docs/reports/, 프로젝트 무관은 <Vault>/legacy/reports/.
+ * Vault 미등록·저장소 안·그 밖의 위치는 이유와 함께 실패. 파일을 쓰기 전에만 부른다
+ */
+export function checkDestination(outDir, { cwd = process.cwd(), env = process.env } = {}) {
+  const scripts = CONTEXT_SCRIPTS.find((folder) => existsSync(join(folder, 'project_context.py')));
+  if (!scripts) throw new Error('git-issue project_context.py를 찾을 수 없음: git-issue 스킬 설치 필요');
+  const run = spawnSync('python3', ['-c', DESTINATION_CHECK, scripts, cwd, join(resolve(outDir), 'report.md')], { env, encoding: 'utf8', timeout: 30000 });
+  let result;
+  try {
+    result = JSON.parse(run.stdout);
+  } catch {
+    throw new Error(`보고서 위치 검사 실패: ${run.stderr || run.error?.message || '응답 없음'}`);
+  }
+  if (!result.ok) throw new Error(`보고서 위치 거부: ${result.error}`);
+  return result;
+}
 
 // cost: time O(1), heap O(1), stack O(1)
 // vars: 없음
@@ -57,7 +113,8 @@ function copyInto(stage, files) {
  * 보고서 폴더를 만든다. 모든 파일을 임시 폴더에 다 만든 뒤에만 출력 폴더로 옮기므로 실패하면 기존 출력이 그대로다.
  * @returns {Promise<string>} index.html 경로
  */
-export async function buildReport(sourcePath, outDir = dirname(sourcePath)) {
+export async function buildReport(sourcePath, outDir = dirname(sourcePath), context = {}) {
+  checkDestination(outDir, context);
   const source = readFileSync(sourcePath, 'utf8');
   const { meta, summary, body } = splitSource(source);
   const problems = lintSource(source, readWords(readFileSync(WORDS, 'utf8')));

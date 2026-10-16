@@ -108,6 +108,7 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 - 작성하지 않은 새 세션에 보고서 원문만 전달(작성 대화·재료 제외)하고 세 질문: 처음 보는 말과 그 줄, 예 없이 추상적인 문장과 그 줄, 다 읽고 할 일 한 문장
 - 3번 답이 요약과 같은 뜻인지 작성 세션이 대조
 - 모델: 공급자마다 가장 저렴한 모델(Claude `haiku`, Codex는 `read_review.mjs`의 `CHEAPEST` 상수). 더 비싼 모델로 올려 통과 금지
+- 생각 수준: low 고정(Claude `--effort low`, Codex `-c model_reasoning_effort=low`). 결과 보고에 사용 토큰 수 한 줄
 - 실행: `node <이 스킬 폴더>/scripts/read_review.mjs <보고서 폴더>/report.md --host claude`
 - 하나라도 걸리면 고쳐서 다시 읽히기, 최대 2번. 그래도 걸리면 걸린 줄을 표시한 채 띄우고 보고
 - 1번 답에 나온 말은 낯선 말 목록에 추가
@@ -124,6 +125,8 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 - 배치: 문서 배치에서 왼쪽 목록 열 없이 본문 + 오른쪽 목차. 본문은 남는 폭 전부, 좁은 화면은 목차가 위
 - 상단 막대: 왼쪽 비움, 가운데 판정 조작(비교 보고서만), 오른쪽 테마 전환(시스템·라이트·다크). 개수가 고정된 조작만, 다른 보고서 연결은 관련 보고서 목록
 - 판정: 선택 비교 A·B·C·재작업·보류, 전후 확인 승인·재작업·보류. 같은 버튼 다시 누르면 해제, 의견 칸은 버튼 줄 아래
+- 버튼: 판정·필터·결과 복사·테마 모두 디자인 저장소 분할 버튼(`app-tablist is-segmented`). 보고서 전용 버튼 모양 금지, 배치만 `report.css`
+- 순서 표시: 그림 왼쪽 위 모서리 바깥 원(그림자 포함), 고른 후보 그림에 강조 테두리
 - 상단 가운데: 진행 수, 필터(전체·선택·미선택·재작업·보류), 결과 복사
 - 저장: 보고서 대상·버전별 키로 브라우저에만, 외부 전송 없음. 미판정·보류를 승인으로 해석 금지
 - 결과 복사: `{ target, version, questions: [{ title, choice, note }] }` JSON. 클립보드 실패 시 본문 끝 읽기 전용 글 상자
@@ -131,8 +134,11 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 
 ## 저장 위치
 
-- 프로젝트: repo-docs 문서 목록의 `.local/reports/{YYYY-MM-DD}-{주제}/` 위치·비공개 규칙(등록 Vault 위치, git 제외 확인)
-- 프로젝트 밖: 사용자·워크스페이스 지정 폴더, 없으면 현재 폴더의 git 제외된 `.local/reports/`. 제외를 확인할 수 없으면 저장 중단
+- 등록 프로젝트: `<Vault>/worktree/<프로젝트>/docs/reports/{YYYY-MM-DD}-{주제}/`
+- 프로젝트 무관: `<Vault>/legacy/reports/{YYYY-MM-DD}-{주제}/`
+- Vault 미등록·접근 불가: 저장 중단. 사용자에게 Vault 절대 경로 요청 → git-issue `project_context.py --register-vault <경로>`
+- 저장소 안 저장 금지(git 제외 여부와 무관)
+- 생성기 검사: 파일을 쓰기 전에 git-issue `project_context.py`의 Vault 해석·쓰기 검사로 출력 폴더 확인. 위 두 위치가 아니면 HTML·그림·도표 포함 어떤 파일도 쓰지 않고 종료 1. 출력 폴더 인자가 없으면 원문 폴더가 검사 대상
 - 폴더 내용: `report.md`(원문), `assets/`(그림), 생성물 `index.html`, `report.css`, `report.js`, `theme/`(정본 CSS·글꼴), `diagrams/`(도표). 외부 네트워크 없이 열기 가능
 
 ## 생성
@@ -155,7 +161,7 @@ node <이 스킬 폴더>/scripts/build_report.mjs <보고서 폴더>/report.md
 
 ## 전달
 
-- 열기 위치: 사용자 컴퓨터의 보고서 폴더. 원격·클라우드 세션이면 폴더 전체를 사용자 폴더로 복사 후 그 경로 사용
+- 열기 위치: 사용자 컴퓨터의 위 Vault 보고서 폴더. 원격·클라우드 세션이면 사용자 컴퓨터의 같은 Vault 경로에 폴더 전체 저장 후 그 경로 사용. 저장 불가하면 미저장으로 보고
 - 결과에 열기 명령 그대로 제공, 경로는 따옴표로 감싼 절대 경로: macOS `open -a "Google Chrome" "<폴더>/index.html"`, Linux `google-chrome "<폴더>/index.html"`, Windows `start chrome "<폴더>\index.html"`
 - 사용자 컴퓨터에서 명령 실행 가능하면 직접 실행. 앱 실행이 막힌 실행 환경(Codex 기본 보호 모드 등)이면 명령만 제공, 권한 우회 금지
 
