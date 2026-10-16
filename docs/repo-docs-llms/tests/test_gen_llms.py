@@ -19,9 +19,6 @@ RAW = "https://example.com/raw/"
 
 
 class GenerateIndexTest(unittest.TestCase):
-    # cost: time O(1), heap O(1), stack O(1), io O(1)
-    # vars: 없음
-    # basis: estimate
     # 임시 Git 저장소에 최소 문서 목록 생성
     def setUp(self) -> None:
         self.previous = os.getcwd()
@@ -32,16 +29,10 @@ class GenerateIndexTest(unittest.TestCase):
         Path("docs/README.md").write_text("# Docs\n\n## Start\n\n- [Architecture](architecture.md): Code map\n", encoding="utf-8")
         Path("docs/architecture.md").write_text("# Architecture\n", encoding="utf-8")
 
-    # cost: time O(1), heap O(1), stack O(1), io O(1)
-    # vars: 없음
-    # basis: estimate
     def tearDown(self) -> None:
         os.chdir(self.previous)
         self.directory.cleanup()
 
-    # cost: time O(c), heap O(c), stack O(1), io O(1)
-    # vars: c = README 글자 수
-    # basis: estimate
     def run_main(self, readme: str) -> tuple[int | str | None, str]:
         Path("README.md").write_text(readme, encoding="utf-8")
         stderr = io.StringIO()
@@ -52,9 +43,6 @@ class GenerateIndexTest(unittest.TestCase):
                 code = error.code
         return code, stderr.getvalue()
 
-    # cost: time O(c), heap O(c), stack O(1), io O(1)
-    # vars: c = README 글자 수
-    # basis: estimate
     def test_new_template_uses_why_section_as_intro(self) -> None:
         # #90 지시 5: 새 README 틀은 머리 뒤 소개 문단 없이 데모·알림·절. 소개는 해결하는 문제 절 첫 문단
         readme = (
@@ -84,9 +72,6 @@ class GenerateIndexTest(unittest.TestCase):
                 self.assertIn("> Short tagline.\n\nIntro paragraph.\n", text)
                 self.assertNotIn("Status", text)
 
-    # cost: time O(c), heap O(c), stack O(1), io O(1)
-    # vars: c = README 글자 수
-    # basis: estimate
     def test_missing_intro_exits_with_reason(self) -> None:
         for readme in ["# Tool\n\nOnly tagline.\n", "# Tool\n\n[Status](#status)\n\nOnly tagline.\n", "No title.\n\nIntro.\n"]:
             with self.subTest(readme=readme):
@@ -96,9 +81,6 @@ class GenerateIndexTest(unittest.TestCase):
                 self.assertIn("intro paragraph", str(code))
                 self.assertFalse(Path("llms.txt").exists())
 
-    # cost: time O(c), heap O(c), stack O(1), io O(1)
-    # vars: c = README 글자 수
-    # basis: estimate
     # 소개 문단 대신 알림 인용·하위 제목이 들어가는 회귀
     def test_quote_or_section_is_not_intro(self) -> None:
         cases = [
@@ -114,9 +96,6 @@ class GenerateIndexTest(unittest.TestCase):
                 self.assertIn("intro paragraph", str(code))
                 self.assertFalse(Path("llms.txt").exists())
 
-    # cost: time O(c), heap O(c), stack O(1), io O(1)
-    # vars: c = README 글자 수
-    # basis: estimate
     # 가운뎃점이 든 한 줄 소개 보존, 가운뎃점 이동 줄 제외
     def test_middle_dot_tagline_is_kept(self) -> None:
         navigation = [
@@ -131,9 +110,6 @@ class GenerateIndexTest(unittest.TestCase):
                 self.assertIn("> Line counter · CLI\n\nIntro paragraph.\n", text)
                 self.assertNotIn("Install", text)
 
-    # cost: time O(c), heap O(c), stack O(1), io O(1)
-    # vars: c = README 글자 수
-    # basis: estimate
     # #64: 제목과 같은 블록의 소개, 일반 인용 소개, 코드 블록, 제목 안 태그 처리
     def test_title_block_quote_fence_and_tagged_title(self) -> None:
         cases = [
@@ -151,9 +127,6 @@ class GenerateIndexTest(unittest.TestCase):
                 self.assertTrue(text.startswith(f"# {name}\n\n> Short tagline.\n\nIntro paragraph.\n"), text)
                 self.assertNotIn("widget run", text)
 
-    # cost: time O(1), heap O(1), stack O(1), io O(1)
-    # vars: 없음
-    # basis: estimate
     def test_remote_head_failure_names_branch_option(self) -> None:
         responses = [
             subprocess.CompletedProcess([], 0, "https://github.com/owner/repo.git\n", ""),
@@ -175,9 +148,6 @@ class DocumentListTest(unittest.TestCase):
     )
     KOREAN = "# 도구\n\n빠른 색인 도구\n\n한국어 소개 문단.\n"
 
-    # cost: time O(1), heap O(1), stack O(1), io O(1)
-    # vars: 없음
-    # basis: estimate
     def setUp(self) -> None:
         self.previous = os.getcwd()
         self.directory = tempfile.TemporaryDirectory()
@@ -187,16 +157,10 @@ class DocumentListTest(unittest.TestCase):
             Path("docs", path).parent.mkdir(parents=True, exist_ok=True)
             Path("docs", path).write_text("# 문서\n", encoding="utf-8")
 
-    # cost: time O(1), heap O(1), stack O(1), io O(1)
-    # vars: 없음
-    # basis: estimate
     def tearDown(self) -> None:
         os.chdir(self.previous)
         self.directory.cleanup()
 
-    # cost: time O(c), heap O(c), stack O(1), io O(1)
-    # vars: c = 입력 글자 수
-    # basis: estimate
     def run_main(self, index: str, readme: str | None = None, english: str | None = None) -> int | str | None:
         Path("docs/README.md").write_text(index, encoding="utf-8")
         Path("README.md").write_text(readme or self.KOREAN, encoding="utf-8")

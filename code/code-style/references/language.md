@@ -15,4 +15,4 @@
 - 린터 설정과 검사 명령
 - CSS만: 선택자, 값과 단위, 반응형·접근성
 
-- 있는 스킬: Rust, Kotlin(JVM 서버·CLI), Python, JavaScript, CSS(함수·오류·로그 항목 해당 없음)
+- 있는 스킬: Rust, Kotlin(JVM 서버·CLI), Python, TypeScript(JavaScript 포함), CSS(함수·오류·로그 항목 해당 없음)

@@ -9,9 +9,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 import skill_check  # noqa: E402
 
 
-# cost: time O(w), heap O(w), stack O(1)
-# vars: w = 줄 길이
-# basis: estimate
 def flagged(line: str) -> list[str]:
     return [word for _, word in skill_check.bad_endings([line], 0)]
 

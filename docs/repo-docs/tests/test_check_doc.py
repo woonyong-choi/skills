@@ -14,9 +14,6 @@ import check_doc  # noqa: E402
 
 
 class DocumentStyleTest(unittest.TestCase):
-    # cost: time O(Σw²), heap O(c), stack O(1)
-    # vars: c = 표본 글자 수, w = 표본의 줄별 글자 수
-    # basis: estimate
     # 파일 대신 메모리 표본으로 공개 CLI 진입점 실행
     def test_main_style_signals_and_preserved_sources(self) -> None:
         cases = [
@@ -84,9 +81,6 @@ class DocumentStyleTest(unittest.TestCase):
                 self.assertEqual(check_doc.main([name]), expected)
 
 
-    # cost: time O(Σw), heap O(c), stack O(1)
-    # vars: c = 표본 글자 수, w = 표본의 줄별 글자 수
-    # basis: estimate
     # 목록 항목 문장의 종결 검사 누락 회귀
     def test_list_item_sentences_use_paragraph_endings(self) -> None:
         cases = [

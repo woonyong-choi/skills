@@ -63,16 +63,10 @@ def configure_target_home(target_home: Path) -> None:
     TRASH = INSTALL_HOME / ".skill-trash"
 
 
-# cost: time O(k log k), heap O(k), stack O(1), io O(k)
-# vars: k = 원본 폴더 항목 수
-# basis: estimate
 def is_skill_source(folder: Path) -> bool:
     return folder.is_dir() and bool(source_skills(folder))
 
 
-# cost: time O(p + k log k), heap O(p + k), stack O(1), io O(p + k)
-# vars: p = 스크립트 상위 폴더 수, k = 후보 폴더 항목 수
-# basis: estimate
 def resolve_source(argument: str | None) -> Path:
     if argument is not None:
         explicit = Path(argument).expanduser()
@@ -95,9 +89,6 @@ def resolve_source(argument: str | None) -> Path:
     raise SystemExit("스킬 원본 저장소를 찾지 못함: --source로 경로 지정")
 
 
-# cost: time O(k log k), heap O(k), stack O(1), io O(k)
-# vars: k = 원본 폴더 항목 수
-# basis: estimate
 def source_skills(source: Path) -> list[Path]:
     roots = [source, *(source / category for category in CATEGORIES)]
     skills = sorted(
@@ -110,9 +101,6 @@ def source_skills(source: Path) -> list[Path]:
     return skills
 
 
-# cost: time O(b), heap O(f), stack O(d), io f
-# vars: b = 스킬 폴더 바이트 수, f = 파일 수, d = 폴더 깊이
-# basis: estimate
 def has_symlink(skill: Path) -> bool:
     """배포에 들어가는 경로 중 symlink 존재 여부. SKIP 폴더(node_modules 등 설치 결과물)는 제외"""
     return skill.is_symlink() or any(
@@ -120,9 +108,6 @@ def has_symlink(skill: Path) -> bool:
     )
 
 
-# cost: time O(b), heap O(f), stack O(d), io O(f)
-# vars: b = skill bytes, f = file count, d = folder depth
-# basis: estimate
 def tree_hash(folder: Path) -> str:
     digest = hashlib.sha256()
     for path in sorted(folder.rglob("*")):
@@ -131,9 +116,6 @@ def tree_hash(folder: Path) -> str:
     return digest.hexdigest()
 
 
-# cost: time O(b), heap O(1), stack O(1), io 1
-# vars: b = 옮기는 폴더 바이트 수(다른 볼륨일 때만)
-# basis: estimate
 def move_to_trash(path: Path) -> Path | None:
     if not path.exists():
         return
@@ -155,9 +137,6 @@ def _skill_path(root: Path, name: str) -> Path:
     return target
 
 
-# cost: time O(n), heap O(n), stack O(1), io 1
-# vars: n = manifest 항목 수
-# basis: estimate
 def _read_manifest(root: Path) -> dict[str, str]:
     if root.is_symlink():
         raise ValueError(f"symlink target root: {root}")
@@ -174,9 +153,6 @@ def _read_manifest(root: Path) -> dict[str, str]:
     return record
 
 
-# cost: time O(n), heap O(n), stack O(1), io 3
-# vars: n = manifest 항목 수
-# basis: estimate
 def _write_manifest(root: Path, record: dict[str, str]) -> None:
     stage = root / (MANIFEST + "." + uuid.uuid4().hex)
     try:
@@ -187,9 +163,6 @@ def _write_manifest(root: Path, record: dict[str, str]) -> None:
             stage.unlink()
 
 
-# cost: time O(b), heap O(f), stack O(d), io O(f)
-# vars: b = 스킬 바이트 수, f = 파일 수, d = 폴더 깊이
-# basis: estimate
 def _replace_skill(root: Path, skill: Path, digest: str, installed: dict[str, str]) -> None:
     configuration = INSTALL_HOME / ".config/skills"
     configuration.mkdir(parents=True, exist_ok=True)
@@ -201,9 +174,6 @@ def _replace_skill(root: Path, skill: Path, digest: str, installed: dict[str, st
             _install_hook_entry(configuration, skill)
 
 
-# cost: time O(b), heap O(b), stack O(1), io 3
-# vars: b = hook entry bytes
-# basis: estimate
 def _install_hook_entry(configuration: Path, skill: Path) -> None:
     """just do 플러그인 훅이 부르는 안정된 진입점. 스킬 설치본 교체와 독립된 위치에 둔다."""
     source = (skill / HOOK_ENTRY_SOURCE).read_bytes()
@@ -215,9 +185,6 @@ def _install_hook_entry(configuration: Path, skill: Path) -> None:
     os.replace(staged_entry, entry)
 
 
-# cost: time O(b), heap O(b), stack O(1), io 4
-# vars: b = hook entry bytes
-# basis: estimate
 def _refresh_hook_entry(skill: Path) -> None:
     configuration = INSTALL_HOME / ".config/skills"
     configuration.mkdir(parents=True, exist_ok=True)
@@ -227,9 +194,6 @@ def _refresh_hook_entry(skill: Path) -> None:
         _install_hook_entry(configuration, skill)
 
 
-# cost: time O(b), heap O(f), stack O(d), io O(f)
-# vars: b = skill bytes, f = file count, d = folder depth
-# basis: estimate
 def _replace_skill_locked(root: Path, skill: Path, digest: str, installed: dict[str, str]) -> None:
     target = _skill_path(root, skill.name)
     if has_symlink(skill):
@@ -261,9 +225,6 @@ def _replace_skill_locked(root: Path, skill: Path, digest: str, installed: dict[
         shutil.rmtree(backup)
 
 
-# cost: time O(n + b), heap O(n), stack O(1), io 5
-# vars: n = manifest 항목 수, b = 다른 볼륨으로 옮기는 바이트 수
-# basis: estimate
 def _remove_skill(root: Path, name: str, installed: dict[str, str], dry_run: bool) -> None:
     target = _skill_path(root, name)
     if name not in installed:
@@ -282,9 +243,6 @@ def _remove_skill(root: Path, name: str, installed: dict[str, str], dry_run: boo
     installed.pop(name)
 
 
-# cost: time O(s·b), heap O(s + f), stack O(d), io O(s·f)
-# vars: s = 스킬 수, b = 스킬 바이트 수, f = 스킬 파일 수, d = 폴더 깊이
-# basis: estimate
 def sync(root: Path, skills: list[Path], dry_run: bool) -> bool:
     installed = _read_manifest(root)
     current = {skill.name: tree_hash(skill) for skill in skills}
@@ -323,9 +281,6 @@ def sync(root: Path, skills: list[Path], dry_run: bool) -> bool:
     return success
 
 
-# cost: time O(b + f), heap O(f + m), stack O(1), io O(f)
-# vars: b = zip과 원본 파일 바이트 수 합계, f = 파일 수, m = 가장 큰 파일 바이트 수
-# basis: estimate
 def is_valid_archive(archive: Path, skill_name: str, files: dict[str, Path]) -> bool:
     try:
         with zipfile.ZipFile(archive) as bundle:
@@ -338,9 +293,6 @@ def is_valid_archive(archive: Path, skill_name: str, files: dict[str, Path]) -> 
         return False
 
 
-# cost: time O(s·b + s·f log f + s·f·d), heap O(s + f + b), stack O(d), io O(s·f)
-# vars: s = 스킬 수, b = 스킬 폴더 바이트 수, f = 스킬별 파일 수, d = 폴더 깊이
-# basis: estimate
 def build_claude_zips(source: Path, skills: list[Path], dry_run: bool, output: Path | None = None) -> list[Path]:
     output = output if output is not None else source / "dist" / "claude"
     record = _read_manifest(output)
@@ -391,9 +343,6 @@ def build_claude_zips(source: Path, skills: list[Path], dry_run: bool, output: P
     return changed
 
 
-# cost: time O(t·s·b + s·f log f + s·f·d), heap O(s + f + b), stack O(d), io O(t·s·f)
-# vars: t = 도구 수 + 1, s = 스킬 수, b = 스킬 폴더 바이트 수, f = 스킬별 파일 수, d = 폴더 깊이
-# basis: estimate
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source")

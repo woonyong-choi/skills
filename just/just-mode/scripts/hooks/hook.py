@@ -274,7 +274,7 @@ def rule_gate(payload: dict[str, Any], repo: Path, session: str) -> dict[str, An
                 reader.select_for_tool(edit, repo, scope)
         try:
             pending = reader.pending_rules(state)
-        except (OSError, ValueError) as error:
+        except (OSError, ValueError, TypeError) as error:
             diagnostic = str(error)
             repeated = state.get("rule_error") == diagnostic
             state["rule_error"] = diagnostic

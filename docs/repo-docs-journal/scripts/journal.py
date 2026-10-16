@@ -42,17 +42,11 @@ class JournalError(Exception):
     """위치 거부·형식 오류. 파일을 쓰기 전에만 발생"""
 
 
-# cost: time O(n), heap O(n), stack O(1)
-# vars: n = 글자 수
-# basis: estimate
 def squash(text: str) -> str:
     """인용 대조용: 공백·줄바꿈·Markdown 강조 기호 무시"""
     return re.sub(r"[\s*_`>]+", "", text)
 
 
-# cost: time O(s·q), heap O(s), stack O(1)
-# vars: s = 근거 글자 수, q = 인용 글자 수
-# basis: estimate
 def screen(sources: list[str], alternative: str, assumption: str, structure: str) -> dict:
     """기록 기준 세 칸. 대안·가정은 근거 원문에 그대로 있는 인용, 구조는 목록 이름. 하나라도 못 대면 탈락"""
     corpus = squash("\n".join(sources))
@@ -74,9 +68,6 @@ def screen(sources: list[str], alternative: str, assumption: str, structure: str
     return {"pass": True, "criteria": {"대안": alternative.strip(), "가정": assumption.strip(), "구조": structure}}
 
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def topic_slug(topic: str) -> str:
     """주제 한국어 2~5단어 → 공백을 `-`로. 한글 없음·단어 수 밖·경로 문자면 JournalError"""
     words = topic.split()
@@ -89,9 +80,6 @@ def topic_slug(topic: str) -> str:
     return "-".join(words)
 
 
-# cost: time O(1), heap O(1), stack O(1), io 1
-# vars: 없음
-# basis: estimate
 def journal_root(project_path: Path | None) -> Path:
     """작업 저장소의 `.local/journal`. git 저장소 밖이면 JournalError"""
     path = project_path or Path.cwd()
@@ -115,9 +103,6 @@ def target(kind: str, topic: str, day: str, project_path: Path | None) -> dict:
     return {"path": str(root / KINDS[kind] / name), "principles": str(root / PRINCIPLES)}
 
 
-# cost: time O(n), heap O(n), stack O(1)
-# vars: n = 파일 줄 수
-# basis: estimate
 def front(text: str) -> dict:
     """Obsidian 속성(YAML 머리). 문자열과 문자열 목록만"""
     if not text.startswith("---\n") or "\n---\n" not in text[4:]:
@@ -138,9 +123,6 @@ def front(text: str) -> dict:
     return values
 
 
-# cost: time O(n), heap O(n), stack O(1), io 1
-# vars: n = 파일 글자 수
-# basis: estimate
 def check_record(path: Path) -> list[str]:
     """판단·판단 변경·작업 일지 한 파일의 이름·속성·옛 양식 검사"""
     text = path.read_text(encoding="utf-8")
@@ -181,9 +163,6 @@ def check_record(path: Path) -> list[str]:
     return problems
 
 
-# cost: time O(n), heap O(n), stack O(1), io 1
-# vars: n = principles.md 글자 수
-# basis: estimate
 def check_principles(path: Path) -> list[str]:
     """원칙 절마다 링크 2개 이상(두 번째 같은 원인에서 생성), 링크 수 내림차순"""
     text = path.read_text(encoding="utf-8")
@@ -201,16 +180,10 @@ def check_principles(path: Path) -> list[str]:
     return problems
 
 
-# cost: time O(f·n), heap O(n), stack O(d), io O(f)
-# vars: f = 기록 파일 수, n = 파일 하나 글자 수, d = 폴더 깊이
-# basis: estimate
 def record_files(root: Path) -> list[Path]:
     return sorted(path for folder in sorted(set(KINDS.values())) for path in (root / folder).glob("*.md"))
 
 
-# cost: time O(f·n), heap O(f), stack O(d), io O(f)
-# vars: f = 판단 변경 파일 수, n = 파일 하나 글자 수, d = 폴더 깊이
-# basis: estimate
 def misses(root: Path) -> list[dict]:
     """모든 판단 변경의 놓친 것 표 행(분류, 원인, 기록). 같은 분류·원인 두 번째면 원칙 생성"""
     rows = []
@@ -226,9 +199,6 @@ def misses(root: Path) -> list[dict]:
     return rows
 
 
-# cost: time O(1), heap O(1), stack O(1), io O(1)
-# vars: 없음
-# basis: estimate
 def config(mode: str | None = None) -> dict:
     path = Path(os.environ.get("SKILLS_CONFIG_DIR") or Path.home() / ".config/skills").expanduser() / "journal.json"
     data = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
@@ -241,9 +211,6 @@ def config(mode: str | None = None) -> dict:
     return data
 
 
-# cost: time O(f·n), heap O(n), stack O(d), io O(f)
-# vars: f = 검사 파일 수, n = 파일 하나 글자 수, d = 폴더 깊이
-# basis: estimate
 def run(argv: list[str]) -> tuple[int, dict]:
     parser = argparse.ArgumentParser(description="판단 기록")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -280,9 +247,6 @@ def run(argv: list[str]) -> tuple[int, dict]:
     return (1 if problems else 0), {"problems": problems}
 
 
-# cost: time O(f·n), heap O(n), stack O(d), io O(f)
-# vars: f = 검사 파일 수, n = 파일 하나 글자 수, d = 폴더 깊이
-# basis: estimate
 def main(argv: list[str] | None = None) -> int:
     try:
         code, result = run(sys.argv[1:] if argv is None else argv)

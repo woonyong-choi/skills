@@ -19,9 +19,6 @@ from pathlib import Path
 PROTECTED = {"main", "master"}
 
 
-# cost: time O(1), heap O(o), stack O(1), io 1
-# vars: o = 명령 출력 크기
-# basis: estimate
 def run(args: list[str], check: bool = True) -> str:
     result = subprocess.run(args, capture_output=True, text=True)
     if check and result.returncode != 0:
@@ -29,9 +26,6 @@ def run(args: list[str], check: bool = True) -> str:
     return result.stdout.strip()
 
 
-# cost: time O(w), heap O(w), stack O(1), io 1
-# vars: w = worktree 수
-# basis: estimate
 def worktrees() -> dict[str, Path]:
     entries: dict[str, Path] = {}
     path: Path | None = None
@@ -43,15 +37,10 @@ def worktrees() -> dict[str, Path]:
     return entries
 
 
-# cost: time O(1), heap O(1), stack O(1), io 1
-# basis: estimate
 def is_clean(path: Path) -> bool:
     return run(["git", "-C", str(path), "status", "--porcelain"]) == ""
 
 
-# cost: time O(1), heap O(o), stack O(1), io 1
-# vars: o = GitHub API 응답 크기
-# basis: estimate
 def resolve_pr(target: str) -> dict[str, object] | None:
     fields = "number,state,headRefName,headRefOid"
     if target.isdecimal():
@@ -67,8 +56,6 @@ def resolve_pr(target: str) -> dict[str, object] | None:
     return matches[0]
 
 
-# cost: time O(1), heap O(1), stack O(1), io 2
-# basis: estimate
 def branch_heads_match(branch: str, expected_sha: str, remote_name: str = "origin") -> bool:
     local = run(["git", "rev-parse", "--verify", f"refs/heads/{branch}"], check=False)
     remote = remote_head(branch, remote_name)
@@ -78,9 +65,6 @@ def branch_heads_match(branch: str, expected_sha: str, remote_name: str = "origi
     return True
 
 
-# cost: time O(1), heap O(o), stack O(1), io 1
-# vars: o = 원격 ref 조회 출력 크기
-# basis: estimate
 def remote_head(branch: str, remote_name: str = "origin") -> str:
     output = run(["git", "ls-remote", "--heads", remote_name, f"refs/heads/{branch}"])
     rows = [line.split() for line in output.splitlines() if line.strip()]
@@ -90,9 +74,6 @@ def remote_head(branch: str, remote_name: str = "origin") -> str:
     return matches[0] if matches else ""
 
 
-# cost: time O(n), heap O(n), stack O(1), io O(w)
-# vars: n = 전체 조회 출력 크기, w = worktree 재검사와 정리 명령 수
-# basis: estimate
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("target", help="머지된 PR 번호 또는 브랜치")

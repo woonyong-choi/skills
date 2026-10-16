@@ -28,9 +28,6 @@ Path = tuple[str, ...]
 Token = tuple[Path, Any, "str | None"]
 
 
-# cost: time O(t), heap O(t), stack O(d), alloc t
-# vars: t = 토큰 수, d = 묶음 깊이
-# basis: estimate
 def flatten_tokens(node: dict, path: Path = (), inherited_type: str | None = None) -> list[Token]:
     """정본을 (경로, 값, 타입) 목록으로 편다."""
     tokens: list[Token] = []
@@ -45,9 +42,6 @@ def flatten_tokens(node: dict, path: Path = (), inherited_type: str | None = Non
     return tokens
 
 
-# cost: time O(g), heap O(g), stack O(1)
-# vars: g = 경로 길이
-# basis: estimate
 def to_css_name(path: Path) -> str:
     """토큰 경로를 CSS 사용자 정의 속성 이름으로 바꾼다."""
     return "--" + "-".join(path)
@@ -59,9 +53,6 @@ def parse_reference(value: Any) -> Path | None:
     return tuple(match.group(1).split(".")) if match else None
 
 
-# cost: time O(k), heap O(k), stack O(1)
-# vars: k = 합성 값의 부분 수(그림자 네 값, 글꼴 목록 등)
-# basis: estimate
 def to_css_value(value: Any, token_type: str | None) -> str:
     """토큰 값을 CSS 값으로 바꾼다. 참조는 `var()`, 숫자는 타입에 맞는 단위를 붙인다."""
     reference = parse_reference(value)
@@ -84,9 +75,6 @@ def to_css_value(value: Any, token_type: str | None) -> str:
     return str(value)
 
 
-# cost: time O(k), heap O(k), stack O(1)
-# vars: k = 색 성분 수
-# basis: estimate
 def format_color(color: dict) -> str:
     """DTCG 2025.10 색 객체. 불투명하고 `hex`가 있으면 hex, 아니면 CSS 색 함수로 쓴다."""
     alpha = color.get("alpha", 1)
@@ -100,9 +88,6 @@ def format_color(color: dict) -> str:
     return f"color({space} {parts}{suffix})"
 
 
-# cost: time O(c), heap O(c), stack O(c)
-# vars: c = 참조 사슬 길이
-# basis: estimate
 def resolve_token(path: Path, table: dict[Path, tuple[Any, str | None]], seen: tuple[Path, ...] = ()) -> tuple[Any, str | None]:
     """참조를 끝까지 따라가 실제 값과 타입을 얻는다.
 
@@ -120,9 +105,6 @@ def resolve_token(path: Path, table: dict[Path, tuple[Any, str | None]], seen: t
     return resolve_token(target, table, seen + (path,))
 
 
-# cost: time O(n·c), heap O(t + c*c), stack O(c + d)
-# vars: n = 값 노드와 문자열 크기 합, t = 토큰 수, c = 참조 사슬 길이(최소 1), d = 합성 값 중첩 깊이
-# basis: estimate
 def check_references(tokens: list[Token], table: dict[Path, tuple[Any, str | None]], source: str) -> None:
     """모든 토큰의 참조가 정본 안에 있는지 확인한다.
 
@@ -155,9 +137,6 @@ def check_references(tokens: list[Token], table: dict[Path, tuple[Any, str | Non
         visit_token(path, ())
 
 
-# cost: time O(t), heap O(t), stack O(1)
-# vars: t = 토큰 수
-# basis: estimate
 def build_css(source: str, tokens: list[Token], dark_tokens: list[Token]) -> str:
     """`:root` 토큰과 다크 모드 덮어쓰기 CSS를 만든다."""
     lines = [f"/* {source}: {HEADER} */", ":root {"]
@@ -173,9 +152,6 @@ def build_css(source: str, tokens: list[Token], dark_tokens: list[Token]) -> str
     return "\n".join(lines) + "\n"
 
 
-# cost: time O(t·c), heap O(t), stack O(g)
-# vars: t = 토큰 수, c = 참조 사슬 길이, g = 묶음 깊이
-# basis: estimate
 def build_js(source: str, tokens: list[Token], table: dict[Path, tuple[Any, str | None]]) -> str:
     """토큰 참조 객체(`var(--…)`)와 계산용 값 객체를 담은 ES 모듈을 만든다."""
     refs: dict = {}
@@ -227,9 +203,6 @@ def to_number(value: Any, token_type: str | None) -> Any:
     return value
 
 
-# cost: time O(g), heap O(g), stack O(1), alloc g
-# vars: g = 경로 길이
-# basis: estimate
 def set_path(tree: dict, path: Path, value: Any) -> None:
     """중첩 객체의 경로 자리에 값을 둔다."""
     for key in path[:-1]:
@@ -237,9 +210,6 @@ def set_path(tree: dict, path: Path, value: Any) -> None:
     tree[path[-1]] = value
 
 
-# cost: time O(t·c), heap O(t), stack O(g), io 4
-# vars: t = 토큰 수, c = 참조 사슬 길이, g = 묶음 깊이
-# basis: estimate
 def main() -> int:
     """정본을 읽어 생성물 두 개를 쓴다. 참조 오류가 있으면 쓰지 않고 1을 돌려준다."""
     parser = argparse.ArgumentParser(description="tokens.json에서 tokens.css와 tokens.js를 만든다")
@@ -274,9 +244,6 @@ def main() -> int:
     return 0
 
 
-# cost: time O(n), heap O(n), stack O(1), io 1
-# vars: n = 파일 글자 수
-# basis: estimate
 def read_json(path: str) -> dict:
     """JSON 파일을 읽는다."""
     with open(path, encoding="utf-8") as f:

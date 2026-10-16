@@ -18,9 +18,6 @@ _ENDINGS = {
 }
 
 
-# cost: time O(n), heap O(n), stack O(1), io 1 + 위반 수
-# vars: n = 입력 제목 길이
-# basis: estimate
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--kind", required=True, choices=_ENDINGS)

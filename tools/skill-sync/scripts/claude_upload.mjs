@@ -32,9 +32,6 @@ export function planAccount(skills, present, receipt) {
   });
 }
 
-// cost: time O(n² + n·b), heap O(n·b), stack O(1), io O(n·q)
-// vars: n = 스킬 수, b = 항목 크기, q = 스킬당 계정 조회·업로드 호출 수
-// basis: estimate
 export async function syncAccount(skills, account, receipt, save, dryRun) {
   let present = await account.list();
   const plan = planAccount(skills, present, receipt);
@@ -61,9 +58,6 @@ export async function syncAccount(skills, account, receipt, save, dryRun) {
   return plan;
 }
 
-// cost: time O(b), heap O(b), stack O(1), io 2
-// vars: b = 영수증 바이트 수
-// basis: estimate
 export function readReceipt(path = RECEIPT) {
   if (!existsSync(path)) return { version: 1, skills: {} };
   if (lstatSync(path).isSymbolicLink()) throw new UiError("symlink receipt");
@@ -72,9 +66,6 @@ export function readReceipt(path = RECEIPT) {
   return receipt;
 }
 
-// cost: time O(b), heap O(b), stack O(1), io 4
-// vars: b = 영수증 바이트 수
-// basis: estimate
 export function saveReceipt(receipt, path = RECEIPT) {
   const stage = `${path}.${process.pid}`;
   try {
@@ -85,9 +76,6 @@ export function saveReceipt(receipt, path = RECEIPT) {
   }
 }
 
-// cost: time O(n), heap O(n), stack O(1), io O(q)
-// vars: n = 계정 목록 글자 수, q = 로딩 대기 UI 조회 수
-// basis: estimate
 async function listAccount(page) {
   await openMySkills(page);
   const items = await page.locator('[data-testid="skills-tabbed-list-row"]').evaluateAll((rows) => rows.map((row) => {
@@ -100,9 +88,6 @@ async function listAccount(page) {
   return items;
 }
 
-// cost: time O(b + n²), heap O(b + n), stack O(1), io O(n·q)
-// vars: b = 입력과 영수증 바이트 수, n = 스킬 수, q = 스킬당 UI 호출 수
-// basis: estimate
 async function main() {
   const login = process.argv.includes("--login");
   if (process.argv.slice(2).some((arg) => arg !== "--login")) throw new UiError("unknown argument");
@@ -135,9 +120,6 @@ async function main() {
   }
 }
 
-// cost: time O(b), heap O(b), stack O(1), io 2
-// vars: b = npm 출력과 로드하는 모듈 크기
-// basis: estimate
 async function loadPlaywright() {
   let root;
   try {
@@ -215,9 +197,6 @@ async function deleteSkill(page, name) {
   await fail(page, `'${name}' 삭제 뒤에도 목록에 남아 있음`);
 }
 
-// cost: time O(b + n), heap O(b + n), stack O(1), io O(q)
-// vars: b = zip 크기, n = 계정 목록 크기, q = 업로드 완료까지 UI 조회 횟수
-// basis: estimate
 async function uploadSkill(page, zip) {
   await clickOrFail(page, page.getByRole("button", { name: "스킬 추가", exact: true }), "'스킬 추가' 버튼");
   await page.waitForTimeout(1000);

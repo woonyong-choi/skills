@@ -28,9 +28,6 @@ PARTICLE = ('마다', '보다')
 # 받침 ㅁ·ㅇ 뒤 `다`는 서술격 조사 축약(결과다)이 될 수 없어 명사(람다)로 보되, 이 동사 끝은 평서형
 NASAL_VERB_END = ('남다', '담다', '삼다', '넘다', '참다', '숨다', '심다', '감다')
 
-# cost: time O(n·k), heap O(n), stack O(1), io 1
-# vars: n = SKILL.md 줄 수, k = 다른 스킬 이름 수
-# basis: estimate
 def check(path, names):
     errs = []
     s = open(path, encoding='utf-8').read()
@@ -97,9 +94,6 @@ def check(path, names):
         errs.extend(f'references/{ref.name}:{i}: 끝말 {w}' for i, w in bad_endings(ref_lines, 0))
     return errs
 
-# cost: time O(n·w), heap O(n), stack O(1)
-# vars: n = 줄 수, w = 줄 길이
-# basis: estimate
 def bad_endings(lines, skip):
     """코드 밖 줄 끝·칸 끝·줄 중간 평서형 끝의 금지 끝말을 (줄 번호, 낱말)로 돌려준다."""
     found = []
@@ -133,9 +127,6 @@ def bad_endings(lines, skip):
         found.extend((i, w) for w in dict.fromkeys(words))
     return found
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def nominal_end(word):
     """`-ㅁ`형 끝(받침 ㅁ·ㄻ)인지. 예외 명사(없음·이름·잡음)와 단독 명사(힘·꿈) 제외."""
     last = word[-1:] or ' '
@@ -144,9 +135,6 @@ def nominal_end(word):
     return not word.endswith(NOUN_OK) and word not in NOUN_WORD and word not in NAME_OK
 
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def verb_end(word):
     """평서형 `-다` 끝인지. 조사(마다), 예외 명사(바다), 받침 ㅁ·ㅇ 뒤 명사(람다) 제외."""
     if not word.endswith('다') or len(word) < 2 or word.endswith(PARTICLE + NOUN_OK):
@@ -155,9 +143,6 @@ def verb_end(word):
     final = (ord(prev) - 0xAC00) % 28 if '가' <= prev <= '힣' else 0
     return final not in (16, 21) or word.endswith(NASAL_VERB_END)
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def declarative(word):
     """공백 앞에서도 평서형으로 보는 `-ㄴ다`·`-는다`·`이다`·`있다`·`없다` 끝인지."""
     if word.endswith(('는다', '이다', '있다', '없다')):
@@ -165,9 +150,6 @@ def declarative(word):
     prev = word[-2] if len(word) > 1 else ''
     return '가' <= prev <= '힣' and (ord(prev) - 0xAC00) % 28 == 4
 
-# cost: time O(n), heap O(n), stack O(1), io 1
-# vars: n = SKILL.md 바이트
-# basis: estimate
 def check_vendored(path: Path) -> list[str]:
     """FORMAT_ONLY 표시 스킬의 형식만 검사: frontmatter, name과 폴더 일치, description 1~1024자"""
     text = path.read_text(encoding='utf-8')
@@ -186,9 +168,6 @@ def check_vendored(path: Path) -> list[str]:
     return errors
 
 
-# cost: time O(s·n·k), heap O(s + n), stack O(1), io O(s)
-# vars: s = 스킬 수, n = 스킬 줄 수, k = 스킬 이름 수
-# basis: estimate
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--json', action='store_true')

@@ -28,9 +28,6 @@ except ImportError:
     HAS_PLAYWRIGHT = False
 
 
-# cost: time O(w * h), heap O(w * h), stack O(1)
-# vars: w = 폭, h = 높이
-# basis: estimate
 def png(width: int, height: int) -> bytes:
     """무채색 한 장. 시험용 장면 이미지"""
     row = b"\x00" + b"\x80\x80\x80" * width

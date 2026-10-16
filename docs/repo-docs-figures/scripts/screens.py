@@ -50,16 +50,10 @@ class Capture(NamedTuple):
     clip: dict | None
 
 
-# cost: time O(n), heap O(n), stack O(1), io 1
-# vars: n = 설정 파일 글자 수
-# basis: estimate
 def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def layout(kind: str, style: dict) -> dict:
     """합성 페이지 폭(CSS px)·배율·장면 열 위치. 최종 파일 폭 = page × scale"""
     inner = PAGE - 2 * style["padding"]
@@ -71,9 +65,6 @@ def layout(kind: str, style: dict) -> dict:
     return {"page": PAGE, "scale": SCALE, "columns": columns}
 
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def plan(entry: dict, scheme: str) -> list[Capture]:
     """한 테마의 촬영 목록. 확대는 같은 화면의 영역을 배율 2배로 다시 촬영"""
     kind = "command" if "command" in entry else "url"
@@ -85,9 +76,6 @@ def plan(entry: dict, scheme: str) -> list[Capture]:
     return base
 
 
-# cost: time O(s), heap O(s), stack O(1)
-# vars: s = 화면 수
-# basis: estimate
 def validate(config: dict) -> list[str]:
     errors = []
     for entry in config.get("screens", []):
@@ -110,16 +98,10 @@ def validate(config: dict) -> list[str]:
     return errors
 
 
-# cost: time O(1), heap O(1), stack O(1)
-# vars: 없음
-# basis: estimate
 def png_width(data: bytes) -> int:
     return int.from_bytes(data[16:20], "big") if data[:8] == b"\x89PNG\r\n\x1a\n" else 0
 
 
-# cost: time O(s), heap O(s), stack O(1), io O(s)
-# vars: s = 화면 수
-# basis: estimate
 def check(config: dict, out: Path) -> list[str]:
     """저장된 PNG 대조: 대체 글, 라이트·다크 두 장, 폭 1920px, 1MB 이하"""
     errors = validate(config)
@@ -137,9 +119,6 @@ def check(config: dict, out: Path) -> list[str]:
     return errors
 
 
-# cost: time O(b), heap O(b), stack O(1)
-# vars: b = 장면 이미지 바이트 합
-# basis: estimate
 def compose(images: list[bytes], kind: str, style: dict, scheme: str) -> tuple[str, dict]:
     """합성용 HTML. 장면은 열 폭에 맞춰 줄이기만 하고 늘리지 않음"""
     geometry = layout(kind, style)
@@ -156,9 +135,6 @@ def compose(images: list[bytes], kind: str, style: dict, scheme: str) -> tuple[s
     return f"<!doctype html><style>{css}</style><div id=frame>{''.join(tags)}</div>", geometry
 
 
-# cost: time O(p), heap O(p), stack O(1), io O(p)
-# vars: p = PNG 크기
-# basis: estimate
 def shrink(data: bytes) -> bytes:
     """1MB 초과면 설치된 oxipng로 무손실 압축. 그래도 넘으면 실패"""
     if len(data) > LIMIT and shutil.which("oxipng"):
@@ -172,9 +148,6 @@ def shrink(data: bytes) -> bytes:
     return data
 
 
-# cost: time O(s * c), heap O(s * p), stack O(1), io O(s)
-# vars: s = 화면 수, c = 화면당 촬영 시간, p = PNG 크기
-# basis: estimate
 def shoot(config: dict, out: Path, capture: Callable[[Capture], bytes], render: Callable[[str, dict], bytes]) -> int:
     """전체 촬영이 성공한 뒤에만 out에 저장. 하나라도 실패하면 기존 파일 유지, 종료 1"""
     errors = validate(config)
@@ -205,9 +178,6 @@ def shoot(config: dict, out: Path, capture: Callable[[Capture], bytes], render: 
 class Browser:
     """Playwright Chromium으로 웹 화면 촬영과 합성 HTML 렌더링. 터미널 화면은 VHS"""
 
-    # cost: time O(1), heap O(1), stack O(1), io 1
-    # vars: 없음
-    # basis: estimate
     def __enter__(self) -> "Browser":
         from playwright.sync_api import sync_playwright
 
@@ -215,16 +185,10 @@ class Browser:
         self.browser = self.manager.chromium.launch()
         return self
 
-    # cost: time O(1), heap O(1), stack O(1), io 1
-    # vars: 없음
-    # basis: estimate
     def __exit__(self, *_: object) -> None:
         self.browser.close()
         self.manager.stop()
 
-    # cost: time O(c), heap O(p), stack O(1), io 1
-    # vars: c = 페이지 로드 시간, p = PNG 크기
-    # basis: estimate
     def capture(self, item: Capture) -> bytes:
         if item.kind == "command":
             return terminal(item)
@@ -239,9 +203,6 @@ class Browser:
         finally:
             page.close()
 
-    # cost: time O(p), heap O(p), stack O(1), io 1
-    # vars: p = PNG 크기
-    # basis: estimate
     def render(self, html: str, geometry: dict) -> bytes:
         page = self.browser.new_page(viewport={"width": geometry["page"], "height": HEIGHT}, device_scale_factor=geometry["scale"])
         try:
@@ -256,9 +217,6 @@ class Browser:
             page.close()
 
 
-# cost: time O(c), heap O(p), stack O(1), io 2
-# vars: c = 명령 실행 시간, p = PNG 크기
-# basis: estimate
 def terminal(item: Capture) -> bytes:
     """VHS Screenshot으로 터미널 창 안쪽 촬영. 창 폭·글자 크기에 배율 반영"""
     if shutil.which("vhs") is None:
@@ -277,9 +235,6 @@ def terminal(item: Capture) -> bytes:
         return shot.read_bytes()
 
 
-# cost: time O(1), heap O(1), stack O(1), io 1
-# vars: 없음
-# basis: estimate
 def discard(folder: Path) -> None:
     """합성 데이터 폴더를 휴지통으로 이동. 휴지통 도구가 없으면 지우지 않고 경로 보고"""
     for command in (["trash", str(folder)], ["gio", "trash", str(folder)]):
@@ -288,9 +243,6 @@ def discard(folder: Path) -> None:
     print(f"휴지통 도구 없음, 직접 확인 필요: {folder}", file=sys.stderr)
 
 
-# cost: time O(s * c), heap O(s * p), stack O(1), io O(s)
-# vars: s = 화면 수, c = 화면당 촬영 시간, p = PNG 크기
-# basis: estimate
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("shoot", "check"))

@@ -58,9 +58,6 @@ class ProjectStatus:
             raise ProjectError(f"invalid repository: {self.repo}; expected owner/name")
         self.repository = {"owner": parts[0], "name": parts[1]}
 
-    # cost: time O(n + c + v), heap O(n + c + v), stack O(1), io O(p + c + v)
-    # vars: n = 전체 응답 항목 수, p = 전체 조회 페이지, c = 변경 항목, v = 보드 뷰
-    # basis: estimate
     def run(self, args: argparse.Namespace) -> int:
         if args.command == "colors" and not args.project:
             raise ProjectError("colors requires an explicit --project")
@@ -159,9 +156,6 @@ class ProjectStatus:
             raise ProjectError("graphql returned no data")
         return response["data"]
 
-    # cost: time O(n), heap O(n), stack O(1), io O(p)
-    # vars: p = 페이지 수, n = 항목 수
-    # basis: estimate
     def _pages(
         self, query: str, variables: dict[str, Any], parent: str, field: str
     ) -> list[dict[str, Any]]:
@@ -264,9 +258,6 @@ class ProjectStatus:
             == self.repo.casefold()
         }
 
-    # cost: time O(n), heap O(n), stack O(1), io O(n)
-    # vars: n = 이슈 수
-    # basis: estimate
     def _mismatches(
         self,
         project: dict[str, Any],
@@ -298,9 +289,6 @@ class ProjectStatus:
                 changes.append((issue, target))
         return changes
 
-    # cost: time O(n), heap O(1), stack O(1)
-    # vars: n = 이슈 수
-    # basis: estimate
     def _attention(
         self,
         project: dict[str, Any],
@@ -327,9 +315,6 @@ class ProjectStatus:
             found += len(reasons)
         return found
 
-    # cost: time O(n), heap O(n), stack O(1), io 3
-    # vars: n = Status 선택지 수
-    # basis: estimate
     def _set(
         self,
         project: dict[str, Any],
@@ -361,9 +346,6 @@ class ProjectStatus:
         )
         print(f"#{content['number']}: {status} 변경")
 
-    # cost: time O(n + v + i), heap O(n + v + i), stack O(1), io O(p + i)
-    # vars: n = 선택지 수, v = 뷰 수, i = 이관 항목 수, p = 조회 페이지
-    # basis: estimate
     def _setup(
         self, project: dict[str, Any], field: dict[str, Any], view_id: str | None
     ) -> None:
@@ -486,9 +468,6 @@ class ProjectStatus:
                 "projectV2Item{id}",
             )
 
-    # cost: time O(n), heap O(n), stack O(1)
-    # vars: n = 선택지 수
-    # basis: estimate
     def _colored_options(self, options: list[dict[str, Any]]) -> list[dict[str, Any]]:
         colors = dict(STATE_COLORS)
         colors.update(
@@ -504,9 +483,6 @@ class ProjectStatus:
             for option in options
         ]
 
-    # cost: time O(n + b), heap O(n + b), stack O(1), io O(p + 1)
-    # vars: n = 선택지 수, b = 응답 크기, p = 필드 조회 페이지 수
-    # basis: estimate
     def _colors(self, project: dict[str, Any], field: dict[str, Any]) -> None:
         options = self._colored_options(field["options"])
         if options == field["options"]:
@@ -523,9 +499,6 @@ class ProjectStatus:
         field["options"] = actual["options"]
         print("상태 색상 변경·재조회 완료")
 
-    # cost: time O(n + b), heap O(n + b), stack O(1), io 1
-    # vars: n = 선택지 수, b = 요청과 응답 크기
-    # basis: estimate
     def _mutate(
         self, name: str, value: dict[str, Any], selection: str
     ) -> dict[str, Any]:
@@ -562,9 +535,6 @@ class ProjectStatus:
         )
 
 
-# cost: time O(b), heap O(b), stack O(1), io 1
-# vars: b = 응답 크기
-# basis: estimate
 def run_gh(args: list[str], payload: str | None = None) -> dict[str, Any]:
     result = subprocess.run(
         ["gh", *args], input=payload, text=True, capture_output=True, check=False
@@ -576,9 +546,6 @@ def run_gh(args: list[str], payload: str | None = None) -> dict[str, Any]:
     return json.loads(result.stdout)
 
 
-# cost: time O(n + r), heap O(n), stack O(1), io O(r)
-# vars: n = 조회·변경 항목 수, r = 선택한 명령의 조회·변경·출력 횟수
-# basis: estimate
 def main(argv: list[str] | None = None, gh: Gh = run_gh) -> int:
     parser = StdoutArgumentParser(description=__doc__)
     parser.add_argument("--project", type=int, action="append", default=[])

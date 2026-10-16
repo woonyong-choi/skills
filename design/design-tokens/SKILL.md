@@ -7,7 +7,7 @@ description: "UI·아이콘의 시각 변경을 검수하거나 공통 토큰·�
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
 - 범위: 화면 값의 정의·사용·하드코딩 검사와 기존 시각 표현 변경 검수
-- 필요할 때만 읽기: 결과가 다른 미확정 디자인 선택 → repo-docs-design; CSS 작성 → code-style-css; JavaScript 작성 → code-style-javascript; 문서 그림 색·글꼴·크기 → repo-docs-figures; 테스트 기대값 근거 확인 → code-style `references/testing.md` 필수 확인
+- 필요할 때만 읽기: 결과가 다른 미확정 디자인 선택 → repo-docs-design; CSS 작성 → code-style-css; JavaScript·TypeScript 작성 → code-style-typescript; 문서 그림 색·글꼴·크기 → repo-docs-figures; 테스트 기대값 근거 확인 → code-style `references/testing.md` 필수 확인
 
 ## 원칙
 
