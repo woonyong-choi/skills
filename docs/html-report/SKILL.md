@@ -152,5 +152,5 @@ node <이 스킬 폴더>/scripts/build_report.mjs <보고서 폴더>/report.md
 ## 금지
 
 - 보고서를 git에 커밋
-- 보고서 산출물의 저장 위치 밖(임시 폴더, `/tmp`) 저장. 확인 중 캡처만 연결된 작업 기록 폴더(git-issue continuity) 허용
+- 최종 보고서 산출물의 저장 위치 밖(임시 폴더, `/tmp`) 저장. 생성기 내부의 작업 중 임시 폴더는 예외(완료 시 저장 위치로 옮김). 확인 중 캡처만 연결된 작업 기록 폴더(git-issue continuity) 허용
 - 이모지
