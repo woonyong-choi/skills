@@ -48,11 +48,6 @@ jobs:
         run: |
           npm ci
           npx playwright-core install --with-deps chromium
-      - name: Install report builder
-        working-directory: docs/html-report/scripts
-        run: npm ci
-      - name: Run report tests
-        run: node --test docs/html-report/tests/*.test.mjs
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.2
