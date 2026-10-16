@@ -78,7 +78,7 @@ class DocumentStyleTest(unittest.TestCase):
             ("README.ko.md", "설계 단계입니다.\n", 0),
             ("guide.md", "설계 단계입니다.\n", 1),
             ("README.md", "설계 단계다.\n", 1),
-            ("/vault/worktree/p/docs/design/a.md", "# 가\n\n## 예시\n\n## 요약\n", 1),
+            ("/vault/worktree/p/docs/design/a.md", "# 가\n\n## 사용 예\n\n## 요약\n", 1),
         ):
             with patch("builtins.open", mock_open(read_data=source)), contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(check_doc.main([name]), expected)
@@ -153,6 +153,28 @@ class ReadmeOrderTest(unittest.TestCase):
         self.assertEqual(self.errors("# T\n\n## Why\n\n## Quick start\n"), ["절 순서"])
         self.assertEqual(self.errors("# T\n\n## Problem and constraints\n\n## Design decisions\n\n## Results\n"), [])
         self.assertEqual(self.errors("# T\n\n## Results\n\n## Implementation\n"), ["절 순서"])
+
+
+class DocsOrderTest(unittest.TestCase):
+    """#96: architecture·design·decision 절 순서는 일상어 절 이름 기준."""
+
+    def errors(self, name: str, text: str) -> list[str]:
+        import tempfile
+        with tempfile.TemporaryDirectory() as folder:
+            previous = Path.cwd()
+            os.chdir(folder)
+            try:
+                target = Path(name)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(text, encoding="utf-8")
+                return check_doc.structure_errors(name, name)
+            finally:
+                os.chdir(previous)
+
+    def test_new_section_names_are_ordered(self) -> None:
+        self.assertEqual(self.errors("docs/architecture.md", "# 아키텍처\n\n## 지켜야 할 규칙\n\n## 구성 요소\n"), ["절 순서"])
+        self.assertEqual(self.errors("docs/design/input.md", "# 입력\n\n## 작동 방식\n\n## 사용 예\n"), ["절 순서"])
+        self.assertEqual(self.errors("docs/decisions/2026-10-16-x.md", "# x\n\n## 다시 볼 조건\n\n## 영향\n"), ["절 순서"])
 
 
 if __name__ == "__main__":

@@ -52,11 +52,11 @@ EMOJI = re.compile(
 # repo-docs-readme 틀: 오픈소스형 7절 다음 포트폴리오형 5절. 한 README는 한 종류만 쓰므로 한 목록으로 순서 검사
 README_KO = ["빠른 시작", "해결하는 문제", "작동 방식", "상태", "문서", "개발", "라이선스", "문제와 제약", "설계 결정", "구현", "결과", "실행"]
 README_EN = ["Quick start", "Why", "How it works", "Status", "Documentation", "Development", "License", "Problem and constraints", "Design decisions", "Implementation", "Results", "Running"]
-ARCHITECTURE_KO = ["맥락", "코드 지도", "실행 흐름", "불변 조건", "배치", "기술 선택"]
+ARCHITECTURE_KO = ["외부 연결", "구성 요소", "처리 흐름", "지켜야 할 규칙", "배포", "기술 선택"]
 ARCHITECTURE_EN = ["Context", "Code map", "Flows", "Invariants", "Deployment", "Technology choices"]
-DESIGN_KO = ["요약", "동기", "예시", "상세 설계", "단점", "대안", "미해결 질문"]
+DESIGN_KO = ["요약", "해결하는 문제", "사용 예", "작동 방식", "단점", "대안", "미해결"]
 DESIGN_EN = ["Summary", "Motivation", "Examples", "Design", "Drawbacks", "Alternatives", "Unresolved questions"]
-DECISION_KO = ["배경", "선택지", "결정", "결과", "다시 볼 조건"]
+DECISION_KO = ["배경", "선택지", "결정", "영향", "다시 볼 조건"]
 DECISION_EN = ["Context", "Options", "Decision", "Consequences", "Revisit when"]
 
 
