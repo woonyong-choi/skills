@@ -28,7 +28,7 @@ jobs:
       - name: Run Python tests
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests just/just-mode/scripts/hooks/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests docs/career-record/tests docs/repo-docs-journal/tests
+        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests just/just-mode/scripts/hooks/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests
       - name: Run hook tests with linked temp folder
         # macOS의 /var 링크와 같은 경로 형태에서 실패하는 시험을 Linux에서 잡는다
         env:

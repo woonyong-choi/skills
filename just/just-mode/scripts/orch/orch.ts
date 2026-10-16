@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
 
+import { execFileSync } from "node:child_process";
+import { join } from "node:path";
 import { ensureDependenciesInstalled } from "../bootstrap.ts";
 import {
   NotFoundError,
@@ -9,7 +11,6 @@ import {
   type Counts,
   type Frontier,
   type InboxPointer,
-  type OpenGate,
   type StandingLine,
   type StatusReport,
   type Store,
@@ -35,6 +36,7 @@ interface Io {
 
 interface GlobalOptions {
   readonly store?: string;
+  readonly name?: string;
   readonly json: boolean;
   readonly force: boolean;
 }
@@ -67,16 +69,6 @@ interface InboxPushOptions {
 
 interface InboxDrainOptions {
   readonly peek: boolean;
-}
-
-interface GateParkOptions {
-  readonly question: string;
-  readonly options: string;
-  readonly default: string;
-}
-
-interface GateResolveOptions {
-  readonly answer: string;
 }
 
 interface FrontierSetOptions {
@@ -133,15 +125,6 @@ function pointerLine(pointer: InboxPointer): string {
   ].join("\t");
 }
 
-function gateLine(gate: OpenGate): string {
-  return [
-    gate.id,
-    gate.question,
-    gate.options,
-    gate.defaultAnswer,
-  ].join("\t");
-}
-
 function compactRows<T>(
   rows: readonly T[],
   format: (row: T) => string,
@@ -173,17 +156,10 @@ function frontierLine(value: Frontier): string {
 }
 
 function statusLines(report: StatusReport): string {
-  const visible = report.summary.openGateIds.slice(0, DISPLAY_LIMIT);
-  const more =
-    report.summary.openGateIds.length > DISPLAY_LIMIT
-      ? `,외 ${report.summary.openGateIds.length - DISPLAY_LIMIT}개`
-      : "";
   return [
     `개수: units=${report.units.length}; states=${countLine(report.summary.unitStates)}; ledger=${countLine(report.summary.ledgerVerdicts)}`,
     `변경: ${report.changed}`,
-    `열린 gate: ${report.summary.openGateIds.length}${
-      visible.length > 0 ? `; ids=${visible.join(",")}${more}` : ""
-    }`,
+    `inbox: ${report.summary.inboxCount}`,
   ].join("\n");
 }
 
@@ -200,12 +176,33 @@ function emit<T>(
   io.stdout(rendered.endsWith("\n") ? rendered : `${rendered}\n`);
 }
 
-function storeDirectory(program: Command): string {
-  const value = program.opts<GlobalOptions>().store;
-  if (value === undefined || value.trim().length === 0) {
-    throw new UsageError("--store <dir> 또는 ORCH_STORE를 지정");
+function repositoryRoot(): string {
+  try {
+    return execFileSync("git", ["rev-parse", "--show-toplevel"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    }).trim();
+  } catch {
+    throw new UsageError(
+      "--name은 git 저장소 안에서만 쓸 수 있음. 저장소 안에서 실행하거나 --store <dir>를 지정"
+    );
   }
-  return value;
+}
+
+function storeDirectory(program: Command): string {
+  const { store, name } = program.opts<GlobalOptions>();
+  if (store !== undefined && store.trim().length > 0) {
+    return store;
+  }
+  if (name === undefined || name.trim().length === 0) {
+    throw new UsageError(
+      "--name <이름>(.local/orch/<이름>) 또는 --store <dir>를 지정"
+    );
+  }
+  if (!/^[^/\\]+$/.test(name) || name === "." || name === "..") {
+    throw new UsageError(`--name에는 폴더 이름 하나만 씀: ${name}`);
+  }
+  return join(repositoryRoot(), ".local", "orch", name);
 }
 
 function frontierRepo(options: FrontierSetOptions): string {
@@ -254,15 +251,22 @@ function requireSubcommand(program: Command): never {
 function createProgram(io: Io): Command {
   const program = new CommanderCommand("orch")
     .description("일반 파일로 orchestrate 진행 상태를 기록")
-    .usage("[--store <dir>] [--json] [--force] <command>")
+    .usage("[--name <이름> | --store <dir>] [--json] [--force] <command>")
     .configureOutput({ writeOut: io.stdout, writeErr: io.stderr })
     .exitOverride()
     .showHelpAfterError()
     .allowExcessArguments(false)
     .addOption(
-      new Option("--store <dir>", "스토어 폴더(또는 ORCH_STORE)").env(
-        "ORCH_STORE"
-      )
+      new Option(
+        "--name <이름>",
+        "저장소의 .local/orch/<이름>을 스토어로 씀(또는 ORCH_NAME)"
+      ).env("ORCH_NAME")
+    )
+    .addOption(
+      new Option(
+        "--store <dir>",
+        "스토어 폴더를 직접 지정, --name보다 먼저(또는 ORCH_STORE)"
+      ).env("ORCH_STORE")
     )
     .option("--json", "전체 행을 JSON으로 출력", false)
     .option("--force", "다른 프로세스의 스토어 잠금을 가져옴", false);
@@ -280,7 +284,7 @@ function createProgram(io: Io): Command {
     .command("unit")
     .description("작업 unit 관리")
     .action(() => requireSubcommand(program));
-  leaf(unit, "add <id>", "unit 추가")
+  leaf(unit, "add <issue>", "하위 이슈 번호로 unit 추가")
     .requiredOption("--track <track>", "unit 트랙")
     .option("--brief <path>", "작업 지시 파일 경로")
     .action((id: string, options: UnitAddOptions) =>
@@ -296,7 +300,7 @@ function createProgram(io: Io): Command {
         unitLine
       )
     );
-  leaf(unit, "set <id>", "unit 갱신")
+  leaf(unit, "set <issue>", "unit 갱신")
     .requiredOption("--state <state>", "unit 상태")
     .option("--branch <branch>", "브랜치 이름")
     .option("--pr <number>", "PR 번호", positiveInteger)
@@ -316,7 +320,7 @@ function createProgram(io: Io): Command {
         unitLine
       )
     );
-  leaf(unit, "get <id>", "unit 조회").action((id: string) =>
+  leaf(unit, "get <issue>", "unit 조회").action((id: string) =>
     runStore(program, io, (store) => store.units.get(id), unitLine)
   );
   leaf(unit, "list", "unit 목록")
@@ -428,47 +432,6 @@ function createProgram(io: Io): Command {
       (count) => ({ count })
     )
   );
-
-  const gate = program
-    .command("gate")
-    .description("결정 gate 관리")
-    .action(() => requireSubcommand(program));
-  leaf(gate, "park <id>", "결정 gate 보류 등록")
-    .requiredOption("--question <question>", "gate 질문")
-    .requiredOption("--options <options>", "gate 선택지")
-    .requiredOption("--default <answer>", "기본 답")
-    .action((id: string, options: GateParkOptions) =>
-      runStore(
-        program,
-        io,
-        (store) =>
-          store.gates.park({
-            id,
-            question: options.question,
-            options: options.options,
-            defaultAnswer: options.default,
-          }),
-        (result) => `${result.id}\topen`
-      )
-    );
-  leaf(gate, "list", "열린 결정 gate 목록").action(() =>
-    runStore(
-      program,
-      io,
-      (store) => store.gates.list(),
-      (rows) => compactRows(rows, gateLine, "(열린 gate 없음)")
-    )
-  );
-  leaf(gate, "resolve <id>", "결정 gate 해결")
-    .requiredOption("--answer <answer>", "고른 답")
-    .action((id: string, options: GateResolveOptions) =>
-      runStore(
-        program,
-        io,
-        (store) => store.gates.resolve({ id, answer: options.answer }),
-        (result) => `${result.id}\tresolved\t${result.answer}`
-      )
-    );
 
   const frontier = program
     .command("frontier")

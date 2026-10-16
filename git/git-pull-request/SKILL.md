@@ -41,7 +41,7 @@ description: "PR 본문·검토 댓글을 작성하거나 계약·문서 동반�
 - 주소: `https://github.com/{owner}/{repo}/blob/pr-assets/{경로}?raw=true`
 - 브랜치가 없으면 첫 캡처 때 `git switch --orphan pr-assets`, 빈 첫 커밋 없이 캡처 커밋부터
 - 다시 찍으면 같은 경로 덮어쓰기. 머지된 PR 폴더 삭제 금지
-- 로컬 캡처 파일은 작업 기록 폴더에 두고 올린 뒤 삭제
+- 로컬 캡처 파일은 저장소 `.local/media/`에 두고 올린 뒤 삭제
 
 ## 문서 동반
 
@@ -65,11 +65,14 @@ description: "PR 본문·검토 댓글을 작성하거나 계약·문서 동반�
 
 ## 머지 조건
 
-- CI가 있으면 CI 통과, 없으면 로컬 검사 통과. 검사 범위·증거 재사용: (code-style 검증)
-- 남은 P1·P2 0개 (review.md 등급)
-- 확인 절의 미체크·실패 항목 0개
-- 이슈 완료 판정: (git-issue 닫기, 금지)
-- 계약이 있으면 사람이 계약 승인
+셋 모두 충족 시 머지. 막히면 결정 기록에 `결정 필요`, 다음 일로 이동
+
+1. `watch-pr` 판정 `READY`(CI·리뷰 상태 포함, just-mode `scripts/watch-pr`)
+2. 남은 P1·P2 0개 (review.md 등급)
+3. 검증 판정이 지금 patch에 유효: 판정 커밋과 현재 head의 `git patch-id` 비교(just-mode `playbooks/shipping.md` 3단계)
+
+- PR 본문 체크 항목: 기록용, 머지 조건에서 제외
+- 계약 PR: 사람의 계약 승인이 `READY` 전제(종류 절)
 
 ## 금지
 
