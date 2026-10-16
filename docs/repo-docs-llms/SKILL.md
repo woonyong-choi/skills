@@ -10,7 +10,7 @@ description: "README와 문서 목록에서 llms.txt·llms-full.txt를 생성·�
 - 필요할 때만 읽기: 생성물 동반 PR 확인 → git-pull-request
 
 - 파일은 `gen_llms` 스크립트로만 생성, 손 작성 금지
-- 원본: 루트 `README.md`와 `docs/README.md`. 원본에 없는 글자 추가 금지
+- 원본: 머리는 `README.en.md`, 없으면 `README.md`. 문서 링크는 `docs/README.md` 목록. 원본에 없는 글자 추가 금지, 목록 제목·설명 번역 금지
 
 ## 파일
 
@@ -37,15 +37,17 @@ python3 <이 스킬 폴더>/scripts/gen_llms.py
 - 스크립트 실행 전 skill-sync `references/execution.md` 필수 확인
 - 원격: `--remote` 기본 origin, 기본 브랜치는 원격 HEAD 조회. 조회할 수 없으면 `--branch`로 확인한 값 지정. main 고정 대체 금지
 - 자동 URL 구성은 github.com 전용. 다른 호스트는 `--raw-base-url`로 원문 루트 URL 지정
-- 입력 위치: `README.md`, `docs/README.md`, 목록의 모든 문서는 저장소 안 `.md` 파일만 허용. 심볼릭 링크는 실제로 가리키는 경로로 판정
+- 입력 위치: `README.md`, `README.en.md`, `docs/README.md`, 목록의 모든 문서는 저장소 안 `.md` 파일만 허용. 심볼릭 링크는 실제로 가리키는 경로로 판정
 - 공개 여부: 저장소 비공개 경로 정책 적용. `--private-dir` 반복으로 차단 폴더 이름 지정, 생략 시 `.local`·`archive`. 대소문자·중첩 URL 인코딩·심볼릭 링크의 실제 경로·git 제외 검사 유지
 - 입력 검사에 하나라도 실패하면 파일을 쓰지 않고 중단. README 제목·한 줄 소개·소개 문단 누락 포함
+- 목록 읽기: `- [제목](경로): 답하는 것` 줄을 위에서부터 순서대로. 들여 쓴 하위 줄도 같은 순서로, 출력은 들여쓰기 없이 한 줄씩. 분류 제목(`## 시작` 등) 제외
 - 코드 블록 안 문서 줄: 목록에서 제외
+- 형식 오류: 링크 없는 목록 줄, 콜론 뒤 설명 없는 목록 줄은 줄 번호와 함께 종료 1. 표만 있고 목록 줄이 없으면 `docs/README.md가 목록 형식이 아님`으로 종료 1
 
-- 실행 뒤 확인: `llms.txt` 링크 수 = `docs/README.md` 문서 줄 수 + `CHANGELOG.md`가 있으면 1
+- 실행 뒤 확인: `llms.txt` 링크 수 = `docs/README.md` 목록 링크 줄 수 + `CHANGELOG.md`가 있으면 1
 - `llms-full.txt`의 파일 구분 줄 `<!-- {경로} -->`: 형식의 일부, repo-docs 검사 대상 제외
 
 ## 갱신
 
-- README, `docs/README.md` 수정 PR: `gen_llms` 재실행, 결과 함께 커밋(git-pull-request)
+- README(영어판 포함), `docs/README.md` 수정 PR: `gen_llms` 재실행, 결과 함께 커밋(git-pull-request)
 - `llms-full.txt`가 있는 저장소의 문서 본문 수정 PR: `--full`로 재생성

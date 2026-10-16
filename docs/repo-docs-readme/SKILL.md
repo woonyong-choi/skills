@@ -56,7 +56,7 @@ description: "저장소 루트 README.md와 영어판 README.en.md를 작성·�
 - 해결하는 문제: 프로젝트 고유 용어는 같은 문장에서 풀이. 대신 쓸 도구는 깎아내리지 않고 더 나은 경우만
 - 작동 방식: 입력부터 결과까지 번호 목록, 흐름 그림 한 장, 설계 문서 링크. 설계·개발 중 단계는 첫 문장 `아래는 설계한 동작입니다.`(영어판 `The following is the designed behavior.`)
 - 상태: 있는 것 / 아직 없는 것 / 다음 할 것(상위 이슈 링크) / 측정 결과(있을 때). 측정 수치는 보고서 `results/summary.json` 값 그대로와 조건, 유리한 판정만 선택 금지. 호환 약속 한 문장(예: `1.0 전에는 형식과 명령이 예고 없이 바뀔 수 있습니다.`). 설계 단계는 있는 것이 공개 설계 문서와 결정 기록뿐이라고 명시
-- 문서: `docs/README.md`가 있을 때만. 그 목록의 시작 분류 줄을 같은 제목·같은 설명 그대로, 끝에 전체 문서 목록 링크. 작업 언어가 한국어이면 영어판 문서 절 첫 문장 `The design documents are written in Korean.`(README.md에는 없음)
+- 문서: `docs/README.md`가 있을 때만. 그 목록의 시작 분류 문서 줄을 같은 제목·같은 설명 그대로, 끝에 전체 문서 목록 링크. 작업 언어가 한국어이면 영어판 문서 절 첫 문장 `The design documents are written in Korean.`(README.md에는 없음)
 - 개발: CI·검사 스크립트에 있는 명령만, 빌드 → 테스트 → 린트 → 포맷. `.github/CONTRIBUTING.md`가 있으면 링크
 - 라이선스: `[{SPDX 식별자}](LICENSE)` 한 줄. 두 라이선스면 `{A} 또는 {B}`
 

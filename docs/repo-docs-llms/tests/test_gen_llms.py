@@ -29,7 +29,7 @@ class GenerateIndexTest(unittest.TestCase):
         os.chdir(self.directory.name)
         subprocess.run(["git", "init", "-q"], check=True)
         Path("docs").mkdir()
-        Path("docs/README.md").write_text("| [Architecture](architecture.md) | Code map |\n", encoding="utf-8")
+        Path("docs/README.md").write_text("# Docs\n\n## Start\n\n- [Architecture](architecture.md): Code map\n", encoding="utf-8")
         Path("docs/architecture.md").write_text("# Architecture\n", encoding="utf-8")
 
     # cost: time O(1), heap O(1), stack O(1), io O(1)
@@ -166,32 +166,94 @@ class GenerateIndexTest(unittest.TestCase):
 
 
 class DocumentListTest(unittest.TestCase):
-    """#90 지시 5: docs/README.md 분류별 목록(들여쓰기 3단계)의 문서 줄을 순서대로 읽는다."""
+    """docs/README.md 분류별 목록(## 분류, 문서 줄, 들여 쓴 하위 문서)과 README.en.md 머리 검증."""
 
-    def test_list_rows_in_order_without_category_lines(self) -> None:
-        with tempfile.TemporaryDirectory() as folder:
-            previous = os.getcwd()
-            os.chdir(folder)
+    LIST = (
+        "# 문서\n\n설계 문서다.\n\n## 시작\n\n- [아키텍처](architecture.md): 구성 요소\n\n"
+        "## 설계\n\n- [입력](design/input.md): 입력 접수\n  - [재시도](design/input-retry.md): 재시도 순서\n"
+        "- [출력](design/output.md): 결과 형식\n\n## 기록\n\n- [결정 기록](decisions/README.md): 고른 이유\n"
+    )
+    KOREAN = "# 도구\n\n빠른 색인 도구\n\n한국어 소개 문단.\n"
+
+    # cost: time O(1), heap O(1), stack O(1), io O(1)
+    # vars: 없음
+    # basis: estimate
+    def setUp(self) -> None:
+        self.previous = os.getcwd()
+        self.directory = tempfile.TemporaryDirectory()
+        os.chdir(self.directory.name)
+        subprocess.run(["git", "init", "-q"], check=True)
+        for path in ("architecture.md", "design/input.md", "design/input-retry.md", "design/output.md", "decisions/README.md"):
+            Path("docs", path).parent.mkdir(parents=True, exist_ok=True)
+            Path("docs", path).write_text("# 문서\n", encoding="utf-8")
+
+    # cost: time O(1), heap O(1), stack O(1), io O(1)
+    # vars: 없음
+    # basis: estimate
+    def tearDown(self) -> None:
+        os.chdir(self.previous)
+        self.directory.cleanup()
+
+    # cost: time O(c), heap O(c), stack O(1), io O(1)
+    # vars: c = 입력 글자 수
+    # basis: estimate
+    def run_main(self, index: str, readme: str | None = None, english: str | None = None) -> int | str | None:
+        Path("docs/README.md").write_text(index, encoding="utf-8")
+        Path("README.md").write_text(readme or self.KOREAN, encoding="utf-8")
+        if english is not None:
+            Path("README.en.md").write_text(english, encoding="utf-8")
+        with contextlib.redirect_stderr(io.StringIO()):
             try:
-                Path("docs").mkdir()
-                Path("docs/README.md").write_text(
-                    "# 문서\n\n소개.\n\n- 시작\n  - [아키텍처](architecture.md): 구성 요소\n"
-                    "- 설계\n  - [입력](design/input.md): 입력 접수\n    - [재시도](design/input-retry.md): 재시도 순서\n"
-                    "- 기록\n  - [결정 기록](decisions/README.md): 고른 이유\n",
-                    encoding="utf-8",
-                )
-                rows = gen_llms.read_rows()
-            finally:
-                os.chdir(previous)
-        self.assertEqual(
-            rows,
-            [
-                ("아키텍처", "architecture.md", "구성 요소"),
-                ("입력", "design/input.md", "입력 접수"),
-                ("재시도", "design/input-retry.md", "재시도 순서"),
-                ("결정 기록", "decisions/README.md", "고른 이유"),
-            ],
+                return gen_llms.main(False, raw_url=RAW)
+            except SystemExit as error:
+                return error.code
+
+    def test_list_links_in_order_split_into_docs_and_optional(self) -> None:
+        self.assertEqual(self.run_main(self.LIST), 0)
+        text = Path("llms.txt").read_text(encoding="utf-8")
+        docs, optional = text.split("## Optional\n")
+        self.assertIn(
+            f"- [아키텍처]({RAW}docs/architecture.md): 구성 요소\n"
+            f"- [입력]({RAW}docs/design/input.md): 입력 접수\n"
+            f"- [재시도]({RAW}docs/design/input-retry.md): 재시도 순서\n"
+            f"- [출력]({RAW}docs/design/output.md): 결과 형식\n",
+            docs,
         )
+        self.assertIn(f"- [결정 기록]({RAW}docs/decisions/README.md): 고른 이유", optional)
+        self.assertNotIn("시작", text)
+        self.assertNotIn("  - [", text)
+
+    def test_header_from_english_readme_when_present(self) -> None:
+        english = (
+            "# Tool\n\n[한국어](README.md) | English\n\nFast index tool\n\nEnglish intro paragraph.\n"
+        )
+        readme = '# 도구\n\n한국어 | <a href="README.en.md">English</a>\n\n빠른 색인 도구\n\n한국어 소개 문단.\n'
+        self.assertEqual(self.run_main(self.LIST, readme, english), 0)
+        text = Path("llms.txt").read_text(encoding="utf-8")
+        self.assertTrue(text.startswith("# Tool\n\n> Fast index tool\n\nEnglish intro paragraph.\n"), text)
+        self.assertNotIn("한국어 소개", text)
+
+    def test_header_from_readme_without_english(self) -> None:
+        readme = '# 도구\n\n한국어 | <a href="README.en.md">English</a>\n\n빠른 색인 도구\n\n한국어 소개 문단.\n'
+        self.assertEqual(self.run_main(self.LIST, readme), 0)
+        self.assertTrue(Path("llms.txt").read_text(encoding="utf-8").startswith("# 도구\n\n> 빠른 색인 도구\n\n한국어 소개 문단.\n"))
+
+    def test_table_only_index_fails_without_writing(self) -> None:
+        code = self.run_main("# 문서\n\n| 문서 | 설명 |\n|---|---|\n| [아키텍처](architecture.md) | 구성 요소 |\n")
+        self.assertIn("docs/README.md가 목록 형식이 아님", str(code))
+        self.assertFalse(Path("llms.txt").exists())
+
+    def test_malformed_list_line_names_line_number(self) -> None:
+        for line in ("- 아키텍처: 구성 요소", "- [아키텍처](architecture.md)", "- [아키텍처](architecture.md):"):
+            with self.subTest(line=line):
+                code = self.run_main("# 문서\n\n## 시작\n\n" + line + "\n")
+                self.assertIn("docs/README.md 5번째 줄", str(code))
+                self.assertFalse(Path("llms.txt").exists())
+
+    def test_list_lines_in_code_block_are_ignored(self) -> None:
+        index = self.LIST + "\n```md\n- [예시](missing.md): 틀 예시\n- 형식 아님\n```\n"
+        self.assertEqual(self.run_main(index), 0)
+        self.assertNotIn("예시", Path("llms.txt").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
