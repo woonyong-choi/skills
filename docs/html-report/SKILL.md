@@ -108,6 +108,7 @@ description: "개념·로직·구조를 웹·브라우저에 그려 설명하거
 - 작성하지 않은 새 세션에 보고서 원문만 전달(작성 대화·재료 제외)하고 세 질문: 처음 보는 말과 그 줄, 예 없이 추상적인 문장과 그 줄, 다 읽고 할 일 한 문장
 - 3번 답이 요약과 같은 뜻인지 작성 세션이 대조
 - 모델: 공급자마다 가장 저렴한 모델(Claude `haiku`, Codex는 `read_review.mjs`의 `CHEAPEST` 상수). 더 비싼 모델로 올려 통과 금지
+- 생각 수준: low 고정(Claude `--effort low`, Codex `-c model_reasoning_effort=low`). 결과 보고에 사용 토큰 수 한 줄
 - 실행: `node <이 스킬 폴더>/scripts/read_review.mjs <보고서 폴더>/report.md --host claude`
 - 하나라도 걸리면 고쳐서 다시 읽히기, 최대 2번. 그래도 걸리면 걸린 줄을 표시한 채 띄우고 보고
 - 1번 답에 나온 말은 낯선 말 목록에 추가

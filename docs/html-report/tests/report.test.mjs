@@ -199,22 +199,36 @@ test('판정 저장 옛 형식은 빈 값으로 시작한다', () => {
   assert.deepEqual(JSON.parse(JSON.stringify(restore('{"a":{"choice":"B","note":"좋음"}}'))), { a: { choice: 'B', note: '좋음' } });
 });
 
-test('읽기 검토는 공급자마다 가장 저렴한 모델로 실행한다', async () => {
-  const { reviewCommand, CHEAPEST } = await import('../scripts/read_review.mjs');
+test('읽기 검토는 공급자마다 가장 저렴한 모델·낮은 생각 수준으로 실행하고 사용 토큰을 센다', async () => {
+  const { reviewCommand, CHEAPEST, run } = await import('../scripts/read_review.mjs');
   const work = mkdtempSync(join(tmpdir(), 'review-'));
   try {
     const log = join(work, 'argv.json');
+    const answer = '1. 없음\\n2. 없음\\n3. 목차 위치를 고르면 된다';
+    const outputs = {
+      claude: JSON.stringify({ type: 'result', result: '1. 없음\n2. 없음\n3. 목차 위치를 고르면 된다', usage: { input_tokens: 900, cache_read_input_tokens: 100, cache_creation_input_tokens: 0, output_tokens: 50 } }),
+      codex: [
+        JSON.stringify({ type: 'thread.started', thread_id: 't1' }),
+        JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: '1. 없음\n2. 없음\n3. 목차 위치를 고르면 된다' } }),
+        JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 700, cached_input_tokens: 200, output_tokens: 40 } }),
+      ].join('\n'),
+    };
     for (const name of ['claude', 'codex']) {
-      writeFileSync(join(work, name), `#!/usr/bin/env node\nrequire('fs').writeFileSync(${JSON.stringify(log)}, JSON.stringify(process.argv.slice(2)));\nprocess.stdout.write('1. 없음\\n2. 없음\\n3. 목차 위치를 고르면 된다');\n`, { mode: 0o755 });
+      writeFileSync(join(work, name), `#!/usr/bin/env node\nrequire('fs').writeFileSync(${JSON.stringify(log)}, JSON.stringify(process.argv.slice(2)));\nprocess.stdout.write(${JSON.stringify(outputs[name])});\n`, { mode: 0o755 });
     }
-    const { run } = await import('../scripts/read_review.mjs');
+    const expected = { claude: ['--effort', 'low'], codex: ['-c', 'model_reasoning_effort=low'] };
+    const tokens = { claude: 1050, codex: 740 };
     for (const host of ['claude', 'codex']) {
-      const answer = await run('# 보고서\n', host, { PATH: `${work}:${process.env.PATH}` });
+      const review = await run('# 보고서\n', host, { PATH: `${work}:${process.env.PATH}` });
       const argv = JSON.parse(readFileSync(log, 'utf8'));
       assert.ok(argv.includes(CHEAPEST[host]), `${host}: ${argv}`);
-      assert.match(answer, /목차 위치/);
+      const at = argv.indexOf(expected[host][0]);
+      assert.deepEqual(argv.slice(at, at + 2), expected[host], `${host}: ${argv}`);
+      assert.match(review.answer, /목차 위치/);
+      assert.equal(review.tokens, tokens[host]);
       assert.deepEqual(reviewCommand(host).slice(0, 1), [host]);
     }
+    assert.ok(answer);
     assert.equal(CHEAPEST.claude, 'haiku');
     assert.throws(() => reviewCommand('claude', { model: 'opus' }), /모델/);
   } finally {
