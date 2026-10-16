@@ -2,6 +2,7 @@
 name: principle-laziness-protocol
 description: "리팩터링할 때, diff 크기를 평가할 때, 추상화·계층·신호 전달 경로를 더하고 싶을 때 적용한다. 삭제 쪽으로 기울고, 문제를 푸는 가장 작은 변경을 고른다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 게으름 규약(Laziness Protocol)

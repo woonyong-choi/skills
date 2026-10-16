@@ -2,6 +2,7 @@
 name: principle-attack-the-premise
 description: "같은 전제를 공유한 수정이 두 번 이상 같은 게이트에서 실패했을 때 적용한다. 그 전제를 가정한 수정을 또 쓰기 전에 전제를 글로 적고 직접 검증한다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 전제부터 의심하기(Attack the Premise)

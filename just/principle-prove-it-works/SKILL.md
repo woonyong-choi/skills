@@ -2,6 +2,7 @@
 name: principle-prove-it-works
 description: "작업을 마친 뒤 완료를 선언하기 전에 적용한다. 대리 지표, 자기 보고, '컴파일된다'가 아니라 실제 결과물(기능 실행, 실제 값 읽기, diff 확인)로 검증한다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 동작 증명(Prove It Works)

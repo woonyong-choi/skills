@@ -2,6 +2,7 @@
 name: principle-test-behavior-not-implementation
 description: "테스트를 쓰거나, 바꾸거나, 남길지 정할 때 적용한다. 코드의 사용자가 관찰할 수 있는 것을 확인해서, 그 동작이 깨지면 실패하고 내부만 바뀌면 계속 통과하게 한다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 구현 말고 동작 테스트(Test Behavior, Not Implementation)

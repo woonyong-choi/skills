@@ -2,6 +2,7 @@
 name: principle-never-block-on-the-human
 description: "되돌릴 수 있는 작업에서 'X를 해도 될까요?'라고 묻고 싶을 때 적용한다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 사용자 때문에 멈추지 않기(Never Block on the Human)

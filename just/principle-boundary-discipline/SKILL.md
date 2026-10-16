@@ -2,6 +2,7 @@
 name: principle-boundary-discipline
 description: "검증, 오류 처리, 프레임워크 어댑터를 연결할 때 적용한다. 방어 코드는 시스템 경계(CLI, 설정, 네트워크, 외부 API)에 모으고, 내부 타입은 믿으며, 비즈니스 로직은 순수 함수에 둔다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 경계 규율(Boundary Discipline)

@@ -2,6 +2,7 @@
 name: principle-sequence-verifiable-units
 description: "여러 단계로 된 작업(일괄 수정, 마이그레이션, 비슷한 수정의 연속)과 커밋·PR을 스택으로 쌓는 방식에 적용한다. 작업을 각각 검증 가능한 상태로 끝나는 작은 단위로 나누고, 다음으로 가기 전에 하나씩 확인하고, 순서 자체가 리뷰어에게 증명이 되도록 전달한다."
 disable-model-invocation: true
+user-invocable: false
 ---
 
 # 검증 가능한 단위로 순서 짓기(Sequence Verifiable Units)
