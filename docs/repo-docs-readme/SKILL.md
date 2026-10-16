@@ -13,6 +13,16 @@ description: "저장소 루트 README.md와 영어판 README.en.md를 작성·�
 - 길이: 필수 정보와 핵심 사용 흐름 보존, 독립적으로 조회하는 세부는 `docs/` 링크
 - 그림: 절의 질문에 답하는 그림만 배치, 같은 정보를 되풀이하는 그림 제외
 
+## 목차
+
+두 종류 공통. 키워드 트리 형식의 `## 목차` 절
+
+- 위치: 머리·데모·단계 알림 다음, 첫 본문 절 앞
+- 형식: 글머리 목록 링크. `##` 절이 1단, 그 아래 `###` 소절이 2단(공백 2칸 들여쓰기), `####`가 3단. 4단 이상과 목차 절 자신은 제외
+- 링크: 글자는 절 제목 그대로. 앵커는 GitHub 규칙(소문자, 공백 → `-`, 마침표·괄호·쌍점 등 기호 삭제, 한글 유지). 같은 제목이 두 번이면 뒤쪽에 `-1`
+- 대상: 실제로 있는 절만. 생략한 절과 다른 문서로의 링크 제외
+- 갱신: 절을 더하거나 이름을 바꾸는 PR에서 목차도 수정
+
 ## 종류
 
 - 오픈소스형: 남이 설치해 쓰는 저장소
@@ -49,7 +59,7 @@ description: "저장소 루트 README.md와 영어판 README.en.md를 작성·�
 
 ## 오픈소스형 절 규칙
 
-- 머리: 로고는 파일이 있을 때만. 한 줄 소개는 저장소 설명과 같은 글자(마침표 제외). 뱃지는 license·CI·배포 버전 중 있는 것. 언어 전환 줄은 영어판이 있을 때만(영어판 절). 절 이동 링크는 처음 찾을 절만
+- 머리: 로고는 파일이 있을 때만. 한 줄 소개는 저장소 설명과 같은 글자(마침표 제외). 뱃지는 license·CI·배포 버전 중 있는 것. 언어 전환 줄은 영어판이 있을 때만(영어판 절)
 - 데모 GIF: 실행되는 제품이 있을 때만, 머리 바로 아래
 - 단계 알림: `> [!NOTE]`와 아래 고정 문장. 배포 단계면 생략
 - 빠른 시작: 실행 가능·배포 단계만. 실제로 실행해 확인한 설치·첫 실행 명령만
@@ -91,8 +101,8 @@ description: "저장소 루트 README.md와 영어판 README.en.md를 작성·�
 - 언어 전환 줄: `README.md`는 `한국어 | [English](README.en.md)`, `README.en.md`는 `[한국어](README.md) | English`. 가운데 정렬 블록 안이라 `<a href>` 형식
 - `README.md`를 바꾸는 PR에서 `README.en.md`도 수정. 한쪽만 바뀐 PR 금지
 - 문체: `README.md` 합쇼체, `README.en.md` 평이한 영어 현재형
-- 대조: 주체·동작·조건·부정·수치 보존. 대체 글과 절 이동 링크 글자·앵커는 각 언어 기준
-- 절 이름 대응: 빠른 시작 → Quick start, 해결하는 문제 → Why, 작동 방식 → How it works, 상태 → Status, 문서 → Documentation, 개발 → Development, 라이선스 → License, 문제와 제약 → Problem and constraints, 설계 결정 → Design decisions, 구현 → Implementation, 결과 → Results, 실행 → Running
+- 대조: 주체·동작·조건·부정·수치 보존. 대체 글과 목차 링크 글자·앵커는 각 언어 기준
+- 절 이름 대응: 목차 → Contents, 빠른 시작 → Quick start, 해결하는 문제 → Why, 작동 방식 → How it works, 상태 → Status, 문서 → Documentation, 개발 → Development, 라이선스 → License, 문제와 제약 → Problem and constraints, 설계 결정 → Design decisions, 구현 → Implementation, 결과 → Results, 실행 → Running
 
 ## 갱신
 
