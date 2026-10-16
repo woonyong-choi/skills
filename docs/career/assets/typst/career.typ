@@ -80,6 +80,7 @@
   #v(0.5em)
   #what
   #v(0.5em)
+  #let items = items.filter(i => i != none)
   #if items.len() > 0 { labeled([담당], list(..items)) }
   #if stack != none { v(0.4em); labeled([기술], text(fill: muted)[#stack]) }
 ]
@@ -94,9 +95,9 @@
   body
 })
 
-#let case(title, lead) = block(width: 100%, above: 1.6em, below: 1.1em)[
+#let case(title, lead) = block(width: 100%, above: 2em, below: 1.3em)[
   #text(size: 13.5pt, weight: "bold", fill: ink)[#dot(title)]
-  #v(0.5em)
+  #v(0.8em)
   #text(weight: "bold", fill: ink)[#lead]
 ]
 
@@ -107,4 +108,18 @@
   ..rows.map(((k, v)) => (text(weight: "bold", fill: ink)[#k], v)).flatten(),
 )
 
-#let part(title) = block(above: 1.6em, below: 0.7em)[#text(size: 11pt, weight: "bold", fill: ink)[#title]]
+#let part(title) = block(above: 1.8em, below: 1.1em)[#text(size: 11pt, weight: "bold", fill: ink)[#title]]
+
+// 고친 곳 표시. 컴파일할 때 --input changes=off 이면 표시 없이 최종본
+#let review = sys.inputs.at("changes", default: "on") == "on"
+#let added-fill = rgb("#dafbe1")
+#let changed-fill = rgb("#ddf4ff")
+#let removed-ink = rgb("#cf222e")
+#let added(body) = if review { highlight(fill: added-fill, extent: 1.5pt, radius: 2pt)[#body] } else { body }
+#let changed(old, body) = if review {
+  [#highlight(fill: changed-fill, extent: 1.5pt, radius: 2pt)[#body]#linebreak()#text(size: 7.6pt, fill: faint)[이전: #strike[#old]]#linebreak()]
+} else { body }
+#let removed(body) = if review { text(fill: removed-ink)[#strike[#body]] } else { none }
+#let changes-legend(version, base) = if review { block(width: 100%, fill: surface, inset: (x: 8pt, y: 6pt), radius: 3pt, below: 1.2em)[
+  #text(size: 7.8pt, fill: muted)[#version 고친 곳 (#base 대비): #highlight(fill: added-fill, extent: 1pt)[추가], #highlight(fill: changed-fill, extent: 1pt)[바뀜(아래 회색이 이전 문장)], #text(fill: removed-ink)[#strike[삭제]]. 버전을 확정하면 표시 없이 다시 만듦]
+] }

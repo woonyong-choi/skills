@@ -10,7 +10,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** 공급자마다 가장 저렴한 모델. 바꿀 때 이 상수만 수정 */
-export const CHEAPEST = Object.freeze({ claude: 'haiku', codex: 'gpt-5.4-mini' });
+export const CHEAPEST = Object.freeze({ claude: 'haiku', codex: 'gpt-6-luna' });
 
 export const QUESTIONS = `아래 보고서를 처음 읽는 사람으로서 세 질문에 번호를 붙여 답하라. 보고서 밖 지식으로 보충하지 말 것.
 1. 처음 보는 말이 있었나? 있으면 그 줄을 그대로 적어라. 없으면 "없음"
