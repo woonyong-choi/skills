@@ -28,7 +28,7 @@ jobs:
       - name: Run Python tests
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/html-report/tests/test_thinkflow_cli.py
+        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests
       - name: Run hook tests with linked temp folder
         # macOS의 /var 링크와 같은 경로 형태에서 실패하는 시험을 Linux에서 잡는다
         env:
@@ -48,8 +48,11 @@ jobs:
         run: |
           npm ci
           npx playwright-core install --with-deps chromium
+      - name: Install report builder
+        working-directory: docs/html-report/scripts
+        run: npm ci
       - name: Run report tests
-        run: python3 docs/html-report/tests/test_build_report.py --thinkflow .runtime/thinkflow
+        run: node --test docs/html-report/tests/*.test.mjs
       - name: Verify README figures
         run: |
           python3 experiments/skill-exposure/scripts/03-analyze.py

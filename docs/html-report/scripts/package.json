@@ -1,0 +1,13 @@
+{
+  "name": "html-report-build",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@woonyong-choi/design-tokens": "github:woonyong-choi/design-tokens#5a94ec396ff40762faba089a381527a573f1953f",
+    "document-engine": "github:woonyong-choi/document-engine#172e878182c22efea2d728e126851427daebd57f",
+    "thinkflow": "github:woonyong-choi/thinkflow#c65d88339fd4cd284a40582e8dadf3dab2db3fd9"
+  }
+}

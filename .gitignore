@@ -4,3 +4,4 @@ __pycache__/
 .local
 .runtime/
 .pytest_cache/
+node_modules/

@@ -93,7 +93,7 @@ Developer Thinking의 기록·복구 연결부는 기존 설치 ID `work-continu
 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 문서 색인 생성 |
 | [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 비공개 판단 기록 |
 | [repo-docs-promo](docs/repo-docs-promo/SKILL.md) | 홍보용 촬영 순서와 데모 준비 |
-| [html-report](docs/html-report/SKILL.md) | 블로그 틀 설명 페이지와 시각 비교 HTML 보고서 |
+| [html-report](docs/html-report/SKILL.md) | 홈페이지 문서 디자인의 설명 페이지와 선택 비교·전후 확인 보고서 |
 | [career](docs/career/SKILL.md) | JD 맞춤 이력서·포트폴리오와 Vault 지원 폴더 |
 
 ### 디자인
@@ -195,21 +195,17 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 
 ## 개발
 
-[스킬 작성 형식](tools/skill-sync/references/authoring.md)과 [일관성 검사 기준](tools/skill-sync/references/consistency.md)을 따릅니다. CI는 아래 일관성 검사와 Python 시험을 실행하며, ThinkFlow와 Chromium을 설치해 HTML 보고서 시험도 실행합니다.
+[스킬 작성 형식](tools/skill-sync/references/authoring.md)과 [일관성 검사 기준](tools/skill-sync/references/consistency.md)을 따릅니다. CI는 아래 일관성 검사와 Python 시험, HTML 보고서 생성기 시험을 실행합니다.
 
 ```sh
 python3 tools/skill-sync/scripts/skill_check.py .
-python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/html-report/tests/test_thinkflow_cli.py
+python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests
+(cd docs/html-report/scripts && npm ci) && node --test docs/html-report/tests/*.test.mjs
 ```
 
 시험에는 pytest가 필요합니다. 그림 원본, 밝은·어두운 SVG와 재생성 명령은 [그림 재현 안내](docs/assets/README.md)에 있습니다.
 
-저장소 전체 시험은 `python3 -m pytest -q`로 실행합니다. `THINKFLOW_PATH`가 없거나 빈 값이면 HTML 보고서 시험은 경로 설정 안내와 함께 건너뜁니다. 보고서 시험을 실행하려면 의존성이 설치된 그림 도구 작업본 루트를 지정합니다. 브라우저 시험에는 Node.js, `playwright-core`와 Chromium이 필요합니다.
-
-```sh
-THINKFLOW_PATH="<ThinkFlow 작업본 루트>" python3 -m pytest -q docs/html-report/tests/test_build_report.py
-python3 docs/html-report/tests/test_build_report.py --thinkflow "<ThinkFlow 작업본 루트>"
-```
+시험에는 pytest와 Node.js 22.12 이상이 필요합니다. HTML 보고서 생성 시험은 `docs/html-report/scripts`에서 `npm ci`를 실행한 뒤에만 돌고, 설치 전에는 건너뜁니다.
 
 ## 라이선스
 
