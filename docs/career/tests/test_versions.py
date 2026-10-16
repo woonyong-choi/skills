@@ -41,9 +41,6 @@ FIRST = """#import "/career.typ": *
 """
 
 
-# cost: time O(w * h), heap O(w * h), stack O(1)
-# vars: w = 폭, h = 높이
-# basis: estimate
 def png(width: int, height: int) -> bytes:
     import struct
 
@@ -55,9 +52,6 @@ def png(width: int, height: int) -> bytes:
 
 
 class FlowTest(unittest.TestCase):
-    # cost: time O(1), heap O(1), stack O(1), io O(1)
-    # vars: 없음
-    # basis: estimate
     def setUp(self) -> None:
         self.directory = tempfile.TemporaryDirectory()
         base = Path(self.directory.name)
@@ -74,9 +68,6 @@ class FlowTest(unittest.TestCase):
         (self.posting / "figures" / "order-flow.png").write_bytes(png(200, 80))
         self.work = self.posting / "이력서" / "이력서.typ"
 
-    # cost: time O(1), heap O(1), stack O(1), io O(1)
-    # vars: 없음
-    # basis: estimate
     def tearDown(self) -> None:
         self.directory.cleanup()
 

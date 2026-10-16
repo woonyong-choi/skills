@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import ast
-import importlib.util
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -12,7 +11,6 @@ from urllib.parse import unquote, urlsplit
 PRIORITY = '- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용'
 FENCE = re.compile(r'^\s*(`{3,}|~{3,})')
 REFERENCE = re.compile(r'\([^)]*[a-z]+(?:-[a-z]+)+[^)]*\)|\[[^]]+\]\([^)]+\)|[a-z][a-z0-9-]* `references/[^`]+\.md`')
-COST = re.compile(r'^time O\([^()]+\)(?: [^,]+)?(?:, O\([^()]+\) worst)?, heap O\([^()]+\), stack O\([^()]+\)(?:, (?:alloc|io|tokens) [^,]+)*$')
 
 
 def prose_lines(text: str) -> list[tuple[int, str]]:
@@ -32,9 +30,6 @@ def prose_lines(text: str) -> list[tuple[int, str]]:
     return rows
 
 
-# cost: time O(n), heap O(n), stack O(1), io 1
-# vars: n = 용어 정본 글자 수
-# basis: estimate
 def read_terms(skills: dict[str, Path]) -> dict[str, str]:
     owner = skills.get('repo-docs')
     if owner is None:
@@ -53,9 +48,6 @@ def read_terms(skills: dict[str, Path]) -> dict[str, str]:
     return terms
 
 
-# cost: time O(n + b), heap O(n + b), stack O(1), io O(f)
-# vars: n = 문서 글자 수, b = 링크 대상 문서 글자 수 합계, f = 링크 수
-# basis: estimate
 def check_references(path: Path, text: str, skills: dict[str, Path]) -> list[str]:
     errors = []
     for number, line in prose_lines(text):
@@ -132,41 +124,7 @@ def collect_rules(text: str, *, include_intro: bool = False) -> list[tuple[int, 
     return rules
 
 
-def check_cost_format(text: str) -> list[str]:
-    errors = []
-    lines = text.splitlines()
-    in_block = False
-    for index, line in enumerate(lines):
-        match = re.match(r'^\s*(?:#|//) cost:\s*(.*)', line)
-        comment = re.match(r'^\s*(?:#|//) (\w+):\s*(.*)', line)
-        if not comment:
-            in_block = False
-        if not match or in_block:
-            continue
-        in_block = True
-        fields = defaultdict(list)
-        for following in lines[index:]:
-            comment = re.match(r'^\s*(?:#|//) (\w+):\s*(.*)', following)
-            if not comment:
-                break
-            fields[comment[1]].append(comment[2])
-        cost = ', '.join(fields['cost'])
-        if not COST.fullmatch(cost) or re.search(r', (?:alloc|io|tokens) 0(?:,|$)', cost):
-            errors.append(f'비용 주석 형식: {index + 1}: time, heap, stack 순서와 O 표기')
-        if not re.fullmatch(r'estimate|measured .+', ' '.join(fields['basis'])):
-            errors.append(f'비용 주석 형식: {index + 1}: basis 누락 또는 형식')
-        expressions = ' '.join(re.findall(r'O\(([^)]+)\)', cost))
-        variables = set(re.findall(r'\b[A-Za-z]\b', expressions))
-        defined = set(re.findall(r'(?:^|, )([A-Za-z])\s*=', ', '.join(fields['vars'])))
-        if variables - defined:
-            errors.append(f'비용 주석 형식: {index + 1}: vars 누락 {", ".join(sorted(variables - defined))}')
-    return errors
-
-
-# cost: time O(n), heap O(n), stack O(n), io 1
-# vars: n = 스크립트 글자 수와 구문 트리 최대 깊이
-# basis: estimate
-def check_script(path: Path, cost_checker: object) -> list[str]:
+def check_script(path: Path) -> list[str]:
     text = path.read_text(encoding='utf-8')
     if path.suffix == '.py':
         tree = ast.parse(text)
@@ -175,33 +133,14 @@ def check_script(path: Path, cost_checker: object) -> list[str]:
     else:
         header = text.split('import ', 1)[0]
         is_cli = 'process.argv' in text
-    errors = check_cost_format(text)
+    errors = []
     if is_cli:
         for label in ('인자', '출력'):
             if not re.search(r'(?:^|\n)(?:// )?' + label + r':[ \t]*\S', header):
                 errors.append(f'스크립트 {label} 형식: 파일 머리에 {label}: 설명 필수')
-    errors.extend(f'비용 주석: {line}: {name}: {reason}' for _, line, name, reason in cost_checker.check_file(str(path)))
     return [f'{error} ({path.name})' for error in errors]
 
 
-# cost: time O(n), heap O(n), stack O(1), io 1
-# vars: n = 검사 모듈 글자 수
-# basis: estimate
-def load_cost_checker() -> object:
-    script = Path(__file__).resolve()
-    source = script.parents[3] / 'code' / 'code-style'
-    installed = script.parents[2] / 'code-style'
-    owner = source if source.is_dir() else installed
-    path = owner / 'scripts' / 'check_cost_comments.py'
-    spec = importlib.util.spec_from_file_location('skill_cost_checker', path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-# cost: time O(n·t + b + s²), heap O(n + b), stack O(n), io O(f + l)
-# vars: n = 전체 글자 수, t = 용어 수, b = 링크 대상 글자 수 합계, s = 가장 긴 스크립트 줄 수, f = 파일 수, l = 링크 수
-# basis: estimate
 def check_consistency(paths: list[Path], linkable: list[Path] | None = None) -> dict[Path, list[str]]:
     """paths는 문체·규칙 검사 대상, linkable은 참조 링크로 가리킬 수 있는 추가 스킬(형식만 검사하는 스킬 포함)"""
     skills = {path.parent.name: path.parent for path in paths}
@@ -209,7 +148,6 @@ def check_consistency(paths: list[Path], linkable: list[Path] | None = None) -> 
     targets = {**{path.parent.name: path.parent for path in linkable or []}, **skills}
     errors = {path: [] for path in paths}
     duplicates = defaultdict(list)
-    cost_checker = load_cost_checker()
     for path in paths:
         documents = [path, *sorted((path.parent / 'references').rglob('*.md'))]
         for document in documents:
@@ -222,7 +160,7 @@ def check_consistency(paths: list[Path], linkable: list[Path] | None = None) -> 
         for script in sorted((path.parent / 'scripts').rglob('*')):
             if script.suffix not in ('.py', '.js', '.mjs') or script.name.startswith('test_') or {'__pycache__', 'node_modules'} & set(script.parts):
                 continue
-            errors[path].extend(check_script(script, cost_checker))
+            errors[path].extend(check_script(script))
     for rule, locations in duplicates.items():
         if len({path for path, _ in locations}) < 2:
             continue

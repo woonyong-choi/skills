@@ -1,0 +1,524 @@
+{
+  "_": "편집할 파일 → 규칙. select의 suffixes·path·content가 모두 맞으면 rules 추가. sha256은 read_rules.py --check가 원문과 대조",
+  "rules": {
+    "principle-prove-it-works": {
+      "skill": "principle-prove-it-works",
+      "path": "SKILL.md",
+      "sha256": "efbc72818026795bfe12b8638a1a364df66327979a65df08a1c2e2485ad6a543"
+    },
+    "principle-foundational-thinking": {
+      "skill": "principle-foundational-thinking",
+      "path": "SKILL.md",
+      "sha256": "07a27f3e5518010e98518800fdfe2a042c0f8770856bf8abfb3b4100db9d5c7c"
+    },
+    "principle-laziness-protocol": {
+      "skill": "principle-laziness-protocol",
+      "path": "SKILL.md",
+      "sha256": "137db116744c1f2c1ba57a0c539114e1fc3472c716381e5369861e1ab730ca35"
+    },
+    "principle-test-behavior-not-implementation": {
+      "skill": "principle-test-behavior-not-implementation",
+      "path": "SKILL.md",
+      "sha256": "9220cc169c765bca86fa89bad86f0f9b653736430f64ab5181ff25bb3a58e3a3"
+    },
+    "principle-sequence-verifiable-units": {
+      "skill": "principle-sequence-verifiable-units",
+      "path": "SKILL.md",
+      "sha256": "959b749f3317dd3ae1c9a47260f8b47614f2d5f8e8d79737be3d66a847bfdf8f"
+    },
+    "principle-boundary-discipline": {
+      "skill": "principle-boundary-discipline",
+      "path": "SKILL.md",
+      "sha256": "67610201ef3f005b389d9dcd9f5533ebddf7321b65bd1d8f8e93ad68ea6b3c2b"
+    },
+    "principle-type-system-discipline": {
+      "skill": "principle-type-system-discipline",
+      "path": "SKILL.md",
+      "sha256": "1f83a9f0918a65bc90ef7a2083c1922181aa42b7878803e3b38f2a28b815e81d"
+    },
+    "principle-model-the-domain": {
+      "skill": "principle-model-the-domain",
+      "path": "SKILL.md",
+      "sha256": "1840007f47f3657949abd842f430504dab00f41dfd79349ddcc58f4b9753c638"
+    },
+    "principle-separate-before-serializing-shared-state": {
+      "skill": "principle-separate-before-serializing-shared-state",
+      "path": "SKILL.md",
+      "sha256": "46505cf4f389cb1dfe867640c30755ff3137595955f158034937b7b63e3a7783"
+    },
+    "principle-make-operations-idempotent": {
+      "skill": "principle-make-operations-idempotent",
+      "path": "SKILL.md",
+      "sha256": "ce0083c3f8ffac99a1a5d3e137c89d28357fa26ec43cf670659fcd94f0fe8299"
+    },
+    "principle-explain-the-number": {
+      "skill": "principle-explain-the-number",
+      "path": "SKILL.md",
+      "sha256": "2f0f9892cd3d0d80557cc69bf1edd1a91f50dd084484074c63a9d2a611155506"
+    },
+    "principle-experience-first": {
+      "skill": "principle-experience-first",
+      "path": "SKILL.md",
+      "sha256": "68df9765c9aff3da96294e877ba7afce8bde6f9d3bacda2b73a19cb3e870d578"
+    },
+    "principle-fix-root-causes": {
+      "skill": "principle-fix-root-causes",
+      "path": "SKILL.md",
+      "sha256": "5c9884b228e99842f984f6fbc9699860b4c5b402a2e4ddf84df3e36098a93761"
+    },
+    "principle-attack-the-premise": {
+      "skill": "principle-attack-the-premise",
+      "path": "SKILL.md",
+      "sha256": "32cac2317ced7142b36705ef03a3e52efb5b294009e4c9658d30bca49352002e"
+    },
+    "CS-CORE": {
+      "skill": "code-style",
+      "path": "SKILL.md",
+      "sections": [
+        "",
+        "원칙"
+      ],
+      "sha256": "8ec088e7a5e527d21bb36370f368f101f610acf47fc72f1e976b5f99c3f02c68"
+    },
+    "CS-VERIFY": {
+      "skill": "code-style",
+      "path": "SKILL.md",
+      "sections": [
+        "검증"
+      ],
+      "sha256": "8648dfe3c0fc85393368e2884b9c127b02e365b56219c7bc1e0bea99bb0b5279"
+    },
+    "CS-FAILURE": {
+      "skill": "code-style",
+      "path": "SKILL.md",
+      "sections": [
+        "실패 처리"
+      ],
+      "sha256": "27140b3996aac98ae3927f922cadffce241cb030c3df2e70b77f89c26205b537"
+    },
+    "CS-LANGUAGE": {
+      "skill": "code-style",
+      "path": "references/language.md",
+      "sha256": "653bdc9e60a69e47e79c006714e2f867909cb9c291be90587f625569a3da73cf"
+    },
+    "CS-SIZE": {
+      "skill": "code-style",
+      "path": "references/structure.md",
+      "sections": [
+        "수치 기준"
+      ],
+      "sha256": "6942b170c9560a8f9a897753869dd7801ad24f2795fa5193204a2711ec2d0784"
+    },
+    "CS-NAME": {
+      "skill": "code-style",
+      "path": "references/structure.md",
+      "sections": [
+        "이름"
+      ],
+      "sha256": "4eb31ac44762a2af809730889d10fdc14e230443e1b7798afa47f2f23cd852b0"
+    },
+    "CS-CONDITION": {
+      "skill": "code-style",
+      "path": "references/structure.md",
+      "sections": [
+        "조건식"
+      ],
+      "sha256": "7b495cd0d92084199d01215047bf443096b163004d81099a6996d15f2559fdeb"
+    },
+    "CS-ORDER": {
+      "skill": "code-style",
+      "path": "references/structure.md",
+      "sections": [
+        "선언 순서"
+      ],
+      "sha256": "b5f8b0072b02cb68177b5768f74ea105e072254d2a4b0414affe4655d1246a20"
+    },
+    "CS-VISIBILITY": {
+      "skill": "code-style",
+      "path": "references/structure.md",
+      "sections": [
+        "공개 범위와 주석"
+      ],
+      "sha256": "cc3220ca69eb5ceaa7d8ab1b31124441e3d95642ee97617f59f8df0f3b483048"
+    },
+    "CS-ERROR": {
+      "skill": "code-style",
+      "path": "references/errors.md",
+      "sha256": "dc99e7e360a52e68525ea65fc5ae33d74b50103de45c8b8e6d41a02faf4b4702"
+    },
+    "CS-TEST": {
+      "skill": "code-style",
+      "path": "references/testing.md",
+      "sha256": "403073b23f422557fa0e3097192bdbd94aa91c1fdbe2db568cbd83f1fece930a"
+    },
+    "CS-DATA": {
+      "skill": "code-style",
+      "path": "references/data-and-concurrency.md",
+      "sha256": "e40c311321ec20ced5d1e780c17879fc1a1140d4b22c91fe34e276857ac1b980"
+    },
+    "CS-RESOURCES": {
+      "skill": "code-style",
+      "path": "references/resources.md",
+      "sha256": "653204f3db34784d9048f352dbad4a1d2163ce8368d0d1412d23efe050c0d021"
+    },
+    "CS-INTERFACES": {
+      "skill": "code-style",
+      "path": "references/interfaces.md",
+      "sha256": "82cdba44e94772c1315652a0a60489e6b17c4cbacd3923ad15e765f8c57bc2ab"
+    },
+    "CS-OPERATIONS": {
+      "skill": "code-style",
+      "path": "references/operations.md",
+      "sha256": "59aaa6c9f372c7a33762d1174e964d620b9e5698de73b5d35967bc52c7922959"
+    },
+    "code-style-python": {
+      "skill": "code-style-python",
+      "path": "SKILL.md",
+      "sha256": "5f65a4bffaecfe14f50bb665d2136c041cf0ad724df943a3a7e3d92ec8f34809"
+    },
+    "code-style-typescript": {
+      "skill": "code-style-typescript",
+      "path": "SKILL.md",
+      "sha256": "d4542a1a1ca0810657e3264185ce121e0212fc8fc55de6d6807a30756069c00b"
+    },
+    "code-style-typescript-common": {
+      "skill": "code-style-typescript",
+      "path": "SKILL.md",
+      "drop": [
+        "TypeScript 전용"
+      ],
+      "sha256": "720299eee2edc49ba0037a198a323ca6c5cbe8371182af3579496c088bb5dce4"
+    },
+    "code-style-rust": {
+      "skill": "code-style-rust",
+      "path": "SKILL.md",
+      "sha256": "b98cd2113ea24b5ef029406a4e347b823dc1818b1ec51d56e77d49d77680ea2b"
+    },
+    "code-style-kotlin": {
+      "skill": "code-style-kotlin",
+      "path": "SKILL.md",
+      "sha256": "28941f9ba1dac52a451d1f04956a5401f0818fb7eba25bcb5b6e9ed5e56b4dc2"
+    },
+    "code-style-css": {
+      "skill": "code-style-css",
+      "path": "SKILL.md",
+      "sha256": "769e5d9d5081fd92f9ac1087170cdbb048b082e890a336fad335a4ab39badfd8"
+    }
+  },
+  "select": [
+    {
+      "when": "모든 코드 파일",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts",
+        ".css"
+      ],
+      "rules": [
+        "principle-prove-it-works",
+        "CS-CORE",
+        "CS-VERIFY",
+        "CS-LANGUAGE",
+        "CS-TEST"
+      ]
+    },
+    {
+      "when": "로직이 있는 코드 파일",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts"
+      ],
+      "rules": [
+        "principle-foundational-thinking",
+        "principle-laziness-protocol"
+      ]
+    },
+    {
+      "when": "Python",
+      "suffixes": [
+        ".py"
+      ],
+      "rules": [
+        "code-style-python"
+      ]
+    },
+    {
+      "when": "JavaScript(TypeScript 전용 절 제외)",
+      "suffixes": [
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx"
+      ],
+      "rules": [
+        "code-style-typescript-common"
+      ]
+    },
+    {
+      "when": "TypeScript",
+      "suffixes": [
+        ".ts",
+        ".tsx"
+      ],
+      "rules": [
+        "code-style-typescript",
+        "principle-type-system-discipline",
+        "principle-boundary-discipline"
+      ]
+    },
+    {
+      "when": "Rust",
+      "suffixes": [
+        ".rs"
+      ],
+      "rules": [
+        "code-style-rust",
+        "principle-type-system-discipline"
+      ]
+    },
+    {
+      "when": "Kotlin",
+      "suffixes": [
+        ".kt",
+        ".kts"
+      ],
+      "rules": [
+        "code-style-kotlin",
+        "principle-type-system-discipline"
+      ]
+    },
+    {
+      "when": "CSS",
+      "suffixes": [
+        ".css"
+      ],
+      "rules": [
+        "code-style-css",
+        "CS-INTERFACES"
+      ]
+    },
+    {
+      "when": "화면 컴포넌트",
+      "suffixes": [
+        ".jsx",
+        ".tsx"
+      ],
+      "rules": [
+        "CS-INTERFACES",
+        "principle-experience-first"
+      ]
+    },
+    {
+      "when": "테스트 파일",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts"
+      ],
+      "path": "(^|/)(tests?|__tests__|spec)/|(^|/)test_[^/]*\\.py$|_test\\.(py|rs|kt)$|\\.(test|spec)\\.[cm]?[jt]sx?$",
+      "rules": [
+        "principle-test-behavior-not-implementation",
+        "principle-sequence-verifiable-units"
+      ]
+    },
+    {
+      "when": "함수·분기 정의",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts"
+      ],
+      "content": "\\b(?:def|class|fn|fun|function|if|for|while)\\b|=>",
+      "rules": [
+        "CS-SIZE"
+      ]
+    },
+    {
+      "when": "이름·선언 추가",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts"
+      ],
+      "content": "\\b(?:def|class|fn|fun|function|const|let|var|val|struct|enum|interface|type)\\b|=>",
+      "rules": [
+        "CS-NAME",
+        "CS-ORDER"
+      ]
+    },
+    {
+      "when": "공개 범위·주석",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts"
+      ],
+      "content": "\\b(?:def|class|fn|fun|function|public|private|pub|export)\\b|#|//|=>",
+      "rules": [
+        "CS-VISIBILITY"
+      ]
+    },
+    {
+      "when": "조건식·분기",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts"
+      ],
+      "content": "\\b(?:if|elif|else|match|switch|when|for|while)\\b|\\?",
+      "rules": [
+        "CS-CONDITION"
+      ]
+    },
+    {
+      "when": "실패 가능한 입력·외부 경계·오류",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts"
+      ],
+      "content": "\\b(?:raise|try|except|throw|catch|Result|Error|open|fetch|parse|loads)\\b|read_|write_|subprocess|JSON\\.parse",
+      "rules": [
+        "CS-ERROR",
+        "principle-boundary-discipline"
+      ]
+    },
+    {
+      "when": "동시성·공유 상태",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts"
+      ],
+      "content": "\\b(?:async|await|locked|Lock|RLock|Semaphore|Mutex|transaction|Thread|threading|multiprocessing|flock|Promise\\.all|spawn|tokio|coroutine|suspend)\\b",
+      "rules": [
+        "CS-DATA",
+        "principle-separate-before-serializing-shared-state",
+        "principle-make-operations-idempotent"
+      ]
+    },
+    {
+      "when": "프로세스·권한·환경·외부 실행",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts"
+      ],
+      "content": "\\b(?:permission|authorization|subprocess|exec_module|environ|Popen|child_process|process\\.env|token|secret)\\b",
+      "rules": [
+        "CS-OPERATIONS",
+        "principle-boundary-discipline"
+      ]
+    },
+    {
+      "when": "상태·타입 모델",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts"
+      ],
+      "content": "\\b(?:class|struct|enum|interface|sealed|dataclass|TypedDict|NamedTuple|type\\s+\\w+\\s*=)",
+      "rules": [
+        "principle-model-the-domain"
+      ]
+    },
+    {
+      "when": "성능·캐시·큐",
+      "suffixes": [
+        ".py",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".rs",
+        ".kt",
+        ".kts"
+      ],
+      "content": "\\b(?:cache|Cache|lru_cache|benchmark|perf_counter|timeit|Queue|queue|batch|pool)\\b",
+      "rules": [
+        "CS-RESOURCES",
+        "principle-explain-the-number"
+      ]
+    }
+  ]
+}

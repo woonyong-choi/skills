@@ -6,9 +6,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# cost: time O(n + r), heap O(n), stack O(1), io 8
-# vars: n = SVG 크기, r = ThinkFlow 검사·렌더 비용
-# basis: estimate
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('thinkflow', type=Path, help='ThinkFlow src/cli.js')

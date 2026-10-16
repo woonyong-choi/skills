@@ -84,7 +84,7 @@ python3 <스킬 설치 폴더(~/.claude/skills 또는 ~/.codex/skills)>/career-r
 | [developer-thinking](code/developer-thinking/SKILL.md) | 개발 실행 순서, 조건별 규칙 조회 |
 | [code-refactoring](code/code-refactoring/SKILL.md) | 문제 원인에 맞는 리팩터링 기법 선택 |
 | [code-style-css](code/code-style-css/SKILL.md) | CSS 선택자, 배치, 반응형, 접근성 |
-| [code-style-javascript](code/code-style-javascript/SKILL.md) | JavaScript 코드와 ESLint·Prettier·node:test |
+| [code-style-typescript](code/code-style-typescript/SKILL.md) | JavaScript·TypeScript 코드와 ESLint·Prettier·node:test·tsc |
 | [code-style-kotlin](code/code-style-kotlin/SKILL.md) | Kotlin JVM 서버·CLI와 ktlint·detekt |
 | [code-style-python](code/code-style-python/SKILL.md) | Python 코드와 Ruff·mypy·pytest |
 | [code-style-rust](code/code-style-rust/SKILL.md) | Rust 코드와 rustfmt·Clippy |
@@ -162,7 +162,7 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 | [code-refactoring](code/code-refactoring/SKILL.md) | 12,758 | 4,865 | 7,893 |
 | [code-style](code/code-style/SKILL.md) | 20,750 | 19,747 | 1,003 |
 | [code-style-css](code/code-style-css/SKILL.md) | 7,479 | 6,523 | 956 |
-| [code-style-javascript](code/code-style-javascript/SKILL.md) | 7,279 | 5,321 | 1,958 |
+| [code-style-typescript](code/code-style-typescript/SKILL.md)(측정 당시 JavaScript 전용) | 7,279 | 5,321 | 1,958 |
 | [code-style-kotlin](code/code-style-kotlin/SKILL.md) | 7,125 | 5,536 | 1,589 |
 | [code-style-python](code/code-style-python/SKILL.md) | 5,728 | 5,034 | 694 |
 | [code-style-rust](code/code-style-rust/SKILL.md) | 8,073 | 6,251 | 1,822 |
@@ -194,14 +194,14 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 
 | 작업 | 먼저 읽는 정본 | 조건부 하위 문서 |
 |---|---|---|
-| Python 코드 검토 | code-style, code-style-python | 비용 대상 함수 작성·변경·검토 시 code-style의 `references/cost.md`; 린트 설정 생성·변경·감사 시 Python의 `references/lint.md` |
+| Python 코드 검토 | code-style, code-style-python | 린트 설정 생성·변경·감사 시 Python의 `references/lint.md` |
 | CSS 검토 | code-style, design-tokens, code-style-css | Stylelint 설정 작업 시 CSS의 `references/lint.md`; 토큰 분류·단계 신설·변경 시 `references/categories.md` |
 | 커밋 메시지 작성 | git-commit, repo-docs의 `references/writing.md` | 메시지 작성 시 git-commit의 `references/commit-template.txt`; 실제 커밋 전 검사 시 code-style |
 | 설계 문서 작성 | repo-docs, `references/writing.md`, repo-docs-design | 작성·갱신·검토 대상에 따라 `references/index.md`, `architecture.md`, `design.md`, `glossary.md` 중 해당 문서 |
 | 이슈 본문 작성 | git-issue, repo-docs의 `references/writing.md` | 종류별 `references/{design,build,bug,experiment,docs}.md`; 게시 전 `public-links.md`; 상태 사건 발생 전 `project-status.md` |
 | 스킬 검사 | skill-sync, `references/execution.md` | 형식 수정 시 `references/authoring.md`; 도구 설치 시 `installation.md`; 계정 배포 시 `claude-upload.md` |
 
-위 연결에 따른 정적 읽기량입니다. Python·CSS 검토는 설정 변경이 없는 기본 경로이며 비용 주석 대상이면 상세 문서를 추가합니다. 아키텍처 작성은 공통 문체와 선택한 템플릿까지 포함합니다. 실제 호출 빈도나 평균 토큰 사용량을 측정한 값은 아닙니다.
+위 연결에 따른 정적 읽기량입니다. Python·CSS 검토는 설정 변경이 없는 기본 경로입니다. 아키텍처 작성은 공통 문체와 선택한 템플릿까지 포함합니다. 실제 호출 빈도나 평균 토큰 사용량을 측정한 값은 아닙니다.
 
 | 작업 | 변경 전 바이트 | 변경 후 바이트 | 감소 |
 |---|---:|---:|---:|

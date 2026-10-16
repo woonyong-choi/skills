@@ -61,9 +61,6 @@ DECISION_EN = ["Context", "Options", "Decision", "Consequences", "Revisit when"]
 
 
 
-# cost: time O(n * d), heap O(n), stack O(1)
-# vars: n = 경로 길이, d = 중첩 URL 이스케이프 깊이
-# basis: estimate
 # URL 파싱과 디코딩은 메모리에서만 수행
 def _private_path(value: str) -> bool:
     decoded = html.unescape(value)
@@ -86,8 +83,6 @@ def _private_links(raw: str) -> bool:
     return any(_private_path(value) for value in links)
 
 
-# cost: time O(1), heap O(1), stack O(1)
-# basis: estimate
 def section_lists(name: str) -> list[list[str]]:
     if name in ("README.md", "README.en.md"):
         return [README_KO, README_EN]
@@ -102,9 +97,6 @@ def section_lists(name: str) -> list[list[str]]:
     return []
 
 
-# cost: time O(s), heap O(s), stack O(1), alloc ≈ s
-# vars: s = 절 수
-# basis: estimate
 def section_indexes(headings: list[str], lists: list[list[str]]) -> list[int]:
     indexes = []
     for heading in headings:
@@ -113,9 +105,6 @@ def section_indexes(headings: list[str], lists: list[list[str]]) -> list[int]:
     return indexes
 
 
-# cost: time O(c), heap O(s), stack O(1), io 1
-# vars: c = 파일 글자 수, s = 절 수
-# basis: estimate
 def level_two_headings(path: str) -> list[str]:
     headings = []
     in_fence = False
@@ -128,9 +117,6 @@ def level_two_headings(path: str) -> list[str]:
     return headings
 
 
-# cost: time O(s), heap O(s), stack O(1), io 2
-# vars: s = 절 수
-# basis: estimate
 def structure_errors(name: str, path: str) -> list[str]:
     lists = section_lists(name)
     if not lists:
@@ -148,18 +134,12 @@ def structure_errors(name: str, path: str) -> list[str]:
     return errors
 
 
-# cost: time O(c), heap O(1), stack O(1), io 1
-# vars: c = 파일 글자 수
-# basis: estimate
 def is_english(path: str) -> bool:
     text = open(path, encoding="utf-8").read()
     letters = len(LETTER.findall(text))
     return letters > 0 and len(HANGUL.findall(text)) / letters < 0.2
 
 
-# cost: time O(k), heap O(1), stack O(1)
-# vars: k = 칸 글자 수
-# basis: estimate
 def has_bad_cell_ending(cell: str) -> bool:
     return (
         (cell.endswith("니다") and not cell.endswith("아니다"))
@@ -170,9 +150,6 @@ def has_bad_cell_ending(cell: str) -> bool:
     )
 
 
-# cost: time O(w), heap O(1), stack O(1), alloc ≈ 3
-# vars: w = 문장 글자 수
-# basis: estimate
 def sentence_errors(text: str, is_formal: bool) -> list[str]:
     errors = []
     # 끝 괄호 보충(`저장합니다(기본값).`)은 떼고 그 앞 종결 검사
@@ -186,9 +163,6 @@ def sentence_errors(text: str, is_formal: bool) -> list[str]:
     return errors
 
 
-# cost: time O(w), heap O(w), stack O(1), alloc ≈ 6 + 2k
-# vars: w = 줄 글자 수, k = 표 칸 수
-# basis: estimate
 # 마침표로 끝나는 목록 항목은 표식을 떼고 문장으로 검사
 def korean_errors(text: str, is_formal: bool) -> list[str]:
     errors = []
@@ -203,9 +177,6 @@ def korean_errors(text: str, is_formal: bool) -> list[str]:
     return errors
 
 
-# cost: time O(w), heap O(w), stack O(1), alloc ≈ 3
-# vars: w = 줄 글자 수
-# basis: estimate
 def english_errors(text: str) -> list[str]:
     errors = []
     errors += ["쓰지 않는 말"] if EN_BANNED.search(text) else []
@@ -214,9 +185,6 @@ def english_errors(text: str) -> list[str]:
     return errors
 
 
-# cost: time O(w), heap O(w), stack O(1), alloc ≈ 8
-# vars: w = 줄 글자 수
-# basis: estimate
 def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str, tags_allowed: set[str]) -> list[str]:
     errors = []
     line = re.sub(r"`[^`]*`", "", raw)
@@ -237,9 +205,6 @@ def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str, 
     return errors + [message for matched, message in checks if matched]
 
 
-# cost: time O(w²), heap O(w), stack O(1), alloc O(w)
-# vars: w = 줄 글자 수
-# basis: estimate
 # 닫히지 않은 코드·링크 정규식의 재탐색 상한
 def _style_text(raw: str, previous_quote: str) -> str:
     if raw.lstrip().startswith(">") and not QUOTE_ALERT.match(previous_quote):
@@ -253,9 +218,6 @@ def _style_text(raw: str, previous_quote: str) -> str:
     return text
 
 
-# cost: time O(w²), heap O(w), stack O(1), alloc O(w)
-# vars: w = 줄 글자 수
-# basis: estimate
 # 닫히지 않은 강조 정규식의 재탐색 상한
 def _style_errors(text: str) -> list[str]:
     errors = []
@@ -273,17 +235,11 @@ def _style_errors(text: str) -> list[str]:
     return errors
 
 
-# cost: time O(w), heap O(w), stack O(1), alloc O(w)
-# vars: w = 줄 글자 수
-# basis: estimate
 def _visible_length(text: str) -> int:
     text = re.sub(r"^\s*(?:#{1,6}\s+|(?:[-+*]|\d+\.)\s+)", "", text)
     return len(re.sub(r"[\s*_#|>\[\]]", "", text))
 
 
-# cost: time O(w), heap O(w), stack O(1), alloc O(w)
-# vars: w = 줄 글자 수
-# basis: estimate
 def _without_comments(raw: str, in_comment: bool) -> tuple[str, bool]:
     parts = []
     start = 0
@@ -300,9 +256,6 @@ def _without_comments(raw: str, in_comment: bool) -> tuple[str, bool]:
     return "".join(parts), in_comment
 
 
-# cost: time O(Σw²), heap O(c), stack O(1), io O(1) + e
-# vars: c = 파일 글자 수, w = 줄별 글자 수, e = 오류 수
-# basis: estimate
 # 줄마다 Markdown 표식 정규식 재탐색 가능
 def check(path: str) -> int:
     name = re.sub(r"^\./", "", path)
@@ -359,9 +312,6 @@ def check(path: str) -> int:
     return count
 
 
-# cost: time O(Σw²), heap O(c), stack O(1), io O(f + e)
-# vars: c = 가장 큰 파일 글자 수, w = 줄별 글자 수, f = 파일 수, e = 오류 수
-# basis: estimate
 # 파일마다 줄 검사와 문서 구조 검사
 def main(paths: list[str]) -> int:
     import argparse

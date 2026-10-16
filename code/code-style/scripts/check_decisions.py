@@ -68,9 +68,6 @@ COMPARISONS: Final[dict[str, Callable[[Fraction, Fraction], bool]]] = {
 logger = logging.getLogger(__name__)
 
 
-# cost: time O(b+c), heap O(b+c), stack O(d), io one input read and stdout
-# vars: b = 입력 바이트 수, c = 비교 수, d = JSON 깊이; 식 크기·이름 길이 제한
-# basis: estimate
 def main() -> int:
     logging.basicConfig(level=logging.ERROR, format="%(message)s")
     parser = argparse.ArgumentParser(
@@ -91,9 +88,6 @@ def main() -> int:
     return 1 if report["claim_errors"] else 0
 
 
-# cost: time O(b), heap O(b), stack O(1), io one input read
-# vars: b = 최대 입력 한도까지 읽은 바이트 수
-# basis: estimate
 def _read_input(path: str) -> str:
     if path == "-":
         data = sys.stdin.buffer.read(MAX_INPUT_BYTES + 1)
@@ -241,9 +235,6 @@ def _compare(
     }
 
 
-# cost: time O(n²), heap O(n), stack O(n)
-# vars: n = 식 길이; 문자·노드 한도로 유리수 피연산자 크기도 제한
-# basis: estimate
 def _calculate(value: object) -> Fraction | bool:
     if isinstance(value, bool):
         return value

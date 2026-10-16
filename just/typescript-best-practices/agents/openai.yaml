@@ -1,5 +1,0 @@
-interface:
-  display_name: "typescript-best-practices"
-  default_prompt: "$typescript-best-practices [요청]"
-policy:
-  allow_implicit_invocation: false

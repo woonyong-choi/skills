@@ -29,9 +29,6 @@ FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,}).*?^[ \t]*\1[ \t]*$\n?", re.MULTILINE |
 LINK = re.compile(r"\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)|!?\[[^\]]*\]\([^)]*\)|<a\b[^>]*>.*?</a>", re.IGNORECASE)
 
 
-# cost: time O(n), heap O(n), stack O(1), io 2
-# vars: n = 원격 URL과 HEAD 응답 길이
-# basis: estimate
 def raw_base_url(remote: str = "origin", branch: str | None = None, raw_url: str | None = None) -> str:
     if raw_url:
         parsed = urllib.parse.urlsplit(raw_url)
@@ -53,9 +50,6 @@ def raw_base_url(remote: str = "origin", branch: str | None = None, raw_url: str
     return f"https://raw.githubusercontent.com/{match.group(1)}/{urllib.parse.quote(branch, safe='/')}/"
 
 
-# cost: time O(n), heap O(n), stack O(1)
-# vars: n = 줄 글자 수
-# basis: estimate
 # 링크·태그·구분 기호를 지워 남는 글자가 없으면 이동 줄
 def link_only(line: str) -> bool:
     if not LINK.search(line):
@@ -73,9 +67,6 @@ def section_intro(blocks: list[str]) -> list[str]:
     return []
 
 
-# cost: time O(c), heap O(r), stack O(1), io 1
-# vars: c = docs/README.md 글자 수, r = 문서 줄 수
-# basis: estimate
 def read_rows() -> list[tuple[str, str, str]]:
     """목록 줄을 위에서부터 순서대로. 코드 블록 안 제외, 형식이 틀린 목록 줄과 표만 있는 옛 형식은 종료"""
     rows = []
@@ -102,9 +93,6 @@ def read_rows() -> list[tuple[str, str, str]]:
 
 
 
-# cost: time O(n * d), heap O(n), stack O(1)
-# vars: n = 경로 길이, d = 중첩 URL 이스케이프 깊이
-# basis: estimate
 # URL 파싱과 디코딩은 메모리에서만 수행
 def _private_path(value: str, private_dirs: tuple[str, ...] = (".local", "archive")) -> bool:
     decoded = html.unescape(value)
@@ -117,9 +105,6 @@ def _private_path(value: str, private_dirs: tuple[str, ...] = (".local", "archiv
     parts = [part.casefold() for part in path.split("/") if part not in ("", ".")]
     return bool({name.casefold() for name in private_dirs}.intersection(parts))
 
-# cost: time O(p), heap O(p), stack O(1), io 2
-# vars: p = 경로 길이
-# basis: estimate
 def is_public(root: Path, relative: str, private_dirs: tuple[str, ...] = (".local", "archive")) -> bool:
     if _private_path(relative, private_dirs):
         return False
@@ -132,9 +117,6 @@ def is_public(root: Path, relative: str, private_dirs: tuple[str, ...] = (".loca
     return all(subprocess.run(["git", "check-ignore", "-q", "--", path]).returncode == 1 for path in (relative, real_relative))
 
 
-# cost: time O(t), heap O(t), stack O(1), io O(n)
-# vars: t = README·영어판과 목록 문서 글자 수 합, n = 문서 줄 수
-# basis: estimate
 def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url: str | None = None, private_dirs: tuple[str, ...] = (".local", "archive")) -> int:
     raw = raw_base_url(remote, branch, raw_url)
     rows = read_rows()

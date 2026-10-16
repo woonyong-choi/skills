@@ -27,7 +27,10 @@
 | PostCompact | 규칙 전달 기록과 사용량 안내를 비우고 다음 요청에 안내를 다시 넣도록 표시한다. |
 | Stop | 이번 요청에서 편집한 코드의 규칙 원문이 남았으면 한 번 막는다. 이번 요청에서 작업본 파일이 바뀌었는데 결정 기록(연결 과업의 기록, 연결이 없으면 `.local/decisions/` 전체)에 새 줄이 없으면 한 번 막는다. `stop_hook_active`이면 다시 막지 않는다. 계획 모드에서는 막지 않는다. |
 
-- 규칙 조회기는 `scripts/hooks/task.py`의 `RULE_READER` 한 곳에서 찾는다. 위치를 옮기면 이 값만 고친다.
+- 규칙 조회기는 `scripts/rules/read_rules.py`이고 훅은 `scripts/hooks/task.py`의 `RULE_READER` 한 곳에서 찾는다. 위치를 옮기면 이 값만 고친다.
+- 어떤 편집에 어떤 규칙을 넘길지는 `scripts/rules/rule-map.json`이 정한다. `rules`는 규칙 이름마다 원문 위치(스킬, 파일, 고를 절이나 뺄 절)와 sha256이고, `select`는 확장자·경로·내용 조건이 모두 맞을 때 더할 규칙 목록이다. 규칙 단위는 원칙 파일 하나, code-style 절 하나, 언어별 스킬 하나다.
+- 지금 대응은 이렇다. 모든 코드 파일에는 `principle-prove-it-works`와 code-style 머리·원칙·검증 절, 언어별 스킬 절, 테스트 절이 간다. 로직이 있는 파일에는 `principle-foundational-thinking`과 `principle-laziness-protocol`이 더해진다. 확장자로 언어별 스킬을 고르고(`.js` `.mjs` `.cjs` `.jsx`는 `code-style-typescript`에서 TypeScript 전용 절을 뺀 것, `.ts` `.tsx`는 전체와 `principle-type-system-discipline`), 테스트 파일이면 `principle-test-behavior-not-implementation`과 `principle-sequence-verifiable-units`가, 동시성 낱말이 있으면 code-style 데이터 절과 `principle-separate-before-serializing-shared-state`, `principle-make-operations-idempotent`가 더해진다. 나머지 조건은 대응표를 본다.
+- 규칙 원문을 고치면 `python3 scripts/rules/read_rules.py --check`가 바뀐 규칙과 새 sha256을 알린다. 선택 조건이 여전히 맞는지 본 뒤 대응표의 값을 고친다. 고치기 전에는 훅이 그 규칙을 넘기지 않고 조회 실패를 알린다.
 - 훅이 실패하면 진단을 stderr에 남기고 빈 응답으로 끝난다. git 저장소 안 편집 도구의 PreToolUse만 복구 명령과 함께 거부한다.
 - 시간 상한은 `scripts/hooks/entry.py`의 `HOOK_TIMEOUTS`가 훅 정의의 timeout과 같고, 진입점이 그보다 먼저 런타임을 끊는다. 런타임 안의 git 대기는 넘겨받은 마감 시각(`JUST_DO_DEADLINE`) 안에서 끝난다.
 

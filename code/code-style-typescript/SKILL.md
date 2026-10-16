@@ -1,18 +1,23 @@
 ---
-name: code-style-javascript
-description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·node:test 설정을 고칠 때 사용."
+name: code-style-typescript
+description: "JavaScript·TypeScript 코드를 작성·검토하거나 ESLint·Prettier·node:test·tsc 설정을 고칠 때 사용."
 ---
 
-# Code Style: JavaScript
+# Code Style: TypeScript
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
-- 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 JavaScript 규칙. 그 밖에서 code-style과 다르면 code-style 우선
+- 기반: code-style 먼저 적용. 이 스킬 범위: code-style이 언어에 맡긴 부분의 JavaScript·TypeScript 규칙. 그 밖에서 code-style과 다르면 code-style 우선
 - 필요할 때만 읽기: CSS 문자열·인라인 style 작성 → code-style-css; SVG 속성 값 작성 → design-tokens; 파일 이름 결정 → folder-naming
+
+적용 범위:
+
+- `.ts`·`.tsx` → 모든 절
+- `.js`·`.mjs`·`.cjs`·`.jsx` → TypeScript 전용 절 제외, 나머지 공통 절
 
 ## 이름
 
 - 대소문자 표기: 변수·함수 camelCase, 클래스 PascalCase, 모듈 상수 UPPER_SNAKE_CASE. 포맷: Prettier
-- 파일: 소문자 kebab-case `.js` (folder-naming과 같은 기준)
+- 파일: 소문자 kebab-case `.js`·`.ts` (folder-naming과 같은 기준)
 
 대상 → 규칙 → 예:
 
@@ -83,7 +88,7 @@ description: "JavaScript 코드를 작성·검토하거나 ESLint·Prettier·nod
 ## 테스트
 
 - `node:test`와 `node:assert/strict`. 저장소에 정한 테스트 도구가 있으면 그것 우선
-- 위치: `test/` 폴더, 파일은 `{모듈}.test.js`
+- 위치: `test/` 폴더, 파일은 `{모듈}.test.js`·`{모듈}.test.ts`
 - 이름: code-style 형식, 대상은 함수 이름 그대로: `parseFlow_empty_input_throws`
 - 외부 명령·브라우저가 없으면 `{ skip: '<이유>' }`와 미검증 범위 보고. 변경 요구사항의 필수 검증이면 완료 판정 보류
 - 브라우저 동작: Playwright(`playwright-core`)로 실제 페이지를 열어 확인
@@ -107,3 +112,34 @@ node --test
 ```
 
 - 실행 조건: Node.js 18+와 개발 의존성 `npm install --save-dev prettier eslint @eslint/js globals eslint-plugin-sonarjs`
+
+## TypeScript 전용
+
+- 바탕 원칙: principle-type-system-discipline, principle-boundary-discipline. 규칙별 코드 예: [types.md](references/types.md)
+- 타입 표기: JSDoc 타입 대신 TypeScript 타입. JSDoc은 실패 조건 `@throws` 같은 타입 밖 설명만
+
+규칙 → 내용:
+
+- 판별 유니온 → 변형은 `kind` 리터럴 판별자로 모델링. 불가능한 상태를 표현할 수 없는 모양, 선택적 필드 묶음 금지
+- 브랜드 타입 → 원시 타입에 `& { readonly __brand: 'X' }`로 구분. 경계에서 한 번 검증
+- 구성적 모델링 → 잘못된 값을 만들 수 없는 모양. 비어 있지 않음 `[T, ...T[]]`, 짝수 길이 `[T, T][]`, 범위 `start`와 `duration`. 런타임 방어 코드로 대신하기 금지
+- 모든 입력을 처리하는(total) 가장 단순한 타입 → 모든 연산이 모든 입력을 처리하는 동안 `T[]` 유지. 느슨한 타입이 `!`·캐스트·"일어날 리 없음" throw를 강요하는 곳에서만 `NonEmpty<T>`로 강화
+- `any`보다 `unknown` → 외부 데이터는 `unknown`, 쓰기 전에 좁히기
+- 가드보다 스키마 → 속성별 타입 가드 작성 전 저장소의 런타임 스키마 라이브러리 사용, `z.infer`처럼 스키마에서 타입 추론. 가드 하나를 위한 새 스키마 의존성 추가 금지
+- `as` 캐스트 금지 → 검증한 뒤에만 캐스트. 기존 `as` 제거는 추론 실패 원인(판별자 없음, 지나치게 넓은 원본 타입, 타입 없는 경계)부터 확인
+- 좁히기 위계 → 판별자 switch > `in` 연산자 > `typeof`·`instanceof` > 사용자 정의 타입 가드 > `as`
+- 타입 가드 → 주장을 실제로 확인하는 가드만. 이름 규칙은 code-style 이름 절의 bool 반환 함수
+- 빠짐없음 검사 → default 분기에 `const unreachable: never = x;`. 새 변형 추가 시 컴파일 오류
+- `as`보다 `satisfies` → 리터럴 타입을 넓히지 않는 검증
+- 경계 검증 → 들어오는 곳에서 이름 붙은 도메인 타입으로 파싱. `Record<string, unknown>`(어떤 표기든)은 파싱 지점 밖으로 전달 금지. 전송 형식은 `ignoreUnknownFields`, 저장된 JSON은 버전 정보와 파싱 실패 처리
+- 스키마에서 도출한 타입 → 새 인터페이스 선언 전 `Pick`·`Omit`·`Parameters`·`ReturnType`·`Awaited`·`typeof`
+- 객체 인자 → 위치 인자 대신 객체로 인자 순서 설명. 핫 패스(프레임마다 렌더, 토크나이저, 파서) 제외
+- 진짜 테스트 → 로컬에서 돌릴 수 있는 것은 목 금지. 누수·해제 검사가 있는 실제 테스트 도구, UI는 실행 중인 빌드에서 확인
+
+검사 명령 추가:
+
+```sh
+npx tsc --noEmit
+```
+
+- 실행 조건: 개발 의존성 `typescript`와 저장소 `tsconfig.json`

@@ -85,9 +85,6 @@ class TokenInfo:
         self.primitive_paths = primitive_paths
 
 
-# cost: time O(t), heap O(t), stack O(1), io 1
-# vars: t = 토큰 수
-# basis: estimate
 def load_token_info(path: str | None) -> TokenInfo:
     """정본에서 breakpoint 숫자와 테마 기본 토큰을 읽는다.
 
@@ -120,9 +117,6 @@ def load_token_info(path: str | None) -> TokenInfo:
     return info
 
 
-# cost: time O(n), heap O(n), stack O(1)
-# vars: n = 글자 수
-# basis: estimate
 def find_segments(text: str, ext: str) -> list[tuple[int, str, bool]]:
     """검사할 조각. (시작 위치, 글자, 모든 규칙 적용 여부) 목록. False면 색 규칙만 적용한다."""
     text = COMMENT.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
@@ -140,9 +134,6 @@ def is_styled_string(literal: str) -> bool:
     return bool(LOOKS_STYLED.search(literal) or BARE_VALUE.match(literal))
 
 
-# cost: time O(n), heap O(f), stack O(1)
-# vars: n = 조각 글자 수, f = 찾은 수
-# basis: estimate
 def find_hardcoded(segment: str, info: TokenInfo, is_styled: bool) -> list[tuple[int, str, str]]:
     """조각 안 하드코딩. (조각 안 위치, 규칙, 글자) 목록. 한 자리는 한 번만 보고한다."""
     found = [(m.start(), "hex color", m.group(0)) for m in HEX_COLOR.finditer(segment)]
@@ -168,9 +159,6 @@ def find_hardcoded(segment: str, info: TokenInfo, is_styled: bool) -> list[tuple
     return found
 
 
-# cost: time O(n), heap O(f), stack O(1)
-# vars: n = 조건 글자 수, f = 찾은 수
-# basis: estimate
 def find_condition_values(condition: str, offset: int, breakpoints: set[str]) -> list[tuple[int, str, str]]:
     """`@media`, `@container` 조건의 숫자. px가 아닌 단위와 breakpoint 토큰에 없는 px를 찾는다."""
     found = []
@@ -180,18 +168,12 @@ def find_condition_values(condition: str, offset: int, breakpoints: set[str]) ->
     return found
 
 
-# cost: time O(n), heap O(n), stack O(1)
-# vars: n = 값 글자 수
-# basis: estimate
 def is_raw_custom_value(value: str) -> bool:
     """토큰 참조만으로 만든 값이 아닌지 본다. `calc(var(--a) * 2)`의 계수 2는 허용한다."""
     rest = re.sub(r"var\([^()]*\)", "", value)
     return bool(re.search(r"#|['\"]|\d+(?:px|rem|em|ms|s|%)", rest))
 
 
-# cost: time O(k), heap O(1), stack O(1)
-# vars: k = 구간 수
-# basis: estimate
 def is_inside(position: int, spans: list[tuple[int, int]]) -> bool:
     """위치가 구간 중 하나 안에 있는지 본다."""
     return any(start <= position < end for start, end in spans)
@@ -202,9 +184,6 @@ def has_allow_reason(line: str) -> bool:
     return bool(match and match.group(1).strip())
 
 
-# cost: time O(n + f log l), heap O(n), stack O(1), io 1
-# vars: n = 파일 글자 수, f = 찾은 수, l = 줄 수
-# basis: estimate
 def check_file(path: str, info: TokenInfo) -> list[Finding]:
     """파일 하나의 하드코딩. 생성물과 `tokens-allow:` 줄은 건너뛴다."""
     ext = os.path.splitext(path)[1].lower()
@@ -231,17 +210,11 @@ def check_file(path: str, info: TokenInfo) -> list[Finding]:
     return results
 
 
-# cost: time O(n), heap O(n), stack O(1)
-# vars: n = 파일 글자 수
-# basis: estimate
 def strip_js_comments(text: str) -> str:
     """문자열은 두고 `//`, `/* */` 주석만 같은 길이의 공백으로 바꾼다. 줄 번호를 지키기 위해서다."""
     return JS_COMMENT_OR_STRING.sub(lambda m: m.group(1) or re.sub(r"[^\n]", " ", m.group(0)), text)
 
 
-# cost: time O(n), heap O(n), stack O(1)
-# vars: n = 파일 글자 수
-# basis: estimate
 def find_script_values(text: str, info: TokenInfo) -> list[tuple[int, str, str]]:
     """JavaScript 코드의 색·그림자 기본 토큰 경로 참조와 스타일 객체 숫자. 주석은 이미 지운 글자를 받는다."""
     found = []
@@ -257,9 +230,6 @@ def find_script_values(text: str, info: TokenInfo) -> list[tuple[int, str, str]]
     return found
 
 
-# cost: time O(n), heap O(s), stack O(1)
-# vars: n = 코드 글자 수, s = 스타일 객체 수
-# basis: estimate
 def find_style_objects(code: str) -> list[tuple[int, int]]:
     """스타일 객체 중괄호 구간. 여는 중괄호부터 짝이 맞는 닫는 중괄호까지."""
     spans = []
@@ -273,9 +243,6 @@ def find_style_objects(code: str) -> list[tuple[int, int]]:
     return spans
 
 
-# cost: time O(log l), heap O(1), stack O(1)
-# vars: l = 줄 수
-# basis: estimate
 def find_line_number(line_starts: list[int], position: int) -> int:
     """글자 위치의 줄 번호(1부터). 줄 시작 위치 목록에서 이분 탐색한다."""
     low, high = 0, len(line_starts) - 1
@@ -288,9 +255,6 @@ def find_line_number(line_starts: list[int], position: int) -> int:
     return low + 1
 
 
-# cost: time O(f), heap O(d), stack O(d), io f
-# vars: f = 파일 수, d = 폴더 깊이
-# basis: estimate
 def iter_files(targets: list[str]) -> Iterator[str]:
     """검사할 파일 경로. 폴더는 정렬 순서로 내려간다."""
     for target in targets:
@@ -305,9 +269,6 @@ def iter_files(targets: list[str]) -> Iterator[str]:
                     yield os.path.join(root, name)
 
 
-# cost: time O(f + h), heap O(1), stack O(1), io f + h
-# vars: f = 대상 아래 파일 수, h = 저장소 루트까지 상위 폴더 수
-# basis: estimate
 def find_tokens_file(targets: list[str]) -> str | None:
     """대상 폴더 아래, 없으면 저장소 루트(.git이 있는 폴더)까지 위로 올라가며 tokens.json을 찾는다."""
     for target in targets:
@@ -327,9 +288,6 @@ def find_tokens_file(targets: list[str]) -> str | None:
     return None
 
 
-# cost: time O(N), heap O(r), stack O(d), io f
-# vars: N = 전체 글자 수, r = 찾은 수, f = 파일 수, d = 폴더 깊이
-# basis: estimate
 def main() -> int:
     """찾은 하드코딩을 출력한다. 하나라도 있으면 1을 돌려준다."""
     parser = argparse.ArgumentParser(description="토큰 대신 직접 적은 화면 값을 찾는다")

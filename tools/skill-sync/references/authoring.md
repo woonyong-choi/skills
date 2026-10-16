@@ -50,7 +50,6 @@ description: "{대상 작업을 할 때} 사용."
 - 템플릿 코드 블록과 백틱 안 예시는 문서에 그대로 나올 글자라 문체 규칙 밖
 - 형식 검사: `python3 tools/skill-sync/scripts/skill_check.py .`, 출력 `total 0`까지 수정
 - 실행 코드: `scripts/`. 본문: 실행 명령과 사용 조건. 런타임·버전·의존성은 해당 실행 명령 옆에 명시. Python은 표준 라이브러리 우선, 외부 도구는 공식 명령·패키지
-- 스크립트 함수: code-style 비용 주석
 - CLI 인자·출력 설명과 일관성 검사 범위: [일관성 검사 기준](consistency.md)
 
 ## 간결성

@@ -28,9 +28,6 @@ await browser.close();
 """
 
 
-# cost: time O(f·r), heap O(f), stack O(1), io O(f)
-# vars: f = 원본 수, r = 원본 하나의 렌더·촬영 시간
-# basis: estimate
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("folder", type=Path)
