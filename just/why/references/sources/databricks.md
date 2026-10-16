@@ -4,13 +4,13 @@
 
 ## 이 출처에 있는 것
 
-Databricks는 제품 분석, 데이터 파이프라인, 웨어하우스 원격 측정 계층이다. Datadog을 보완한다. Datadog은 *인프라와 실행 환경*을 보고, Databricks는 *제품과 데이터*를 본다(사용자가 무엇을 했는지, 어떤 실험이 돌았는지, 기능 사용량이 어떻게 변했는지, 임곗값 상수가 어디서 왔는지).
+Databricks는 제품 분석, 데이터 파이프라인, 웨어하우스 텔레메트리 계층이다. Datadog을 보완한다. Datadog은 *인프라와 실행 환경*을 보고, Databricks는 *제품과 데이터*를 본다(사용자가 무엇을 했는지, 어떤 실험이 돌았는지, 기능 사용량이 어떻게 변했는지, 임곗값 상수가 어디서 왔는지).
 
 - **제품 분석 이벤트.** `your_warehouse.events.analytics_track_event`(원본)와 `<your_analytics_db>.<schema>.<table>`의 이벤트별 타입 지정·중복 제거 dbt 모델. 사용자 행동: 기능 호출, 클릭, 수락·거절, 제출, 클라이언트가 보고한 오류.
 - **사용량·과금 이벤트.** `your_warehouse.events.usage_event` / `<your_analytics_db>.<schema>.stg_usage_events`, `your_warehouse.events.raw_model_event` / `<your_analytics_db>.<schema>.stg_raw_model_events`. 비용이나 양에 따른 결정에 쓴다.
 - **실험·기능 플래그 데이터.** 노출 테이블과 결과 테이블. **스키마는 회사마다 다르다.** 이름을 가정하기 전에 `SHOW TABLES`로 확인한다.
 - **시스템 테이블.** `system.query.history`, `system.compute.warehouses`, `system.billing.*`, `system.access.audit`. "이 쿼리가 비쌌나?", "누가 얼마나 자주 돌렸나?", "웨어하우스 부하가 언제 치솟았나?"에 답한다.
-- **dbt 계보.** `<your_analytics_db>.<schema>`의 모델은 어떤 파이프라인이 테이블·필드에 기대는지 보여 준다. 상위 변경이 소비하는 쪽 코드 변경의 계기가 되는 일이 잦다.
+- **dbt 계보.** `<your_analytics_db>.<schema>`의 모델은 어떤 파이프라인이 테이블·필드에 기대는지 보여 준다. 상위 테이블이 바뀌어서 그것을 쓰는 코드가 바뀌는 일이 잦다.
 - **Databricks 노트북.** 엔지니어가 코드 변경 전에 쓴 탐색 분석. **SQL MCP로는 조회할 수 없다.** 근거가 노트북에 있다고 의심되면 빈 곳으로 적는다.
 
 ## 검색하는 법
@@ -28,7 +28,7 @@ DESCRIBE TABLE <your_analytics_db>.<schema>.stg_<event>;
 
 **원본 테이블보다 타입 지정 dbt 모델을 쓴다.** `<your_analytics_db>.<schema>.<table>`은 중복이 제거되고, 타입이 지정되고, liquid clustering이 적용돼 있다. `your_warehouse.events.analytics_track_event`에는 중복이 있고 `properties_json`은 타입이 없다. 모델 이름 패턴은 `stg_<source>_<event_name_with_underscores>`이고 `<source>`는 `app`, `backend`, `website`, `cli` 중 하나다. 패턴만으로 안 풀리면 `SHOW TABLES`로 정확한 모델 이름을 확인한다. 아직 dbt 모델이 없거나 dbt 갱신 지연 안쪽의 이벤트가 필요할 때만 원본 테이블로 내려간다.
 
-**타입 지정 dbt 모델의 열 관례**(알아 두면 `DESCRIBE` 왕복이 줄어든다):
+**타입 지정 dbt 모델의 열 관례**(알아 두면 `DESCRIBE`를 따로 돌리지 않아도 된다):
 
 - `_timestamp`, `_id`, `_auth_id`, `_request_id`, `event_name`. 모든 모델에 있음
 - `properties_<name>`. 타입이 지정되고 밑줄로 바꾼 이벤트 속성(`properties_entrypoint`, `properties_size_bytes`, …)
@@ -53,12 +53,12 @@ DESCRIBE TABLE <your_analytics_db>.<schema>.stg_<event>;
 
 ## 흔한 함정
 
-- **계측했다고 원인은 아니다.** 이벤트가 있다는 것은 누군가 기록할 만큼 신경 썼다는 뜻이지, 대상 코드가 그것 *때문에* 있다는 뜻은 아니다. 인과를 주장하기 전에 git 조사자의 PR·커밋 인용과 짝짓는다.
+- **계측됐다고 원인인 것은 아니다.** 이벤트가 있다는 것은 누군가 기록할 만큼 신경 썼다는 뜻이지, 대상 코드가 그것 *때문에* 있다는 뜻은 아니다. 인과를 주장하기 전에 git 조사자의 PR·커밋 인용과 짝짓는다.
 - **조용한 계측 변경.** 이벤트 양이 계단처럼 오른 것은 사용자 행동이 바뀐 것이 아니라 새 이벤트 기록이 시작된 것일 수 있다. 증가를 기능 출시 신호로 읽기 전에 같은 기간의 계측 PR을 확인한다.
 - **스키마 변화.** 이벤트 속성은 바뀐다. 지금 타입 지정 dbt 모델에 있는 열이 대상 작성 당시에는 없었을 수 있다. 오래된 데이터는 그 속성을 원본 `properties_json` 안에만 가지고 있을 수 있다.
 - **dbt 갱신 지연.** `<your_analytics_db>.<schema>.*`는 일정에 따라(보통 매시간이나 매일) 다시 만들어진다. 최근 몇 시간의 이벤트는 `your_warehouse.events.*`로 내려가 `_id`로 중복을 제거한다.
 - **회사마다 다른 테이블.** 실험, 기능 플래그, 과금, 사용량 테이블은 제각각이다. 존재를 확인하지 않은 테이블의 결과를 보고하는 것은 전형적인 실패다. 먼저 `SHOW TABLES` / `DESCRIBE TABLE`로 확인한다.
-- **보존 기간 절벽.** 관련 기간이 테이블 보존 기간이나 dbt 모델 생성일보다 앞서면 빈 결과가 아니라 *빈 곳*이다. 종합자가 "결과 없음"을 "활동 없음"으로 읽지 않도록 명시한다.
+- **보존 기간 경계.** 관련 기간이 테이블 보존 기간이나 dbt 모델 생성일보다 앞서면 빈 결과가 아니라 *빈 곳*이다. 종합자가 "결과 없음"을 "활동 없음"으로 읽지 않도록 명시한다.
 - **노트북은 조회할 수 없다.** SQL MCP는 Databricks 노트북을 보지 못한다. 근거가 노트북에 있다고 의심되면 빈 곳으로 돌려준다.
 
 ## 돌려줄 것
