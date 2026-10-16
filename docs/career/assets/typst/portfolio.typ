@@ -1,5 +1,5 @@
-// 포트폴리오 내용 틀. 중괄호 자리만 변경. 사례 블록(case부터 callout까지)은 PLAN의 사례 수만큼 반복, 절 제목 고정. 개요 및 역할은 case 리드와 facts 표가 맡음. 근거 없는 facts 행, diagram, code, callout 삭제
-#import "career.typ": *
+// 포트폴리오 내용 틀. 중괄호 자리만 변경. 사례 블록(case부터 callout까지)은 구성 계획의 사례 수만큼 반복, 절 제목 고정. 개요 및 역할은 case 리드와 facts 표가 맡음. 근거 없는 facts 행, diagram, code, callout 삭제
+#import "/career.typ": *
 
 #show: portfolio-page
 
@@ -20,7 +20,7 @@
 #part[기술적 의사결정 및 아키텍처]
 {고른 구조, 대안과 고르지 않은 이유 문단}
 
-#diagram("figures/{사례}-{그림}.png", [{그림이 보여 주는 결론 한 문장}])
+#diagram("/figures/{사례}-{그림}.png", [{그림이 보여 주는 결론 한 문장}])
 
 #part[구현 및 해결 과정]
 {구현 방식과 실패, 예외 처리 문단}
