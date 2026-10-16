@@ -1,4 +1,4 @@
 interface:
   display_name: "HTML Report"
-  short_description: "개념·로직을 블로그 테마 ThinkFlow 그림으로 설명하거나 시각 후보·결과를 비교하는 HTML 생성"
+  short_description: "Markdown 원문으로 홈페이지 문서 디자인의 설명·선택 비교·전후 확인 보고서 생성"
   default_prompt: "$html-report 스킬로 처리해 줘: [요청]"

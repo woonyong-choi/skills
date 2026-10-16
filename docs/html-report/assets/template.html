@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>{{title}}</title>
+<link rel="stylesheet" href="theme/tokens.css">
+<link rel="stylesheet" href="theme/styles.css">
+<link rel="stylesheet" href="report.css">
+<script type="application/json" id="report-data">{{data}}</script>
+<script src="report.js" defer></script>
+</head>
+<body class="app-report">
+<header class="report-bar" data-report-bar>
+<div class="report-bar-start"></div>
+<div class="report-bar-judge" data-bar-judge></div>
+<div class="report-bar-theme" data-bar-theme></div>
+</header>
+<main id="main" class="report-main">{{layout}}</main>
+</body>
+</html>

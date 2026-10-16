@@ -144,4 +144,4 @@ python3 <이 스킬 폴더>/scripts/check_doc.py README.md README.en.md
 3. 문체, 용어, 서식 수정
 4. 저장 전 검사 실행
 
-보고: 고친 파일 경로, 사실 상태 때문에 옮기거나 지운 문장만
+보고: developer-thinking 작업 보고 절. 자세히 칸에 고친 파일 경로, 사실 상태 때문에 옮기거나 지운 문장만
