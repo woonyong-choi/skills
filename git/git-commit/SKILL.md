@@ -88,7 +88,7 @@ type → 쓰는 때 → 예:
 꼬리말 → 쓰는 때:
 
 - `BREAKING CHANGE: 한글 설명` → 호환성 파괴. 첫 줄도 `type(scope)!:`
-- `Closes: #번호`·`Refs: #번호` → 모든 커밋. 선택 기준·이슈 생략 조건: (git-issue 닫기, 과업 연결과 기록)
+- `Closes: #번호`·`Refs: #번호` → 모든 커밋. 선택 기준: (git-issue 닫기). 이슈 생략 조건: (git-issue 과업 연결과 기록)
 
 ## 절차
 
