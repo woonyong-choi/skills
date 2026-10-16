@@ -11,7 +11,7 @@ description: "Git 커밋 메시지를 작성·검토하거나 변경을 나눠 �
 
 ## 형식
 
-- 정본: [commit-template.txt](references/commit-template.txt). 채운 파일로 `git commit --cleanup=strip -F {파일}`(`#` 줄 삭제). squash 머지 메시지도 같은 방법
+- 정본: [commit-template.txt](references/commit-template.txt). 채운 글을 표준 입력으로 `git commit --cleanup=strip -F -`(`#` 줄 삭제, 임시 파일 금지). squash 머지 메시지도 같은 방법
 - 설명·본문은 기본 한글, type·scope는 영어 소문자. 언어 변경은 머리의 우선순위 적용
 - 코드, 도구, 파일 이름: 원문 그대로 (`tokio`, `rustfmt`, `user_name`)
 
