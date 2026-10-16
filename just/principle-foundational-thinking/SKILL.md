@@ -1,6 +1,6 @@
 ---
 name: principle-foundational-thinking
-description: "로직을 쓰기 전에 적용한다. 핵심 타입과 자료구조를 고르고, 뼈대 작업과 기능 작업의 순서를 정하고, 동시에 움직이는 주체들이 무엇을 공유하는지 묻는다. 자료구조를 제대로 잡으면 그 뒤 코드가 뻔해진다."
+description: "로직을 쓰기 전에 쓴다. 핵심 타입과 자료구조를 고르고, 뼈대 작업과 기능 작업의 순서를 정하고, 동시에 움직이는 주체들이 무엇을 공유하는지 묻는다. 자료구조를 제대로 잡으면 그 뒤 코드가 뻔해진다."
 disable-model-invocation: true
 user-invocable: false
 ---

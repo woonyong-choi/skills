@@ -2,23 +2,93 @@
   {
     "id": "term",
     "file": "alpha/SKILL.md",
-    "before": "저장소 설정 확인",
-    "after": "레포 설정 확인",
+    "before": "2. 저장소 설정을 확인한다.",
+    "after": "2. 레포 설정을 확인한다.",
+    "kind": "용어 불일치"
+  },
+  {
+    "id": "product-name",
+    "file": "alpha/SKILL.md",
+    "before": "2. 저장소 설정을 확인한다.",
+    "after": "2. ThinkFlow 설정을 확인한다.",
     "kind": "용어 불일치"
   },
   {
     "id": "duplicate",
     "file": "beta/SKILL.md",
-    "before": "입력 경로 확인",
-    "after": "사용자가 지정한 원본 경로를 확인한 뒤에만 파일 저장",
+    "before": "- 입력 경로를 확인한다.",
+    "after": "- 사용자가 지정한 원본 경로를 확인한 뒤에만 파일을 저장한다.",
     "kind": "규칙 복제"
   },
   {
-    "id": "description",
+    "id": "description-ending",
     "file": "alpha/SKILL.md",
-    "before": "입력 파일을 검사할 때 사용.",
-    "after": "입력 파일 검사 도구",
-    "kind": "description 사용 조건 형식"
+    "before": "입력 파일을 검사할 때 쓴다.",
+    "after": "입력 파일을 검사할 때 사용.",
+    "kind": "description"
+  },
+  {
+    "id": "description-quote",
+    "file": "alpha/SKILL.md",
+    "before": "description: \"입력 파일을 검사할 때 쓴다.\"",
+    "after": "description: 입력 파일을 검사할 때 쓴다.",
+    "kind": "description"
+  },
+  {
+    "id": "description-korean",
+    "file": "alpha/SKILL.md",
+    "before": "입력 파일을 검사할 때 쓴다.",
+    "after": "Use when checking input files.",
+    "kind": "description"
+  },
+  {
+    "id": "name-folder",
+    "file": "alpha/SKILL.md",
+    "before": "name: alpha",
+    "after": "name: alpha-two",
+    "kind": "name"
+  },
+  {
+    "id": "frontmatter-key",
+    "file": "alpha/SKILL.md",
+    "before": "name: alpha\n",
+    "after": "name: alpha\nlicense: MIT\n",
+    "kind": "frontmatter"
+  },
+  {
+    "id": "invocation-pair",
+    "file": "alpha/SKILL.md",
+    "before": "name: alpha\n",
+    "after": "name: alpha\nuser-invocable: false\n",
+    "kind": "frontmatter"
+  },
+  {
+    "id": "agent-policy",
+    "file": "alpha/SKILL.md",
+    "before": "name: alpha\n",
+    "after": "name: alpha\ndisable-model-invocation: true\n",
+    "kind": "agent"
+  },
+  {
+    "id": "agent-field",
+    "file": "alpha/agents/openai.yaml",
+    "before": "  short_description: \"입력 검사\"\n",
+    "after": "",
+    "kind": "agent"
+  },
+  {
+    "id": "title",
+    "file": "alpha/SKILL.md",
+    "before": "# alpha\n\n",
+    "after": "",
+    "kind": "본문 구조"
+  },
+  {
+    "id": "goal-paragraph",
+    "file": "alpha/SKILL.md",
+    "before": "입력 파일을 검사하고 결과를 보고한다.",
+    "after": "- 범위: 입력 검사",
+    "kind": "본문 구조"
   },
   {
     "id": "section",
@@ -26,6 +96,97 @@
     "before": "## 검사",
     "after": "### 검사",
     "kind": "절 구조"
+  },
+  {
+    "id": "second-title",
+    "file": "alpha/SKILL.md",
+    "before": "## 검사",
+    "after": "# 검사",
+    "kind": "절 구조"
+  },
+  {
+    "id": "playbook-heading",
+    "file": "alpha/playbooks/run.md",
+    "before": "# 실행",
+    "after": "### 실행",
+    "kind": "절 구조"
+  },
+  {
+    "id": "list-marker",
+    "file": "alpha/SKILL.md",
+    "before": "- 결과 머리말은",
+    "after": "* 결과 머리말은",
+    "kind": "목록 기호"
+  },
+  {
+    "id": "numbered-marker",
+    "file": "alpha/playbooks/run.md",
+    "before": "1. 입력을 읽는다.",
+    "after": "1) 입력을 읽는다.",
+    "kind": "목록 기호"
+  },
+  {
+    "id": "fence-language",
+    "file": "alpha/SKILL.md",
+    "before": "```text",
+    "after": "```",
+    "kind": "코드 울타리"
+  },
+  {
+    "id": "trailing-space",
+    "file": "alpha/SKILL.md",
+    "before": "2. 저장소 설정을 확인한다.",
+    "after": "2. 저장소 설정을 확인한다. ",
+    "kind": "줄 끝 공백"
+  },
+  {
+    "id": "em-dash",
+    "file": "alpha/SKILL.md",
+    "before": "2. 저장소 설정을 확인한다.",
+    "after": "2. 저장소 설정을 확인한다 — 먼저.",
+    "kind": "엠 대시"
+  },
+  {
+    "id": "bold-colon",
+    "file": "alpha/SKILL.md",
+    "before": "**검증.** 형식",
+    "after": "**검증:** 형식",
+    "kind": "굵은 머리말"
+  },
+  {
+    "id": "skill-mention",
+    "file": "alpha/SKILL.md",
+    "before": "**beta** 스킬",
+    "after": "**gamma** 스킬",
+    "kind": "참조 스킬"
+  },
+  {
+    "id": "absolute-link",
+    "file": "alpha/SKILL.md",
+    "before": "[저장 규칙](references/storage.md)",
+    "after": "[저장 규칙](/tmp/storage.md)",
+    "kind": "참조 링크"
+  },
+  {
+    "id": "missing-reference",
+    "file": "alpha/SKILL.md",
+    "before": "`references/writing.md`",
+    "after": "`references/missing.md`",
+    "kind": "참조 링크"
+  },
+  {
+    "id": "missing-anchor",
+    "file": "alpha/SKILL.md",
+    "before": "writing.md#용어",
+    "after": "writing.md#없는-절",
+    "kind": "참조 링크"
+  },
+  {
+    "id": "nested-reference",
+    "file": "repo-docs/references/writing.md",
+    "before": "../SKILL.md#작성-규칙",
+    "after": "../missing.md#작성-규칙",
+    "kind": "참조 링크"
   },
   {
     "id": "arguments",
@@ -54,26 +215,5 @@
     "before": "출력: stdout 파일 내용, 종료 0",
     "after": "출력:\n설명은 다음 줄",
     "kind": "스크립트 출력 형식"
-  },
-  {
-    "id": "missing-reference",
-    "file": "alpha/SKILL.md",
-    "before": "`references/writing.md`",
-    "after": "`references/missing.md`",
-    "kind": "참조 링크"
-  },
-  {
-    "id": "missing-anchor",
-    "file": "alpha/SKILL.md",
-    "before": "writing.md#용어",
-    "after": "writing.md#없는-절",
-    "kind": "참조 링크"
-  },
-  {
-    "id": "nested-reference",
-    "file": "repo-docs/references/writing.md",
-    "before": "../SKILL.md#작성-규칙",
-    "after": "../missing.md#작성-규칙",
-    "kind": "참조 링크"
   }
 ]

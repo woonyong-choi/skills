@@ -122,7 +122,7 @@ PR 머지 뒤 경력 기록은 [hanger](docs/hanger/SKILL.md)로 남깁니다. �
 - 모델: 본문은 역할 이름(`code`, `judgment`, `review`, `cheap`)만 씁니다. 실제 모델은 `/just-setup`이 만드는 `~/.config/skills/models.json`이 정합니다([역할별 모델](just/just-mode/references/models.md))
 - 부르는 법: 대부분 사람이 직접 부를 때만 켜집니다. Claude Code는 설명을 평소 문맥에 넣지 않고, Codex는 스킬마다 `agents/openai.yaml`이 자동 선택을 막습니다
 - 하위 에이전트 정의(`just-agent`, `comment-sicko`)는 [just/_agents](just/_agents/just-agent.md)에 있고 아직 자동 설치하지 않습니다. 설치되지 않은 호스트에서는 스킬이 같은 지시를 프롬프트에 넣습니다
-- 검사: 스킬 폴더에 `FORMAT_ONLY` 파일이 있으면 이 저장소 문체 규칙 대신 형식만 검사합니다
+- 검사: just 스킬도 다른 스킬과 같은 문체 기준([스킬 작성 형식](tools/skill-sync/references/authoring.md))과 같은 검사를 받습니다
 - 라이선스: [just/LICENSE](just/LICENSE)(MIT)
 
 ## 측정 결과
@@ -202,7 +202,7 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 | 커밋 메시지 작성 | 26,264 | 14,534 | 11,730 |
 | 아키텍처 문서 작성 | 31,380 | 27,543 | 3,837 |
 
-공통 우선순위 정본은 [스킬 작성 형식](tools/skill-sync/references/authoring.md#공통-원칙)에 두고, 각 본문에는 같은 우선순위 요약을 남깁니다. 스크립트 위치·Windows 명령은 [실행 규칙](tools/skill-sync/references/execution.md), Git 글의 문체는 [문서 작성 규칙](docs/repo-docs/references/writing.md), PR 생성·머지 후 판 상태는 [판 상태 절차](git/git-issue/references/project-status.md)에서 관리합니다.
+공통 우선순위 정본은 [스킬 작성 형식](tools/skill-sync/references/authoring.md#적용-범위)에만 두고 각 스킬 본문에는 되풀이하지 않습니다. 스크립트 위치·Windows 명령은 [실행 규칙](tools/skill-sync/references/execution.md), Git 글의 문체는 [문서 작성 규칙](docs/repo-docs/references/writing.md), PR 생성·머지 후 판 상태는 [판 상태 절차](git/git-issue/references/project-status.md)에서 관리합니다.
 
 ## 상태
 

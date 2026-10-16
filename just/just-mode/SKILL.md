@@ -1,6 +1,6 @@
 ---
 name: just-mode
-description: 요청에 맞는 작업 순서표(플레이북)와 스킬을 골라 재현·구현·검증까지 끝내는 작업 방식. 답변은 간결하고 자세하게, 글은 AI 티 없이, 코드는 단순하게 쓴다. /just-mode로 부를 때만 쓴다.
+description: "요청에 맞는 작업 순서표(플레이북)와 스킬을 골라 재현, 구현, 검증까지 끝낸다. 답변은 간결하고 자세하게, 글은 AI 티 없이, 코드는 단순하게 쓴다. /just-mode로 부를 때만 쓴다."
 disable-model-invocation: true
 ---
 
@@ -12,24 +12,25 @@ disable-model-invocation: true
 
 | 상황 | 할 일 |
 |---|---|
-| 사소하지 않은 변경, 아키텍처 결정, "확실해?" | **how** 스킬 |
-| 사용자에게 묻고 싶은 갈림길 | 아래 **질문 방식** 절 |
-| 모든 코드 | 데이터 모양을 먼저 적고 담을 구조는 **principle-model-the-domain**으로 고른다 |
-| 함수 경계를 넘는 코드 | 구현 전에 **architect**로 여러 설계를 병렬 탐색 |
-| 병렬 분배(빠짐없이 나누기, 경주, 차례 검증, 탐색 나누기) | **swarm**. 여러 안을 겨뤄 기준안을 고르고 좋은 부분을 옮길 때는 **arena** |
-| 의견이 갈리는 설계 | 배포 전에 **interrogate** |
+| 사소하지 않은 변경, 아키텍처 결정, "확실해?" | **how** 스킬을 쓴다 |
+| 사용자에게 묻고 싶은 갈림길 | 아래 질문 방식 절을 따른다 |
+| 모든 코드 | 데이터 모양을 먼저 적고, 담을 구조는 **principle-model-the-domain**으로 고른다 |
+| 함수 경계를 넘는 코드 | 구현 전에 **architect**로 여러 설계를 병렬로 탐색한다 |
+| 병렬 분배(빠짐없이 나누기, 경주, 차례 검증, 탐색 나누기) | **swarm**을 쓴다. 여러 안을 겨뤄 기준안을 고르고 좋은 부분을 옮길 때는 **arena**를 쓴다 |
+| 의견이 갈리는 설계 | 배포 전에 **interrogate**를 돌린다 |
 | 사소하지 않은 여러 단계 작업 | 처리량 점검을 적는다(기능 개발 플레이북 3단계) |
-| 모든 글(답변 포함) | **unslop**. 답변은 **답변 규칙** 절. 에이전트가 읽는 글은 `skill-creator`가 있으면 그 지침, 없으면 SKILL.md 형식(`name`, `description`) |
-| 문서, RFC, README, PR 설명, 커밋 메시지 | **technical-writing** |
-| 커밋 전, 리뷰 전 | 커밋 전 **unslop**과 **no-comments**, 리뷰 전 **no-comments** |
-| UI나 CLI 배포 | 프로젝트 검증 스킬(`verify-<앱>`). 버그 수정이면 같은 화면에서 직접 먼저 재현한다. 사용자에게 넘기는 것은 버그 수정 1단계의 좁은 예외뿐이다 |
-| 벤치마크, 직접 잰 속도·회귀 보고 | 그 숫자로 보고하거나 행동하기 전에 **benchmark-checklist** |
-| PR 상태 요청("PR X 확인해 줘", "CI 통과시켜 줘", "봇 지적 처리해 줘") | `playbooks/babysit.md`. PR을 열었다는 사실만으로 시작하지 않는다. 폴링 전에 모드를 밝힌다. 단계 에이전트 안에서 `drive`를 쓰면 그 에이전트가 턴을 끝내지 못한다 |
-| CI를 통과한 스택의 머지·배포 요청 | `playbooks/shipping.md`. CI 통과는 안전하다는 뜻이 아니다. PR마다 검증 판정이 나오기 전에는 자동 머지를 걸지 않는다 |
-| 리뷰 봇이나 자동 보안 리뷰의 지적 | 의심하며 하나씩 따진다. 분류는 `references/bugbot-triage.md` |
+| 모든 글(답변 포함) | **unslop**을 적용하고, 답변은 답변 절을 따른다. 에이전트가 읽는 글은 `skill-creator`가 있으면 그 지침을, 없으면 SKILL.md 형식(`name`, `description`)을 따른다 |
+| 문서, RFC, README, PR 설명, 커밋 메시지 | **technical-writing**으로 쓴다 |
+| 커밋 전, 리뷰 전 | 커밋 전에는 **unslop**과 **no-comments**를, 리뷰 전에는 **no-comments**를 돌린다 |
+| UI나 CLI 배포 | 프로젝트 검증 스킬(`verify-<앱>`)로 확인한다. 버그 수정이면 같은 화면에서 직접 먼저 재현한다. 사용자에게 넘기는 것은 버그 수정 1단계의 좁은 예외뿐이다 |
+| 벤치마크, 직접 잰 속도·회귀 보고 | 그 숫자로 보고하거나 행동하기 전에 **benchmark-checklist**를 돌린다 |
+| PR 상태 요청("PR X 확인해 줘", "CI 통과시켜 줘", "봇 지적 처리해 줘") | `playbooks/babysit.md`를 따른다. PR을 열었다는 사실만으로 시작하지 않는다. 폴링 전에 모드를 밝힌다. 단계 에이전트 안에서 `drive`를 쓰면 그 에이전트가 턴을 끝내지 못한다 |
+| CI를 통과한 스택의 머지·배포 요청 | `playbooks/shipping.md`를 따른다. CI 통과는 안전하다는 뜻이 아니다. PR마다 검증 판정이 나오기 전에는 자동 머지를 걸지 않는다 |
+| PR 생성, 수정, 보기, 감시, 머지 | GitHub CLI(`gh`)로 한다. Graphite(`gt`)를 요구하지 않는다. 내장 PR 도구가 있을 때의 규칙은 `playbooks/opening-a-pr.md`에 있다 |
+| 리뷰 봇이나 자동 보안 리뷰의 지적 | 의심하며 하나씩 따진다. 분류는 `references/bugbot-triage.md`를 따른다 |
 | 스킬 지시가 틀렸거나 스크립트가 안 돎 | 하던 일은 계속하고 스킬은 별도 PR로 고친다. 말없이 건너뛰지 않고 보고에 적는다 |
 | 길거나, 자율이거나, 사용자가 자리를 비운 작업 | **show-me-your-work**로 결정 기록을 남긴다(시작 고리 5단계) |
-| 서브에이전트를 띄우기 전 | [서브에이전트](references/subagents.md)를 읽는다 |
+| 서브에이전트를 띄우기 전 | [서브에이전트](references/subagents.md)를 읽고 역할, 추론 수준, 속도(빠른 실행 여부)를 고른다. 플레이북의 모든 위임, 검증자, 담당자, 감시자에 적용한다 |
 
 ## 질문 방식
 
@@ -73,21 +74,9 @@ disable-model-invocation: true
 5. **정리.** `playbooks/worktree-cleanup.md`로 워크트리를 정리한다.
 6. **성과 확인.** "경력 원본에 남길 성과인가"를 한 줄로 판단하고, 그렇다면 **hanger** 스킬로 남긴다.
 
-## 답변 규칙
-
-- **맨 앞 "할 일" 줄.** 사용자만 할 수 있는 일을 적는다. 없으면 "할 일: 없음". 결정 필요 목록을 물으면 그 목록을 맨 앞에 둔다.
-- **맨 끝 "가정" 줄.** 확인하지 않고 정한 가정을 한 줄로 적는다.
-- **원칙 인용.** 결정에 영향을 준 원칙마다 이름과 그 원칙 때문에 바뀐 선택을 적는다. 이번 세션에 그 원칙 SKILL.md를 직접 읽었을 때만 인용한다.
-- **짧은 평서문.** 한 문장에 생각 하나를 담고 마침표로 끝낸다. 초안부터 깨끗하게 쓴다.
-- **엠 대시와 문장 중간 콜론을 쓰지 않는다**(unslop 규칙 14). 목록 앞의 콜론은 괜찮다. 파일 목록과 굵은 절 제목도 문장으로 쓴다("**검증.** CDP로 처음부터 끝까지 확인했다").
-- **짧게 쓴다고 내용을 빼지 않는다.** 플레이북이 요구하는 절(세부, 절충, 선택, 열린 결정)은 모두 남긴다. 각 플레이북의 답변 항목에는 그 플레이북에만 있는 내용만 적는다.
-- **쓰는 사람과 이어받을 사람의 영향부터.** 이 일이 누구를 위한 것이고 그들에게 무엇이 바뀌는지, 다음 엔지니어가 무엇을 물려받는지 먼저 적는다. 둘 다 말할 수 없으면 일이나 설명이 잘못된 것이다.
-- **지어내지 않는다.** 이번 세션에 직접 만들거나 읽은 것만 링크한다. PR 링크는 `https://github.com/<owner>/<repo>/pull/<number>` 형식이다.
-- **주장마다 근거나 표시.** 같은 문장 안에 근거를 달거나 측정, 추론, 추측 중 하나로 표시한다. 내가 돌릴 수 있는 확인을 사람에게 넘기지 않는다.
-
 ## 주석
 
-코드가 보여 줄 수 없는 뻔하지 않은 이유만 주석으로 남긴다. 세부 규칙은 `code-style`의 주석 절이고, 코드 파일을 고치기 전에 훅이 함께 넘긴다.
+코드가 보여 줄 수 없는 뻔하지 않은 이유만 주석으로 남긴다. 세부 규칙은 **code-style** 스킬의 주석 절에 있고, 코드 파일을 고치기 전에 훅이 함께 넘긴다.
 
 ## 순서표 고르기
 
@@ -110,8 +99,8 @@ disable-model-invocation: true
 | PR 돌보기(`playbooks/babysit.md`) | PR이나 스택을 머지 준비까지 끌고 간다 | 기존 PR |
 | 배포(`playbooks/shipping.md`) | CI를 통과한 스택을 따로 검증하고 아래부터 머지한다 | 기존 PR |
 | 자율 실행(`playbooks/autonomous-run.md`) | "끝날 때까지 돌려", "자율로 해". 멈추라고 할 때까지 판의 일을 계속 처리한다 | 맞음 |
-| 오케스트레이션(`playbooks/orchestrate.md`) | 여러 날, 수십 개 PR과 서브에이전트에 걸친 프로그램. 에이전트 하나가 세션 예산 안에 끝낼 일은 자율 실행 | 맞음 |
-| 오토파일럿 전체(`playbooks/autopilot-full.md`) | 서로 독립인 PR 대기열을 PR마다 담당 하나로 머지까지 | 맞음 |
+| 오케스트레이션(`playbooks/orchestrate.md`) | 여러 날, 수십 개 PR과 서브에이전트에 걸친 프로그램. 에이전트 하나가 세션 예산 안에 끝낼 일은 자율 실행이다 | 맞음 |
+| 오토파일럿 전체(`playbooks/autopilot-full.md`) | 서로 독립인 PR 대기열을 PR마다 담당 하나로 머지까지 끌고 간다 | 맞음 |
 | 오토파일럿 스택(`playbooks/autopilot-stack.md`) | 변경 대기열을 검증된 스택 하나로 쌓아 넘기고 머지는 사용자가 한다("스택 만들어 줘, 머지는 내가 할게") | 맞음 |
 | 세션 이어받기(`playbooks/session-pickup.md`) | 이전 에이전트의 작업을 결정 기록과 브랜치에서 재개한다 | 아님(보낸 순서표가 정함) |
 | 안전하게 멈추기(`playbooks/pause-safely.md`) | 명시적 일시 정지, 오프라인 전환, 재시작, 곧 닥칠 압축 | 아님 |
@@ -121,29 +110,43 @@ disable-model-invocation: true
 
 ## 원칙
 
-적용하는 원칙은 그 원칙 스킬을 끝까지 읽는다.
+적용하는 원칙은 그 원칙 스킬을 끝까지 읽는다. 원칙마다 읽을 때는 다음과 같다.
 
-- **principle-laziness-protocol**: 리팩터링, diff 크기를 정할 때, 추상화나 계층을 더하고 싶을 때.
-- **principle-foundational-thinking**: 로직을 쓰기 전.
-- **principle-redesign-from-first-principles**: 새 요구사항이 지금 설계에 맞지 않을 때.
-- **principle-attack-the-premise**: 같은 전제를 깐 수정이 둘 이상 같은 게이트에서 실패했을 때.
-- **principle-subtract-before-you-add**: 추가, 리팩터링, 재작성의 순서를 정할 때.
-- **principle-minimize-reader-load**: 따라가기 어려운 코드를 리뷰하거나 다듬을 때.
-- **principle-outcome-oriented-execution**: 단계 경계가 분명한 계획된 재작성과 마이그레이션.
-- **principle-experience-first**: 제품, UX, 기능 범위의 절충.
-- **principle-exhaust-the-design-space**: 선례 없는 새 상호작용이나 아키텍처 결정.
-- **principle-build-the-lever**: 사소하지 않은 모든 작업.
-- **principle-model-the-domain**: 상태가 있는 로직, 분기가 많은 코드, 같은 데이터 모양 가정을 되풀이하는 코드.
-- **principle-boundary-discipline**: 검증, 오류 처리, 프레임워크 어댑터를 연결할 때.
-- **principle-type-system-discipline**: 타입이 있는 언어에서 타입이나 시그니처를 설계할 때.
-- **principle-make-operations-idempotent**: 크래시와 재시도 속에서 도는 명령, 수명 주기 단계, 루프를 설계할 때.
-- **principle-migrate-callers-then-delete-legacy-apis**: 기존 호출부가 남은 채 새 내부 API를 들일 때.
-- **principle-separate-before-serializing-shared-state**: 동시에 도는 주체들이 같은 파일, 브랜치, 키, 객체에 쓸 수 있을 때.
-- **principle-prove-it-works**: 완료를 선언하기 전.
-- **principle-fix-root-causes**: 디버깅할 때.
-- **principle-sequence-verifiable-units**: 여러 단계 작업과 커밋·PR을 쌓을 때.
-- **principle-test-behavior-not-implementation**: 테스트를 쓰거나, 바꾸거나, 남길지 정할 때.
-- **principle-explain-the-number**: 직접 잰 숫자를 믿거나, 보고하거나, 그 숫자로 행동하기 전.
-- **principle-guard-the-context-window**: 큰 출력, 긴 파일, 반복 읽기, 병렬 분배 계획으로 컨텍스트가 찰 때.
-- **principle-never-block-on-the-human**: 묻고 싶거나 남은 일을 두고 멈추고 싶을 때.
-- **principle-encode-lessons-in-structure**: 같은 지시를 두 번째로 쓰고 있을 때.
+| 원칙 | 읽을 때 |
+|---|---|
+| **principle-laziness-protocol** | 리팩터링, diff 크기를 정할 때, 추상화나 계층을 더하고 싶을 때 |
+| **principle-foundational-thinking** | 로직을 쓰기 전 |
+| **principle-redesign-from-first-principles** | 새 요구사항이 지금 설계에 맞지 않을 때 |
+| **principle-attack-the-premise** | 같은 전제를 깐 수정이 둘 이상 같은 게이트에서 실패했을 때 |
+| **principle-subtract-before-you-add** | 추가, 리팩터링, 재작성의 순서를 정할 때 |
+| **principle-minimize-reader-load** | 따라가기 어려운 코드를 리뷰하거나 다듬을 때 |
+| **principle-outcome-oriented-execution** | 단계 경계가 분명한 계획된 재작성과 마이그레이션 |
+| **principle-experience-first** | 제품, UX, 기능 범위의 절충 |
+| **principle-exhaust-the-design-space** | 선례 없는 새 상호작용이나 아키텍처 결정 |
+| **principle-build-the-lever** | 사소하지 않은 모든 작업 |
+| **principle-model-the-domain** | 상태가 있는 로직, 분기가 많은 코드, 같은 데이터 모양 가정을 되풀이하는 코드 |
+| **principle-boundary-discipline** | 검증, 오류 처리, 프레임워크 어댑터를 연결할 때 |
+| **principle-type-system-discipline** | 타입이 있는 언어에서 타입이나 시그니처를 설계할 때 |
+| **principle-make-operations-idempotent** | 크래시와 재시도 속에서 도는 명령, 수명 주기 단계, 루프를 설계할 때 |
+| **principle-migrate-callers-then-delete-legacy-apis** | 기존 호출부가 남은 채 새 내부 API를 들일 때 |
+| **principle-separate-before-serializing-shared-state** | 동시에 도는 주체들이 같은 파일, 브랜치, 키, 객체에 쓸 수 있을 때 |
+| **principle-prove-it-works** | 완료를 선언하기 전 |
+| **principle-fix-root-causes** | 디버깅할 때 |
+| **principle-sequence-verifiable-units** | 여러 단계 작업과 커밋·PR을 쌓을 때 |
+| **principle-test-behavior-not-implementation** | 테스트를 쓰거나, 바꾸거나, 남길지 정할 때 |
+| **principle-explain-the-number** | 직접 잰 숫자를 믿거나, 보고하거나, 그 숫자로 행동하기 전 |
+| **principle-guard-the-context-window** | 큰 출력, 긴 파일, 반복 읽기, 병렬 분배 계획으로 컨텍스트가 찰 때 |
+| **principle-never-block-on-the-human** | 묻고 싶거나 남은 일을 두고 멈추고 싶을 때 |
+| **principle-encode-lessons-in-structure** | 같은 지시를 두 번째로 쓰고 있을 때 |
+
+## 답변
+
+- **맨 앞 "할 일" 줄.** 사용자만 할 수 있는 일을 적는다. 없으면 "할 일: 없음"이라고 쓴다. 결정 필요 목록을 물으면 그 목록을 맨 앞에 둔다.
+- **맨 끝 "가정" 줄.** 확인하지 않고 정한 가정을 한 줄로 적는다.
+- **원칙 인용.** 결정에 영향을 준 원칙마다 이름과 그 원칙 때문에 바뀐 선택을 적는다. 이번 세션에 그 원칙 SKILL.md를 직접 읽었을 때만 인용한다.
+- **짧은 평서문.** 한 문장에 생각 하나를 담고 마침표로 끝낸다. 초안부터 깨끗하게 쓴다.
+- **엠 대시와 문장 중간 콜론을 쓰지 않는다**(unslop 규칙 14). 목록 앞의 콜론은 괜찮다. 파일 목록과 굵은 절 제목도 문장으로 쓴다("**검증.** CDP로 처음부터 끝까지 확인했다").
+- **짧게 쓴다고 내용을 빼지 않는다.** 플레이북이 요구하는 절(세부, 절충, 선택, 열린 결정)은 모두 남긴다. 각 플레이북의 답변 절에는 그 플레이북에만 있는 내용만 적는다.
+- **쓰는 사람과 이어받을 사람의 영향을 먼저 적는다.** 이 일이 누구를 위한 것이고 그들에게 무엇이 바뀌는지, 다음 엔지니어가 무엇을 물려받는지 먼저 적는다. 둘 다 말할 수 없으면 일이나 설명이 잘못된 것이다.
+- **지어내지 않는다.** 이번 세션에 직접 만들거나 읽은 것만 링크한다. PR 링크는 `https://github.com/<owner>/<repo>/pull/<number>` 형식이다.
+- **주장마다 근거나 표시를 단다.** 같은 문장 안에 근거를 달거나 측정, 추론, 추측 중 하나로 표시한다. 내가 돌릴 수 있는 확인을 사람에게 넘기지 않는다.

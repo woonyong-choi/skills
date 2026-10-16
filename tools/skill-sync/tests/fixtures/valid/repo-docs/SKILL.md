@@ -1,13 +1,12 @@
 ---
 name: repo-docs
-description: "입력 파일을 검사할 때 사용."
+description: "저장소 문서를 쓸 때 쓴다."
 ---
 
 # repo-docs
 
-- 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
-- 범위: 입력 검사
+저장소 문서의 공통 규칙을 정한다.
 
 ## 작성 규칙
 
-문서 작성 전 [작성 규칙](references/writing.md) 필수 확인
+문서를 쓰기 전에 [작성 규칙](references/writing.md)을 반드시 읽는다.

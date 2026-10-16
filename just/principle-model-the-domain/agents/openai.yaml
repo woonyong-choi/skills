@@ -1,5 +1,6 @@
 interface:
   display_name: "principle-model-the-domain"
+  short_description: "도메인을 조건문 대신 자료구조에 담는 원칙"
   default_prompt: "$principle-model-the-domain [요청]"
 policy:
   allow_implicit_invocation: false

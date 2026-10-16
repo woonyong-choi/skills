@@ -1,6 +1,6 @@
 # llms.txt 형식
 
-llmstxt.org 형식(2026-09-30 확인)
+`llms.txt`의 구조와 원본 대응을 정한다. 형식은 llmstxt.org를 따른다(2026-09-30 확인).
 
 ```text
 # {이름}
@@ -18,14 +18,19 @@ llmstxt.org 형식(2026-09-30 확인)
 - [{문서 제목}]({URL}): {내용}
 ```
 
-자리 → 원본:
+## 원본 대응
 
-- 이름 → `README.en.md`, 없으면 `README.md`의 `#` 제목
-- 한 줄 소개 → 같은 파일의 제목 다음 첫 문단. 언어 전환 줄·링크만 있는 줄(절 이동·배지) 제외
-- 소개 문단 → 같은 파일의 한 줄 소개 다음 문단. 없으면 해결하는 문제(`Why`)·문제와 제약 절 첫 문단(repo-docs-readme 틀)
-- 문서 → `docs/README.md` 목록 링크 줄 중 `experiments/`, `decisions/` 경로가 아닌 줄. 같은 순서, 제목·설명 원문 그대로
-- Optional → `docs/README.md`의 `experiments/`, `decisions/` 경로 줄과 `CHANGELOG.md`(링크 글자는 그 파일의 `#` 제목, 설명 없음)
-- URL → `https://raw.githubusercontent.com/{소유자}/{저장소}/{기본 브랜치}/docs/{파일}`. 원문 마크다운 주소. 다른 호스트는 저장소 원문 URL 정책 적용
+| 자리 | 원본 |
+|---|---|
+| 이름 | `README.en.md`, 없으면 `README.md`의 `#` 제목 |
+| 한 줄 소개 | 같은 파일의 제목 다음 첫 문단. 언어 전환 줄과 링크만 있는 줄(절 이동, 배지)은 뺀다 |
+| 소개 문단 | 같은 파일의 한 줄 소개 다음 문단. 없으면 해결하는 문제(`Why`)나 문제와 제약 절의 첫 문단(repo-docs-readme 틀) |
+| 문서 | `docs/README.md` 목록 링크 줄 중 `experiments/`, `decisions/` 경로가 아닌 줄. 같은 순서로, 제목과 설명은 원문 그대로 |
+| Optional | `docs/README.md`의 `experiments/`, `decisions/` 경로 줄과 `CHANGELOG.md`. `CHANGELOG.md`의 링크 글자는 그 파일의 `#` 제목이고 설명은 없다 |
+| URL | `https://raw.githubusercontent.com/{소유자}/{저장소}/{기본 브랜치}/docs/{파일}`. 원문 마크다운 주소다. 다른 호스트는 저장소 원문 URL 정책을 따른다 |
 
-- 언어: 고정 제목·이름·소개는 영어(`README.en.md`가 있으면 그 파일). 문서 목록의 제목·설명은 `docs/README.md` 원문 그대로, 번역 금지(번역하면 원문과 어긋남)
-- `## Docs`, `## Optional`: 영어 제목 고정. `Optional`은 형식이 정한 이름으로 건너뛰어도 되는 문서라는 뜻
+## 언어
+
+- 고정 제목, 이름, 소개는 영어로 쓴다(`README.en.md`가 있으면 그 파일).
+- 문서 목록의 제목과 설명은 `docs/README.md` 원문 그대로 둔다. 번역하면 원문과 어긋나므로 번역하지 않는다.
+- `## Docs`, `## Optional`은 영어 제목으로 고정한다. `Optional`은 형식이 정한 이름이고 건너뛰어도 되는 문서라는 뜻이다.

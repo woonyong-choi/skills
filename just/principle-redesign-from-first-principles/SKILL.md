@@ -1,6 +1,6 @@
 ---
 name: principle-redesign-from-first-principles
-description: "새 요구사항이 지금 설계에 맞지 않을 때 적용한다."
+description: "새 요구사항이 지금 설계에 맞지 않을 때 쓴다."
 disable-model-invocation: true
 user-invocable: false
 ---

@@ -1,5 +1,6 @@
 interface:
   display_name: "bro"
+  short_description: "직전 메시지를 전문 용어 없이 쉬운 말로 다시 말하기"
   default_prompt: "$bro [요청]"
 policy:
   allow_implicit_invocation: false

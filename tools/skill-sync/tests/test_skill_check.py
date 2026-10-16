@@ -1,4 +1,4 @@
-"""skill_check 끝말 검사의 명사·조사 오탐 경계와 평서형·명사형 탐지 유지 계약."""
+"""skill_check의 frontmatter·본문 구조·Markdown 판정 경계 계약. 기준: references/authoring.md."""
 
 import sys
 from pathlib import Path
@@ -6,120 +6,112 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
+import consistency  # noqa: E402
 import skill_check  # noqa: E402
 
 
-def flagged(line: str) -> list[str]:
-    return [word for _, word in skill_check.bad_endings([line], 0)]
-
-
-@pytest.mark.parametrize('line', [
-    '- 읽을 파일: 루트 지침',
-    '- 회사 방침',
-    '- 검사 단위: 파일마다',
-    '- 비교 기준: 이전 값보다',
-    '- 출력 대상: 표준 출력 스트림',
-    '- 처리 단위: 프레임',
-    '- 주소 형식: URL 스킴',
-    '- 인자: 정렬 람다',
-    '- 예시 단어: 바다',
-    '- 설치 위치: 런타임',
-    '- 필요한 것: 도움',
-    '- 알고리듬',
-    '- 남은 힘',
-    '| 단위 | 파일마다 |',
-    '| 대상 | 표준 출력 스트림 |',
-    '파일마다 다른 값, 이전보다 큰 값',
-    '정렬 람다, 바다.',
+@pytest.mark.parametrize('description', [
+    '"커밋 메시지를 쓸 때 쓴다."',
+    '"\\"X는 어떻게 동작하나\\" 질문에 쓴다. 아키텍처를 설명한다. 동기는 why를 쓴다."',
+    '"디버깅할 때 쓴다. 증상을 처음 잘못된 곳까지 거슬러 올라가 고친다."',
 ])
-def test_noun_and_particle_endings_pass(line: str) -> None:
-    assert flagged(line) == []
+def test_description_accepts_use_sentence(description: str) -> None:
+    assert skill_check.check_description(description) == []
 
 
-@pytest.mark.parametrize('line, word', [
-    ('- 입력 저장한다', '저장한다'),
-    ('- 결과가 저장된다', '저장된다'),
-    ('- 엔진이 읽는다', '읽는다'),
-    ('- 기본값이다', '기본값이다'),
-    ('- 값이 있다', '있다'),
-    ('- 값이 없다', '없다'),
-    ('- 바꾸지 않다', '않다'),
-    ('- 이미 받았다', '받았다'),
-    ('- 이미 읽었다', '읽었다'),
-    ('- 이미 하였다', '하였다'),
-    ('- 확인이 필요하다', '필요하다'),
-    ('- 앞과 같다', '같다'),
-    ('- 측정 결과다', '결과다'),
-    ('- 기준으로 삼다', '삼다'),
-    ('| 동작 | 저장한다 |', '저장한다'),
-    ('- 입력 저장함', '저장함'),
-    ('- 값 있음', '있음'),
-    ('- 저장 완료됨', '완료됨'),
-    ('- 이름 바꿈', '바꿈'),
-    ('- 문이 닫힘', '닫힘'),
-    ('- 이름 씀', '씀'),
-    ('엔진이 저장한다, 그다음 읽는다.', '저장한다'),
-    ('값은 결과다. 다음 줄', '결과다'),
+@pytest.mark.parametrize('description, error', [
+    (None, 'description: 없음'),
+    ('커밋 메시지를 쓸 때 쓴다.', 'description: 큰따옴표 한 줄'),
+    ('>-', 'description: 큰따옴표 한 줄'),
+    ('"커밋 메시지를 쓸 때 사용."', 'description: 언제 쓰는지 말하는 문장을 "쓴다."로 끝냄'),
+    ('"디버깅할 때 적용한다."', 'description: 언제 쓰는지 말하는 문장을 "쓴다."로 끝냄'),
+    ('"Use when writing commits. 쓴다."', None),
+    ('"Use when writing commit messages."', 'description: 한국어 문장'),
+    ('"커밋할 때 쓴다. 템플릿을 채운다"', 'description: 마침표로 끝냄'),
+    ('"' + '가' * 1030 + ' 쓴다."', 'description: 1~1024자'),
+], ids=lambda value: str(value)[:30])
+def test_description_rejects_other_forms(description: str | None, error: str | None) -> None:
+    errors = skill_check.check_description(description)
+    assert (error in errors) if error else errors == []
+
+
+@pytest.mark.parametrize('fields, error', [
+    ({'name': 'beta', 'description': '"쓸 때 쓴다."'}, 'name: 폴더 이름과 다름'),
+    ({'name': 'Alpha', 'description': '"쓸 때 쓴다."'}, 'name: 영어 소문자·숫자·- 형식'),
+    ({'name': 'alpha', 'description': '"쓸 때 쓴다."', 'license': 'MIT'}, 'frontmatter: 없는 칸 license'),
+    ({'name': 'alpha', 'description': '"쓸 때 쓴다."', 'user-invocable': 'false'},
+     'frontmatter: user-invocable false는 disable-model-invocation true와 함께'),
+    ({'name': 'alpha', 'description': '"쓸 때 쓴다."', 'disable-model-invocation': 'yes'},
+     'frontmatter: disable-model-invocation 값은 true 또는 false'),
 ])
-def test_declarative_and_nominal_endings_fail(line: str, word: str) -> None:
-    assert word in flagged(line)
+def test_frontmatter_errors(fields: dict[str, str], error: str) -> None:
+    assert error in skill_check.check_frontmatter(fields, 'alpha')
 
 
-# #64: authoring.md의 `-ㅁ`형 금지를 줄 끝·줄 중간에 같게 적용, 강조 표시 안 끝말 검사
-@pytest.mark.parametrize('line, word', [
-    ('- 설정이 바뀜', '바뀜'),
-    ('- 목록에 들어감', '들어감'),
-    ('- 작업이 끝남', '끝남'),
-    ('- 결과를 보냄', '보냄'),
-    ('- 두 칸으로 나뉨', '나뉨'),
-    ('- 결과를 기록함. 다음 단계 진행', '기록함'),
-    ('- 값이 바뀜; 이어서 저장', '바뀜'),
-    ('- 결과가 *강조된다*', '강조된다'),
-    ('- 결과가 **기록됨**', '기록됨'),
-    ('- 결과가 _바뀜_', '바뀜'),
-    # #68: 아님은 않음과 같은 서술 끝(아니다)이라 금지
-    ('- 이 단계 대상 아님. 다음 줄', '아님'),
-    ('- 스크립트 대상 아님', '아님'),
-    ('- 기본값 아님', '아님'),
+def test_frontmatter_accepts_internal_reference_skill() -> None:
+    fields = {'name': 'alpha', 'description': '"디버깅할 때 쓴다."', 'disable-model-invocation': 'true', 'user-invocable': 'false'}
+    assert skill_check.check_frontmatter(fields, 'alpha') == []
+
+
+def test_frontmatter_rejects_block_scalar() -> None:
+    fields, _ = skill_check.frontmatter('---\nname: alpha\ndescription: >-\n  여러 줄 설명\n---\n\n# A\n')
+    assert 'frontmatter: 한 줄 값만 허용' in skill_check.check_frontmatter(fields, 'alpha')
+
+
+@pytest.mark.parametrize('body, expected', [
+    ('\n# 제목\n\n목표 문단이다.\n\n## 단계\n', []),
+    ('\n# 제목\n목표 문단이다.\n', []),
+    ('\n목표 문단이다.\n', ['본문 구조: 첫 줄 # 제목']),
+    ('\n# 제목\n\n- 범위: 입력 검사\n', ['본문 구조: 제목 다음 한 줄 목표 문단']),
+    ('\n# 제목\n\n## 단계\n', ['본문 구조: 제목 다음 한 줄 목표 문단']),
+    ('\n# 제목\n\n| a | b |\n', ['본문 구조: 제목 다음 한 줄 목표 문단']),
+    ('\n# 제목\n', ['본문 구조: 제목 다음 한 줄 목표 문단']),
 ])
-def test_nominal_endings_fail_at_line_end_and_mid_line(line: str, word: str) -> None:
-    assert word in flagged(line)
+def test_body_starts_with_title_and_goal(body: str, expected: list[str]) -> None:
+    assert skill_check.check_body(body) == expected
 
 
-@pytest.mark.parametrize('line', [
-    '- 원인: 잡음',
-    '- 촬영 재료: 필름',
-    '- 국가: 캐나다',
-    '- 국가: 캐나다. 다음 줄',
-    '- 신호 잡음. 다음 줄',
-    '- 상태 없음. 다음 줄',
-    '- 사용자 홈',
-    '- 검사 순서: I/O·잠금',
+def kinds(text: str) -> list[str]:
+    errors = consistency.check_markdown(text) + consistency.check_prose(text, dict(consistency.PRODUCT_TERMS))
+    return [error.split(':')[0] for error in errors]
+
+
+@pytest.mark.parametrize('text, kind', [
+    ('# 제목\n\n```\ncode\n```\n', '코드 울타리'),
+    ('# 제목\n\n문장이다. \n', '줄 끝 공백'),
+    ('# 제목\n\n* 항목이다.\n', '목록 기호'),
+    ('# 제목\n\n+ 항목이다.\n', '목록 기호'),
+    ('# 제목\n\n1) 단계다.\n', '목록 기호'),
+    ('# 제목\n\n앞이다 — 뒤다.\n', '엠 대시'),
+    ('# 제목\n\n- **답변:** 요약을 쓴다.\n', '굵은 머리말'),
+    ('# 제목\n\n### 세부\n', '절 구조'),
+    ('# 제목\n\n# 둘째\n', '절 구조'),
+    ('# 제목\n\n## 같은 절\n\n## 같은 절\n', '절 구조'),
+    ('# 제목\n\nThinkFlow로 그린다.\n', '용어 불일치'),
+    ('# 제목\n\n띵스플로우를 쓴다.\n', '용어 불일치'),
 ])
-def test_nominal_nouns_pass(line: str) -> None:
-    assert flagged(line) == []
+def test_markdown_violations(text: str, kind: str) -> None:
+    assert kind in kinds(text)
 
 
-@pytest.mark.parametrize('description, expected', [
-    ('작업할 때 사용.', []),
-    ('작업할 때 사용. 다른 작업 제외.', ['description 사용. 뒤 글자']),
+@pytest.mark.parametrize('text', [
+    '# 제목\n\n```text\n앞 — 뒤\n* 코드 안 목록\n```\n',
+    '# 제목\n\n````markdown\n```\n안쪽 울타리\n```\n````\n',
+    '# 제목\n\n`a — b`와 `**x:**`는 코드다.\n',
+    '# 제목\n\n나쁜 예 "**성능:** 좋다"는 인용이다.\n',
+    '# 제목\n\n- **검증.** 결과를 직접 확인한다.\n',
+    '# 제목\n\n| 종류 | 뜻 |\n|---|---|\n| a | b |\n',
+    '# 제목\n\n명령은 `thinkflow`, 확장자는 `.thinkflow`, 변수는 `THINKFLOW_PATH`다.\n',
+    '# 제목\n\n[Torso](https://github.com/woonyong-choi/thinkflow)를 쓴다.\n',
+    '## 절\n\n참조 문서는 둘째 단계 절로 시작해도 된다.\n',
+    '# 제목\n\n예: `a`와 `b`.\n',
 ])
-def test_description_ends_with_use(tmp_path: Path, description: str, expected: list[str]) -> None:
-    skill = tmp_path / 'sample'
-    (skill / 'agents').mkdir(parents=True)
-    (skill / 'agents' / 'openai.yaml').write_text(
-        'interface:\n  display_name: "S"\n  short_description: "s"\n  default_prompt: "$sample 처리"\n', encoding='utf-8')
-    (skill / 'SKILL.md').write_text(
-        f'---\nname: sample\ndescription: "{description}"\n---\n\n# Sample\n', encoding='utf-8')
-    errors = [e for e in skill_check.check(str(skill / 'SKILL.md'), ['sample']) if e.startswith('description')]
-    assert errors == expected
+def test_markdown_passes(text: str) -> None:
+    assert kinds(text) == []
 
 
-def test_format_only_check_reports_name_mismatch(tmp_path: Path) -> None:
-    skill = tmp_path / 'just/beta'
-    skill.mkdir(parents=True)
-    text = '---\nname: alpha\ndescription: 쓸 때 설명.\ndisable-model-invocation: true\n---\n\n# 본문\n'
-    (skill / 'SKILL.md').write_text(text, encoding='utf-8')
-    assert skill_check.check_vendored(skill / 'SKILL.md') == ['형식 name: 폴더 이름과 다름']
-    (skill / 'SKILL.md').write_text(text.replace('name: alpha', 'name: beta'), encoding='utf-8')
-    assert skill_check.check_vendored(skill / 'SKILL.md') == []
+def test_skill_mentions_resolve_names(tmp_path: Path) -> None:
+    skills = {'git-issue': tmp_path, 'principle-prove-it-works': tmp_path}
+    text = '- **git-issue** 스킬, **prove-it-works** 원칙 스킬, **skill-creator** 스킬, **gamma** 스킬\n'
+    errors = consistency.check_references(tmp_path / 'SKILL.md', text, skills)
+    assert errors == ['참조 스킬: 1: 없는 스킬 gamma']

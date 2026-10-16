@@ -1,4 +1,7 @@
-"""just do 훅. 인자: claude|codex, stdin 훅 이벤트 JSON, stdout 훅 응답 JSON.
+"""just do 훅의 이벤트별 동작을 실행한다.
+
+인자: claude|codex, stdin 훅 이벤트 JSON
+출력: stdout 훅 응답 JSON. 실패는 stderr 진단과 `{}`(git 저장소 안 편집 도구 PreToolUse는 거부)로 끝내고 종료 0
 
 이벤트별 동작:
   SessionStart·PostCompact 뒤 첫 UserPromptSubmit: just-mode 진입 안내 한 줄, 연결 과업이면 결정 기록 꼬리와 이슈 URL
@@ -7,7 +10,6 @@
   PostToolUse: 규칙 원문 전달 기록, 문맥 사용량 80% 안내, PR 머지 뒤 경력 기록 확인 안내
   PreCompact: 이번 요청 이후 결정 기록 갱신 여부 안내
   Stop: 규칙 미전달 편집 또는 파일 변경 뒤 결정 기록 누락이면 한 번 막음
-실패는 stderr 진단과 `{}`(git 저장소 안 편집 도구 PreToolUse는 거부)로 끝내고 종료 0
 """
 
 from __future__ import annotations

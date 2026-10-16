@@ -1,5 +1,7 @@
 # PR 틀
 
+PR 본문은 이 틀을 채워 쓴다.
+
 ````markdown
 Closes: #번호
 

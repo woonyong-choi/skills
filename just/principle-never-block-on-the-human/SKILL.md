@@ -1,6 +1,6 @@
 ---
 name: principle-never-block-on-the-human
-description: "'X를 해도 될까요?'라고 묻고 싶거나 남은 일을 두고 멈추고 싶을 때 적용한다."
+description: "'X를 해도 될까요?'라고 묻고 싶거나 남은 일을 두고 멈추고 싶을 때 쓴다."
 disable-model-invocation: true
 user-invocable: false
 ---

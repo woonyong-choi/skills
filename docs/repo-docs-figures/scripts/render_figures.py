@@ -1,4 +1,4 @@
-"""그림 원본을 ThinkFlow SVG와 VHS GIF로 변환.
+"""그림 원본을 Torso SVG와 VHS GIF로 변환.
 인자: 선택 원본 경로(생략 시 현재 위치가 속한 저장소 루트의 docs/assets/ 아래 git 추적 원본), --thinkflow 경로, --static
 출력: SVG·GIF와 도구 출력, stderr 실패(원본 없음, git 오류), 종료 0 성공·비영 종료 실패
 """
