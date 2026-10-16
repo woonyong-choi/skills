@@ -96,8 +96,8 @@ def main() -> int:
         sys.stderr.write(result.stderr)
         return 0
     except (OSError, ValueError, subprocess.TimeoutExpired) as error:
-        print(f"Work Continuity unavailable: {error}", file=sys.stderr)
-        failure = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": f"Work Continuity document guard unavailable; repair: run {repair_command(configuration)} (skill-sync install), then retry"}} if request.get("hook_event_name") == "PreToolUse" and guarded_write(request) else {}
+        print(f"Developer Thinking unavailable: {error}", file=sys.stderr)
+        failure = {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": f"Developer Thinking document guard unavailable; repair: run {repair_command(configuration)} (skill-sync install), then retry"}} if request.get("hook_event_name") == "PreToolUse" and guarded_write(request) else {}
         print(json.dumps(failure))
         return 0
 

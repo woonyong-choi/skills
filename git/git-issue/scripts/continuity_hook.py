@@ -205,7 +205,7 @@ def record_session(root: Path, folder: Path, payload: dict[str, Any], host: str)
             core.save(home / "meter.json", record)
     except (OSError, ValueError, core.ContinuityError) as error:
         # 기록 실패가 훅 응답을 막지 않게 한다. 사용량은 unknown으로 남는다.
-        print(f"continuity hook: {host} session record skipped: {error}", file=sys.stderr)
+        print(f"Developer Thinking hook: {host} session record skipped: {error}", file=sys.stderr)
 
 
 def meter_record(home: Path, host: str, now: float) -> tuple[str, Path] | None:
@@ -655,7 +655,7 @@ def main() -> int:
         IndexError,
         subprocess.TimeoutExpired,
     ) as error:
-        print(f"continuity hook: {error}", file=sys.stderr)
+        print(f"Developer Thinking hook: {error}", file=sys.stderr)
         if (
             isinstance(locals().get("payload"), dict)
             and payload.get("hook_event_name") == "PreToolUse"

@@ -40,7 +40,7 @@ HEREDOC = re.compile(r"""'[^']*'|"(?:\\.|[^"\\])*"|\\.|(?P<comment>(?<!\S)\#.*)|
 
 
 def deny(reason: str) -> dict:
-    return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Work Continuity: " + reason}}
+    return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Developer Thinking: " + reason}}
 
 
 def guarded_write(payload: dict) -> bool:

@@ -254,5 +254,21 @@ class RepairCommandTest(TemporaryCase):
                 self.assertIn("run python3 tools/skill-sync/scripts/install.py in the skills source repo", self.fallback_reason(home, host))
 
 
+class DisplayNameTest(unittest.TestCase):
+    """#89: 사용자에게 보이는 플러그인 이름은 Developer Thinking. 설치 ID work-continuity는 유지."""
+
+    def test_manifests_and_messages_use_display_name(self) -> None:
+        for host in ("claude", "codex"):
+            manifest = json.loads((PLUGIN / f".{host}-plugin/plugin.json").read_text())
+            self.assertEqual(manifest["name"], "work-continuity")
+            shown = manifest.get("displayName") or manifest.get("interface", {}).get("displayName")
+            self.assertEqual(shown, "Developer Thinking", host)
+        visible = [*(PLUGIN / "hooks").glob("*.json"), *(PLUGIN / "scripts").glob("*.py"), *(PLUGIN.parents[1] / "tools/skill-sync/references").glob("*.md"), PLUGIN.parents[1] / "docs/repo-docs/references/project-context.md"]
+        for path in visible:
+            text = path.read_text(encoding="utf-8")
+            for old in ("Work Continuity", "continuity hook unavailable", "issue-based work context"):
+                self.assertNotIn(old, text, f"{path.name}: {old}")
+
+
 if __name__ == "__main__":
     unittest.main()
