@@ -28,9 +28,9 @@
 
 #let joined(parts) = parts.join(text(fill: faint)[#h(0.5em)|#h(0.5em)])
 
-// 그림: 본문 폭, 캡션 한 줄
+// 그림: 본문 폭, 캡션 한 줄. 경로는 문서 파일 기준(../figures/…), 이미지는 이 양식 파일 기준으로 읽으므로 앞의 ../ 제거
 #let diagram(path, caption) = block(width: 100%, breakable: false, above: 1em, below: 1.1em)[
-  #image(path, width: 100%)
+  #image(if path.starts-with("../") { path.slice(3) } else { path }, width: 100%)
   #v(0.25em)
   #text(size: 7.8pt, fill: faint)[#caption]
 ]
@@ -71,6 +71,7 @@
 
 // 경력, 프로젝트 항목 하나. meta는 짧은 칸 배열, what은 한 문장 소개
 #let entry(title, meta: (), period: none, what: [], items: (), stack: none) = block(width: 100%, breakable: false, below: 2em)[
+  #let items = items.filter(i => i != none)
   #grid(columns: (1fr, auto), align: bottom,
     text(size: 11.6pt, weight: "bold", fill: ink)[#title],
     if period != none { text(size: 8.4pt, fill: faint, tracking: 0.04em)[#period] },
@@ -94,9 +95,9 @@
   body
 })
 
-#let case(title, lead) = block(width: 100%, above: 1.6em, below: 1.1em)[
+#let case(title, lead) = block(width: 100%, above: 2em, below: 1.3em)[
   #text(size: 13.5pt, weight: "bold", fill: ink)[#dot(title)]
-  #v(0.5em)
+  #v(0.8em)
   #text(weight: "bold", fill: ink)[#lead]
 ]
 
@@ -107,4 +108,23 @@
   ..rows.map(((k, v)) => (text(weight: "bold", fill: ink)[#k], v)).flatten(),
 )
 
-#let part(title) = block(above: 1.6em, below: 0.7em)[#text(size: 11pt, weight: "bold", fill: ink)[#title]]
+#let part(title) = block(above: 1.8em, below: 1.1em)[#text(size: 11pt, weight: "bold", fill: ink)[#title]]
+
+// 변경 표시: 마지막 확정 버전 대비 고친 곳(git diff 색). 끄기: typst compile --input changes=off
+#let review = sys.inputs.at("changes", default: "on") == "on"
+#let added-fill = rgb("#dafbe1")
+#let changed-fill = rgb("#ddf4ff")
+#let removed-ink = rgb("#cf222e")
+
+#let added(body) = if review { highlight(fill: added-fill, body) } else { body }
+
+#let changed(old, body) = if review [#highlight(fill: changed-fill, body)\ #text(size: 7.5pt, fill: faint)[이전: #strike(old)]] else { body }
+
+#let removed(body) = if review { text(fill: removed-ink, strike(body)) } else { none }
+
+// 첫 쪽 상단 범례. version 예: [이력서 작업본], base 예: [이력서-0001]
+#let changes-legend(version, base) = if review {
+  place(top, float: true, scope: "parent", clearance: 1.2em, block(width: 100%, fill: surface, radius: 4pt, inset: (x: 10pt, y: 7pt))[
+    #text(size: 8.4pt, fill: muted)[#version 고친 곳 (#base 대비): #highlight(fill: added-fill)[추가], #highlight(fill: changed-fill)[바뀜] (아래 회색이 이전 문장), #text(fill: removed-ink, strike[삭제]). 버전을 확정하면 표시 없이 다시 만듦]
+  ])
+}
