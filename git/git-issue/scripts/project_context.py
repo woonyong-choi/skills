@@ -37,7 +37,7 @@ def time_budget(limit: float) -> float:
         return limit
     remaining = deadline - time.time()
     if remaining <= 0:
-        raise subprocess.TimeoutExpired("work continuity hook", 0)
+        raise subprocess.TimeoutExpired("Developer Thinking hook", 0)
     return min(limit, remaining)
 
 
