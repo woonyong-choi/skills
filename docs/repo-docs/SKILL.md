@@ -57,7 +57,6 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 - `docs/notes/**` → 기여자 → 개발 중 무엇을 알게 됐나 → 기록할 insight나 reference가 있을 때 → note
 - `docs/assets/**` → 해당 없음 → 해당 없음 → 문서에 그림이 있을 때 → figures
 - `<Vault>/worktree/<프로젝트>/docs/판단/`, `docs/작업일지/`, 프로젝트 무관은 `<Vault>/legacy/판단/`, `legacy/작업일지/`, 원칙은 `<Vault>/principles.md` → 본인 → 무엇을 왜 판단했나 → 기록 기준을 통과한 판단, 큰 작업, 교훈이 있을 때 → journal
-- `.local/promo/**` → 본인 → 무엇을 어떻게 찍나 → 홍보 영상 촬영 준비 때 → promo
 - `<Vault>/worktree/<프로젝트>/docs/보고서/{YYYY-MM-DD}-{주제}/`, 프로젝트 무관은 `<Vault>/legacy/보고서/{YYYY-MM-DD}-{주제}/` → 본인 → 그림으로 무엇을 결정하거나 확인했나 → 보고서가 있을 때 → html-report
 
 - `docs/README.md` 목록 분류와 순서: (repo-docs-design references/index.md)

@@ -108,7 +108,6 @@ python3 ~/.claude/skills/repo-docs-journal/scripts/journal.py mode bypass
 | [repo-docs-root](docs/repo-docs-root/SKILL.md) | AGENTS.md와 저장소 루트 문서 |
 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 문서 색인 생성 |
 | [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | Vault 비공개 판단·작업 일지·원칙과 PR 머지 뒤 기록 기준 판정 |
-| [repo-docs-promo](docs/repo-docs-promo/SKILL.md) | 홍보용 촬영 순서와 데모 준비 |
 | [html-report](docs/html-report/SKILL.md) | 홈페이지 문서 디자인의 설명 페이지와 선택 비교·전후 확인 보고서 |
 | [career](docs/career/SKILL.md) | JD 맞춤 이력서·포트폴리오와 Vault 지원 폴더 |
 | [career-record](docs/career-record/SKILL.md) | 경력 원본의 성과 추가·병합·등급과 PR 머지 뒤 기록 판단 |
@@ -147,7 +146,7 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 
 ### 과거 실험의 본문 크기
 
-기준 커밋 `d7e8489`와 #25 변경 후의 실제 스킬 27개를 비교했습니다. 값은 frontmatter와 개행을 포함한 UTF-8 `SKILL.md` 전체 바이트입니다. 시험 fixture와 실험 보관본은 제외했습니다. 하위 문서로 옮긴 내용은 보존하며, 이 표는 저장소 용량이나 평균 호출 비용의 감소를 뜻하지 않습니다.
+기준 커밋 `d7e8489`와 #25 변경 후의 실제 스킬 27개를 비교했습니다. 표에는 그중 지금 남은 26개만 두고, 삭제한 홍보 영상 준비 스킬(5,039 → 3,283바이트)는 표와 합계에서 뺐습니다. 값은 frontmatter와 개행을 포함한 UTF-8 `SKILL.md` 전체 바이트입니다. 시험 fixture와 실험 보관본은 제외했습니다. 하위 문서로 옮긴 내용은 보존하며, 이 표는 저장소 용량이나 평균 호출 비용의 감소를 뜻하지 않습니다.
 
 | 스킬 | 변경 전 | 변경 후 | 감소 |
 |---|---:|---:|---:|
@@ -173,12 +172,11 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 | [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 6,458 | 3,473 | 2,985 |
 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 3,693 | 2,596 | 1,097 |
 | [repo-docs-note](docs/repo-docs-note/SKILL.md) | 3,141 | 2,352 | 789 |
-| [repo-docs-promo](docs/repo-docs-promo/SKILL.md) | 5,039 | 3,283 | 1,756 |
 | [repo-docs-readme](docs/repo-docs-readme/SKILL.md) | 12,684 | 11,218 | 1,466 |
 | [repo-docs-root](docs/repo-docs-root/SKILL.md) | 6,999 | 2,815 | 4,184 |
 | [repo-docs-spec](docs/repo-docs-spec/SKILL.md) | 7,736 | 1,941 | 5,795 |
 | [skill-sync](tools/skill-sync/SKILL.md) | 8,231 | 5,405 | 2,826 |
-| 합계 | 247,203 | 158,794 | 88,409 |
+| 합계 | 242,164 | 155,511 | 86,653 |
 
 기본 본문 합계는 35.8% 줄었습니다. 아래 조건에 해당하는 작업은 하위 문서를 추가로 읽습니다. 이미 읽은 정본은 같은 작업에서 중복 합산하지 않으며, 원본 변경 시 다시 확인합니다.
 
