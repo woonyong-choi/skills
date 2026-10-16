@@ -199,13 +199,13 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 
 ```sh
 python3 tools/skill-sync/scripts/skill_check.py .
-python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests
+python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests
 (cd docs/html-report/scripts && npm ci) && node --test docs/html-report/tests/*.test.mjs
 ```
 
 시험에는 pytest가 필요합니다. 그림 원본, 밝은·어두운 SVG와 재생성 명령은 [그림 재현 안내](docs/assets/README.md)에 있습니다.
 
-시험에는 pytest와 Node.js 22.12 이상이 필요합니다. HTML 보고서 생성 시험은 `docs/html-report/scripts`에서 `npm ci`를 실행한 뒤에만 돌고, 설치 전에는 건너뜁니다.
+시험에는 pytest와 Node.js 22.12 이상이 필요합니다. career PDF 컴파일 시험은 `typst`(명령 또는 Python 패키지)가 있을 때만 돕니다. HTML 보고서 생성 시험은 `docs/html-report/scripts`에서 `npm ci`를 실행한 뒤에만 돌고, 설치 전에는 건너뜁니다.
 
 ## 라이선스
 

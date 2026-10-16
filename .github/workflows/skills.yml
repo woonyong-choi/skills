@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install test dependencies
-        run: python3 -m pip install pytest==8.4.2
+        run: python3 -m pip install pytest==8.4.2 typst==0.15.0
       - name: Check skills
         run: python3 tools/skill-sync/scripts/skill_check.py .
       - name: Install skills for hook integration tests
@@ -28,7 +28,7 @@ jobs:
       - name: Run Python tests
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests
+        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests
       - name: Run hook tests with linked temp folder
         # macOS의 /var 링크와 같은 경로 형태에서 실패하는 시험을 Linux에서 잡는다
         env:
