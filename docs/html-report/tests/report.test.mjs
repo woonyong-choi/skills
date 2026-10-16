@@ -206,3 +206,29 @@ test('읽기 검토는 공급자마다 가장 저렴한 모델로 실행한다',
     rmSync(work, { recursive: true, force: true });
   }
 });
+
+// ---- 참고 구현 대조 후속: 정본 분할 버튼, 배지, 도표 높이 ----
+const RUNTIME = readFileSync(join(ROOT, 'assets', 'report.js'), 'utf8');
+const STYLE = readFileSync(join(ROOT, 'assets', 'report.css'), 'utf8');
+
+test('판정·필터·테마·결과 버튼은 정본 분할 버튼이고 전용 버튼 CSS가 없다', () => {
+  assert.match(RUNTIME, /app-tablist is-segmented/);
+  for (const [, selector, body] of STYLE.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (/(?:^|[\s,>(])button\b/.test(selector)) assert.doesNotMatch(body, /(?:^|;)\s*(?:color|background|border|padding|font)[\w-]*\s*:/, selector);
+  }
+  assert.doesNotMatch(STYLE + RUNTIME, /report-segmented|report-judge-choices|--color-state-on-active/);
+});
+
+test('후보 배지는 그림자, 격자 여백 보정, 고른 후보 테두리', () => {
+  const badge = STYLE.match(/\[data-mark\]::before\s*\{[^}]*\}/)?.[0] ?? '';
+  assert.match(badge, /box-shadow:\s*var\(--shadow-diagram\)/);
+  assert.match(STYLE, /\.app-figure-grid\s*\{[^}]*padding:[^}]*\}/);
+  assert.match(STYLE, /\.is-chosen[^{]*\{[^}]*outline:/);
+  assert.match(RUNTIME, /is-chosen/);
+});
+
+test('도표 높이는 문서 전체 높이로, 늦은 그리기와 창 크기 변경 뒤에도 다시 잰다', () => {
+  assert.match(RUNTIME, /documentElement\??\.scrollHeight/);
+  assert.match(RUNTIME, /addEventListener\('resize'/);
+  assert.match(RUNTIME, /setTimeout\(\s*\(\)\s*=>\s*fit/);
+});

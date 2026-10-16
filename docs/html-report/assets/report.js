@@ -109,6 +109,18 @@
     return element;
   }
 
+  // cost: time O(1), heap O(1), stack O(1)
+  // vars: 없음
+  // basis: estimate
+  /** 정본 분할 버튼 묶음(app-tablist is-segmented). 선택 모양은 디자인 저장소 CSS가 aria-pressed로 그림 */
+  function segmented(label) {
+    const group = document.createElement('div');
+    group.className = 'app-tablist is-segmented';
+    group.setAttribute('role', 'group');
+    group.setAttribute('aria-label', label);
+    return group;
+  }
+
   // ---- 테마 ----
   const frames = () => [...document.querySelectorAll('iframe[data-diagram]')];
   const theme = () => root.dataset.theme ?? 'system';
@@ -125,19 +137,21 @@
     if (save) write(THEME_KEY, mode);
     for (const item of document.querySelectorAll('[data-theme-choice]')) item.setAttribute('aria-pressed', String(item.dataset.themeChoice === mode));
     frames().forEach(sendTheme);
-    frames().forEach(fitSameOrigin);
+    fit();
   }
 
-  // ---- 도표 높이: 도표가 보내는 높이 메시지, 같은 출처면 문서 높이 직접 읽기 ----
-  // cost: time O(1), heap O(1), stack O(1)
-  // vars: 없음
+  // ---- 도표 높이: 도표가 보내는 높이 메시지, 같은 출처면 문서 전체 높이(여백 포함) 직접 읽기 ----
+  // cost: time O(f), heap O(1), stack O(1)
+  // vars: f = 도표 수
   // basis: estimate
-  function fitSameOrigin(frame) {
-    try {
-      const height = frame.contentDocument?.body?.getBoundingClientRect().height;
-      if (Number.isFinite(height) && height > 0) frame.height = String(Math.ceil(height));
-    } catch {
-      // 다른 출처(file:// 포함)는 높이 메시지로만 맞춤
+  function fit() {
+    for (const frame of frames()) {
+      try {
+        const height = frame.contentDocument?.documentElement?.scrollHeight;
+        if (Number.isFinite(height) && height > 0) frame.height = String(Math.ceil(height));
+      } catch {
+        // 다른 출처(file:// 포함)는 높이 메시지로만 맞춤
+      }
     }
   }
   addEventListener('message', (event) => {
@@ -150,17 +164,16 @@
   for (const frame of frames()) {
     frame.addEventListener('load', () => {
       sendTheme(frame);
-      fitSameOrigin(frame);
+      fit();
+      setTimeout(() => fit(), 500);
     });
   }
+  addEventListener('resize', fit);
 
   // ---- 상단 막대 ----
   const bar = document.querySelector('[data-report-bar]');
   const themeCell = bar.querySelector('[data-bar-theme]');
-  const themeGroup = document.createElement('div');
-  themeGroup.className = 'report-segmented';
-  themeGroup.setAttribute('role', 'group');
-  themeGroup.setAttribute('aria-label', '테마');
+  const themeGroup = segmented('테마');
   for (const [mode, label] of THEMES) {
     const item = button(label, { 'data-theme-choice': mode, 'aria-pressed': 'false' });
     item.addEventListener('click', () => applyTheme(mode, true));
@@ -182,10 +195,7 @@
   const progress = document.createElement('span');
   progress.className = 'report-progress';
   progress.setAttribute('role', 'status');
-  const filters = document.createElement('div');
-  filters.className = 'report-segmented';
-  filters.setAttribute('role', 'group');
-  filters.setAttribute('aria-label', '필터');
+  const filters = segmented('판정 필터');
   for (const [value, label] of FILTERS) {
     const item = button(label, { 'data-filter': value, 'aria-pressed': String(value === filter) });
     item.addEventListener('click', () => {
@@ -194,12 +204,14 @@
     });
     filters.append(item);
   }
-  const copy = button('결과 복사', { class: 'report-copy' });
+  const copy = button('결과 복사');
   copy.addEventListener('click', copyResult);
+  const actions = segmented('결과');
+  actions.append(copy);
   const scroller = document.createElement('div');
   scroller.className = 'report-bar-scroll';
   scroller.append(filters);
-  control.append(progress, scroller, copy);
+  control.append(progress, scroller, actions);
 
   const marks = report.kind === 'decision' ? LETTERS : ['전', '후'];
   for (const question of report.questions) {
@@ -210,10 +222,7 @@
     });
     const judge = document.createElement('div');
     judge.className = 'report-judge';
-    const row = document.createElement('div');
-    row.className = 'report-judge-choices';
-    row.setAttribute('role', 'group');
-    row.setAttribute('aria-label', `${question.title} 판정`);
+    const row = segmented(`${question.title} 판정`);
     for (const choice of choices(report.kind, question.figures)) {
       const item = button(choice, { 'data-choice': choice, 'aria-pressed': 'false' });
       item.addEventListener('click', () => {
@@ -252,6 +261,7 @@
       section.dataset.choice = category(choice);
       section.hidden = filter !== 'all' && category(choice) !== filter;
       for (const item of section.querySelectorAll('[data-choice]')) item.setAttribute('aria-pressed', String(item.dataset.choice === choice));
+      for (const item of section.querySelectorAll('.app-figure-grid-item[data-mark]')) item.classList.toggle('is-chosen', item.dataset.mark === choice);
     }
     progress.textContent = `${done}/${report.questions.length} 판정`;
     for (const item of filters.querySelectorAll('[data-filter]')) item.setAttribute('aria-pressed', String(item.dataset.filter === filter));
