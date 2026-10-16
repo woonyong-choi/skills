@@ -39,7 +39,7 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 `type/이슈번호-scope-설명`
 
 - 작은 후속 정리도 기존 이슈 번호 (git-issue 과업 연결과 기록)
-- type, scope: 커밋과 같은 단어 (git-commit type, scope). 브랜치 type은 커밋 type, 이슈 라벨과 별개(`build` 이슈의 기능 추가 → `feat`)
+- type, scope: 커밋과 같은 단어 (git-commit type, scope). 브랜치 type은 커밋 type, 이슈 종류와 별개(`build` 이슈의 기능 추가 → `feat`)
 - 설명: 영어 소문자 kebab-case, 2~5단어
 
 예 → 뜻:
@@ -52,7 +52,7 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 
 ## 시작 전 확인
 
-1. 착수 가능한 이슈 중 git-issue 우선순위 순서 확인
+1. 착수 가능한 이슈 중 git-issue 우선순위(판 순서) 확인
 2. `git fetch {원격} --prune`
 3. 이슈 작업이면 같은 이슈 번호 브랜치: `git branch -a --list "*/{번호}-*"`
 4. 이슈 작업이면 같은 이슈 번호 열린 PR: `gh pr list --state open --search "{번호} in:title,body"`
