@@ -1,0 +1,20 @@
+# type(scope): 결과 한 줄 (번호는 꼬리말에만)
+#
+# type  feat 기능 추가·변경 | fix 버그 수정 | refactor 구조만 | perf 속도·용량
+#       test 테스트만 | docs 문서만 | style 포맷만 | build 빌드·의존성
+#       ci CI 설정 | chore 잡무 | revert 되돌리기 (여럿이면 앞의 것)
+# scope 모듈 이름 또는 repo·deps·readme·docs·release 중 하나. 생략 불가
+# 설명  대상 + (조건·위치) + 끝말. 72자 이내, 마침표 없음
+#       끝말: 추가 제거 수정 변경 개선 분리 통합 이동 정리 갱신 적용 도입 되돌림
+#       호환성이 깨지면 type(scope)!:
+#
+# 본문 (빈 줄 다음, 개조식 명사 끝, 줄당 72자, 오타·포맷·의존성 갱신만 생략)
+# - 바꾼 이유
+# - 고르지 않은 방법과 이유
+# - 실행한 확인과 결과 숫자
+#
+# 꼬리말 (빈 줄 다음, 필수)
+# Closes: #번호 이 커밋으로 이슈 완료 / Refs: #번호 관련 이슈
+# BREAKING CHANGE: 쓰는 쪽이 바꿀 것 (! 를 붙였을 때)
+#
+# 금지: Co-Authored-By, Generated with, 세션 링크, 작성자 변경

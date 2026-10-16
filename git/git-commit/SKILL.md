@@ -11,51 +11,19 @@ description: "Git 커밋 메시지를 작성·검토하거나 변경을 나눠 �
 
 ## 형식
 
-```
-type(scope): 설명
-
-본문
-
-꼬리말
-```
-
-- 첫 줄 필수. type, scope는 영어 소문자, 설명은 기본 한글. 언어 변경은 머리의 우선순위 적용
-- 본문, 꼬리말 선택. 빈 줄로 구분, 설명과 같은 언어 정책 적용
+- 정본: [commit-template.txt](references/commit-template.txt). 채운 파일로 `git commit --cleanup=strip -F {파일}`(`#` 줄 삭제). squash 머지 메시지도 같은 방법
+- 설명·본문은 기본 한글, type·scope는 영어 소문자. 언어 변경은 머리의 우선순위 적용
 - 코드, 도구, 파일 이름: 원문 그대로 (`tokio`, `rustfmt`, `user_name`)
-- 커밋 형식·길이는 이 스킬 기준
-
-## type
-
-한 커밋에 type 하나. 여러 type이 맞으면 목록에서 먼저 나오는 것.
-
-type → 쓰는 때 → 예:
-
-- feat → 외부에서 보이는 기능·동작 추가·변경 → `feat(auth): 토큰 만료 시 자동 재발급 추가`
-- fix → 버그 수정 → `fix(parser): 빈 줄이 있을 때 목록이 끊기는 문제 수정`
-- refactor → 동작 그대로, 구조만 변경 → `refactor(store): 저장 로직을 트랜잭션 단위로 분리`
-- perf → 동작 그대로, 속도·용량 개선 → `perf(search): 색인 조회 캐시 적용`
-- test → 테스트만 → `test(queue): 동시 추가 시 순서 보장 테스트 추가`
-- docs → 문서만 → `docs(readme): 설치 방법 갱신`
-- style → 포맷·공백만 → `style(core): rustfmt 적용`
-- build → 빌드 설정·의존성 → `build(deps): {패키지} {선택한 버전}으로 갱신`
-- ci → CI 설정 → `ci(repo): 풀 리퀘스트마다 clippy 실행 추가`
-- chore → 위에 없는 잡무 → `chore(repo): 빌드 결과물 무시 목록 추가`
-- revert → 이전 커밋 되돌리기 → `revert(auth): 토큰 자동 재발급 추가 되돌림`
 
 ## scope
 
-한 커밋에 scope 하나. 생략 불가.
-
-1. 변경이 속한 패키지·crate 단위 모듈 이름, 프로젝트 접두사 제외: `{프로젝트}-core` → `core`, `{프로젝트}-protocol` → `protocol`
-2. 모듈 밖 변경이면 고정 단어: `repo`(저장소 전체 설정·여러 모듈에 걸친 구조), `deps`(의존성), `readme`, `docs`(docs 폴더, `AGENTS.md`, `llms.txt` 같은 루트 문서), `release`(버전·배포)
-
-- 모듈 안 하위 폴더, 파일, 클래스, 함수 이름 금지. 모듈 이름 사용
+- 변경이 속한 패키지·crate 단위 모듈 이름, 프로젝트 접두사 제외: `{프로젝트}-core` → `core`
+- 모듈 밖 변경: `repo`(저장소 전체 설정·여러 모듈에 걸친 구조), `deps`(의존성), `readme`, `docs`(docs 폴더, `AGENTS.md`, `llms.txt` 같은 루트 문서), `release`(버전·배포)
+- 모듈 안 하위 폴더, 파일, 클래스, 함수 이름 금지
 - 서로 독립된 변경이 여러 모듈에 있으면 모듈별로 커밋 분리. 이슈 단위 브랜치(git-branch)를 쓰는 저장소면 이슈부터 분리
 - 한 변경이 여러 모듈에 걸쳐 나눌 수 없으면 생성물·잠금 파일 제외 추가+삭제 줄 수가 가장 큰 모듈. 동률·공통 계약 변경·저장소 전반이면 `repo`
 
 ## 설명
-
-`대상 + (조건·위치) + 끝말`. 50자 이내, 마침표 없음. 끝말은 아래에서만.
 
 끝말 → 뜻:
 
@@ -77,18 +45,9 @@ type → 쓰는 때 → 예:
 - `수정`·`변경` 단독 금지. 대상 명시
 - 파일명 나열 금지
 
-## 본문
-
-- 설명만으로 이유·제약이 안 보일 때만
-- 줄당 72자 이내, 여러 항목은 `- `
-- 무엇을 왜 바꿨는지, 실제로 실행한 검증만
-
 ## 꼬리말
 
-꼬리말 → 쓰는 때:
-
-- `BREAKING CHANGE: 한글 설명` → 호환성 파괴. 첫 줄도 `type(scope)!:`
-- `Closes: #번호`·`Refs: #번호` → 이슈 연결. 선택 기준: (git-issue 닫기)
+- `Closes:`·`Refs:` 선택 기준: (git-issue 닫기). 이슈 생략 조건: (git-issue 과업 연결과 기록)
 
 ## 절차
 
@@ -105,6 +64,3 @@ type → 쓰는 때 → 예:
 - 커밋 요청을 push 요청으로 확대. PR 작업의 push 범위: (git-branch 작업 중)
 - 요청 없는 rebase·force push·과거 커밋 재작성
 
-## 예
-
-본문·꼬리말·호환성 파괴 메시지의 예를 대조할 때 [examples.md](references/examples.md) 필수 확인

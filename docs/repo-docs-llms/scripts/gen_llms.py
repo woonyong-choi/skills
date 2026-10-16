@@ -18,6 +18,11 @@ from pathlib import Path
 
 OPTIONAL_PREFIXES = ("experiments/", "decisions/")
 ROW = re.compile(r"\| \[(.+?)\]\((.+?)\) \| (.+?) \|$")
+# 분류별 목록의 문서 줄: 들여쓰기 0~3단계, `- [제목](경로): 답하는 것`. 분류 줄(링크 없음) 제외
+# 머리 뒤 소개 문단이 없는 README 틀(repo-docs-readme)의 소개 절
+INTRO_SECTIONS = ("Why", "해결하는 문제", "Problem and constraints", "문제와 제약")
+IMAGE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
+ITEM = re.compile(r"^(?: {2}){0,3}- \[(.+?)\]\((.+?)\): (.+)$")
 LANGUAGE_LINE = re.compile(r"\|.*README[\w.-]*\.md|README[\w.-]*\.md.*\|")
 FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,}).*?^[ \t]*\1[ \t]*$\n?", re.MULTILINE | re.DOTALL)
 LINK = re.compile(r"\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)|!?\[[^\]]*\]\([^)]*\)|<a\b[^>]*>.*?</a>", re.IGNORECASE)
@@ -58,8 +63,17 @@ def link_only(line: str) -> bool:
     return not re.sub(r"[\s·|/•–-]", "", rest)
 
 
+def section_intro(blocks: list[str]) -> list[str]:
+    """소개 절(INTRO_SECTIONS) 바로 아래 첫 문단. 없으면 빈 목록"""
+    for index, block in enumerate(blocks[:-1]):
+        if block.startswith("## ") and block[3:].strip() in INTRO_SECTIONS:
+            following = blocks[index + 1]
+            return [] if following.startswith("#") else [" ".join(line.strip() for line in following.splitlines())]
+    return []
+
+
 # cost: time O(c), heap O(r), stack O(1), io 1
-# vars: c = docs/README.md 글자 수, r = 문서 표 행 수
+# vars: c = docs/README.md 글자 수, r = 문서 줄 수
 # basis: estimate
 def read_rows() -> list[tuple[str, str, str]]:
     rows = []
@@ -68,7 +82,8 @@ def read_rows() -> list[tuple[str, str, str]]:
         if line.startswith("```"):
             in_fence = not in_fence
             continue
-        match = None if in_fence else ROW.match(line.rstrip("\n"))
+        text = line.rstrip("\n")
+        match = None if in_fence else ROW.match(text) or ITEM.match(text)
         if match:
             rows.append(match.groups())
     return rows
@@ -106,7 +121,7 @@ def is_public(root: Path, relative: str, private_dirs: tuple[str, ...] = (".loca
 
 
 # cost: time O(t), heap O(t), stack O(1), io O(n)
-# vars: t = README와 표 문서 글자 수 합, n = 표 행 수
+# vars: t = README와 목록 문서 글자 수 합, n = 문서 줄 수
 # basis: estimate
 def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url: str | None = None, private_dirs: tuple[str, ...] = (".local", "archive")) -> int:
     raw = raw_base_url(remote, branch, raw_url)
@@ -122,9 +137,12 @@ def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url:
     blocks = [block.strip() for block in re.split(r"\n\s*\n", readme) if block.strip()]
     heading = re.search(r"<h1[^>]*>(.*?)</h1>|^# ([^\n]+)$", readme, re.MULTILINE | re.DOTALL)
     texts = []
-    for block in blocks:
+    for index, block in enumerate(blocks):
         if block.startswith("## "):
+            if len(texts) == 1:
+                texts.extend(section_intro(blocks[index:]))
             break
+        block = IMAGE.sub("", block).strip()
         # 제목 줄만 지우고 같은 블록의 한 줄 소개는 유지
         block = re.sub(r"<h1[^>]*>.*?</h1>|^#{1,6} [^\n]*$", "", block, flags=re.MULTILINE | re.DOTALL).strip()
         if block.startswith(">"):

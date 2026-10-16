@@ -9,6 +9,8 @@ import argparse
 import json
 import re
 import subprocess
+import time
+from datetime import datetime
 from collections.abc import Callable
 from typing import Any, NoReturn, Optional
 
@@ -23,6 +25,12 @@ STATE_COLORS = {
     "선택 필요": "RED",
 }
 PAGE = "pageInfo { hasNextPage endCursor }"
+HOLD_DAYS = 30
+CHECKPOINT_MARKER = "<!-- work-checkpoint-v1 -->"
+ITEM_FIELDS = (
+    'fieldValueByName(name:"Status"){... on ProjectV2ItemFieldSingleSelectValue{name updatedAt}}'
+    ' hold: fieldValueByName(name:"보류 사유"){... on ProjectV2ItemFieldTextValue{text}}'
+)
 Gh = Callable[[list[str], Optional[str]], dict[str, Any]]
 
 
@@ -89,6 +97,7 @@ class ProjectStatus:
             if args.command == "check"
             else []
         )
+        attention = 0
         plans: list[
             tuple[
                 dict[str, Any],
@@ -107,6 +116,8 @@ class ProjectStatus:
                 if args.command == "set"
                 else self._mismatches(project, issues, items)
             )
+            if args.command == "check":
+                attention += self._attention(project, issues, items, time.time())
             if args.command == "set" or args.fix:
                 for _, status in changes:
                     self._option(field, status, project)
@@ -134,8 +145,8 @@ class ProjectStatus:
                 for value, status, item in item_changes:
                     self._set(project, field, value, status, item)
         if args.command == "check":
-            print(f"불일치 {count}개" + ("; 수정 완료" if args.fix and count else ""))
-            return 1 if count and not args.fix else 0
+            print(f"불일치 {count}개" + ("; 수정 완료" if args.fix and count else "") + (f", 주의 {attention}개(자동 변경 없음)" if attention else ""))
+            return 1 if (count and not args.fix) or attention else 0
         return 0
 
     def _query(self, query: str, variables: dict[str, Any]) -> dict[str, Any]:
@@ -200,7 +211,7 @@ class ProjectStatus:
         data = self._query(
             "query($owner:String!,$name:String!,$number:Int!){"
             "repository(owner:$owner,name:$name){issueOrPullRequest(number:$number){"
-            "... on Issue{id number state} ... on PullRequest{id number state}}}}",
+            "... on Issue{id number state comments(last:30){nodes{body}}} ... on PullRequest{id number state}}}}",
             {**self.repository, "number": number},
         )
         content = (data.get("repository") or {}).get("issueOrPullRequest")
@@ -210,7 +221,7 @@ class ProjectStatus:
 
     def _issues(self) -> list[dict[str, Any]]:
         return self._pages(
-            "query($owner:String!,$name:String!,$cursor:String){repository(owner:$owner,name:$name){issues(first:100,after:$cursor){nodes{id number state}"
+            "query($owner:String!,$name:String!,$cursor:String){repository(owner:$owner,name:$name){issues(first:100,after:$cursor){nodes{id number state comments(last:30){nodes{body}}}"
             + PAGE
             + "}}}",
             self.repository,
@@ -222,7 +233,7 @@ class ProjectStatus:
         self, project: dict[str, Any], content: dict[str, Any] | None = None
     ) -> dict[str, dict[str, Any]]:
         if content:
-            selection = 'projectItems(first:100){nodes{id project{id} fieldValueByName(name:"Status"){... on ProjectV2ItemFieldSingleSelectValue{name}}} pageInfo{hasNextPage}}'
+            selection = "projectItems(first:100){nodes{id project{id} " + ITEM_FIELDS + "} pageInfo{hasNextPage}}"
             data = self._query(
                 "query($id:ID!){node(id:$id){... on Issue{"
                 + selection
@@ -242,8 +253,7 @@ class ProjectStatus:
             project,
             "items",
             "id content{... on Issue{id number state repository{nameWithOwner}}"
-            "... on PullRequest{id number repository{nameWithOwner}}}"
-            'fieldValueByName(name:"Status"){... on ProjectV2ItemFieldSingleSelectValue{name}}',
+            "... on PullRequest{id number repository{nameWithOwner}}} " + ITEM_FIELDS,
         )
         return {
             item["content"]["id"]: item
@@ -288,6 +298,52 @@ class ProjectStatus:
                 )
                 changes.append((issue, target))
         return changes
+
+    # cost: time O(n + c), heap O(c), stack O(1)
+    # vars: n = 이슈 수, c = 이슈별 최근 댓글 바이트
+    # basis: estimate
+    def _attention(
+        self,
+        project: dict[str, Any],
+        issues: list[dict[str, Any]],
+        items: dict[str, Any],
+        now: float,
+    ) -> int:
+        """상태표의 머무는 조건 위반 출력. 상태 변경 없음"""
+        found = 0
+        for issue in issues:
+            if issue.get("state") != "OPEN":
+                continue
+            item = items.get(issue["id"])
+            status = self._status(item)
+            reasons = []
+            if status == self.states["진행"] and not self._has_next(issue):
+                reasons.append("진행인데 작업 기록 다음 행동 없음")
+            if status == self.states["보류"]:
+                if "재개 조건" not in ((item or {}).get("hold") or {}).get("text", ""):
+                    reasons.append("보류인데 재개 조건 없음")
+                stamp = ((item or {}).get("fieldValueByName") or {}).get("updatedAt")
+                if stamp and now - datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp() >= HOLD_DAYS * 86400:
+                    reasons.append(f"보류 {HOLD_DAYS}일 이상: 사용자에게 계속·취소 확인")
+            for reason in reasons:
+                print(f"프로젝트 {project['number']} #{issue['number']}: 주의 {reason}")
+            found += len(reasons)
+        return found
+
+    @staticmethod
+    def _has_next(issue: dict[str, Any]) -> bool:
+        """최근 체크포인트 댓글 복구 데이터의 next 유무"""
+        for comment in reversed((issue.get("comments") or {}).get("nodes") or []):
+            body = (comment or {}).get("body") or ""
+            if not body.startswith(CHECKPOINT_MARKER):
+                continue
+            match = re.search(r"```json\n(.*?)\n```", body, re.S)
+            try:
+                record = json.loads(match.group(1)) if match else {}
+            except ValueError:
+                return False
+            return bool(str((record.get("data") or {}).get("next", "")).strip())
+        return False
 
     # cost: time O(n), heap O(n), stack O(1), io 3
     # vars: n = Status 선택지 수
