@@ -37,61 +37,6 @@ def session_tasks(root: Path, session: object) -> list[Path]:
     ]
 
 
-# cost: time O(1), heap O(1), stack O(1), io 1
-# basis: estimate
-def pane_identity(pane: str) -> str | None:
-    """tmux가 알려주는 실제 pane·프로세스·창 식별자. 확인할 수 없으면 None"""
-    try:
-        done = subprocess.run(
-            [
-                "tmux",
-                "display-message",
-                "-p",
-                "-t",
-                pane,
-                "#{pane_id}|#{pane_pid}|#{window_id}",
-            ],
-            capture_output=True,
-            text=True,
-            timeout=project_context.time_budget(2),
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    return done.stdout.strip() if done.returncode == 0 else None
-
-
-def managed_window(
-    root: Path, host: str | None = None
-) -> tuple[Path, dict[str, Any]] | None:
-    """환경이 가리키는 관리 창의 home과 기록. 기록된 pane·identity·host가 현재 tmux의 실제 값과 같을 때만 신뢰한다."""
-    window = os.environ.get("ISSUE_CONTINUITY_WINDOW")
-    pane = os.environ.get("TMUX_PANE")
-    if not window or not pane:
-        return None
-    home = Path(window)
-    if home.parent.resolve() != root.resolve():
-        return None
-    state = core.read(home / "window.json")
-    if state.get("pane") != pane or not state.get("identity"):
-        return None
-    if host is not None and state.get("host") != host:
-        return None
-    return (home, state) if pane_identity(pane) == state["identity"] else None
-
-
-def window_task(root: Path, host: str | None = None) -> Path | None:
-    """검증된 관리 창이 현재 따라가는 task. 창이 시작한 cwd와 task의 작업본이 달라도 창 기록을 따른다."""
-    window = managed_window(root, host)
-    active = window[1].get("active_task") if window else None
-    if not isinstance(active, str):
-        return None
-    try:
-        candidate = core.task_path(root, active)
-    except core.ContinuityError:
-        return None
-    return candidate if core.read(candidate / "binding.json") else None
-
-
 def hinted_task(root: Path, repo: str) -> Path | None:
     """ISSUE_CONTINUITY_TASK 힌트. 명시 session bind를 덮지 않으며 작업본 일치만 검증"""
     explicit = os.environ.get("ISSUE_CONTINUITY_TASK")
@@ -103,18 +48,11 @@ def hinted_task(root: Path, repo: str) -> Path | None:
     )
 
 
-def find_task(
-    root: Path, payload: dict[str, Any], host: str | None = None
-) -> Path | None:
-    """session 명시 bind가 최우선이다. 둘 이상이면 선택하지 않고, 미등록일 때만 검증된 fallback을 쓴다.
-
-    관리 창 안(ISSUE_CONTINUITY_WINDOW)이면 창 기록을 검증해 활성 task를 따르고, 검증 실패는 다른 후보를 찾지 않고 중단한다.
-    """
+def find_task(root: Path, payload: dict[str, Any]) -> Path | None:
+    """session 명시 bind가 최우선이다. 둘 이상이면 선택하지 않고, 미등록일 때만 검증된 fallback을 쓴다."""
     bound = session_tasks(root, payload.get("session_id"))
     if bound:
         return bound[0] if len(bound) == 1 else None
-    if os.environ.get("ISSUE_CONTINUITY_WINDOW"):
-        return window_task(root, host)
     cwd = payload.get("cwd")
     if not cwd:
         return None
@@ -130,114 +68,6 @@ def find_task(
         if core.read(p).get("repo") == repo
     ]
     return candidates[0] if len(candidates) == 1 else None
-
-
-def link_session(root: Path, folder: Path, session: str) -> None:
-    """binding의 session_ids에만 session을 추가한다. 다른 task에 이미 있으면 거절하고 기존 연결은 보존한다."""
-    with core.locked(root):
-        for other in session_tasks(root, session):
-            if other != folder:
-                raise core.ContinuityError("session already bound to " + other.name)
-        path = folder / "binding.json"
-        binding = core.read(path)
-        if not binding:
-            raise core.ContinuityError("binding missing")
-        if session not in binding.get("session_ids", []):
-            binding["session_ids"] = sorted({*binding.get("session_ids", []), session})
-            core.save(path, binding)
-
-
-def adopt_new_session(
-    root: Path, folder: Path, payload: dict[str, Any], host: str
-) -> str:
-    """제어기가 clear 중인 관리 창의 새 session만 활성 task에 연결한다. 연결 실패 사유를 돌려준다.
-
-    창 안에서 따로 시작한 session(하위 CLI 등)은 clear 단계가 아니면 연결하지 않는다.
-    """
-    session = payload.get("session_id")
-    binding = core.read(folder / "binding.json")
-    if not isinstance(session, str) or session in binding.get("session_ids", []):
-        return ""
-    window = managed_window(root, host)
-    if window is None or window_task(root, host) != folder:
-        return ""
-    state = window[1]
-    if state.get("phase") != "clearing" or state.get("old_session") not in binding.get(
-        "session_ids", []
-    ):
-        return ""
-    try:
-        link_session(root, folder, session)
-    except core.ContinuityError as error:
-        return str(error)
-    return ""
-
-
-METER_RECORD_MAX_AGE_SECONDS = 6 * 60 * 60
-
-
-# cost: time O(1), heap O(1), stack O(1), io 3
-# basis: estimate
-def record_session(root: Path, folder: Path, payload: dict[str, Any], host: str) -> None:
-    """transcript 사용량 어댑터(HOSTS[host].context)가 있는 호스트의 검증된 관리 창에서, 현재 session의 유일한 명시 bind가 folder일 때만 session ID와 transcript 경로를 창 home의 meter.json에 남긴다.
-
-    창의 active_task가 없거나 낡았어도 기록한다. window.json은 쓰지 않고 관리기가 이 session의 bind를 따라 active_task를 갱신한다. 본문은 읽지 않는다.
-    """
-    if core.HOSTS[host].context is None:
-        return  # status line이 사용량을 기록하는 호스트
-    session = payload.get("session_id")
-    path = payload.get("transcript_path")
-    window = managed_window(root, host)
-    if window is None or not isinstance(session, str) or not session:
-        return
-    home = window[0]
-    if session_tasks(root, session) != [folder]:
-        return  # 미등록·중복 bind는 session을 확정할 수 없다
-    record = {
-        "host": host,
-        "session_id": session,
-        "transcript_path": path if isinstance(path, str) and path else None,
-        "percent": None,
-        "at": time.time(),
-    }
-    try:
-        with core.locked(home):
-            core.save(home / "meter.json", record)
-    except (OSError, ValueError, core.ContinuityError) as error:
-        # 기록 실패가 훅 응답을 막지 않게 한다. 사용량은 unknown으로 남는다.
-        print(f"Developer Thinking hook: {host} session record skipped: {error}", file=sys.stderr)
-
-
-def meter_record(home: Path, host: str, now: float) -> tuple[str, Path] | None:
-    """meter.json의 최근 host session 기록. 형식·최근성이 틀리면 None. session ID 형식은 어댑터가 검증"""
-    try:
-        meter = core.read(home / "meter.json")
-    except (OSError, ValueError):
-        return None  # 깨진 기록은 session도 사용량도 알 수 없다
-    session, path, at = (
-        meter.get("session_id"),
-        meter.get("transcript_path"),
-        meter.get("at"),
-    )
-    if meter.get("host") != host or not isinstance(path, str) or not path:
-        return None
-    if not isinstance(session, str) or not session:
-        return None
-    if not isinstance(at, (int, float)) or isinstance(at, bool):
-        return None
-    fresh = -core.CODEX_CLOCK_SKEW_SECONDS <= now - at <= METER_RECORD_MAX_AGE_SECONDS
-    return (session, Path(path)) if fresh else None
-
-
-# cost: time O(t), heap O(t), stack O(1), io 4
-# vars: t = continuity.TRANSCRIPT_TAIL_BYTES
-# basis: estimate
-def host_meter(home: Path, host: str, now: float | None = None) -> tuple[float | None, str | None]:
-    """창 home meter.json의 최근 session으로 계산한 (사용량 %, 검증한 session ID). 판독 정본: continuity HOSTS[host].context"""
-    adapter = core.HOSTS[host].context
-    now = time.time() if now is None else now
-    record = meter_record(home, host, now) if adapter else None
-    return adapter(record[1], record[0], now) if record else (None, None)
 
 
 def response(event: str, text: str) -> dict[str, Any]:
@@ -437,7 +267,7 @@ def handle(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
 # basis: estimate
 def _handle(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
     if payload.get("hook_event_name") == "PreToolUse":
-        folder = find_task(root, payload, host)
+        folder = find_task(root, payload)
         project = Path(core.read(folder / "binding.json")["repo"]) if folder else None
         guarded = document_guard.check_tool(payload, project)
         return guarded or _rule_gate(host, payload, root)
@@ -466,12 +296,7 @@ def _handle(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
 # basis: estimate
 def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
     event = payload.get("hook_event_name", "")
-    folder = find_task(root, payload, host)
-    link_error = ""
-    if folder is not None and event == "SessionStart":
-        link_error = adopt_new_session(root, folder, payload, host)
-    if folder is not None:
-        record_session(root, folder, payload, host)
+    folder = find_task(root, payload)
     if event == "SessionEnd":
         drop_prompt(root, host, payload)
     if folder is None:
@@ -543,8 +368,6 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
                 + context(folder, binding)
                 + persisted_notice(folder, state)
             )
-            if link_error:
-                text += f" 새 session을 현재 task에 연결하지 못했습니다: {link_error}. 자동 연결·재개 입력을 하지 말고 bind 상태를 확인하세요."
         elif event == "UserPromptSubmit":
             state["prompt_at"] = time.time_ns()
             prompt = payload.get("prompt")
@@ -588,8 +411,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
                     "at": time.time_ns(),
                     "sync": "--sync" in command.split(),
                 }
-            window = managed_window(root, host)
-            meter = core.read((window[0] if window else folder) / "meter.json")
+            meter = core.read(folder / "meter.json")
             percent = (
                 meter.get("percent")
                 if meter.get("session_id") == session
@@ -605,7 +427,7 @@ def handle_continuity(host: str, payload: dict[str, Any], root: Path) -> dict[st
             )
             if band > state.get("notified", 0):
                 state["notified"] = band
-                text = f"현재 문맥 사용량 {percent}%. 다음 안전한 작업 경계에서 목표·제약·계획·가설·처리·결과·다음을 checkpoint에 저장. 80% 이상이면 새 작업보다 미저장 기록 정리를 우선. checkpoint --sync 후 같은 채팅에서 계속. 이 훅은 초기화·압축·재시작을 요청하지 않음. 지원 여부를 검증한 CLI 초기화는 별도 창 실행기만 담당."
+                text = f"현재 문맥 사용량 {percent}%. 다음 안전한 작업 경계에서 목표·제약·계획·가설·처리·결과·다음을 checkpoint에 저장. 80% 이상이면 새 작업보다 미저장 기록 정리를 우선. checkpoint --sync 후 남은 범위는 새 서브에이전트에 인계. 이 훅은 초기화·압축·재시작을 요청하지 않음."
         elif event == "PreCompact":
             if payload.get("permission_mode") not in ("plan", "planMode"):
                 try:
@@ -802,7 +624,7 @@ def _developer_rules() -> str:
 # vars: b = 도구 출력·필수 원문 바이트, f = 선택 파일 수
 # basis: estimate
 def _rule_gate(host: str, payload: dict[str, Any], root: Path) -> dict[str, Any]:
-    folder = find_task(root, payload, host)
+    folder = find_task(root, payload)
     session = payload.get("session_id")
     event = payload.get("hook_event_name")
     if folder is None or not isinstance(session, str) or not session:

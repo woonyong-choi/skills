@@ -187,7 +187,7 @@ def _check_installed_rule_hooks(skills: Path, root: Path) -> None:
     # #58: 시작·압축 복구마다 정본 한 번, 미저장 checkpoint는 본문 재주입 사유가 아니다.
     hook = skills / 'git-issue/scripts/continuity_hook.py'
     root_rules = (skills / 'developer-thinking/SKILL.md').read_text()
-    env = {**os.environ, 'ISSUE_CONTINUITY_ROOT': str(root), 'ISSUE_CONTINUITY_TASK': '', 'ISSUE_CONTINUITY_WINDOW': ''}
+    env = {**os.environ, 'ISSUE_CONTINUITY_ROOT': str(root), 'ISSUE_CONTINUITY_TASK': ''}
     folder = root / 'rule-entry'
     folder.mkdir(parents=True, exist_ok=True)
     for host in ('claude', 'codex'):

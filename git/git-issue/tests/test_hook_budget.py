@@ -21,7 +21,6 @@ sys.path.insert(0, str(SCRIPTS))
 
 import continuity as core  # noqa: E402
 import continuity_hook as hook  # noqa: E402
-import continuity_window as window  # noqa: E402
 import document_guard as guard  # noqa: E402
 import hook_entry  # noqa: E402
 import project_context as context  # noqa: E402
@@ -39,7 +38,7 @@ class TemporaryCase(unittest.TestCase):
         environ = mock.patch.dict(os.environ, {"WORK_CONTINUITY_CONFIG_DIR": str(self.base / "configuration")})
         environ.start()
         self.addCleanup(environ.stop)
-        for key in ("ISSUE_CONTINUITY_ROOT", "ISSUE_CONTINUITY_TASK", "ISSUE_CONTINUITY_WINDOW", "WORK_CONTINUITY_DEADLINE"):
+        for key in ("ISSUE_CONTINUITY_ROOT", "ISSUE_CONTINUITY_TASK", "WORK_CONTINUITY_DEADLINE"):
             os.environ.pop(key, None)
 
     def denied(self, result: dict) -> bool:
@@ -47,7 +46,7 @@ class TemporaryCase(unittest.TestCase):
 
 
 class RecordRootTest(TemporaryCase):
-    """기록 루트는 ISSUE_CONTINUITY_ROOT 하나로 정하고 CLI·훅·창 실행기가 같은 값을 쓴다."""
+    """기록 루트는 ISSUE_CONTINUITY_ROOT 하나로 정하고 CLI·훅·status line이 같은 값을 쓴다."""
 
     def test_cli_default_root_follows_environment(self) -> None:
         root = self.base / "records"
@@ -64,7 +63,6 @@ class RecordRootTest(TemporaryCase):
     def test_every_reader_uses_one_root_function(self) -> None:
         os.environ["ISSUE_CONTINUITY_ROOT"] = str(self.base / "elsewhere")
         self.assertEqual(core.default_root(), self.base / "elsewhere")
-        self.assertEqual(window.root(), self.base / "elsewhere")
         del os.environ["ISSUE_CONTINUITY_ROOT"]
         vault = self.base / "vault"
         vault.mkdir()
@@ -87,7 +85,7 @@ class RecordRootTest(TemporaryCase):
                 os.environ.pop("WOON_KNOWLEDGE_ROOT", None)
             else:
                 os.environ["WOON_KNOWLEDGE_ROOT"] = old
-        for name in ("continuity_hook.py", "continuity_window.py", "continuity_statusline.py"):
+        for name in ("continuity_hook.py", "continuity_statusline.py"):
             self.assertNotIn("ISSUE_CONTINUITY_ROOT", (SCRIPTS / name).read_text(), name)
 
 
@@ -211,21 +209,11 @@ class TimeBudgetTest(TemporaryCase):
 
 
 class HostAdapterTest(TemporaryCase):
-    """세션 사용량 기록은 HOSTS 어댑터의 context 유무로만 분기한다."""
+    """호스트 차이는 HOSTS 어댑터에서만 처리하고 훅은 호스트 이름으로 분기하지 않는다."""
 
     def test_hook_has_no_host_name_branch(self) -> None:
         source = (SCRIPTS / "continuity_hook.py").read_text()
         self.assertIsNone(re.search(r"host\s*==\s*\"(?:claude|codex)\"|\"codex\"", source))
-        self.assertIsNone(re.search(r"host\s*==\s*\"(?:claude|codex)\"", (SCRIPTS / "continuity_window.py").read_text().split("def usage", 1)[1].split("\ndef ", 1)[0]))
-
-    def test_meter_uses_adapter_context(self) -> None:
-        home = self.base / "home"
-        core.save(home / "meter.json", {"host": "claude", "session_id": SESSION, "transcript_path": "/x", "at": time.time()})
-        self.assertEqual(hook.host_meter(home, "claude"), (None, None))
-        fake = core.HOSTS["claude"]._replace(context=lambda path, session, now: (42.0, session))
-        with mock.patch.dict(core.HOSTS, {"claude": fake}):
-            self.assertEqual(hook.host_meter(home, "claude"), (42.0, SESSION))
-            self.assertEqual(hook.host_meter(home, "codex"), (None, None), "other host record")
 
 
 class GuardEdgeTest(TemporaryCase):

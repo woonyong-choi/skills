@@ -162,7 +162,7 @@ def test_hook_records_without_reset_or_read_only_stop(host: str) -> None:
             json.dumps({"session_id": session, "percent": 80, "at": time.time()})
         )
         text = invoke("PostToolUse")["hookSpecificOutput"]["additionalContext"]
-        assert "같은 채팅에서 계속" in text
+        assert "새 서브에이전트에 인계" in text
         assert "/clear" not in text and "/compact" not in text
         assert invoke("PostToolUse") == {}
         restored = subprocess.run(
