@@ -1,21 +1,21 @@
-### Feature
+### 기능 개발
 
-**You own the design. Plan, review, verify.** Delegate implementation. Stay in the lead.
+**설계는 내가 책임진다. 계획하고, 검토하고, 검증한다.** 구현은 맡기고 주도권은 내가 쥔다.
 
-1. `how` over the affected subsystem.
-2. `architect` for parallel design exploration.
-3. Write the throughput checkpoint as four todo items. A dimension that genuinely does not apply (single file, no fan-out) keeps its item with `n/a: <reason>` rather than being dropped:
-   - **Blocking first steps.** Gates run before fan-out.
-   - **Independent workstreams.** Disjoint files, services, or layers parallelize. Shared writes serialize.
-   - **Shared mutable state.** Default to splitting the target (the **separate-before-serializing-shared-state** principle skill). Serialize only for real invariants.
-   - **Smallest safe decomposition.** If one worker is best, name why.
-4. Delegate code-writing to a subagent using your configured feature model (default `grok-4.7-xhigh-fast`) with a specific scope (file paths, named data shape and its organizing structure per **principle-model-the-domain**, a state machine over scattered booleans, a table/registry over branching, a typed model over repeated shape assumptions, chosen before the delegate writes logic, and success criteria). Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section. When the implementation admits multiple valid shapes (error handling, abstraction layer, test structure), delegate via the **arena** skill instead so the runners surface the alternatives and the cross-judge guards the pick. Mandatory: no skip-with-reason escape, and Laziness Protocol does not override it (the gain is review separation, not lines saved). A subagent forbidden to spawn satisfies this by owning the diff directly with the same review separation. No "standing by" reply that waits on a nested agent. Comments per **Comments**. Surgical edits, re-ground against the source for upstream-derived files. Port shared-primitive improvements to all consumers and verify each. Commit liberally.
-5. Verify on the matching surface. "Inconclusive" or wrong-surface is not a pass. Flag it.
-6. Rebase into small, ordered commits. Stack follow-ups.
-   Use the **sequence-verifiable-units** principle skill, building, verifying, and committing each small unit before the next.
-7. If the design is contested, `interrogate` before shipping.
-8. Run **Opening a PR**.
+1. 영향받는 하위 시스템에 `how`를 돌린다.
+2. 병렬 설계 탐색에 `architect`를 돌린다.
+3. 처리량 체크포인트를 할 일 항목 네 개로 적는다. 정말로 해당하지 않는 항목(파일 하나, 병렬 분배 없음)도 빼지 않고 `n/a: <이유>`로 남긴다.
+   - **먼저 막아야 하는 단계.** 병렬 분배 전에 관문을 돌린다.
+   - **독립 작업 줄기.** 겹치지 않는 파일, 서비스, 계층은 병렬로 한다. 같은 곳에 쓰는 작업은 직렬로 한다.
+   - **공유 가변 상태.** 기본은 대상을 쪼개는 것이다(**separate-before-serializing-shared-state** 원칙 스킬). 진짜 불변 조건이 있을 때만 직렬로 한다.
+   - **가장 작은 안전한 분해.** 작업자 하나가 최선이면 이유를 적는다.
+4. 코드 작성은 `code` 역할 모델([역할별 모델](../references/models.md))의 서브에이전트에게 구체적인 범위와 함께 맡긴다. 범위에는 파일 경로, 이름 붙인 데이터 모양과 그 구성 구조(**principle-model-the-domain**에 따름. 흩어진 boolean 대신 상태 기계, 분기 대신 표·등록부, 반복되는 모양 가정 대신 타입 모델. 맡은 쪽이 로직을 쓰기 전에 정해 둔다), 성공 기준을 넣는다. 서브에이전트마다 일에 맞는 역할과 추론 수준을 SKILL.md의 서브에이전트 절과 [역할별 모델](../references/models.md)에 따라 고른다. 구현에 올바른 모양이 여럿 있을 수 있으면(오류 처리, 추상화 계층, 테스트 구조) **arena** 스킬로 맡겨서, 실행자들이 대안을 드러내고 교차 심사가 선택을 지키게 한다. 필수다. 이유를 대고 건너뛰는 탈출구는 없고, laziness-protocol 원칙도 이것을 뒤집지 않는다(얻는 것은 줄 수 절약이 아니라 리뷰 분리다). 서브에이전트를 띄울 수 없는 서브에이전트는 같은 리뷰 분리를 지키며 diff를 직접 맡아 이 요구를 채운다. 중첩 에이전트를 기다리며 "대기 중"이라고만 답하지 않는다. 주석은 SKILL.md의 **주석** 절을 따른다. 수정은 꼭 필요한 곳만 하고, 상류에서 온 파일은 원본에 다시 맞춘다. 공유 기본 부품을 개선하면 모든 사용처에 옮기고 각각 검증한다. 커밋은 자주 한다.
+5. 맞는 화면에서 검증한다. "결론 없음"이나 다른 화면에서의 확인은 통과가 아니다. 표시해 둔다.
+6. 작고 순서 있는 커밋으로 리베이스한다. 후속 작업은 스택으로 쌓는다.
+   **sequence-verifiable-units** 원칙 스킬에 따라 작은 단위마다 만들고, 검증하고, 커밋한 뒤 다음으로 넘어간다.
+7. 설계에 이견이 있으면 배포 전에 `interrogate`를 돌린다.
+8. **PR 열기**를 실행한다.
 
-Code-coupled work (one feature, one migration) goes to a single owner with the checkpoint inline. That owner fans out internally after the blocking phase. Parent-level fan-out is for slices that produce independent artifacts (audits, cross-subsystem investigations, competing experiments). Rewrite the checkpoint at phase boundaries. Spawn a fresh owner rather than chaining interrupts.
+코드로 얽힌 작업(기능 하나, 마이그레이션 하나)은 체크포인트를 품은 담당자 하나에게 간다. 그 담당자가 막는 단계 뒤에 안에서 병렬 분배한다. 부모 수준의 병렬 분배는 서로 독립된 산출물을 내는 조각(감사, 여러 하위 시스템에 걸친 조사, 경쟁하는 실험)에 쓴다. 단계 경계마다 체크포인트를 다시 쓴다. 중단을 이어 붙이지 말고 새 담당자를 띄운다.
 
-**Reply:** what you built, what you chose and why, the throughput checkpoint, open decisions. Tables for design alternatives.
+**답변:** 만든 것, 고른 것과 이유, 처리량 체크포인트, 열린 결정. 설계 대안은 표로.

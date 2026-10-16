@@ -1,11 +1,11 @@
-### Visual parity
+### 화면 동등성
 
-**You own pixel-exact equivalence. The baseline is the spec. You do not touch it.** Equivalence is verified by image diff, not by eye.
+**픽셀 단위 동등성을 맡는다. 기준 화면이 명세다. 기준 화면은 건드리지 않는다.** 동등성은 눈이 아니라 이미지 비교로 검증한다.
 
-1. Establish the baseline first, before any migration: a visual regression harness that screenshots the current component across its states, plus the target when matching two implementations. No baseline, no parity claim. A blocking prerequisite, not a follow-up.
-2. Anti-shortcut clauses, stated and held: no harness modifications, no baseline tampering, no component restructuring to make a diff pass. If the baseline looks wrong, stop and ask, don't edit it.
-3. Migrate one component at a time. Parallelize across worktrees, one owner per component (the **separate-before-serializing-shared-state** principle skill). Shared primitives migrate first as a blocking phase.
-4. Verify each component against its baseline via image diff on the matching surface via the control skill. A nonzero diff is a fail. Investigate the pixel delta. `/loop` per component until the diff is zero.
-5. Run **Opening a PR** per component or per safe batch.
+1. 옮기기 전에 기준 화면부터 세운다. 현재 컴포넌트를 상태별로 스크린샷 찍는 화면 회귀 하네스를 두고, 두 구현을 맞추는 일이면 목표 쪽도 찍는다. 기준 화면이 없으면 동등하다고 주장하지 않는다. 후속 작업이 아니라 막는 선행 조건이다.
+2. 지름길 금지 조항을 밝히고 지킨다. 하네스 수정 금지, 기준 화면 조작 금지, 비교를 통과시키려는 컴포넌트 구조 변경 금지. 기준 화면이 이상해 보이면 고치지 말고 멈추고 사용자에게 묻는다.
+3. 컴포넌트를 한 번에 하나씩 옮긴다. 워크트리별로 병렬화하고 컴포넌트마다 담당자는 하나다(**separate-before-serializing-shared-state** 원칙 스킬). 공유 기본 요소를 막는 단계로 먼저 옮긴다.
+4. 컴포넌트마다 맞는 곳에서 이미지 비교로 기준 화면과 대조한다. 스크린샷은 프로젝트 검증 스킬(`verify-<앱>`)이나, 없으면 Playwright로 Chrome DevTools Protocol(CDP)에 붙어 찍는다. 차이가 0이 아니면 실패다. 픽셀 차이를 조사한다. 차이가 0이 될 때까지 컴포넌트마다 주기적으로 다시 깨운다([호스트 대응표](../references/hosts.md)).
+5. 컴포넌트마다 또는 안전한 묶음마다 **PR 열기**(`playbooks/opening-a-pr.md`)를 실행한다.
 
-**Reply:** components migrated, the diff result for each, the baseline harness location, what's left.
+**답변:** 옮긴 컴포넌트, 각각의 비교 결과, 기준 하네스 위치, 남은 것.

@@ -1,112 +1,112 @@
-### Orchestrate
+### 오케스트레이션
 
-**You own the program, never the code. Author briefs, drain the queue, keep the frontier green, decide.** For a whole project handed to one standing coordinator chat: multi-day, many stacked PRs, dozens to hundreds of subagents, the human checking in twice a day instead of every five minutes. One task driven to a predicate is Autonomous run. One ambitious run needing a bespoke workflow is figure-it-out. Route here when the work outlives any single agent. Work one agent could finish inside the session's budget is not a program.
+**프로그램을 맡고, 코드는 맡지 않는다. 브리프를 쓰고, 큐를 비우고, 프런티어를 초록으로 유지하고, 결정한다.** 상주 조정자 대화 하나에 프로젝트 전체를 맡길 때 쓴다. 여러 날에 걸치고, 쌓인 PR이 많고, 서브에이전트가 수십에서 수백 개이며, 사용자는 5분마다가 아니라 하루 두 번 확인한다. 작업 하나를 종료 조건까지 모는 일은 **자율 실행**(`playbooks/autonomous-run.md`)이다. 맞춤 작업 흐름이 필요한 큰 실행 하나는 `figure-it-out`이다. 작업이 어느 에이전트 하나보다 오래 살아남을 때 여기로 보낸다. 에이전트 하나가 세션 예산 안에 끝낼 수 있는 일은 프로그램이 아니다.
 
-Ceremony must scale with the program. On cheap near-identical units, collapse it as each section directs.
+절차의 무게는 프로그램 크기에 맞춘다. 값싸고 거의 같은 단위들에서는 각 절이 말하는 대로 절차를 줄인다.
 
-Three rules carry the rest.
+나머지를 떠받치는 규칙은 셋이다.
 
-- Completions are queue events, not interrupts.
-- Every spawn and every resume carries the standing orders verbatim.
-- The brief is the product. A vague brief fails quietly, because a worker cannot ask you a question.
+- 완료는 큐 사건이지 끼어들기가 아니다.
+- 모든 실행과 모든 재개에 상시 지시를 원문 그대로 싣는다.
+- 브리프가 제품이다. 작업자는 질문을 할 수 없으므로 흐릿한 브리프는 조용히 실패한다.
 
-#### Roles and placement
+#### 역할과 배치
 
-- **Coordinator (this chat).** Local. Frames, authors briefs, drains the inbox, owns the human report, makes judgment calls. It never authors or edits code. Conflicted merges, chain rebases, and code changes are always tasks. Mechanically landing a verified unit (fast-forward or clean cherry-pick of a worker's commit, then push) is bookkeeping the coordinator may do itself on repos where local git is cheap. Queueing finished work behind an idle stacker is how a deadline harvests nothing. The loop is agentic end to end. Agents are spawned, resumed, and drained only through the Task tool. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section. State reads and writes go through `scripts/orch/orch.ts` at drain points, one command in and one line out. The CLI never spawns, waits, or wakes anything.
-- **Sub-coordinator.** Always local, durable, one per track, and only when the program exceeds what one coordinator's drains can manage. A track the coordinator can drain itself needs no middle layer. Each nested layer re-pays a full orientation preamble, and a blocking sub-coordinator hides its children while the parent idles. Owns its track's units and boards, authors its workers' briefs, spawns its own workers and verifiers (nesting works to depth 3, and a nested spawn has the full Task schema including `environment`). Rolls up aggregates at wave boundaries. Never forwards raw child reports. Cap in-flight children at what one drain can process, roughly ten, as a rolling window. Never as blocking batches, which cost the slowest child of every batch.
-- **Worker / verifier.** Always `environment: "cloud"` unless the task needs this machine: `control-ui` or `control-cli` runtime verification (from `cursor-team-kit`). Reading local transcripts under `agent-transcripts/`. Simulators and local IDE state. Auth that exists only here. Cloud agents cannot read the local store, so their briefs inline what they need or point at repo paths. Prefer fewer, broader workers. One writer per worktree or branch (principle-separate-before-serializing-shared-state). Run a unit's verifier on a different model family from its worker.
+- **조정자(이 대화).** 이 컴퓨터에서 돈다. 틀을 잡고, 브리프를 쓰고, 받은 편지함을 비우고, 사용자 보고를 맡고, 판단을 내린다. 코드를 쓰거나 고치지 않는다. 충돌 난 머지, 체인 리베이스, 코드 변경은 언제나 작업 단위다. 검증된 단위를 기계적으로 머지하는 일(작업자 커밋의 fast-forward나 깨끗한 cherry-pick 뒤 push)은 로컬 git이 가벼운 저장소에서 조정자가 직접 해도 되는 기록 정리다. 끝난 작업을 놀고 있는 스태커 뒤에 줄 세우면 마감 때 거둘 것이 없다. 반복 전체를 에이전트가 돈다. 에이전트의 실행, 재개, 결과 수거는 서브에이전트 실행([호스트 대응표](../references/hosts.md))으로만 한다. 서브에이전트마다 일에 맞는 역할([역할별 모델](../references/models.md))과 추론 수준을 SKILL.md의 서브에이전트 절에 따라 고른다. 상태 읽기와 쓰기는 수거 시점에 `<pstack-mode 스킬 폴더>/scripts/orch/orch.ts`로 한다. 명령 하나를 넣고 한 줄을 받는다. 이 CLI는 아무것도 실행하거나 기다리거나 깨우지 않는다.
+- **서브 조정자.** 언제나 이 컴퓨터에서 오래 살아 있고, 트랙마다 하나이며, 프로그램이 조정자 한 명의 수거로 감당할 크기를 넘을 때만 둔다. 조정자가 직접 수거할 수 있는 트랙에는 중간 층이 필요 없다. 층이 하나 늘 때마다 방향 잡기 서두를 처음부터 다시 치르고, 막고 기다리는 서브 조정자는 부모가 노는 동안 자식을 가린다. 자기 트랙의 단위와 보드를 맡고, 작업자 브리프를 쓰고, 자기 작업자와 검증자를 직접 띄운다. 중첩 실행은 호스트가 지원하는 깊이(최대 3)까지만 쓴다. 호스트가 중첩을 지원하지 않으면 서브 조정자를 별도 세션(호스트 대응표의 서브에이전트 실행)으로 띄운다. 웨이브 경계에서 집계를 올린다. 자식 보고를 날것 그대로 전달하지 않는다. 동시에 도는 자식은 한 번의 수거가 처리할 수 있는 수, 대략 열 개로 제한하고 굴러가는 창으로 유지한다. 막고 기다리는 묶음으로 돌리지 않는다. 묶음마다 가장 느린 자식의 시간을 치르기 때문이다.
+- **작업자 / 검증자.** 언제나 자기 git 워크트리에서 도는 독립 서브에이전트다. 작업자는 조정자의 스토어 폴더를 읽는다고 가정하지 않는다. 브리프에 필요한 내용을 넣거나 저장소 경로를 가리킨다. 작업자는 적고 넓게 둔다. 워크트리나 브랜치 하나에 쓰는 쪽은 하나다(principle-separate-before-serializing-shared-state). 단위의 검증자는 그 작업자와 다른 회사 모델(Claude와 GPT)로 돌린다. 둘을 쓰는 방법은 호스트 대응표에 있다.
 
-Depth stays at coordinator, track, worker. Author the track decomposition per project (build, landing, and verification are common cuts, not a required shape). Hard-coded swarm trees were tried and parked as too rigid.
+깊이는 조정자, 트랙, 작업자에서 멈춘다. 트랙 분해는 프로젝트마다 새로 짠다(빌드, 머지, 검증은 흔한 분해일 뿐 정해진 모양이 아니다). 고정된 군집 트리는 시도했다가 너무 경직돼서 접었다.
 
-#### Store layout
+#### 스토어 폴더 구조
 
-Create `orchestrate/<project-slug>/` in the current agent's store (path in the system prompt). Every file has exactly one writer. Owners publish facts, readers aggregate at read time. Use `bun scripts/orch/orch.ts` for bookkeeping, written below as `orch`, while its canonical plain TSV and JSON stay readable without the CLI.
+`orch`의 스토어 폴더(`--store <dir>` 또는 `ORCH_STORE`가 가리키는 곳)에 `orchestrate/<project-slug>/`를 만든다. 모든 파일은 쓰는 쪽이 정확히 하나다. 소유자는 사실을 내놓고, 읽는 쪽은 읽을 때 집계한다. 기록 정리는 `bun <pstack-mode 스킬 폴더>/scripts/orch/orch.ts`로 한다. 아래에서는 `orch`로 줄여 쓴다. 정본인 TSV와 JSON은 CLI 없이도 읽을 수 있게 둔다.
 
-- `preferences.md` is the standing-orders register: numbered lines, one constraint each (model policy, stack shape and count, verification bar, forbidden paths, escalation policy). Paste it verbatim into every spawn and every resume. Directives decay across resumes, and each dropped one costs a human turn. When you catch yourself restating an instruction, append the line before you act (principle-encode-lessons-in-structure).
-- `overview.md` is the durable PR and issue DB. Append. Never rewrite wholesale per event.
-- `units.tsv` has one row per unit: id, track, state, branch, PR, head SHA, brief path. Update rows in place.
-- `frontier.json` is the computed merge frontier, per Stack safety.
-- `ledger.tsv` is the verification ledger, per Verification.
-- `inbox/` holds completion pointers. `gates.md` parks human gates (question, options, default on no answer).
-- `decisions.tsv` is the trail via the show-me-your-work skill.
-- `status.md` is derived from `units.tsv` and `ledger.tsv` at each drain, never hand-maintained. Regenerate it from the tables instead of narrating events into it.
+- `preferences.md`는 상시 지시 목록이다. 번호 붙은 줄마다 제약 하나를 적는다(모델 정책, 스택 모양과 개수, 검증 기준, 금지 경로, 보고 정책). 모든 실행과 모든 재개에 원문 그대로 붙인다. 지시는 재개를 거칠수록 흐려지고, 빠진 지시 하나가 사용자 턴 하나를 쓴다. 같은 지시를 다시 말하고 있다는 걸 알아차리면 행동하기 전에 그 줄을 덧붙인다(principle-encode-lessons-in-structure).
+- `overview.md`는 오래 가는 PR과 이슈 기록이다. 덧붙이기만 한다. 사건마다 통째로 다시 쓰지 않는다.
+- `units.tsv`는 단위마다 한 줄이다. id, 트랙, 상태, 브랜치, PR, head SHA, 브리프 경로. 줄은 제자리에서 갱신한다.
+- `frontier.json`은 계산된 머지 프런티어다. 스택 안전 절을 따른다.
+- `ledger.tsv`는 검증 장부다. 검증 절을 따른다.
+- `inbox/`에는 완료 포인터를 둔다. `gates.md`에는 사용자 판단 대기 항목(질문, 선택지, 답이 없을 때 기본값)을 둔다.
+- `decisions.tsv`는 show-me-your-work 스킬로 남기는 결정 기록이다.
+- `status.md`는 수거 때마다 `units.tsv`와 `ledger.tsv`에서 만들어 낸다. 손으로 관리하지 않는다. 사건을 글로 적어 넣지 말고 표에서 다시 만든다.
 
-#### The brief
+#### 브리프
 
-Your prompts to agents are your only product, and a sloppy brief compounds into slop across the whole tree. Every spawn carries all of it. A field you cannot fill is a unit you have not scoped yet.
+에이전트에게 주는 프롬프트가 유일한 제품이다. 허술한 브리프는 트리 전체로 번지며 AI 티 나는 군더더기로 불어난다. 모든 실행에 아래 전부를 싣는다. 채울 수 없는 칸이 있다면 그 단위는 아직 범위를 정하지 않은 것이다.
 
 ```
-GOAL         one sentence, the outcome, executable by a stranger with no chat access
-SCOPE        paths this unit may write; paths it may not; its exclusive worktree or branch
-CONTEXT      pointers to files and PRs; upstream reports pasted in full when this unit
-             depends on them, because workers cannot see siblings
-ACCEPTANCE   checkable criteria, one per line
-VERIFY       exact commands or the control-skill path, plus known gotchas
-TIMEBOX      rough cap on runtime; on expiry, return partial findings and stop rather than run on
-FORBIDDEN    no PR retargets or merges, no rebase, no force-push, no fixes outside scope,
-             plus unit-specific bans
-REPORT       status, branch, head SHA, PRs, verdict, what you actually ran, deviations,
-             suggested follow-ups
-STANDING     <preferences.md pasted verbatim>
+GOAL         결과를 한 문장으로. 대화를 못 본 남이 실행할 수 있게
+SCOPE        이 단위가 쓸 수 있는 경로, 쓸 수 없는 경로, 혼자 쓰는 워크트리나 브랜치
+CONTEXT      파일과 PR 포인터. 이 단위가 의존하는 상위 보고는 전문을 붙임
+             (작업자는 형제를 볼 수 없음)
+ACCEPTANCE   확인 가능한 기준, 한 줄에 하나
+VERIFY       정확한 명령이나 검증 스킬 경로, 알려진 함정
+TIMEBOX      실행 시간 대략 상한. 넘으면 계속 돌지 말고 부분 결과를 돌려주고 멈춤
+FORBIDDEN    PR base 변경·머지 금지, 리베이스 금지, force-push 금지, 범위 밖 수정 금지,
+             단위별 추가 금지 사항
+REPORT       상태, 브랜치, head SHA, PR, 판정, 실제로 돌린 것, 벗어난 점,
+             제안하는 후속 작업
+STANDING     <preferences.md 원문 그대로>
 ```
 
-Size the brief to the unit. A one-command unit gets the template collapsed to a paragraph that still names goal, scope, the verify command, and the report shape. A 4KB scaffold around a two-line edit costs more to write and obey than the edit. Local spawns may reference the standing-orders file by store path. Verbatim paste is for cloud spawns and every resume.
+브리프 크기는 단위에 맞춘다. 명령 하나짜리 단위는 템플릿을 한 문단으로 접되 목표, 범위, 검증 명령, 보고 모양은 남긴다. 두 줄 수정에 4KB 틀을 씌우면 수정보다 쓰고 지키는 비용이 더 든다. 스토어 폴더를 읽을 수 있는 같은 컴퓨터의 서브에이전트에게는 상시 지시 파일을 스토어 폴더 경로로 가리켜도 된다. 원문 붙여 넣기는 스토어 폴더를 못 읽는 서브에이전트와 모든 재개에 적용한다.
 
-A sub-coordinator brief adds its track boundary and unit list, its spawn budget with the cloud default and the local exception list, the drain protocol, and the rollup format (per child: name, status, PR, head SHA, verdict, one line, plus track status and frontier delta).
+서브 조정자 브리프에는 트랙 경계와 단위 목록, 실행 예산과 워크트리 배치 기본값, 수거 절차, 집계 형식(자식마다 이름, 상태, PR, head SHA, 판정, 한 줄 요약, 그리고 트랙 상태와 프런티어 변화)을 더한다.
 
-A dependency is a context relay, not just ordering. Undeclared upstream context makes the worker guess. Missing fields are a refuse-to-spawn condition. Audit one sampled worker brief per sub-coordinator per wave, concurrently with the wave it samples, never as a gate in front of it. A failing brief stops that track and fixes the sub-coordinator's instructions, not just the worker, because brief quality decays late in a run. Never resume-chain a brief. Respawn fresh with consolidated scope.
+의존은 순서만이 아니라 맥락 전달이다. 상위 맥락을 밝히지 않으면 작업자가 추측한다. 칸이 빠졌으면 실행을 거부한다. 서브 조정자마다 웨이브마다 작업자 브리프 하나를 표본으로 감사한다. 감사는 그 웨이브와 동시에 하고, 웨이브 앞의 관문으로 두지 않는다. 브리프가 감사에 떨어지면 그 트랙을 멈추고, 작업자만이 아니라 서브 조정자의 지시를 고친다. 브리프 품질은 실행 후반에 떨어지기 때문이다. 브리프를 재개로 이어 붙이지 않는다. 범위를 정리해 새로 띄운다.
 
-#### Steps
+#### 단계
 
-1. **Frame.** State the done predicate as something countable ("all 126 units merged, each ledger-verified `unit-test-verified` or better"). Quantify scope: units, rough effort, expected stacks, and the wall-clock budget. If one agent could finish inside that budget, stop here and run Autonomous run instead. Collapsing must not depend on another document being present. It means do the work directly in this session, plain workers where they help, verification inline, landing as you go, and none of the store, register, or pilot machinery below. Schedule landing against the budget. By roughly 70% of it, stop spawning and land what is verified. Name the tracks per project. A contested decomposition or one-way door goes through the arena skill before the pilot. Present the framing once. Reversible prep proceeds without waiting.
-2. **Install the runtime.** Run `orch init`. Open the trail via the show-me-your-work skill, write the standing orders before any spawn, and seed `frontier.json` from existing PRs with `orch frontier set --repo <repo-dir>`, adding `--forge origin` when the forge is Origin.
-3. **Pilot.** Push one unit through the whole path: brief, worker, verification, stack entry, ledger row, merge. The pilot exists to falsify the brief template, the verify recipe, and the unit size while that costs one agent instead of fifty. Fix the contract from pilot evidence before any fan-out. Scale the pilot to the unit. On programs of near-identical cheap units, the first unit is the pilot, run as a normal unit with its verify command inline, and fan-out starts the moment it lands. The dedicated pilot pipeline (separate verifier agent, audit gate) is for expensive or novel unit shapes, not for clone-units where a serialized pilot has nothing to falsify.
-4. **Scale.** Spawn a rolling window of workers up to the in-flight cap, refilling as children finish. Blocking batches pay the slowest child of every batch. Spawn track sub-coordinators only past the one-drain threshold in Roles. Recompute ready work after each drain. Relay upstream reports into downstream briefs. Keep sibling communication upward only. The sampled brief audit runs alongside the wave it samples and stops the next refill on failure, not the current one.
-5. **Drain.** Run the queue discipline below at every drain point.
-6. **Land.** Landing is continuous, never a terminal phase. Integration starts with the first verified unit and runs alongside the remaining waves. On heavy repos the stacker is a standing role from wave one, integrating as units verify. On repos where local git is cheap, the coordinator lands verified units itself per Roles. Keep the frontier green before upper-stack work. Stack safety governs. Advance `frontier.json` only on merge or reported new head SHAs.
-7. **Close.** Drain the final inbox, reconcile every spawned agent to a terminal row (done, abandoned, zombie-reconciled), confirm the predicate on the real artifact, confirm every landed PR has a verdict for its current head SHA, audit the trail per show-me-your-work including its cross-model review, encode recurring corrections into `preferences.md` or the brief template. Leave the store intact. It is the postmortem.
+1. **틀 잡기.** 끝남 조건을 셀 수 있는 것으로 쓴다("단위 126개 모두 머지, 각각 장부상 `unit-test-verified` 이상"). 범위를 수로 적는다. 단위 수, 대략의 노력, 예상 스택 수, 실제 시간 예산. 에이전트 하나가 그 예산 안에 끝낼 수 있으면 여기서 멈추고 **자율 실행**으로 간다. 이 축소는 다른 문서가 있느냐에 기대지 않는다. 이 세션에서 직접 일하고, 도움이 되는 곳에만 평범한 작업자를 쓰고, 검증은 그 자리에서 하고, 하면서 머지한다는 뜻이다. 아래의 스토어 폴더, 지시 목록, 시범 장치는 하나도 쓰지 않는다. 머지 일정을 예산에 맞춰 잡는다. 예산의 70%쯤에서 실행을 멈추고 검증된 것을 머지한다. 트랙 이름은 프로젝트마다 붙인다. 다툼이 있는 분해나 되돌릴 수 없는 결정은 시범 전에 arena 스킬을 거친다. 틀은 한 번 제시한다. 되돌릴 수 있는 준비는 기다리지 않고 진행한다.
+2. **실행 환경 설치.** `orch init`을 실행한다. show-me-your-work 스킬로 결정 기록을 열고, 첫 실행 전에 상시 지시를 쓰고, 기존 PR에서 `orch frontier set --repo <repo-dir>`로 `frontier.json`을 채운다.
+3. **시범.** 단위 하나를 전 경로로 통과시킨다. 브리프, 작업자, 검증, 스택 진입, 장부 줄, 머지. 시범은 에이전트 쉰 개가 아니라 하나의 비용으로 브리프 템플릿, 검증 방법, 단위 크기를 반증하려고 있다. 병렬 분배 전에 시범 증거로 계약을 고친다. 시범 크기는 단위에 맞춘다. 값싸고 거의 같은 단위로 이뤄진 프로그램에서는 첫 단위가 곧 시범이다. 검증 명령을 그 자리에서 돌리는 평범한 단위로 처리하고, 머지되는 순간 병렬 분배를 시작한다. 별도 시범 절차(따로 띄운 검증자, 감사 관문)는 비싸거나 새로운 모양의 단위에 쓴다. 복제 단위를 시범으로 줄 세워 봐야 반증할 것이 없다.
+4. **확장.** 동시 실행 상한까지 작업자를 굴러가는 창으로 띄우고, 자식이 끝날 때마다 채운다. 막고 기다리는 묶음은 묶음마다 가장 느린 자식의 시간을 치른다. 트랙 서브 조정자는 역할과 배치 절의 한 번 수거 기준을 넘을 때만 띄운다. 수거마다 준비된 일을 다시 계산한다. 상위 보고를 하위 브리프로 전달한다. 형제 사이 소통은 위로만 한다. 표본 브리프 감사는 그 웨이브와 나란히 돌고, 떨어지면 지금 웨이브가 아니라 다음 채우기를 멈춘다.
+5. **수거.** 수거 시점마다 아래 큐 규율을 따른다.
+6. **머지.** 머지는 끝 단계가 아니라 계속하는 일이다. 통합은 첫 검증 단위와 함께 시작해 남은 웨이브와 나란히 돈다. 무거운 저장소에서는 스태커가 첫 웨이브부터 상주하며 단위가 검증되는 대로 통합한다. 로컬 git이 가벼운 저장소에서는 역할과 배치 절에 따라 조정자가 검증된 단위를 직접 머지한다. 위쪽 스택 작업 전에 프런티어를 초록으로 유지한다. 스택 안전 절이 우선한다. `frontier.json`은 머지나 보고된 새 head SHA가 있을 때만 앞으로 옮긴다.
+7. **마무리.** 마지막 받은 편지함을 비운다. 띄운 모든 에이전트를 끝 상태 줄(완료, 포기, 좀비 정리)로 맞춘다. 끝남 조건을 실제 결과물에서 확인한다. 머지된 모든 PR에 현재 head SHA에 대한 판정이 있는지 확인한다. show-me-your-work에 따라 결정 기록을 감사하고, 다른 회사 모델 검토도 포함한다. 되풀이된 교정은 `preferences.md`나 브리프 템플릿에 새긴다. 스토어 폴더는 그대로 둔다. 그것이 사후 분석 자료다.
 
-#### Queue and drain
+#### 큐와 수거
 
-- On a completion notification, run `orch inbox push <agent> <unit> <status> [--report PATH]` and return to what you were doing. Never deep-review inline. A completion that needs review becomes a verifier unit. Never review a diff inside a drain.
-- Drain in batches at four points: the end of a critical section, a track rollup, a frontier watcher wake (arm it via the loop skill, with a long heartbeat fallback), and before a human report. Begin each batch with `orch inbox drain`. Arrivals during a drain wait for the next one.
-- Critical sections you finish first: authoring a brief, a stack operation, a conflict decision, writing a gate, updating ledger or frontier.
-- Each drain classifies every pointer (landed, needs-verify, failed, zombie, noise), writes the resulting rows through `orch unit add`, `orch unit set`, and `orch ledger record`, runs `orch status`, then spawns the next wave in one message.
-- Account for every spawned child at its track's rollup: arrived, respawned, or its scope explicitly absorbed. Silently redoing a missing child's work hides both the wasted spend and the coverage gap its result existed to close.
-- A drain turn ends with the three lines from `orch status`: counts against the states, what changed, gates open. Detail lives in `status.md`. The full reply contract applies at checkpoints and close.
+- 완료 알림이 오면 `orch inbox push <agent> <unit> <status> [--report PATH]`를 실행하고 하던 일로 돌아간다. 그 자리에서 깊게 검토하지 않는다. 검토가 필요한 완료는 검증자 단위가 된다. 수거 중에 diff를 검토하지 않는다.
+- 수거는 네 시점에 묶어서 한다. 임계 구간의 끝, 트랙 집계, 프런티어 감시 깨우기(주기적으로 다시 깨우기를 걸고([호스트 대응표](../references/hosts.md)), 긴 주기 확인을 대비책으로 둔다), 사용자 보고 직전. 묶음마다 `orch inbox drain`으로 시작한다. 수거 중에 온 것은 다음 수거를 기다린다.
+- 먼저 끝내는 임계 구간: 브리프 작성, 스택 작업, 충돌 결정, 사용자 판단 항목 작성, 장부나 프런티어 갱신.
+- 수거마다 모든 포인터를 분류한다(머지됨, 검증 필요, 실패, 좀비, 잡음). 결과 줄은 `orch unit add`, `orch unit set`, `orch ledger record`로 쓰고, `orch status`를 돌린 뒤, 다음 웨이브를 메시지 하나로 띄운다.
+- 띄운 자식은 모두 트랙 집계에서 셈한다. 도착함, 다시 띄움, 또는 그 범위를 명시적으로 흡수함. 사라진 자식의 일을 말없이 다시 하면 낭비한 비용과, 그 결과가 메우려던 빈틈이 함께 가려진다.
+- 수거 턴은 `orch status`의 세 줄로 끝낸다. 상태별 개수, 바뀐 것, 열린 사용자 판단 항목. 자세한 내용은 `status.md`에 둔다. 전체 답변 형식은 체크포인트와 마무리에 쓴다.
 
-#### Stack safety
+#### 스택 안전
 
-- The frontier is a computed object, never narrative. Recompute `frontier.json` after every merge and stack mutation: ordered PR list, branch names, head SHAs, a generation number, the lowest unmerged PR. The command walks the PR base chain through the checkout's current branch, so chain order and PR states come from the forge. It uses `gh` by default. Pass `--forge origin` when the program resolved the forge to Origin. Head SHAs come from local branch refs, so resolve it from the stacker's clone. A branch with no PR errors rather than guessing.
-- Exactly one stacker per stack may mutate topology (chain rebases, force-pushes, base retargets, merges), serialized within its stack. Record the holder in the standing orders. Chain rebases run in cloud. A local rebase at this scale takes the laptop down.
-- Workers never rebase and never retarget or merge PRs. Babysitters follow `playbooks/babysit.md`, one per stack, scoped to one immutable frontier generation. They report conflicts to the stacker rather than rebasing.
-- PR closes and retargets go through the stacker only. Closing a base PR orphans every chain above it. Merges and stack surgery are units with briefs like any other.
-- One retro watcher follows merged PRs for reverts, post-merge CI breaks, and orphaned follow-ups.
+- 프런티어는 계산된 객체이지 서술이 아니다. 머지와 스택 변경 때마다 `frontier.json`을 다시 계산한다. 순서 있는 PR 목록, 브랜치 이름, head SHA, 세대 번호, 머지 안 된 가장 아래 PR. 명령은 체크아웃의 현재 브랜치에서 PR base 체인을 따라가므로 체인 순서와 PR 상태는 `gh`에서 온다. head SHA는 로컬 브랜치 ref에서 오므로 스태커의 클론에서 계산한다. PR이 없는 브랜치는 추측하지 않고 오류를 낸다.
+- 스택마다 토폴로지를 바꿀 수 있는 스태커는 정확히 하나다(체인 리베이스, force-push, base 변경, 머지). 그 스택 안에서는 직렬로 한다. 맡은 쪽을 상시 지시에 적는다. 체인 리베이스는 별도 워크트리의 서브에이전트가 한다. 이 규모의 리베이스를 조정자 세션에서 직접 하면 작업 환경이 멈춘다.
+- 작업자는 리베이스하지 않고, PR base를 바꾸거나 머지하지 않는다. 지킴이는 `playbooks/babysit.md`를 따르고, 스택마다 하나씩, 바뀌지 않는 프런티어 세대 하나를 범위로 한다. 충돌은 리베이스하지 않고 스태커에게 보고한다.
+- PR 닫기와 base 변경은 스태커만 한다. base PR을 닫으면 그 위 체인이 모두 고아가 된다. 머지와 스택 수술도 다른 단위처럼 브리프가 있는 단위다.
+- 회고 감시자 하나가 머지된 PR의 되돌림, 머지 후 CI 깨짐, 고아가 된 후속 작업을 따라간다.
 
-#### Verification
+#### 검증
 
-Scale verification to the unit. When VERIFY is a single cheap command, the worker runs it and reports the output, and the coordinator spot-checks receipts. A dedicated verifier agent (on a different model family than the worker) is for units whose verification is expensive, judgment-laden, or high-blast-radius. A verifier agent whose entire product would be rerunning one command is ceremony, not verification.
+검증 크기는 단위에 맞춘다. VERIFY가 값싼 명령 하나면 작업자가 돌리고 출력을 보고하며, 조정자는 증거를 표본 확인한다. 작업자와 다른 회사 모델로 돌리는 전담 검증자 에이전트는 검증이 비싸거나, 판단이 들어가거나, 영향 범위가 큰 단위에 쓴다. 하는 일이 명령 하나 다시 돌리기뿐인 검증자 에이전트는 검증이 아니라 의식이다.
 
-Write ledger rows with `orch ledger record`. Check the current PR and head SHA with `orch ledger check`. `ledger.tsv`, one row per verdict, keyed by PR number plus head SHA: `live-ui-verified | unit-test-verified | type-check-only | verifier-blocked | verifier-failed`. CI green is an input to a verdict, not a verdict. Behavioral work needs better than `type-check-only`. `verifier-blocked` is not a pass. Respawn when the environment heals. `verifier-failed` gets a fix unit, not a re-verify. A worker may self-report. A verifier overrides it on the same key. A new head SHA voids the row, so re-verify after restack. The ledger answers "was this verified", not memory and not the transcript.
+장부 줄은 `orch ledger record`로 쓴다. 현재 PR과 head SHA는 `orch ledger check`로 확인한다. `ledger.tsv`는 판정마다 한 줄이고 PR 번호와 head SHA가 키다. 값은 `live-ui-verified | unit-test-verified | type-check-only | verifier-blocked | verifier-failed`. 초록 CI는 판정의 입력이지 판정이 아니다. 동작을 바꾸는 작업은 `type-check-only`보다 높아야 한다. `verifier-blocked`는 통과가 아니다. 환경이 회복되면 다시 띄운다. `verifier-failed`에는 재검증이 아니라 수정 단위를 준다. 작업자는 스스로 보고할 수 있다. 같은 키에서는 검증자가 그것을 덮어쓴다. 새 head SHA는 그 줄을 무효로 만들므로 다시 스택을 쌓은 뒤 재검증한다. "검증됐는가"는 기억이나 대화 기록이 아니라 장부가 답한다.
 
-A unit is not done until its output is externalized the moment it lands, never batched to the end of the run. A worker pushes its branch, a verifier writes its ledger row, receipts land in the store. Work that exists only on one VM when that VM dies was never done.
+단위는 결과가 머지되는 순간 바깥에 남기기 전까지 끝난 것이 아니다. 실행 끝까지 모아 두지 않는다. 작업자는 브랜치를 push하고, 검증자는 장부 줄을 쓰고, 증거는 스토어 폴더에 들어간다. 한 워크트리나 한 머신에만 있다가 그것과 함께 사라진 작업은 끝난 적이 없는 것이다.
 
-#### Liveness and failure
+#### 살아 있음과 실패
 
-- Never resume an agent to check on it. A resume restarts an idle agent. Probe read-only: the ledger, `units.tsv`, `gh`, pushed branches, the cloud agent's status in the Cursor dashboard. Transcript mtime is not liveness.
-- A silent death gets a synthetic postmortem row in the inbox (unit, failure mode, last evidence, options). Replan on evidence as it arrives. Never wait for full quiescence.
-- Retry by mode: cap-hit or oom, respawn with smaller scope. Network-drop, retry as-is. Tool-error, retry on a different model. Unknown, retry once. Two retries, then abandon the unit and replan around it.
-- A zombie that returns hours late reconciles against the current frontier and ledger before anything is accepted. Salvage unique findings through a fresh unit, never a blind merge.
-- When continued spawning would produce garbage tree-wide (bad upstream output, broken acceptance, dead infra), write a stop line at the top of the standing orders, let in-flight work finish, fix the cause, clear it.
-- Bound your own infra retries the same way you bound a child's. After a few consecutive tool aborts, stop retrying. Write a terminal handoff to durable state (what is done, where it lives, the exact command to resume) and end the run.
-- After a Cursor restart: local agents are dead, cloud work is not. Re-read the standing orders and `units.tsv`, recompute the frontier, reattach cloud work by PR and branch rather than agent id, respawn one sub-coordinator per track from its stored brief plus current state, drain, resume. The dead session's store lock clears itself on the next write. `orch` replaces a lock whose holder pid is gone.
+- 상태를 확인하려고 에이전트를 재개하지 않는다. 재개는 놀고 있는 에이전트를 다시 돌린다. 읽기만 하는 방법으로 살핀다. 장부, `units.tsv`, `gh`, push된 브랜치, 호스트가 보여 주는 백그라운드 서브에이전트 상태. 대화 기록 파일의 수정 시각은 살아 있다는 증거가 아니다.
+- 말없이 죽은 에이전트는 받은 편지함에 합성 사후 분석 줄(단위, 실패 방식, 마지막 증거, 선택지)을 남긴다. 증거가 도착하는 대로 계획을 다시 짠다. 모두 조용해질 때까지 기다리지 않는다.
+- 재시도는 실패 방식에 따른다. 상한 도달이나 메모리 부족이면 범위를 줄여 다시 띄운다. 네트워크 끊김이면 그대로 다시 한다. 도구 오류면 다른 모델로 다시 한다. 알 수 없으면 한 번 다시 한다. 두 번 재시도한 뒤에는 그 단위를 포기하고 우회해 계획을 다시 짠다.
+- 몇 시간 늦게 돌아온 좀비는 무엇이든 받아들이기 전에 현재 프런티어와 장부에 맞춘다. 고유한 발견은 새 단위로 건지고, 무작정 머지하지 않는다.
+- 계속 띄우면 트리 전체에 쓰레기가 나올 상황이면(상위 출력 불량, 수용 기준 깨짐, 인프라 사망) 상시 지시 맨 위에 멈춤 줄을 쓰고, 돌고 있는 일은 끝나게 두고, 원인을 고친 뒤 그 줄을 지운다.
+- 자기 인프라 재시도도 자식의 재시도처럼 상한을 둔다. 도구 중단이 몇 번 연달아 나면 재시도를 멈춘다. 끝난 것, 있는 곳, 재개할 정확한 명령을 오래 가는 상태에 최종 인계로 쓰고 실행을 끝낸다.
+- 호스트 세션을 다시 시작하면 그 세션에서 띄운 서브에이전트는 죽지만 push된 브랜치와 PR은 남는다. 상시 지시와 `units.tsv`를 다시 읽고, 프런티어를 다시 계산하고, 남은 작업은 에이전트 id가 아니라 PR과 브랜치로 다시 잇고, 트랙마다 저장된 브리프와 현재 상태로 서브 조정자를 하나씩 다시 띄우고, 수거한 뒤 재개한다. 죽은 세션의 스토어 폴더 잠금은 다음 쓰기 때 스스로 풀린다. `orch`는 잡고 있던 pid가 사라진 잠금을 바꿔 친다.
 
-#### Escalation
+#### 사용자에게 올릴 것
 
-Reaches the human, batched into the status page rather than per item: irreversible actions (force-push to shared branches, deploys, deletions, closing someone else's PR), genuine product or preference calls no experiment settles, a standing order that contradicts observed reality, a program-level dead end that survived a replan. Park each as a `gates.md` entry before asking, and route work around it.
+사용자에게 가는 것은 항목마다가 아니라 상태 페이지에 묶어서 올린다. 되돌릴 수 없는 행동(공유 브랜치 force-push, 배포, 삭제, 남의 PR 닫기), 실험으로 결론 낼 수 없는 진짜 제품·취향 판단, 관찰된 현실과 어긋나는 상시 지시, 계획을 다시 짜고도 남은 프로그램 수준 막다른 길. 묻기 전에 각각을 `gates.md` 항목으로 세워 두고 그 주변으로 일을 돌린다.
 
-Never reaches the human: frontier nudges, rebase mechanics, retries, CI flake triage, review-thread triage, format fixes, scope the brief already forbids (refuse and continue), and "should I keep going". When in doubt, act and log.
+사용자에게 가지 않는 것: 프런티어 재촉, 리베이스 절차, 재시도, CI 플래키 분류, 리뷰 스레드 분류, 형식 수정, 브리프가 이미 금지한 범위(거부하고 계속함), "계속할까요". 애매하면 행동하고 기록한다.
 
-Mid-run discoveries fix only what blocks the frontier. Everything else parks in follow-ups. At this fan-out a small scope leak multiplies into PRs nobody asked for.
+실행 중 발견은 프런티어를 막는 것만 고친다. 나머지는 후속 작업으로 세워 둔다. 이 정도로 병렬 분배하면 작은 범위 새어 나감도 아무도 요청하지 않은 PR로 불어난다.
 
-**Reply:** at checkpoints and close: the predicate and the count against it from `units.tsv` and `ledger.tsv`, tracks and what each landed, the frontier (PR list plus SHAs), verdicts summary, what was abandoned and why, gates awaiting the human (the only asks), the store path, and the trail path. Numbers from the tables, not narrative. Include PR links.
+**답변:** 체크포인트와 마무리에서. 끝남 조건과 `units.tsv`·`ledger.tsv` 기준 그 대비 개수, 트랙과 각 트랙이 머지한 것, 프런티어(PR 목록과 SHA), 판정 요약, 포기한 것과 이유, 사용자 판단을 기다리는 항목(유일한 질문), 스토어 폴더 경로, 결정 기록 경로. 숫자는 서술이 아니라 표에서 가져온다. PR 링크를 넣는다.

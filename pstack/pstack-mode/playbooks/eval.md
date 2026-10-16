@@ -1,25 +1,25 @@
-### Eval
+### 평가
 
-**You own the experiment design. Plan, blind, run, synthesize.**
+**실험 설계는 내가 책임진다. 계획하고, 가리고, 돌리고, 종합한다.**
 
-**Non-negotiables for blinding:**
+**가리기의 필수 규칙:**
 
-- No `eval`, `test`, `judge`, `experiment`, `rubric`, `score`, `compare`, `benchmark`, `candidate`, or `arena` in any directory, file, or prompt the candidate sees.
-- The candidate prompt looks like an organic user request. State the goal, not the meta.
-- No chain-eliciting cues. Don't ask the candidate to list which skills, principles, or files they applied. Ask for design notes generally and grade chain-following from code shape, not self-report.
-- Sanitize directory and slug names. Use project-shaped names a user might pick.
-- Don't tell the candidate other candidates exist.
-- The judge can know it's judging but sees outputs by sanitized label only, never by model name.
-- Comparing two variants: one judge scores both sets in a single pass on one scale, blind to which set each came from.
+- 후보가 보는 어떤 폴더, 파일, 프롬프트에도 `eval`, `test`, `judge`, `experiment`, `rubric`, `score`, `compare`, `benchmark`, `candidate`, `arena`를 쓰지 않는다.
+- 후보 프롬프트는 자연스러운 사용자 요청처럼 보여야 한다. 목표를 말하고 실험이라는 사실은 말하지 않는다.
+- 연결을 끌어내는 단서를 주지 않는다. 후보에게 어떤 스킬, 원칙, 파일을 적용했는지 나열하라고 하지 않는다. 설계 메모는 일반적으로만 요청하고, 연결을 따랐는지는 자기 보고가 아니라 코드 모양으로 채점한다.
+- 폴더와 slug 이름을 가린다. 사용자가 고를 법한 프로젝트다운 이름을 쓴다.
+- 후보에게 다른 후보가 있다고 말하지 않는다.
+- 심사자는 자신이 심사한다는 것을 알아도 되지만, 출력은 가린 라벨로만 보고 모델 이름은 절대 보지 않는다.
+- 두 변형을 비교할 때는 심사자 하나가 두 묶음을 한 번에 같은 척도로 채점하고, 어느 묶음이 어디서 왔는지 모른다.
 
-**Steps:**
+**단계:**
 
-1. **Frame.** State what variant is under test and what behavior counts as success. Write the rubric (3-6 concrete criteria) for the judge only. Hold it back from candidates.
-2. **Set up sanitized environments.** Per-candidate working dir with the variant in place. Plant any context an organic task would have: a project skeleton, the skills the candidate would naturally read.
-3. **Author one organic prompt.** What a user would type. No leakage of what's being measured.
-4. **Spawn N parallel candidates** on different models per the **arena** skill's Phase B. Each works in its own sanitized dir. Same prompt to each. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section.
-5. **Spawn one blinded judge** on a different model family per the **arena** skill's Phase C. Judge sees outputs by sanitized label and the rubric, never a model name.
-6. **Verify the chain from transcripts, not self-report.** Read each candidate's local transcript under the active workspace's `agent-transcripts/` directory (the system prompt names this path). Do not glob across `~/.cursor/projects/*/`. That crosses workspace boundaries and reads private chats from unrelated projects. Look at which files each candidate actually opened. Grade chain-following from the files it really read plus the shape of the code, never from the candidate's own claims.
-7. **Read every candidate output yourself** end to end. Compare to the judge's verdict. Disagreement means a model is biased or the rubric is ambiguous. Synthesize.
+1. **틀 잡기.** 시험할 변형과 성공으로 칠 동작을 적는다. 심사자 전용 채점 기준(구체적인 기준 3~6개)을 쓴다. 후보에게는 보여 주지 않는다.
+2. **가린 환경 준비.** 후보마다 변형이 들어간 작업 폴더를 준다. 자연스러운 작업이라면 있었을 맥락을 심어 둔다. 프로젝트 뼈대, 후보가 자연스럽게 읽을 스킬 같은 것이다.
+3. **자연스러운 프롬프트 하나 작성.** 사용자가 칠 법한 글이다. 무엇을 재는지 새어 나가지 않게 한다.
+4. **후보 N개를 동시에 띄운다.** **arena** 스킬의 Phase B에 따라 서로 다른 모델로 띄운다. 각 후보는 자기 가린 폴더에서 일한다. 모두 같은 프롬프트를 받는다. 서브에이전트마다 일에 맞는 역할과 추론 수준을 SKILL.md의 서브에이전트 절과 [역할별 모델](../references/models.md)에 따라 고른다.
+5. **가린 심사자 하나를 띄운다.** **arena** 스킬의 Phase C에 따라 다른 회사 모델(Claude와 GPT)로 띄운다. 쓰는 방법은 [호스트 대응표](../references/hosts.md)에 있다. 심사자는 가린 라벨의 출력과 채점 기준만 보고 모델 이름은 절대 보지 않는다.
+6. **연결은 자기 보고가 아니라 대화 기록으로 확인한다.** 각 후보의 로컬 대화 기록을 대화 기록 위치([호스트 대응표](../references/hosts.md))에서 지금 작업 폴더에 해당하는 것만 읽는다. 모든 프로젝트의 기록을 한꺼번에 glob하지 않는다. 작업 공간 경계를 넘어 무관한 프로젝트의 개인 대화를 읽게 된다. 각 후보가 실제로 연 파일을 본다. 연결을 따랐는지는 후보의 주장이 아니라 실제로 읽은 파일과 코드 모양으로 채점한다.
+7. **모든 후보 출력을 처음부터 끝까지 직접 읽는다.** 심사자의 판정과 비교한다. 의견이 다르면 어떤 모델이 치우쳤거나 채점 기준이 모호한 것이다. 종합한다.
 
-**Reply:** variant under test, rubric, per-candidate notes, judge's verdict, your synthesis, and a recommendation for whether to promote the variant.
+**답변:** 시험한 변형, 채점 기준, 후보별 메모, 심사자의 판정, 내 종합, 변형을 채택할지에 대한 권고.

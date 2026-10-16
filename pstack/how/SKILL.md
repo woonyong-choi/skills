@@ -1,36 +1,36 @@
 ---
 name: how
-description: "Use for \"how does X work\", code walkthroughs before changing something, and placement / ownership / layering questions (\"where should this live\", \"which package owns this\", \"is this the right layer\"). Explains subsystem architecture, runtime flow, onboarding mental models. Use why for motivation."
+description: "\"X는 어떻게 동작하나\" 질문, 무언가를 바꾸기 전 코드 따라 읽기, 위치·소유·계층 질문(\"이건 어디에 둬야 하나\", \"어느 패키지가 소유하나\", \"이 계층이 맞나\")에 쓴다. 하위 시스템 아키텍처, 실행 흐름, 처음 맡는 사람을 위한 머릿속 모델을 설명한다. 동기는 why를 쓴다."
 disable-model-invocation: true
 ---
 
 # How
 
-Explore the codebase to answer "how does X work?" questions. Produce architectural explanations at the level of a senior engineer onboarding onto a subsystem, enough to build a working mental model, not so much that it reads like annotated source code.
+코드베이스를 탐색해 "X는 어떻게 동작하나?" 질문에 답한다. 하위 시스템을 처음 맡는 시니어 엔지니어 수준의 아키텍처 설명을 만든다. 쓸 만한 머릿속 모델을 세울 만큼은 자세하고, 주석 달린 소스 코드처럼 읽힐 만큼 자세하지는 않다.
 
-Every spawn is a Task subagent with `subagent_type: generalPurpose` and `readonly: true`. Explorers use the `how explorer` line in the `pstack-models.mdc` rule (default `grok-4.7-xhigh-fast`), and every explainer uses the `how explainer` line (default `claude-opus-5-5-xhigh`). Set `model` to that line's value, or to the default if the rule or the line is missing. Leave `model` unset when the value is `auto` or `inherit-parent`. If the Task tool rejects a slug, use the default and say so. If it rejects the default, use the closest valid slug of the same family from its error message. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.
+모든 서브에이전트는 읽기 전용으로 띄운다([호스트 대응표](../pstack-mode/references/hosts.md)). 탐색자는 `code` 역할, 설명자는 `judgment` 역할 모델을 쓴다([역할별 모델](../pstack-mode/references/models.md)). 지정한 모델이 거부될 때의 처리도 역할별 모델을 따른다. 서브에이전트마다 추론 수준은 **pstack-mode** 스킬의 서브에이전트 절에 따라 일에 맞게 고른다.
 
-## 1. Assess complexity
+## 1. 복잡도 판단
 
-If the scope is ambiguous, state your interpretation and explore. The user can redirect.
+범위가 모호하면 내 해석을 밝히고 탐색한다. 방향은 사용자가 바로잡을 수 있다.
 
-- **Simple** (a single module, a small utility, a narrow question such as "how does function X work"): no explorers. Spawn one explainer that explores and explains in one pass, built from `references/explainer-prompt.md` without the explorer-findings section. Go to step 4.
-- **Complex** (a subsystem spanning multiple files or services, a cross-cutting feature, a full architectural overview): go to step 2.
+- **단순**(모듈 하나, 작은 유틸리티, "함수 X는 어떻게 동작하나" 같은 좁은 질문): 탐색자를 띄우지 않는다. 탐색과 설명을 한 번에 하는 설명자 하나를 띄운다. 프롬프트는 `references/explainer-prompt.md`에서 탐색자 결과 절을 빼고 만든다. 4단계로 간다.
+- **복잡**(여러 파일이나 서비스에 걸친 하위 시스템, 여러 곳을 가로지르는 기능, 전체 아키텍처 개요): 2단계로 간다.
 
-When in doubt, take the simple path.
+애매하면 단순 경로를 택한다.
 
-## 2. Explore (complex only)
+## 2. 탐색(복잡한 경우만)
 
-Decompose the question into 2 to 4 angles, each a distinct slice of the subsystem. Spawn all explorers in a single message, each with `references/explorer-prompt.md` and its angle filled in.
+질문을 2~4개 관점으로 나눈다. 각 관점은 하위 시스템의 서로 다른 단면이다. 탐색자를 모두 동시에 띄운다. 각자 `references/explorer-prompt.md`에 자기 관점을 채워 받는다.
 
-## 3. Synthesize (complex only)
+## 3. 종합(복잡한 경우만)
 
-Once all explorers have returned, spawn one explainer with `references/explainer-prompt.md` and every explorer's findings filled in.
+탐색자가 모두 돌아오면 설명자 하나를 띄운다. 프롬프트는 `references/explainer-prompt.md`에 모든 탐색자 결과를 채워 만든다.
 
-## 4. Present
+## 4. 전달
 
-Present the explainer's output. Light edits for clarity or context from the conversation are fine. Do not substantially rewrite it.
+설명자의 결과를 전달한다. 명확하게 다듬거나 대화 맥락을 덧붙이는 정도의 가벼운 수정은 괜찮다. 크게 다시 쓰지 않는다.
 
-## Output format
+## 출력 형식
 
-The explanation uses the sections defined in `references/explainer-prompt.md`, dropping any that do not apply: Overview, Key Concepts, How It Works, Where Things Live, Gotchas.
+설명은 `references/explainer-prompt.md`가 정한 절을 쓰고, 해당 없는 절은 뺀다. 개요, 핵심 개념, 동작 방식, 위치, 주의할 점.

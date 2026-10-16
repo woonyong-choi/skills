@@ -1,13 +1,13 @@
-### Autonomous run
+### 자율 실행
 
-**You own the exit condition. Define done, then drive to it without stopping.**
+**종료 조건은 내가 책임진다. 완료를 정의하고 멈추지 않고 끝까지 몰고 간다.**
 
-1. State the exit condition as a checkable predicate before the first iteration (tests green, repro fixed, all N PRs merged, pixel-diff zero).
-2. Pick the wake mechanism using Cursor's `/loop` command (a built-in, not a pstack skill). An event to watch (CI, a merge, a ref advancing) gets a watcher subagent that wakes you on the event, with a long time-based heartbeat as fallback. No event gets a fixed-interval heartbeat sized to when the result is worth re-checking. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section.
-3. Each iteration makes the smallest change the evidence justifies, verifies it against the predicate, commits if it advanced, discards changes that didn't help. Belt-and-suspenders that "might help" gets reverted, not left to ride.
-   Sequence the work via the **sequence-verifiable-units** principle skill, verifying each unit before the next instead of batching checks at the end.
-4. Mid-run discoveries are yours. Address broken skills, related bugs, flaky verifiers, review noise, tooling failures, orphaned follow-ups, and fixable drift yourself via poteto-mode. Put out-of-band fixes in their own PR. Do not park reversible work for the human or use `AskQuestion`. Surface only irreversible actions, genuine product or preference calls no experiment can settle, or a real dead end. Keep the predicate as the main drive, and return to it after each side fix.
-5. Checkpoint every iteration via the **show-me-your-work** skill, a row for what changed and whether the predicate moved.
-6. Stop when the predicate is met. A plateau is not a stop, so keep going and pivot your approach to push past it. Surface a genuine dead end rather than spinning, and never relax the predicate to declare victory.
+1. 첫 반복 전에 종료 조건을 확인 가능한 조건식으로 적는다(테스트 통과, 재현 해결, PR N개 모두 머지, 픽셀 차이 0).
+2. 깨우는 방법은 주기적으로 다시 깨우기([호스트 대응표](../references/hosts.md))로 정한다. 지켜볼 사건(CI, 머지, ref 전진)이 있으면 그 사건에서 나를 깨우는 감시 서브에이전트를 두고, 대비책으로 긴 시간 간격의 주기 확인을 건다. 사건이 없으면 결과를 다시 볼 가치가 생기는 시점에 맞춘 고정 간격 주기 확인을 건다. 서브에이전트마다 일에 맞는 역할과 추론 수준을 SKILL.md의 서브에이전트 절과 [역할별 모델](../references/models.md)에 따라 고른다.
+3. 반복마다 증거가 뒷받침하는 가장 작은 변경을 하고, 종료 조건에 비춰 검증하고, 진전이 있으면 커밋하고, 도움이 안 된 변경은 버린다. "도움이 될지도 모르는" 이중 안전장치는 남겨 두지 않고 되돌린다.
+   작업 순서는 **sequence-verifiable-units** 원칙 스킬에 따라 정한다. 검사를 끝에 몰아서 하지 않고 단위마다 검증한 뒤 다음으로 넘어간다.
+4. 실행 중 발견한 것은 내 몫이다. 망가진 스킬, 관련 버그, 플래키한 검증자, 리뷰 잡음, 도구 실패, 주인 없는 후속 작업, 고칠 수 있는 어긋남은 pstack 모드로 직접 처리한다. 본 작업과 무관한 수정은 별도 PR로 낸다. 되돌릴 수 있는 일을 사용자에게 미루거나 사용자에게 질문하지 않는다. 되돌릴 수 없는 작업, 실험으로 가릴 수 없는 진짜 제품·취향 판단, 실제 막다른 길만 알린다. 종료 조건을 주된 동력으로 삼고, 곁가지 수정 뒤에는 그리로 돌아간다.
+5. **show-me-your-work** 스킬로 반복마다 체크포인트를 남긴다. 무엇을 바꿨고 종료 조건이 움직였는지를 한 줄로 적는다.
+6. 종료 조건을 만족하면 멈춘다. 정체는 멈출 이유가 아니므로 계속하고 접근을 바꿔 넘어선다. 헛돌지 말고 진짜 막다른 길은 알리며, 승리를 선언하려고 종료 조건을 느슨하게 바꾸지 않는다.
 
-**Reply:** the exit condition, iterations run, what landed, what was discarded, final predicate state.
+**답변:** 종료 조건, 실행한 반복 수, 반영한 것, 버린 것, 최종 종료 조건 상태.

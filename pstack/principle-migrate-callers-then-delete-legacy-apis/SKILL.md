@@ -1,14 +1,14 @@
 ---
 name: principle-migrate-callers-then-delete-legacy-apis
-description: "Apply when introducing a new internal API while old callers still exist. Migrate callers and delete the old API in the same wave instead of preserving compatibility layers."
+description: "옛 호출부가 아직 남아 있는 상태에서 새 내부 API를 도입할 때 적용한다. 호환 계층을 남기지 말고 같은 흐름에서 호출부를 옮기고 옛 API를 삭제한다."
 disable-model-invocation: true
 ---
 
-# Migrate Callers Then Delete Legacy APIs
+# 호출부 옮긴 뒤 레거시 API 삭제(Migrate Callers Then Delete Legacy APIs)
 
-- Update tests to assert the new contract, and delete tests that only protect pre-refactor implementation details
+- 시험은 새 계약을 확인하도록 고치고, 리팩터링 전 구현 세부만 지키던 시험은 삭제한다.
 
-**When this applies:**
-- No external users depend on backward compatibility
-- The project can absorb coordinated breaking changes
-- The new API is part of a simplification or refactor initiative
+**적용 조건:**
+- 하위 호환에 기대는 외부 사용자가 없다.
+- 프로젝트가 조율된 호환성 깨짐을 감당할 수 있다.
+- 새 API가 단순화나 리팩터링 작업의 일부다.

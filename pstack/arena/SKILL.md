@@ -1,48 +1,48 @@
 ---
 name: arena
-description: "Spawn N parallel candidates at the same task, pick a base, graft the strongest parts of the losers into it. Use for /arena, 'arena this', 'throw it in the arena', or when one attempt at a non-trivial artifact would lock in the wrong shape."
+description: "같은 작업에 후보 N개를 병렬로 띄우고, 기준안 하나를 골라, 진 후보의 가장 좋은 부분을 이식한다. /arena, 'arena로 돌려', '아레나에 넣어' 같은 요청이나, 쉽지 않은 산출물을 한 번에 만들면 잘못된 모양으로 굳을 때 쓴다."
 disable-model-invocation: true
 ---
 
 # Arena
 
-Open a todolist with one entry per phase (Frame, Fan out, Cross-judge, Pick, Graft, Verify) before launching anything.
+무엇이든 띄우기 전에 단계마다 항목 하나씩(틀 잡기, 병렬 분배, 교차 심사, 기준안 고르기, 이식, 검증) 할 일 목록을 연다.
 
-## Phase A: Frame
+## A단계: 틀 잡기
 
-Every candidate gets the same prompt, so the prompt is the contract.
+모든 후보가 같은 프롬프트를 받으므로 프롬프트가 곧 계약이다.
 
-1. State the artifact each candidate is producing.
-2. Derive the rubric, 3-6 concrete gradeable criteria for what success looks like on *this* task. It is the picker's tool in Phase D. Candidates only see the task.
-3. Pick the runners. Use the `arena runners` line in `~/.cursor/rules/pstack-models.mdc`. If the rule or that line is missing, default to one each on `claude-opus-5-5-xhigh` and `grok-4.7-xhigh-fast`. An `auto` or `inherit-parent` entry in this line or the cross-judge line means the parent model, so omit `model` for it. If the Task tool rejects a configured entry, run that seat on its family's default and say so. Families go by prefix: `claude-*`, and `grok-*` with `cursor-grok-*` and `composer-*`. A refused `composer-*` entry runs on `grok-4.7-xhigh-fast`. With no family match, use `claude-opus-5-5-xhigh`. If it rejects a default, use the closest valid slug of the same family from its error message. Spawn more runners when the arena covers multiple design directions. Use the same model N times when the work is generation-bound rather than judgment-sensitive. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.
-4. Give each candidate its own output location (a git worktree where possible, otherwise `/tmp/arena-<slug>/candidate-<n>/`), per the **separate-before-serializing-shared-state** principle skill.
+1. 각 후보가 만들 산출물을 밝힌다.
+2. 채점 기준을 세운다. *이* 작업에서 성공이 어떤 모습인지 채점할 수 있는 구체적 기준 3~6개다. D단계에서 고르는 쪽이 쓰는 도구다. 후보에게는 작업만 보여 준다.
+3. 러너를 고른다. 러너 구성은 `review` 역할의 모델 목록을 따른다([역할별 모델](../pstack-mode/references/models.md)). 목록 항목마다 러너 하나를 띄우므로 기본은 서로 다른 회사 모델 둘(Claude 하나, GPT 하나)이다. 다른 회사 모델은 [호스트 대응표](../pstack-mode/references/hosts.md)의 방법으로 실행한다. 지정한 모델이 거부되면 역할별 모델의 규칙대로 처리하고 그렇다고 알린다. 여러 설계 방향을 다루면 러너를 더 띄운다. 판단보다 생성 분량이 관건인 일이면 같은 모델을 N번 쓴다. 서브에이전트마다 추론 수준은 **pstack-mode** 스킬의 서브에이전트 절에 따라 일에 맞게 고른다.
+4. 후보마다 별도 출력 위치를 준다. 가능하면 git 워크트리, 아니면 `/tmp/arena-<slug>/candidate-<n>/`이다. **separate-before-serializing-shared-state** 원칙 스킬을 따른다.
 
-## Phase B: Fan out
+## B단계: 병렬 분배
 
-Spawn all N subagents in one message with `run_in_background: true`, each with the task, the path to the shared grounding, its own output path, and instructions to produce the artifact and a short rationale naming the alternatives it considered and what it rejected.
+서브에이전트 N개를 한 번에 모두 백그라운드로 띄운다. 각자 작업, 공유 사전 조사 자료의 경로, 자기 출력 경로, 그리고 산출물과 짧은 근거를 만들라는 지시를 받는다. 근거에는 검토한 대안과 기각한 것을 적게 한다.
 
-If a candidate produces no output, proceed with N-1 and note the dropout.
+후보 하나가 아무것도 내지 못하면 N-1개로 진행하고 탈락을 기록한다.
 
-## Phase C: Cross-judge
+## C단계: 교차 심사
 
-After all Phase B candidates complete, choose one model from the `arena cross-judge pool` line in `~/.cursor/rules/pstack-models.mdc`. If the rule or that line is missing, choose from `claude-opus-5-5-xhigh` and `grok-4.7-xhigh-fast`. Prefer a different model family from the parent's. Spawn one readonly judge subagent on that model. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with your reading in Phase D. Don't spawn it while candidates are still writing.
+B단계 후보가 모두 끝나면 다른 회사 모델 심사자를 고른다. 현재 호스트 모델이 Claude면 GPT를, GPT면 Claude를 쓴다. 실행 방법은 호스트 대응표의 "다른 회사 모델로 검토"를 따르고, 모델은 `review` 역할 목록에서 고른다. 심사자는 읽기 전용 서브에이전트 하나로 띄운다. 심사자는 채점 기준과 경로 라벨로 표시한 후보들을 보고, 기준마다 점수를 매기고, 근거와 함께 기준안을 추천한다. 심사자는 D단계에서 내가 읽는 동안 함께 돈다. 후보가 아직 쓰고 있을 때는 띄우지 않는다.
 
-## Phase D: Pick a base
+## D단계: 기준안 고르기
 
-Read every candidate end to end before picking. Score each against the rubric criterion by criterion, not on holistic feel, and compare with the cross-judge. Agreement on the base confirms the pick. Disagreement means one of you is biased or the rubric was ambiguous. Read both rationales before deciding.
+고르기 전에 모든 후보를 처음부터 끝까지 읽는다. 전체적인 느낌이 아니라 채점 기준 하나하나로 각 후보를 채점하고, 교차 심사자와 비교한다. 기준안에 대해 의견이 같으면 선택이 확인된다. 다르면 둘 중 하나가 치우쳤거나 채점 기준이 모호했다. 결정 전에 양쪽 근거를 모두 읽는다.
 
-Pick the base a future maintainer can extend most easily without breaking invariants. When two feel tied, prefer the cleaner boundary or smaller API, per the Laziness Protocol.
+앞으로의 유지보수자가 불변 조건을 깨지 않고 가장 쉽게 확장할 수 있는 기준안을 고른다. 둘이 비슷하면 Laziness Protocol에 따라 경계가 더 깔끔하거나 API가 더 작은 쪽을 고른다.
 
-## Phase E: Graft
+## E단계: 이식
 
-Walk each losing candidate once more for what is worth porting into the base, usually one or two things per candidate, not most of it. Fold each graft in by hand, per the **redesign-from-first-principles** principle skill, so the result stays coherent under one mental model. Don't paste mechanically.
+진 후보를 하나씩 한 번 더 훑어 기준안으로 옮길 가치가 있는 것을 찾는다. 보통 후보마다 한두 가지이고, 대부분을 옮기지는 않는다. **redesign-from-first-principles** 원칙 스킬에 따라 이식은 하나씩 손으로 녹여 넣어 결과가 하나의 머릿속 모델 아래 일관되게 한다. 기계적으로 붙여넣지 않는다.
 
-If the candidates converge on one shape, that is strong agreement. Note it and ship the consensus shape. No graft is needed. If they wildly diverge, Phase A was under-specified. Reframe and re-run rather than averaging the divergence.
+후보들이 한 모양으로 모이면 강한 합의다. 기록하고 그 합의된 모양을 배포한다. 이식은 필요 없다. 후보들이 크게 갈라지면 A단계가 덜 구체적이었다. 갈라진 것을 평균 내지 말고 틀을 다시 잡아 다시 돌린다.
 
-## Phase F: Verify
+## F단계: 검증
 
-Verify the synthesized artifact like any other output, per the **prove-it-works** principle skill. If verification finds a problem the arena missed, either Phase A was wrong (re-frame and re-run) or a candidate caught it and you missed the graft (go back to Phase E). Don't paper over it.
+종합한 산출물은 다른 출력과 똑같이 **prove-it-works** 원칙 스킬에 따라 검증한다. 검증에서 아레나가 놓친 문제가 나오면, A단계가 틀렸거나(틀을 다시 잡고 다시 돌림) 어떤 후보가 잡았는데 내가 이식을 놓친 것이다(E단계로 돌아감). 덮고 넘어가지 않는다.
 
-## Outputs
+## 출력
 
-One synthesized artifact, with a short synthesis note alongside naming the base and why, the cross-judge's verdict, each graft with its source candidate, what was rejected and why, any convergence or dropouts, and the verification result.
+종합한 산출물 하나와 그 옆의 짧은 종합 메모. 메모에는 기준안과 그 이유, 교차 심사자의 판정, 이식한 것마다 출처 후보, 기각한 것과 그 이유, 수렴이나 탈락, 검증 결과를 적는다.

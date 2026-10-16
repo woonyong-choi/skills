@@ -1,156 +1,154 @@
 ---
-name: poteto-help
-description: Guides users through pstack setup, /poteto-mode, and picking the skill, playbook, or principle for a task. Type /poteto-help with a question.
+name: pstack-help
+description: pstack 설정, /pstack-mode 사용법, 작업에 맞는 스킬·플레이북·원칙 고르기를 안내한다. 질문과 함께 /pstack-help를 부른다.
 disable-model-invocation: true
 ---
 
-# Poteto help
+# pstack 도움말
 
-Answer the user's question about pstack, hand them a prompt they can send, and link the file the answer came from. For a help question, don't start the work. The user asked how, and a pstack run spends real tokens, so let them send the prompt.
+pstack에 관한 사용자 질문에 답하고, 사용자가 보낼 수 있는 프롬프트를 건네고, 답의 출처 파일을 링크한다. 도움말 질문이면 작업을 시작하지 않는다. 사용자는 방법을 물었고 pstack 실행은 실제 토큰을 쓰므로, 프롬프트는 사용자가 보내게 한다.
 
-A message that asks for work, such as "use pstack to fix this bug", is not a help question. Read [`poteto-mode`](../poteto-mode/SKILL.md), do the work under it, and mention once that a Custom Mode keeps it on.
+"pstack으로 이 버그 고쳐 줘"처럼 작업을 요청하는 메시지는 도움말 질문이 아니다. [`pstack-mode`](../pstack-mode/SKILL.md)를 읽고 그 방식으로 작업하고, 항상 적용 규칙에 넣으면 매 턴 켜 둘 수 있다고 한 번 알린다.
 
-This file maps questions to the skills and guide pages that hold the answers. Those files own the details. Read the file you route to before you quote it, and trust it when it disagrees with this map. The links here point into the installed plugin, which the user may not be able to open, so give the user the file's public copy: `https://github.com/cursor/plugins/blob/main/pstack/` followed by its path.
+이 파일은 질문을 답이 있는 스킬로 연결하는 지도다. 세부 내용은 그 파일들이 소유한다. 인용하기 전에 연결한 파일을 읽고, 이 지도와 다르면 그 파일을 믿는다. 여기의 링크는 설치된 스킬 폴더를 가리키므로 사용자가 열지 못할 수 있다. 사용자에게는 공개 사본을 준다. 주소는 `https://github.com/woonyong-choi/skills/blob/main/pstack/` 뒤에 스킬 폴더 기준 경로를 붙인 것이다.
 
-## Find out what they need
+호스트마다 다른 동작(스킬 부르기, 서브에이전트, 주기적으로 다시 깨우기, 규칙 파일)은 [호스트 대응표](../pstack-mode/references/hosts.md)에, 역할별 모델은 [역할별 모델](../pstack-mode/references/models.md)에 있다. 아래의 `/이름`은 Claude Code와 OpenCode 표기다. Codex에서는 `$이름`으로 바꿔 안내한다.
 
-Infer the need from the message and the conversation. A named situation, such as "which skill reviews a PR?", goes straight to its section. If the need is still unclear, ask one multiple-choice question with these options, then answer only the section they pick:
+## 무엇이 필요한지 알아내기
 
-- Get set up
-- Start a task with `/poteto-mode`
-- Pick a skill for a situation
-- Fix a run that went wrong
-- Make pstack my own
+메시지와 대화에서 필요를 추론한다. "PR 리뷰하는 스킬이 뭐야?"처럼 상황을 말했다면 바로 해당 절로 간다. 그래도 필요가 불분명하면 아래 선택지로 객관식 질문을 하나 하고, 고른 절만 답한다.
 
-Check the state that changes the answer, and mention it only when it does:
+- 설정하기
+- `/pstack-mode`로 작업 시작하기
+- 상황에 맞는 스킬 고르기
+- 잘못된 실행 고치기
+- pstack을 내 것으로 만들기
 
-- No `~/.cursor/rules/pstack-models.mdc` means `/setup-pstack` hasn't run for this user, so every role uses its default model.
-- No `verify-*` skill or other app harness in the project means agents have no scripted way to drive the app. Mention `/create-verification-skill` when the question is about proving a change works.
+답을 바꾸는 상태를 확인하고, 답이 바뀔 때만 언급한다.
 
-When the model rule is missing and it matters, ask whether the user wants to pick a model for each role and a reasoning budget now. It matters when the user is new, the question is about setup or cost, or the answer depends on which models run. Ask at most once per chat. If the need is also unclear, ask both questions together. Offer two choices:
+- `~/.config/skills/models.json`이 없으면 이 사용자는 `/setup-pstack`을 돌리지 않았고, 모든 역할이 기본 모델을 쓴다.
+- 프로젝트에 `verify-*` 스킬이나 다른 앱 검증 도구가 없으면 에이전트가 앱을 스크립트로 움직일 방법이 없다. 질문이 변경이 동작함을 증명하는 일에 관한 것이면 `/create-verification-skill`을 언급한다.
 
-- Now: give them `/setup-pstack` to type, and answer their question too.
-- Later: answer their question, and add one line saying every role keeps its default model until they run `/setup-pstack`.
+모델 설정이 없고 그것이 중요하면, 지금 역할마다 모델과 추론 예산을 고를지 사용자에게 질문한다. 사용자가 처음이거나, 질문이 설정이나 비용에 관한 것이거나, 답이 어떤 모델이 도는지에 달렸으면 중요하다. 대화당 한 번만 묻는다. 필요도 불분명하면 두 질문을 함께 묻는다. 선택지는 둘이다.
 
-## Get set up
+- 지금: 칠 명령으로 `/setup-pstack`을 주고 질문에도 답한다.
+- 나중에: 질문에 답하고, `/setup-pstack`을 돌리기 전까지 모든 역할이 기본 모델을 쓴다는 줄을 하나 더한다.
 
-1. Install with `/add-plugin pstack` in chat, or from Customize in the sidebar.
-2. Run [`/setup-pstack`](../setup-pstack/SKILL.md). It asks for a reasoning budget, maps a model to each role, and writes a rule. The rule applies to new chats.
-3. Start a real task with `/poteto-mode`, a goal, and a check that can pass or fail.
+## 설정하기
 
-Installing changes nothing until the user invokes a skill. Only `/setup-pstack` loads from the user's words. The [README](../../README.md) and [guide page 1](../../docs/guide/01-setup.md) have the details. Offer to word their first prompt with them, per [`references/prompting.md`](references/prompting.md).
+1. 이 저장소 README의 설치 명령으로 스킬을 설치한다. Claude Code와 Codex의 사용자 스킬 폴더에 같은 내용이 들어간다. OpenCode는 `~/.claude/skills/`를 함께 읽는다.
+2. [`/setup-pstack`](../setup-pstack/SKILL.md)을 돌린다. 추론 예산을 묻고, 역할마다 모델을 정하고, `~/.config/skills/models.json`을 쓴다. 설정은 그 뒤에 띄우는 서브에이전트부터 적용된다.
+3. `/pstack-mode`와 목표, 통과하거나 실패할 수 있는 확인 조건으로 실제 작업을 시작한다.
 
-If cost is the worry, say where the tokens go and how to spend fewer. pstack spends extra tokens on subagents and review panels. Rerun `/setup-pstack` and pick a smaller budget or cheaper models. A role set to `auto` or `inherit-parent` runs on the chat's model, which saves tokens when the chat runs on Auto or a cheaper model. A shorter panel list runs fewer subagents, one for each entry. Save `/poteto-mode` for work that needs rigor.
+설치만으로는 아무것도 바뀌지 않고, 사용자가 스킬을 불러야 동작한다. 사용자의 말만으로 불리는 스킬은 `/setup-pstack` 하나다. 첫 프롬프트를 [`references/prompting.md`](references/prompting.md)에 따라 함께 다듬어 주겠다고 제안한다.
 
-pstack is built for Cursor. Its skills use the Agent Skills format, so other tools can read them. But most workflow skills, including `/poteto-mode`, `/how`, `/why`, and `/teach`, spawn Cursor subagents with per-role models, and Custom Modes and `/loop` are Cursor features, so those parts may not work there.
+비용이 걱정이면 토큰이 어디에 쓰이고 어떻게 줄이는지 말한다. pstack은 서브에이전트와 검토 패널에 토큰을 더 쓴다. `/setup-pstack`을 다시 돌려 더 작은 예산이나 더 싼 모델을 고른다. 역할 값을 빈 문자열로 두면 호스트 기본 모델을 쓰므로, 호스트를 싼 모델로 돌릴 때 토큰이 준다. `review` 목록이 짧을수록 서브에이전트가 덜 돈다. 항목 하나마다 하나가 돈다. `/pstack-mode`는 엄격함이 필요한 작업에만 쓴다.
 
-## Start a task with `/poteto-mode`
+pstack 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 읽는다. 서브에이전트, 다른 회사 모델 검토, 주기적으로 다시 깨우기는 호스트마다 방법이 다르고, 호스트에 없는 기능은 [호스트 대응표](../pstack-mode/references/hosts.md)의 대체 방법으로 한다.
 
-`/poteto-mode` matches the task to a playbook, copies the playbook's steps into the todo list, and runs the other skills as the steps need them. A step it skips stays in the list as `skip: <reason>`. A good prompt states the goal and how to tell it's done. It doesn't list skills, because a hand-written sequence tends to drop or reorder steps the playbook would keep. Read [`references/prompting.md`](references/prompting.md) before you help word one. [Guide page 2](../../docs/guide/02-poteto-mode.md) has examples.
+## `/pstack-mode`로 작업 시작하기
 
-Whether `/poteto-mode` stays on depends on how the user starts it:
+`/pstack-mode`는 작업을 플레이북에 맞추고, 플레이북 단계를 할 일 목록에 옮기고, 단계가 필요로 할 때 다른 스킬을 돌린다. 건너뛴 단계는 `skip: <이유>`로 목록에 남는다. 좋은 프롬프트는 목표와 끝났음을 알아보는 방법을 말한다. 스킬 목록은 적지 않는다. 손으로 쓴 순서는 플레이북이 지킬 단계를 빠뜨리거나 뒤섞기 쉽다. 프롬프트를 다듬어 주기 전에 [`references/prompting.md`](references/prompting.md)를 읽는다. 예시는 [`references/recipes.md`](references/recipes.md)에 있다.
 
-- Enter on `/poteto-mode` attaches the skill to one message. It fades as the chat moves on.
-- Option+Enter on Mac or Alt+Enter on Windows, or Use as Mode from the skill entry, makes it a Custom Mode. It stays in context every turn until the user exits the mode, and it stays out of casual turns.
-- Cursor's docs list Custom Modes in the Agents Window and the CLI. Elsewhere, start each new task with `/poteto-mode`.
+`/pstack-mode`가 계속 켜져 있는지는 시작 방법에 달렸다.
 
-Link [Cursor's skills docs](https://cursor.com/docs/skills) when this comes up. Mid-chat, "new task" makes the mode match a fresh playbook. `/poteto-mode` already uses `poteto-agent` for the subagents its playbook steps spawn. To get the same style from a subagent of your own, spawn it with `subagent_type: "poteto-agent"`.
+- `/pstack-mode`로 메시지를 보내면 그 메시지에 스킬이 붙는다. 대화가 길어지면 흐려진다.
+- 항상 적용 규칙 파일(호스트 대응표)에 "사소하지 않은 작업은 pstack-mode 스킬 방식으로 한다"를 넣으면 매 턴 적용된다.
+- 둘 다 아니면 새 작업마다 `/pstack-mode`로 시작한다.
 
-## Pick a skill
+대화 중에 "새 작업"이라고 말하면 모드가 새 플레이북을 맞춘다. `/pstack-mode`는 플레이북 단계가 띄우는 서브에이전트에 이미 `pstack-agent`를 쓴다. 직접 띄우는 서브에이전트에서 같은 방식을 쓰려면 `pstack-agent` 서브에이전트로 띄운다. 정의가 설치되지 않은 호스트에서는 같은 지시를 프롬프트에 넣는다(호스트 대응표).
 
-The default answer is `/poteto-mode`, which runs most of the others when its steps need them. Name a skill directly when the user wants more or less of something than the playbook gives. Read the skill before you recommend it, and give one example prompt.
+## 스킬 고르기
 
-| The user wants to | Skill |
+기본 답은 `/pstack-mode`다. 단계가 필요로 할 때 다른 스킬 대부분을 돌린다. 사용자가 플레이북보다 무언가를 더 원하거나 덜 원할 때 스킬을 직접 이름 댄다. 추천하기 전에 그 스킬을 읽고, 예시 프롬프트 하나를 준다.
+
+| 사용자가 원하는 것 | 스킬 |
 |---|---|
-| Do any non-trivial task with rigor | [`/poteto-mode`](../poteto-mode/SKILL.md) |
-| Check that the agent understood their goal and the problem before it starts | [`/in-your-own-words`](../in-your-own-words/SKILL.md) |
-| Aim a task higher before starting: more expert, more outcome-focused, not overspecified | [`/sharpen`](../sharpen/SKILL.md) |
-| Know how code works now, or where new code should live | [`/how`](../how/SKILL.md) |
-| Know why code is shaped this way, or where a number came from | [`/why`](../why/SKILL.md) |
-| Understand a change or subsystem, explained plainly | [`/teach`](../teach/SKILL.md) |
-| Catch up on their own recent work on a topic | [`/recall`](../recall/SKILL.md) |
-| Catch up on what changed in this chat since their last message, in a few plain sentences and small visuals, with enough context to decide each action item | [`/ketchup`](../ketchup/SKILL.md) |
-| Know what a small diff could break outside itself | [`/blast-radius`](../blast-radius/SKILL.md) |
-| Settle types and module shape before code that crosses a function boundary | [`/architect`](../architect/SKILL.md) |
-| Get several attempts at one brief, merged into the best one | [`/arena`](../arena/SKILL.md) |
-| Run parallel checks over slices, or race workers, as cloud agents | [`/swarm`](../swarm/SKILL.md) |
-| Have different models review a diff and try to break it | [`/interrogate`](../interrogate/SKILL.md) |
-| Fix a bug test-first when a cheap local test exists | [`/tdd`](../tdd/SKILL.md) |
-| Apply TypeScript rules to `.ts` or `.tsx` work | [`/typescript-best-practices`](../typescript-best-practices/SKILL.md) |
-| Strip comments before review, using a reviewer that didn't write them | [`/no-comments`](../no-comments/SKILL.md) |
-| Clean AI tells out of prose | [`/unslop`](../unslop/SKILL.md) |
-| Write docs, an RFC, a README, a PR description, or a commit message to a standard | [`/technical-writing`](../technical-writing/SKILL.md) |
-| Hear the last reply again in plain words | [`/bro`](../bro/SKILL.md) |
-| Give agents a scripted way to drive the app and prove behavior | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
-| Bring a verification skill and its feature map back in line with the app | [`/maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
-| Vet a performance number before reporting or acting on it | [`/benchmark-checklist`](../benchmark-checklist/SKILL.md) |
-| Run a large or cross-cutting change, or one to review after stepping away | [`/figure-it-out`](../figure-it-out/SKILL.md) |
-| Keep a decision log during a run, and review it afterward | [`/show-me-your-work`](../show-me-your-work/SKILL.md) |
-| Pick a model for each role and a reasoning budget | [`/setup-pstack`](../setup-pstack/SKILL.md) |
-| Turn their own working habits into a personal mode skill | [`/automate-me`](../automate-me/SKILL.md) |
-| Turn what a finished task taught into skill edits | [`/reflect`](../reflect/SKILL.md) |
-| Stop agents from repeating the same mistakes in this repo | [`/correct`](../correct/SKILL.md) |
-| Build a page whose buttons wake a Grok Bot over a webhook | [`/make-bot-ui`](../make-bot-ui/SKILL.md) |
-| Find their way around pstack | `/poteto-help` |
+| 사소하지 않은 작업을 엄격하게 하기 | [`/pstack-mode`](../pstack-mode/SKILL.md) |
+| 시작 전에 에이전트가 목표와 문제를 이해했는지 확인하기 | [`/in-your-own-words`](../in-your-own-words/SKILL.md) |
+| 시작 전에 작업 목표를 더 높이기: 더 전문가답게, 결과 중심으로, 과하게 정하지 않게 | [`/sharpen`](../sharpen/SKILL.md) |
+| 지금 코드가 어떻게 동작하는지, 새 코드를 어디에 둘지 알기 | [`/how`](../how/SKILL.md) |
+| 코드가 왜 이런 모양인지, 숫자가 어디서 왔는지 알기 | [`/why`](../why/SKILL.md) |
+| 변경이나 하위 시스템을 쉬운 말로 이해하기 | [`/teach`](../teach/SKILL.md) |
+| 한 주제에 대한 최근 내 작업 따라잡기 | [`/recall`](../recall/SKILL.md) |
+| 마지막 메시지 뒤 이 대화에서 바뀐 것을 짧은 문장 몇 개와 작은 그림으로, 할 일마다 결정할 만큼의 맥락과 함께 따라잡기 | [`/ketchup`](../ketchup/SKILL.md) |
+| 작은 diff가 바깥에서 무엇을 깨뜨릴 수 있는지 알기 | [`/blast-radius`](../blast-radius/SKILL.md) |
+| 함수 경계를 넘는 코드 전에 타입과 모듈 모양 정하기 | [`/architect`](../architect/SKILL.md) |
+| 한 지시로 여러 시도를 받아 가장 좋은 것으로 합치기 | [`/arena`](../arena/SKILL.md) |
+| 나눈 조각마다 병렬 확인을 돌리거나, 작업자끼리 경주시키기(독립 서브에이전트) | [`/swarm`](../swarm/SKILL.md) |
+| 다른 모델들이 diff를 검토하고 깨뜨려 보게 하기 | [`/interrogate`](../interrogate/SKILL.md) |
+| 싼 로컬 테스트가 있을 때 테스트 먼저 버그 고치기 | [`/tdd`](../tdd/SKILL.md) |
+| `.ts`, `.tsx` 작업에 TypeScript 규칙 적용하기 | [`/typescript-best-practices`](../typescript-best-practices/SKILL.md) |
+| 주석을 쓰지 않은 검토자로 리뷰 전에 주석 걷어 내기 | [`/no-comments`](../no-comments/SKILL.md) |
+| 글에서 AI 티 걷어 내기 | [`/unslop`](../unslop/SKILL.md) |
+| 문서, RFC, README, PR 설명, 커밋 메시지를 기준에 맞게 쓰기 | [`/technical-writing`](../technical-writing/SKILL.md) |
+| 마지막 답변을 쉬운 말로 다시 듣기 | [`/bro`](../bro/SKILL.md) |
+| 에이전트가 앱을 스크립트로 움직여 동작을 증명할 수단 만들기 | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
+| 검증 스킬과 그 기능 맵을 앱에 다시 맞추기 | [`/maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
+| 성능 숫자를 보고하거나 그 숫자로 행동하기 전에 검증하기 | [`/benchmark-checklist`](../benchmark-checklist/SKILL.md) |
+| 크거나 여러 곳에 걸친 변경, 또는 자리를 비웠다가 검토할 변경 돌리기 | [`/figure-it-out`](../figure-it-out/SKILL.md) |
+| 실행 중 결정 기록을 남기고 나중에 검토하기 | [`/show-me-your-work`](../show-me-your-work/SKILL.md) |
+| 역할마다 모델과 추론 예산 고르기 | [`/setup-pstack`](../setup-pstack/SKILL.md) |
+| 내 작업 습관을 개인 모드 스킬로 만들기 | [`/automate-me`](../automate-me/SKILL.md) |
+| 끝난 작업에서 배운 것을 스킬 수정으로 바꾸기 | [`/reflect`](../reflect/SKILL.md) |
+| 이 저장소에서 에이전트가 같은 실수를 되풀이하지 않게 하기 | [`/correct`](../correct/SKILL.md) |
+| pstack 안에서 길 찾기 | `/pstack-help` |
 
-If a skill directory next to this one is missing from the table, read its frontmatter and route by its description. The `principle-*` directories are covered under principles below.
+이 폴더 옆에 표에 없는 스킬 폴더가 있으면 그 frontmatter를 읽고 description으로 연결한다. `principle-*` 폴더는 아래 원칙에서 다룬다.
 
-Close calls:
+헷갈리기 쉬운 것:
 
-- `/how` explains what the code does. `/why` explains the reasons. `/teach` runs one or both and explains the result plainly.
-- `/arena` gives every worker the same brief and merges the best parts. `/swarm` splits work into slices or a race and returns one report.
-- `/architect` implements right after it settles the design. Add "with checkpoint" to review the design before it writes code.
-- `/interrogate` reviews the diff. `/blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
-- `/recall` rebuilds context across recent chats. `/ketchup` covers only this chat since the user's last message. Resuming one specific chat or branch is the Session pickup playbook.
-- `/figure-it-out` designs one rigorous run. The Orchestrate playbook runs a program that spans days and many PRs. The Autonomous run playbook drives one task to a finish condition.
+- `/how`는 코드가 무엇을 하는지 설명한다. `/why`는 이유를 설명한다. `/teach`는 둘 중 하나나 둘 다 돌리고 결과를 쉬운 말로 설명한다.
+- `/arena`는 모든 작업자에게 같은 지시를 주고 가장 좋은 부분을 합친다. `/swarm`은 일을 조각이나 경주로 나누고 보고서 하나를 돌려준다.
+- `/architect`는 설계를 정한 바로 뒤에 구현한다. 코드를 쓰기 전에 설계를 검토하려면 "체크포인트와 함께"를 덧붙인다.
+- `/interrogate`는 diff를 검토한다. `/blast-radius`는 diff 바깥의 깨짐을 찾고, 변경을 안전하게 만드는 사실 하나를 증명한다.
+- `/recall`은 최근 여러 대화에 걸친 맥락을 다시 세운다. `/ketchup`은 사용자의 마지막 메시지 뒤 이 대화만 다룬다. 특정 대화나 브랜치 하나를 재개하는 것은 세션 이어받기 플레이북이다.
+- `/figure-it-out`은 엄격한 실행 하나를 설계한다. 오케스트레이션 플레이북은 여러 날과 많은 PR에 걸친 프로그램을 돌린다. 자율 실행 플레이북은 작업 하나를 종료 조건까지 몬다.
 
-Not in pstack:
+pstack에 없는 것:
 
-- `/deslop`, `control-cli`, and `control-ui` ship in the `cursor-team-kit` plugin.
-- `/loop` and `/create-skill` are Cursor built-ins.
-- pstack has no `/orchestrate` skill. Orchestrate is a `/poteto-mode` playbook. If the slash menu shows `/orchestrate`, another plugin provides it.
+- 주기적으로 다시 깨우기는 호스트 기능이다(호스트 대응표). 스킬 만들기 도구는 `skill-creator` 스킬이 설치돼 있을 때만 있다.
+- pstack에는 `/orchestrate` 스킬이 없다. 오케스트레이션은 `/pstack-mode` 플레이북이다. 명령 목록에 `/orchestrate`가 보이면 다른 스킬 모음이 제공한 것이다.
 
-## Playbooks and principles
+## 플레이북과 원칙
 
-Playbooks are step lists inside `/poteto-mode`, not skills, so they have no slash command. Inside `/poteto-mode`, describing the task picks one, and these phrases name one directly:
+플레이북은 스킬이 아니라 `/pstack-mode` 안의 단계 목록이라 따로 부르는 명령이 없다. `/pstack-mode` 안에서 작업을 설명하면 하나가 골라지고, 다음 표현은 플레이북을 직접 지목한다.
 
-- "babysit this pr" or "check on pr 123" runs Babysit. It drives the PR to merge-ready and stops there. It doesn't merge unless the user asks to merge, land, or ship.
-- "land the stack" runs Shipping.
-- "take over this branch" runs Session pickup.
-- "pause safely" runs Pause safely.
-- "full autopilot on this queue" runs Autopilot-full. "stack them, don't ship" runs Autopilot-stack.
-- "run the eval playbook" runs Eval.
+- "이 PR 봐 줘", "PR 123 확인해 줘"는 PR 돌보기를 돌린다. PR을 머지 준비 상태까지 끌고 가서 멈춘다. 사용자가 머지나 배포를 요청하지 않으면 머지하지 않는다.
+- "스택 머지해 줘"는 배포를 돌린다.
+- "이 브랜치 넘겨받아"는 세션 이어받기를 돌린다.
+- "안전하게 멈춰"는 안전하게 멈추기를 돌린다.
+- "이 대기열 완전 오토파일럿"은 오토파일럿 전체를 돌린다. "스택으로 쌓고 배포는 하지 마"는 오토파일럿 스택을 돌린다.
+- "평가 플레이북 돌려"는 평가를 돌린다.
 
-Without `/poteto-mode`, a phrase such as "babysit this pr" can start Cursor's own skill for the same job instead. The Playbooks section of [`poteto-mode`](../poteto-mode/SKILL.md) lists every playbook and when it applies. [Guide page 6](../../docs/guide/06-verify-and-ship.md) covers opening, babysitting, and landing a PR.
+`/pstack-mode` 없이 "이 PR 봐 줘" 같은 표현을 쓰면 같은 일을 하는 다른 스킬이 대신 시작될 수 있다. [`pstack-mode`](../pstack-mode/SKILL.md)의 플레이북 절이 모든 플레이북과 적용 시점을 나열한다. PR 열기, PR 돌보기, 배포는 각각 `playbooks/opening-a-pr.md`, `playbooks/babysit.md`, `playbooks/shipping.md`에 있다.
 
-pstack has no planning skill. Cursor's Plan Mode works alongside it. For work that spans phases or stacked PRs, asking `/poteto-mode` for a plan runs the [Multi-phase plan playbook](../poteto-mode/playbooks/multi-phase-plan.md), which writes the plan and doesn't implement it. For a design question, the Prototype playbook or `/architect` settles it in code first.
+pstack에는 계획 스킬이 없다. 호스트의 계획 모드가 있으면 함께 쓸 수 있다. 여러 단계나 쌓인 PR에 걸친 작업은 `/pstack-mode`에 계획을 요청하면 [여러 단계 또는 여러 PR 계획 플레이북](../pstack-mode/playbooks/multi-phase-plan.md)이 돈다. 이 플레이북은 계획을 쓰고 구현하지 않는다. 설계 질문은 프로토타입 플레이북이나 `/architect`가 코드로 먼저 정한다.
 
-Principles are one-rule skills that `/poteto-mode` reads and cites in its replies. The user rarely invokes one. They steer with the names instead, as in "apply prove it works. show me the real output." Typing `/principle-<name>` still loads one on demand. [Guide page 8](../../docs/guide/08-principles.md) lists them.
+원칙은 `/pstack-mode`가 읽고 답변에서 인용하는 규칙 하나짜리 스킬이다. 사용자가 직접 부르는 일은 드물다. 대신 "동작 증명 적용해. 실제 출력을 보여 줘"처럼 이름으로 방향을 잡는다. `/principle-<이름>`을 치면 필요할 때 하나를 불러올 수도 있다. 원칙 목록은 [`pstack-mode`](../pstack-mode/SKILL.md)의 원칙 절에 있다.
 
-## Fix a run that went wrong
+## 잘못된 실행 고치기
 
-| Symptom | Fix |
+| 증상 | 고치는 법 |
 |---|---|
-| The mode stopped applying after a few turns | It was started with Enter. Start it as a Custom Mode, or start each task with `/poteto-mode`. |
-| A question got treated as the next step of the last task | Say "new task", or say the turn doesn't need the mode. |
-| A new model choice had no effect | The rule from `/setup-pstack` applies to new chats. Start one. |
-| Runs cost more than expected | See the cost paragraph under Get set up. |
-| A skill didn't load on its own | Only `/setup-pstack` loads from the user's words. The others load when the user types them or when `/poteto-mode` runs them, and it doesn't run every skill. |
-| Parallel agents overwrote each other | Give each agent its own worktree, or run them as cloud agents, which each get their own machine. |
-| An overnight run moved but finished nothing | `/loop` needs a check that can pass or fail, not a duration. See [guide page 7](../../docs/guide/07-overnight.md). |
-| The reply claims success from a green build | Ask for the real command, flow, stored value, or profile. That's the prove-it-works principle. |
+| 몇 턴 뒤 모드가 적용되지 않음 | 한 메시지에만 붙여 시작했다. 항상 적용 규칙에 넣거나, 작업마다 `/pstack-mode`로 시작한다. |
+| 질문이 지난 작업의 다음 단계로 처리됨 | "새 작업"이라고 하거나, 이 턴에는 모드가 필요 없다고 말한다. |
+| 새 모델 선택이 효과가 없음 | `/setup-pstack`이 쓴 `~/.config/skills/models.json`을 확인한다. 이미 돌고 있는 서브에이전트에는 적용되지 않으므로 새로 띄운다. |
+| 실행 비용이 예상보다 큼 | 설정하기 절의 비용 문단을 본다. |
+| 스킬이 저절로 불리지 않음 | 사용자의 말만으로 불리는 스킬은 `/setup-pstack`뿐이다. 나머지는 사용자가 치거나 `/pstack-mode`가 돌릴 때 불리고, `/pstack-mode`가 모든 스킬을 돌리지는 않는다. |
+| 병렬 에이전트가 서로 덮어씀 | 에이전트마다 별도 워크트리를 준다. |
+| 밤새 돌았는데 움직이기만 하고 끝난 게 없음 | 주기적으로 다시 깨우기에는 시간이 아니라 통과하거나 실패할 수 있는 확인 조건이 필요하다. [`references/prompting.md`](references/prompting.md)의 자리 비우기 전 절을 본다. |
+| 빌드가 초록불이라는 이유로 성공했다고 답함 | 실제 명령, 흐름, 저장된 값, 프로파일을 요구한다. 동작 증명 원칙이다. |
 
-For a run that drifts, [`references/prompting.md`](references/prompting.md) has one-line steers. [Guide page 10](../../docs/guide/10-recipes-and-pitfalls.md) has more pitfalls and the recipes worth copying.
+흔들리는 실행에는 [`references/prompting.md`](references/prompting.md)에 한 줄 방향 잡기가 있다. 따라 쓸 만한 프롬프트는 [`references/recipes.md`](references/recipes.md)에 있다.
 
-## Make pstack my own
+## pstack을 내 것으로 만들기
 
-- [`/automate-me`](../automate-me/SKILL.md) drafts a personal mode skill from the user's own history, to use alongside `/poteto-mode`.
-- [`/reflect`](../reflect/SKILL.md) after a session turns its lessons into skill edits the user approves.
-- `/poteto-mode write a skill for <workflow>` runs the authoring playbook. The eval playbook tests a skill change blind.
-- Fix a misbehaving skill in its own PR, not inside the feature work where it went wrong.
+- [`/automate-me`](../automate-me/SKILL.md)는 사용자 자신의 기록으로 `/pstack-mode`와 함께 쓸 개인 모드 스킬 초안을 만든다.
+- 세션 뒤 [`/reflect`](../reflect/SKILL.md)는 그 세션의 교훈을 사용자가 승인하는 스킬 수정으로 바꾼다.
+- `/pstack-mode <작업 흐름> 스킬 써 줘`는 스킬 작성·수정 플레이북을 돌린다. 평가 플레이북은 스킬 변경을 블라인드로 시험한다.
+- 이상하게 동작하는 스킬은 문제가 난 기능 작업 안에서가 아니라 별도 PR로 고친다.
 
-[Guide page 9](../../docs/guide/09-make-it-yours.md) covers each of these.
+## 답변
 
-## Reply
-
-Lead with the answer. Give at most one example prompt in a code block, adapted from [`references/recipes.md`](references/recipes.md) when one fits, then the link to that file. Keep it short unless the user asked for the whole map.
+답부터 쓴다. 예시 프롬프트는 코드 블록으로 최대 하나만 주고, 맞는 것이 있으면 [`references/recipes.md`](references/recipes.md)에서 가져와 고친 뒤 그 파일을 링크한다. 사용자가 전체 지도를 요청하지 않았다면 짧게 쓴다.

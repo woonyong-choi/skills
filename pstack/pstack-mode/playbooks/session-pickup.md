@@ -1,11 +1,11 @@
-### Session pickup
+### 세션 이어받기
 
-**You own the resume point. Read the prior trail, don't redo it.**
+**재개 지점을 맡는다. 이전 기록을 읽고, 다시 하지 않는다.**
 
-1. Locate the prior trail. A local transcript under the active workspace's `agent-transcripts/` directory (the system prompt names the path. Do not glob across `~/.cursor/projects/*/`, that crosses workspace boundaries and reads private chats from unrelated projects), a cloud-agent URL, or a pushed branch. Read the metadata overview and last messages first, then scan back for the decision points. Parse a long transcript in a subagent and keep the reduced timeline in the main thread (the **principle-guard-the-context-window** skill). Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section.
-2. Reconstruct operational state. The branch and worktree, what already landed (`git log`, `git diff` against the base), the open todos, the decisions made. The prior trail is authoritative input. Resist the bias to re-derive it.
-3. Diff done vs pending. Compare what shipped against what was planned, name the resume point, do not re-run the prior repro or redo completed work. A "let me verify from scratch" pass means you're treating the trail as untrustworthy when it's authoritative.
-4. Route the remaining work to the matching playbook and pick the verdict: continue the execution, ship a finished recommendation, ratify or override a prior conclusion, or postmortem a failed run. The pickup playbook ends here. The routed playbook owns the rest.
-5. Verify the inherited claims against the original goal on the real artifact (the **principle-prove-it-works** skill). A passing prior self-report is not the proof.
+1. 이전 기록을 찾는다. 현재 프로젝트의 대화 기록([호스트 대응표](../references/hosts.md)의 대화 기록 위치), 다른 세션이 남긴 결과 파일, push된 브랜치. 대화 기록은 현재 프로젝트 폴더 안에서만 찾는다. 다른 프로젝트 폴더까지 글롭으로 훑지 않는다. 작업 공간 경계를 넘어 관계없는 프로젝트의 비공개 대화를 읽게 된다. 메타데이터 개요와 마지막 메시지를 먼저 읽고, 거슬러 올라가며 결정 지점을 훑는다. 긴 대화 기록은 서브에이전트에서 파싱하고 줄인 시간순 정리만 주 대화에 둔다(**principle-guard-the-context-window** 스킬). 서브에이전트마다 일에 맞는 역할([역할별 모델](../references/models.md))과 추론 수준을 SKILL.md의 서브에이전트 절에 따라 고른다.
+2. 작업 상태를 다시 세운다. 브랜치와 워크트리, 이미 들어간 것(`git log`, base 대비 `git diff`), 열린 할 일, 내려진 결정. 이전 기록은 권위 있는 입력이다. 다시 도출하고 싶은 마음을 누른다.
+3. 끝난 것과 남은 것을 비교한다. 배포된 것과 계획된 것을 비교하고, 재개 지점에 이름을 붙인다. 이전 재현을 다시 돌리거나 끝난 일을 다시 하지 않는다. "처음부터 검증해 보자"는 권위 있는 기록을 못 믿을 것으로 대하는 것이다.
+4. 남은 일을 맞는 플레이북으로 보내고 판정을 고른다. 실행을 이어 가기, 끝난 추천을 배포하기, 이전 결론을 승인하거나 뒤집기, 실패한 실행을 사후 분석하기. 세션 이어받기 플레이북은 여기서 끝난다. 나머지는 보낸 플레이북이 맡는다.
+5. 물려받은 주장을 원래 목표에 비춰 실제 결과물에서 검증한다(**principle-prove-it-works** 스킬). 이전의 통과 자기 보고는 증명이 아니다.
 
-**Reply:** where the prior agent stopped, what you inherited vs redid (ideally nothing redone), the resume point, and the outcome.
+**답변:** 이전 에이전트가 멈춘 곳, 물려받은 것과 다시 한 것(다시 한 것은 없을수록 좋음), 재개 지점, 결과.

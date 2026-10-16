@@ -1,18 +1,18 @@
 ---
 name: principle-subtract-before-you-add
-description: "Apply when sequencing an addition, refactor, or rewrite. Remove dead code, redundant validators, and stub references first, then build on the simpler base."
+description: "추가, 리팩터링, 재작성의 순서를 정할 때 적용한다. 죽은 코드, 중복 검증기, 빈 참조를 먼저 지우고 더 단순해진 기반 위에 쌓는다."
 disable-model-invocation: true
 ---
 
-# Subtract Before You Add
+# 더하기 전에 빼기(Subtract Before You Add)
 
-When evolving a system, remove complexity first, then build. Default to subtraction.
+시스템을 발전시킬 때는 먼저 복잡도를 지우고 그다음 만든다. 기본은 빼기다.
 
-Make simplification a continual investment. Leave the design slightly simpler and more capable behind the same or smaller surface than you found it.
+단순화를 꾸준한 투자로 삼는다. 처음 봤을 때와 같거나 더 작은 표면 뒤에서 설계를 조금 더 단순하고 더 유능하게 만들어 두고 떠난다.
 
-- Sequence removal before construction
-- Cut before you polish (get to the minimum before investing in quality)
-- Design for observed usage, not speculative edge cases
-- No speculative validators, parsers, or guards beyond what the spec demands
-- Simplify prompts (remove redundant instructions, excessive templates)
-- When a reference has no novel content, delete it rather than leaving a stub
+- 만들기보다 지우기를 먼저 둔다.
+- 다듬기 전에 자른다. 품질에 투자하기 전에 최소한으로 줄인다.
+- 추측한 경계 사례가 아니라 실제로 관찰한 사용에 맞춰 설계한다.
+- 명세가 요구하는 것 이상의 추측성 검증기, 파서, 방어 코드를 두지 않는다.
+- 프롬프트를 단순하게 만든다. 중복 지시와 과한 템플릿을 지운다.
+- 새로운 내용이 없는 참조는 빈 껍데기로 남기지 말고 지운다.

@@ -255,11 +255,11 @@ it("annotates Bugbot threads with distinct review-pass counts", () => {
                 comments: {
                   nodes: [
                     {
-                      body: "CURSOR_AUTOMATION_ID: run-2 severity high",
+                      body: "RUN_ID: run-2 severity high",
                       createdAt: "now",
                       path: null,
                       line: null,
-                      author: { login: "cursor" },
+                      author: { login: "bugbot" },
                     },
                   ],
                 },

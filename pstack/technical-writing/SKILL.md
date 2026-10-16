@@ -1,106 +1,108 @@
 ---
 name: technical-writing
-description: "Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages."
+description: "문서, RFC, README, PR 설명, 커밋 메시지를 쓰거나 검토할 때, 또는 technical-writing 스킬을 부를 때 쓴다. 층을 나눈 기술 글쓰기 기준이다. Diátaxis 구조, Google 개발자 문체 문장, STE 지시 규칙, Global English 문법."
 disable-model-invocation: true
 ---
 
-# Technical writing
+# 기술 글쓰기
 
-Write so a tired engineer understands on the first read. Apply all four layers.
+지친 엔지니어가 처음 읽을 때 이해하도록 쓴다. 네 층을 모두 적용한다.
 
-Three rules sit above the layers:
+규칙은 한국어 글과 영어 글에 모두 적용한다. "영어 글일 때"라고 적은 규칙은 영어 글에만 적용한다.
 
-- **Cut every word that does no work.** If the sentence survives without a word, the word goes. "In order to" is "to". "It is important to note that" is nothing.
-- **Use the short, everyday word.** "Use", not "utilize". "Help", not "facilitate". "Do", not "perform". A long word has to buy its length with precision.
-- **When a rule makes a sentence worse, fix the sentence another way or leave it alone.** A sentence that follows every rule and sounds like a machine wrote it has failed.
+층 위에 규칙 셋이 있다.
 
-The codebase is the word list. Write the real symbol, file, flag, or command name, not a synonym or a description of it.
+- **일하지 않는 낱말은 모두 지운다.** 낱말 없이도 문장이 살아남으면 그 낱말은 뺀다. "~하기 위해서는"은 "~하려면"이다. "~라는 점에 유의하는 것이 중요하다"는 아무것도 아니다.
+- **짧고 일상적인 말을 쓴다.** "활용하다"가 아니라 "쓰다". "용이하게 하다"가 아니라 "돕다". "수행하다"가 아니라 "하다". 긴 말은 정확함으로 제 길이 값을 해야 한다.
+- **규칙이 문장을 더 나쁘게 만들면 다른 방법으로 문장을 고치거나 그대로 둔다.** 모든 규칙을 따랐는데 기계가 쓴 것처럼 들리는 문장은 실패한 것이다.
 
-Don't invent jargon. Use the words a developer would say out loud: "move", "delete", "a budget that only decreases", not "evacuate", "ratchet", or "endgame". A named pattern is fine when the doc says what it means the first time. Propose a new offender and its replacement as an addition to `unslop`'s abstract-metaphor rule in your reply, with the diff. Don't edit that skill.
+코드베이스가 낱말 목록이다. 동의어나 설명이 아니라 진짜 심볼, 파일, 플래그, 명령 이름을 쓴다.
 
-## Vary the rhythm
+전문어를 지어내지 않는다. 개발자가 소리 내어 말할 낱말을 쓴다. "옮기다", "지우다", "줄어들기만 하는 예산"이지 "evacuate", "래칫", "엔드게임"이 아니다. 이름 붙은 패턴은 문서가 처음 나올 때 뜻을 말하면 괜찮다. 새로 찾은 문제 낱말과 대체어는 `unslop`의 추상적 비유 명사 규칙에 더할 것으로 답변에서 diff와 함께 제안한다. 그 스킬을 직접 고치지 않는다.
 
-A doc can obey every layer and still read machine-written: every sentence clipped short, no view anywhere, nothing specific.
+## 리듬에 변화를 준다
 
-- Mix sentence lengths on purpose. Short sentences land a point. Longer ones carry a fact with its condition or consequence.
-- One thought per sentence does not mean one length per sentence. Split the sentence that carries two thoughts. Keep the long sentence that carries one.
-- Have a view where the mode allows it. Explanation weighs trade-offs, so say what you make of them instead of listing pros and cons. Reference stays dry.
-- Be specific over sterile. Not "schema changes can cause issues" but "a column rename fails the build".
+문서가 모든 층을 지키고도 기계가 쓴 것처럼 읽힐 수 있다. 모든 문장이 짧게 잘려 있고, 어디에도 관점이 없고, 구체적인 것이 없을 때다.
 
-## Pick the mode first (Diátaxis)
+- 문장 길이를 일부러 섞는다. 짧은 문장은 요점을 박는다. 긴 문장은 사실을 조건이나 결과와 함께 나른다.
+- 한 문장에 생각 하나는 한 문장에 길이 하나라는 뜻이 아니다. 생각 둘을 나르는 문장은 나눈다. 생각 하나를 나르는 긴 문장은 둔다.
+- 갈래가 허락하는 곳에서는 관점을 갖는다. 설명은 득실을 따지므로, 장단점을 나열하지 말고 그것을 어떻게 보는지 말한다. 레퍼런스는 건조하게 둔다.
+- 무미건조하기보다 구체적으로 쓴다. "스키마 변경은 문제를 일으킬 수 있다"가 아니라 "열 이름을 바꾸면 빌드가 실패한다".
 
-One document, one mode. Two questions pick it: does the content inform action (doing) or understanding (thinking), and does it serve learning or work?
+## 갈래부터 고른다(Diátaxis)
 
-- Action + learning: **tutorial**.
-- Action + work: **how-to**.
-- Understanding + work: **reference**.
-- Understanding + learning: **explanation**.
+문서 하나에 갈래 하나. 질문 둘로 고른다. 내용이 행동(하기)을 돕는가, 이해(생각하기)를 돕는가? 배움을 위한 것인가, 일을 위한 것인가?
 
-Use the compass on a whole document or on one sentence.
+- 행동 + 배움: **튜토리얼**.
+- 행동 + 일: **하우투**.
+- 이해 + 일: **레퍼런스**.
+- 이해 + 배움: **설명**.
 
-**Tutorial: learning by doing.** The learner's success is your job, not theirs. Open by saying what the learner will build, not what they will "learn". Every step produces a visible result, early and often. Tell them what they should see: the expected output, the prompt change, the log line. Cut explanation to one clause and a link. Stay concrete. Write as "we", in commands: "First, do x. Now, do y."
+이 나침반은 문서 전체에도, 문장 하나에도 쓴다.
 
-**How-to: steps to a goal.** Solve a problem a person has, not an operation the machine can perform. Assume competence and skip teaching. Action only: no digressions, no background, no completeness for its own sake. Link those instead. Allow forks and judgment: "If you want x, do y." Name the guide by the task: "How to calibrate the radar array", not "Radar array calibration".
+**튜토리얼: 해 보며 배우기.** 배우는 사람의 성공은 그 사람이 아니라 내 일이다. 무엇을 "배울지"가 아니라 무엇을 만들지 말하며 시작한다. 모든 단계는 눈에 보이는 결과를 일찍, 자주 낸다. 무엇을 보게 될지 말해 준다. 기대 출력, 바뀐 프롬프트, 로그 한 줄이다. 설명은 한 절과 링크 하나로 줄인다. 구체적으로 머문다. "우리"를 주어로 명령형으로 쓴다. "먼저 x를 합니다. 이제 y를 합니다."
 
-**Reference: facts for lookup.** Only describe. No instruction, no persuasion, no opinion. Be dry, complete, and sure. State facts, options, limits, and errors with no hedging. Mirror the structure of the thing described, so code and docs can be navigated together. Put material where readers expect it. Generate from code where possible.
+**하우투: 목표까지의 단계.** 기계가 할 수 있는 작업이 아니라 사람이 가진 문제를 푼다. 능력을 가정하고 가르치지 않는다. 행동만 쓴다. 곁가지, 배경, 완전함을 위한 완전함은 없다. 그런 것은 링크한다. 갈림길과 판단을 허용한다. "x를 원하면 y를 한다." 안내서 이름은 작업으로 붙인다. "레이더 배열 보정"이 아니라 "레이더 배열을 보정하는 법".
 
-**Explanation: understanding and why.** One bounded topic, readable away from the product. Each title should tolerate an implicit "About..." in front. Anchor on a real why question. Give context: design decisions, history, constraints, alternatives. Opinion is allowed here and nowhere else.
+**레퍼런스: 찾아볼 사실.** 설명만 한다. 지시, 설득, 의견이 없다. 건조하고, 완전하고, 확신 있게 쓴다. 사실, 옵션, 한계, 오류를 얼버무림 없이 말한다. 설명하는 대상의 구조를 그대로 따라, 코드와 문서를 함께 탐색할 수 있게 한다. 독자가 기대하는 곳에 내용을 둔다. 가능하면 코드에서 생성한다.
 
-Don't mix modes: no reference tables inside a tutorial, no tutorial hand-holding inside reference, no arguing inside a how-to. Split and link instead.
+**설명: 이해와 이유.** 경계가 있는 주제 하나, 제품을 떠나서도 읽히는 글. 각 제목 앞에 "~에 관하여"를 붙여도 어색하지 않아야 한다. 진짜 "왜" 질문에 닻을 내린다. 맥락을 준다. 설계 결정, 역사, 제약, 대안이다. 의견은 여기서만 허용한다.
 
-## Write sentences to the reader (Google developer style)
+갈래를 섞지 않는다. 튜토리얼 안에 레퍼런스 표를 두지 않고, 레퍼런스 안에 튜토리얼식 손잡아 주기를 두지 않고, 하우투 안에서 논쟁하지 않는다. 대신 나누고 링크한다.
 
-- Talk to the reader as "you", in the present tense. "Will" only for things that genuinely happen later.
-- Say who does what: "the compiler checks", not "is checked". Passive is fine only when the actor is unknown or beside the point.
-- Write instructions as commands: "Click Submit." State facts plainly. Never "should be done".
-- Put the condition before the instruction: "To delete the document, click Delete."
-- Put the common case first. Exceptions after.
-- Sound like a knowledgeable friend. No buzzwords, no figurative language, no "please" in instructions, and never "simply", "easy", or "quickly" in a procedure. If it were simple, the reader would not be here.
-- Don't pre-announce ("we will soon support...") and don't start consecutive sentences with the same phrase.
-- Link with words that say where the link goes: the page title or a short description. Never "click here". Prefer a sentence of context on the page over a link off it.
-- Headings carry the point, not just the topic ("Pick the mode first", not "Modes"). Sentence case. A task heading is a bare verb phrase ("Create an instance"). A concept heading is a noun phrase. One h1 per page, no skipped levels.
-- Numbered lists for sequences, bullets for everything else. Introduce a list with a complete sentence. Keep items parallel.
-- Code goes in code font. UI elements go in bold. Use serial commas. Drop "etc." and say up front that a list is partial.
+## 독자에게 말하듯 문장을 쓴다(Google 개발자 문체)
 
-## Make statements load one at a time (STE rules)
+- 독자를 직접 상대하고 현재형으로 쓴다. 미래형("~할 것이다", 영어 글의 "will")은 정말 나중에 일어나는 일에만 쓴다.
+- 누가 무엇을 하는지 말한다. "검사된다"가 아니라 "컴파일러가 검사한다". 수동태는 행위자를 모르거나 요점과 상관없을 때만 괜찮다.
+- 지시는 명령형으로 쓴다. "제출을 누른다." 사실은 담백하게 말한다. "~되어야 한다"는 쓰지 않는다.
+- 조건을 지시 앞에 둔다. "문서를 지우려면 삭제를 누른다."
+- 흔한 경우를 먼저 쓴다. 예외는 뒤에 쓴다.
+- 잘 아는 친구처럼 말한다. 유행어 없이, 비유 없이, 지시에 "부디"나 "please" 없이 쓰고, 절차에 "그냥", "쉽게", "빠르게"를 절대 쓰지 않는다. 그렇게 간단했다면 독자는 여기 오지 않았다.
+- 미리 알리지 않고("곧 지원할 예정입니다...") 연이은 문장을 같은 구절로 시작하지 않는다.
+- 링크는 어디로 가는지 말하는 낱말로 건다. 페이지 제목이나 짧은 설명이다. "여기를 클릭"은 쓰지 않는다. 페이지 밖으로 가는 링크보다 페이지 안의 맥락 한 문장을 택한다.
+- 제목은 주제만이 아니라 요점을 나른다("갈래"가 아니라 "갈래부터 고른다"). 영어 글일 때는 문장 케이스를 쓴다. 작업 제목은 동사구다("인스턴스를 만든다"). 개념 제목은 명사구다. 페이지마다 h1은 하나, 단계를 건너뛰지 않는다.
+- 순서가 있으면 번호 목록, 나머지는 글머리 기호. 목록은 완전한 문장으로 소개한다. 항목은 같은 모양으로 맞춘다.
+- 코드는 코드 글꼴에 둔다. UI 요소는 굵게 쓴다. "등"으로 끝내지 말고 목록이 일부라고 앞에서 말한다. 영어 글일 때는 연속 쉼표(serial comma)를 쓰고 "etc."를 쓰지 않는다.
 
-- One instruction per sentence. One thought per sentence everywhere else.
-- Split instructions longer than about 20 words and other sentences longer than about 25.
-- Put the warning or condition before the step it guards: "If hot oil touches your skin, injuries can occur."
-- Keep "the" and "a": "Remove backup file" reads two ways. "Remove the backup file" reads one.
-- Give each word one meaning and one job, then keep it. If "check" means inspect, don't also use it for restrain.
-- Pick one word per action and stick to it: "start", not "start" here and "initiate" there.
-- Write procedures as direct commands, never as narration and never in the passive: "Install the component", not "the component must be installed".
-- Avoid "-ing" words where you can.
+## 문장이 한 번에 하나씩 들어가게 한다(STE 규칙)
 
-## Leave no sentence open to two readings (Global English)
+- 문장 하나에 지시 하나. 그 밖의 곳에서는 문장 하나에 생각 하나.
+- 약 20어절보다 긴 지시와 약 25어절보다 긴 다른 문장은 나눈다(영어 글은 낱말 수로 센다).
+- 경고나 조건은 그것이 지키는 단계 앞에 둔다. "뜨거운 기름이 피부에 닿으면 다칠 수 있다."
+- 영어 글일 때는 "the"와 "a"를 남긴다. "Remove backup file"은 두 가지로 읽힌다. "Remove the backup file"은 한 가지로 읽힌다.
+- 낱말마다 뜻 하나와 할 일 하나를 주고, 그것을 지킨다. "확인"이 살펴보기라는 뜻이면 붙잡아 두기라는 뜻으로도 쓰지 않는다.
+- 동작마다 낱말 하나를 골라 고수한다. 여기서는 "시작하다", 저기서는 "개시하다"로 쓰지 않는다.
+- 절차는 서술이나 수동태가 아니라 직접 명령으로 쓴다. "구성 요소가 설치되어야 한다"가 아니라 "구성 요소를 설치한다".
+- 영어 글일 때는 할 수 있는 한 "-ing" 낱말을 피한다.
 
-- Keep words like "only" and "not" next to the word they change: "only fails on growth" and "fails only on growth" say different things.
-- Break up long noun strings: "the proto import budget check script" becomes "the script that checks the proto-import budget".
-- Make every "it", "they", and "this" point at one obvious thing. Repeat the noun when in doubt. Never use "this" or "which" to point at a whole clause.
-- Don't drop verbs: "Phase 1 moves the converters and Phase 2 the runtime" leaves Phase 2 without one. Give it one.
-- Keep the small words that show structure, such as "that" in "Ensure that the switch is off". Never trade clarity for word count.
-- Repeat the article in a series when it prevents a misread: "the client and the host", not "the client and host", when they are two things.
-- Say which parts "and" or "or" joins when a sentence can group two ways. "Both...and", "either...or", and "if...then" are free disambiguators.
-- Use periods, not semicolons. Replace an em dash with a new sentence.
-- Make text in parentheses a full grammatical unit or its own sentence. Never form plurals with "(s)".
-- No slashes: write "a, b, or both" instead of "a/b" or "and/or".
-- Call each thing by one name, everywhere. A doc that says "the gate", "the ratchet", and "the budget check" for one thing teaches three things. Don't churn what didn't change.
-- Skip idioms, colloquialisms, Latin abbreviations, and metaphors.
+## 두 가지로 읽히는 문장을 남기지 않는다(Global English)
 
-## Voice and repo specifics
+- "만", "안", "못"(영어 글의 "only", "not") 같은 말은 꾸미는 말 바로 옆에 둔다. "늘어날 때만 실패한다"와 "늘어날 때 실패만 한다"는 다른 말이다.
+- 긴 명사 사슬을 푼다. "proto import 예산 확인 스크립트"는 "proto import 예산을 확인하는 스크립트"가 된다.
+- "이것", "그것", "이들"이 모두 뻔한 대상 하나를 가리키게 한다. 헷갈리면 명사를 되풀이한다. "이것"이나 "이는"으로 절 전체를 가리키지 않는다.
+- 서술어를 빼지 않는다. "1단계는 변환기를 옮기고 2단계는 런타임을"은 2단계에 서술어가 없다. 서술어를 준다.
+- 구조를 드러내는 작은 말을 남긴다. 영어 글일 때는 "Ensure that the switch is off"의 "that" 같은 말이다. 낱말 수를 줄이려고 명확함을 내주지 않는다.
+- 영어 글일 때는 잘못 읽힐 수 있으면 나열에서 관사를 되풀이한다. 둘이 서로 다른 것이면 "the client and host"가 아니라 "the client and the host".
+- 문장이 두 가지로 묶일 수 있으면 "와", "또는"이 어느 부분을 잇는지 밝힌다. "~와 ~ 둘 다", "~나 ~ 중 하나", "~이면 ~"(영어 글의 "both...and", "either...or", "if...then")은 공짜 모호성 해소 장치다.
+- 세미콜론 대신 마침표를 쓴다. 엠 대시는 새 문장으로 바꾼다.
+- 괄호 안의 글은 문법적으로 온전한 단위로 쓰거나 따로 문장으로 뺀다. 영어 글일 때는 복수를 "(s)"로 만들지 않는다.
+- 빗금을 쓰지 않는다. "a/b"나 "and/or" 대신 "a, b, 또는 둘 다"로 쓴다.
+- 한 대상은 어디서나 이름 하나로 부른다. 한 대상을 "게이트", "래칫", "예산 확인"으로 부르는 문서는 세 가지를 가르친다. 바뀌지 않은 것을 뒤흔들지 않는다.
+- 관용구, 구어, 라틴어 약어(영어 글일 때), 비유를 쓰지 않는다.
 
-- Apply the **unslop** skill to every doc this skill touches. That skill owns the slop-pattern catalog: AI vocabulary, filler, hedging, formatting tells.
-- PR descriptions and commit messages are writing too. Every layer except Diátaxis applies to them. A PR body is a briefing that a reviewer can read in under a minute. Do not paste swarm logs, SHA lists, or metric tables. Link them.
-- Product UI strings are not documentation. Use your product's copy guidelines for those.
-- Indent code snippets with tabs. Write real paths. Make every count or tree claim true at the commit that lands it, and include the command that regenerates it.
+## 목소리와 저장소별 사항
 
-## Worked example
+- 이 스킬이 건드리는 모든 문서에 **unslop** 스킬을 적용한다. 그 스킬이 AI 티 나는 군더더기 패턴 목록을 소유한다. AI 어휘, 채우기 말, 얼버무림, 서식 신호다.
+- PR 설명과 커밋 메시지도 글이다. Diátaxis를 뺀 모든 층이 적용된다. PR 본문은 검토자가 1분 안에 읽을 수 있는 브리핑이다. 병렬 작업 로그, SHA 목록, 지표 표를 붙여 넣지 않는다. 링크한다.
+- 제품 UI 문자열은 문서가 아니다. 그런 문자열에는 제품의 문구 지침을 쓴다.
+- 코드 조각은 탭으로 들여 쓴다. 진짜 경로를 쓴다. 개수나 트리 주장은 그것을 머지하는 커밋에서 참이게 하고, 다시 생성하는 명령을 함께 적는다.
 
-Before:
+## 고쳐 쓴 예
 
-> Configuration of the proto import ratchet budget script parameters is performed via budget.json. Note that it's important to remember that running with --write, which updates the committed budget to reflect the current count, should only be done when lowering it. If exceeded, CI fails.
+고치기 전:
 
-After:
+> proto import 래칫 예산 스크립트 매개변수의 구성은 budget.json을 통해 수행된다. --write로 실행하는 것은, 이는 커밋된 예산을 현재 개수에 맞게 갱신하는데, 예산을 낮출 때만 해야 한다는 점을 기억하는 것이 중요하다는 점에 유의한다. 초과되면 CI가 실패한다.
 
-> `budget.mjs` reads the committed budget from `budget.json` and counts the files that import protos. If the count exceeds the budget, CI fails. Run `budget.mjs --write` only to lower the budget.
+고친 뒤:
+
+> `budget.mjs`는 `budget.json`에서 커밋된 예산을 읽고 proto를 import하는 파일 수를 센다. 개수가 예산을 넘으면 CI가 실패한다. `budget.mjs --write`는 예산을 낮출 때만 실행한다.

@@ -146,9 +146,9 @@ describe("rendering", () => {
 
   it("renders the Markdown table from the same verdict only", () => {
     const rendered = renderPretty(status);
-    expect(rendered).toContain("| PR | CI | Review | Merge |");
+    expect(rendered).toContain("| PR | CI | 리뷰 | 머지 |");
     expect(rendered).toContain(
-      "| [#1](https://github.com/owner/repo/pull/1) | \u2014 | \u2014 | ✅ merged |"
+      "| [#1](https://github.com/owner/repo/pull/1) | - | - | 머지됨 |"
     );
   });
 });
@@ -218,7 +218,7 @@ describe("main", () => {
     const reader = fakeReader();
     const harness = testRuntime(reader);
     expect(await main(["--help"], harness.runtime)).toBe(0);
-    expect(harness.stdout.join("")).toContain("JSON (NDJSON while polling)");
+    expect(harness.stdout.join("")).toContain("JSON(폴링 중에는 NDJSON)");
     expect(reader.calls).toEqual([]);
   });
 });

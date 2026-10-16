@@ -1,74 +1,74 @@
 ---
 name: interrogate
-description: "Use for \"interrogate\", \"adversarial review\", \"multi-model review\", \"challenge this\", \"stress test this code\", \"find blind spots\", or \"tear this apart\". Multiple LLM reviewers challenge changes from independent angles."
+description: "여러 LLM 검토자가 서로 독립된 관점에서 변경을 공격적으로 검토하게 할 때 쓴다. \"interrogate\", \"공격적 검토\", \"여러 모델로 검토\", \"반박해 봐\", \"이 코드 스트레스 테스트\", \"사각지대 찾기\", \"샅샅이 뜯어봐\" 같은 요청에 쓴다."
 disable-model-invocation: true
 ---
 
 # Interrogate
 
-Spawn one reviewer per configured model to adversarially review code changes. The adversarial signal comes from model diversity, not assigned personas. The deliverable is a synthesized verdict. Do NOT auto-apply changes.
+설정한 모델마다 검토자 하나를 띄워 코드 변경을 공격적으로 검토한다. 공격적인 신호는 맡긴 역할극이 아니라 모델의 다양성에서 나온다. 결과물은 종합한 판정이다. 변경을 자동으로 적용하지 않는다.
 
-## Step 1, Scope
+## 1단계, 범위
 
-Identify what to review from context:
+맥락에서 검토할 대상을 찾는다.
 
-- If the user points at specific files or a diff, use that.
-- If on a feature branch, run `git diff main...HEAD` (or the appropriate base branch) for the full changeset.
-- If the user's message references recent work, gather the relevant files.
+- 사용자가 특정 파일이나 diff를 가리키면 그것을 쓴다.
+- 기능 브랜치에 있으면 `git diff main...HEAD`(또는 알맞은 기준 브랜치)로 전체 변경을 얻는다.
+- 사용자 메시지가 최근 작업을 가리키면 관련 파일을 모은다.
 
-Package the diff or file contents with any surrounding context files the reviewers need to understand the code.
+diff나 파일 내용에, 검토자가 코드를 이해하는 데 필요한 주변 맥락 파일을 함께 묶는다.
 
-## Step 2, Intent
+## 2단계, 의도
 
-Before spawning reviewers, state the intent in one clear paragraph from the user's message, commit messages, the PR description if one exists, and the code. If you're unsure about the intent, ask the user before proceeding.
+검토자를 띄우기 전에 의도를 분명한 한 문단으로 적는다. 근거는 사용자 메시지, 커밋 메시지, PR 설명(있으면), 코드다. 의도가 확실하지 않으면 진행하기 전에 사용자에게 묻는다.
 
-## Step 3, Spawn Reviewers
+## 3단계, 검토자 띄우기
 
-Launch all reviewers in a single message with the Task tool, one per entry on the `interrogate reviewers` line in `~/.cursor/rules/pstack-models.mdc`, labeled Reviewer A, B, and so on to match the entry count. If the rule or that line is missing, use the table defaults.
+모든 검토자를 한 메시지에서 동시에 서브에이전트로 띄운다([호스트 대응표](../pstack-mode/references/hosts.md)). 검토자는 [역할별 모델](../pstack-mode/references/models.md)의 `review` 역할에 적힌 모델마다 하나씩 두고, 개수에 맞춰 검토자 A, B처럼 이름을 붙인다. 설정 파일이나 `review` 항목이 없으면 아래 기본값을 쓴다.
 
-| Subagent | Default model |
+| 서브에이전트 | 기본 모델 |
 |----------|---------------|
-| Reviewer A | `claude-opus-5-5-xhigh` |
-| Reviewer B | `grok-4.7-xhigh-fast` |
+| 검토자 A | `review` 역할의 Claude 모델 |
+| 검토자 B | `review` 역할의 GPT 모델 |
 
-Each reviewer gets `subagent_type: generalPurpose`, `readonly: true`, and `model` set to its configured entry, or its table default when there is no configured line. Omit `model` for an `auto` or `inherit-parent` entry, so that reviewer runs on the parent model.
+두 검토자는 서로 다른 회사 모델(Claude와 GPT)이어야 한다. 현재 호스트와 다른 회사 모델은 호스트 대응표의 "다른 회사 모델로 검토" 방법으로 실행한다. 모든 검토자는 읽기 전용으로 실행한다. 모델을 지정하지 않은 항목(빈 문자열)은 호스트 기본 모델로 실행한다.
 
-If the Task tool rejects a configured entry, run that reviewer on its family's table default and say so. Families go by prefix: `claude-*`, and `grok-*` with `cursor-grok-*` and `composer-*`. A refused `composer-*` entry runs on Reviewer B's default. With no family match, use Reviewer A's default. If it rejects a table default, spawn with the closest equivalent from the valid slugs in its error message (prefer the same family and reasoning tier), and open a separate PR to update the default table. Do not block the review on the slug issue. Never treat an alias entry as a rejected slug or apply either fallback to it.
+설정한 모델이 거부되면 다른 이름을 추측하지 않는다. 그 검토자는 같은 회사의 기본 모델로 실행하고 그 사실을 답변에 적는다. 모델 문제로 검토를 멈추지 않는다.
 
-Read `references/reviewer-prompt.md` and fill in the same template for every reviewer with the stated intent, the diff or file contents, the rubric from `references/rubric.md`, and the code-quality lens from `references/code-quality-review.md`. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.
+`references/reviewer-prompt.md`를 읽고 모든 검토자에게 같은 템플릿을 채워 준다. 채울 내용은 적어 둔 의도, diff나 파일 내용, `references/rubric.md`의 채점 기준, `references/code-quality-review.md`의 코드 품질 관점이다. 각 서브에이전트의 추론 수준은 일에 맞게 고른다(**pstack-mode** 스킬의 서브에이전트 절과 역할별 모델의 고르는 규칙).
 
-## Step 4, Synthesize
+## 4단계, 종합
 
-As results come back, build a unified picture. Parse every reviewer's findings. Merge findings that describe the same issue differently, and note which models raised each one. Findings two or more models raised independently are the highest signal. Read a lone model's finding, but weight it accordingly. Note disagreements. If one model flags something and another explicitly says the opposite, that is context for the verdict.
+결과가 오는 대로 하나의 그림으로 합친다. 모든 검토자의 지적을 읽는다. 같은 문제를 다르게 적은 지적은 합치고, 각 지적을 어느 모델이 냈는지 적는다. 두 모델 이상이 독립적으로 낸 지적이 가장 강한 신호다. 한 모델만 낸 지적도 읽되 그만큼만 무게를 둔다. 의견이 갈린 곳을 적는다. 한 모델이 문제를 짚고 다른 모델이 분명히 반대로 말하면 그것도 판정의 맥락이다.
 
-## Step 5, Lead Judgment
+## 5단계, 주 검토자 판단
 
-You are the lead reviewer, a pragmatic senior engineer, not a neutral aggregator. Read `references/lead-judgment.md` for the full framework. Put every finding in one of four buckets, with the model(s) that raised it and a one-line rationale.
+나는 중립적인 집계자가 아니라 주 검토자이고, 실용적인 시니어 엔지니어다. 전체 기준은 `references/lead-judgment.md`를 읽는다. 모든 지적을 네 갈래 중 하나에 넣고, 낸 모델과 한 줄 근거를 붙인다.
 
-- **Act on**. Real issues affecting correctness, security, or maintainability given the actual goals. They would block a real PR.
-- **Consider**. Legitimate, but you're not sure they outweigh the cost of addressing them now. Worth the user's attention.
-- **Noted**. Technically valid but not actionable. Context-dependent, premature optimization, or low-impact at this stage.
-- **Dismissed**. Wrong, nitpicky, or missing context, with a brief reason.
+- **반영**. 실제 목표에 비춰 정확성, 보안, 유지보수성에 영향을 주는 진짜 문제. 실제 PR이라면 머지를 막을 문제다.
+- **검토**. 타당하지만 지금 고치는 비용보다 큰지는 확실하지 않은 문제. 사용자가 볼 가치가 있다.
+- **참고**. 기술적으로는 맞지만 지금 할 일은 없는 지적. 맥락에 따라 다르거나, 섣부른 최적화이거나, 지금 단계에서 영향이 작다.
+- **기각**. 틀렸거나, 사소한 지적이거나, 맥락을 놓친 지적. 짧은 이유를 붙인다.
 
-## Output Format
+## 출력 형식
 
-### Intent
-> [The stated intent paragraph from Step 2]
+### 의도
+> [2단계에서 적은 의도 문단]
 
-### Reviewers
-- Reviewer [label]: [model name], [N findings] (one bullet per reviewer)
+### 검토자
+- 검토자 [이름]: [모델 이름], 지적 [N]건 (검토자마다 한 줄)
 
-### Act On
-[Each: description, which models raised it, why it matters.]
+### 반영
+[항목마다: 설명, 낸 모델, 중요한 이유.]
 
-### Consider
-[Each: description, which models raised it, the tradeoff.]
+### 검토
+[항목마다: 설명, 낸 모델, 득실.]
 
-### Noted
-[Brief list.]
+### 참고
+[짧은 목록.]
 
-### Dismissed
-[Each with a brief rationale.]
+### 기각
+[항목마다 짧은 근거.]
 
-### Agreement Map
-[Where models agreed and diverged, and what that pattern tells us.]
+### 일치 지도
+[모델끼리 의견이 같았던 곳과 갈린 곳, 그 양상이 말해 주는 것.]

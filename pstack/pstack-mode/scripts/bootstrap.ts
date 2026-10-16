@@ -11,7 +11,7 @@ const commanderPackagePath = join(
 );
 const installKeyPath = join(
   nodeModulesDirectory,
-  ".poteto-mode-tools-install-key"
+  ".pstack-mode-tools-install-key"
 );
 
 function currentInstallKey(): string {
@@ -40,12 +40,12 @@ export function ensureDependenciesInstalled(): void {
     process.stdout.write(result.stdout);
     process.stderr.write(result.stderr);
     throw new Error(
-      `bun install --frozen-lockfile exited with status ${result.exitCode}`
+      `bun install --frozen-lockfile 실패(종료 코드 ${result.exitCode})`
     );
   }
   if (!existsSync(commanderPackagePath)) {
     throw new Error(
-      "bun install --frozen-lockfile completed without installing commander"
+      "bun install --frozen-lockfile은 끝났지만 commander가 설치되지 않음"
     );
   }
 

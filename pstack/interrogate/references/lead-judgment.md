@@ -1,39 +1,39 @@
-# Lead Judgment Framework
+# 주 검토자 판단 기준
 
-## Filtering Principles
+## 걸러 내는 원칙
 
-### Nitpick Gravity
+### 사소한 지적의 인력
 
-Reviewers, especially adversarial ones, tend to fill their review. If they don't find critical issues, they'll inflate nits to fill the space. If a reviewer's findings are all nits and style preferences, the code is probably fine. Say so.
+검토자, 특히 공격적인 검토자는 검토를 채우려는 경향이 있다. 치명적인 문제를 못 찾으면 사소한 지적을 부풀려 빈자리를 채운다. 한 검토자의 지적이 전부 사소한 지적과 스타일 취향이면 코드는 아마 괜찮다. 그렇다고 말한다.
 
-### Hypothetical vs. Actual
+### 가정 대 실제
 
-"What if someone passes null here?" is only a finding if the caller can actually pass null. Trace the call site. If the input is validated upstream or the type system prevents it, dismiss the finding. Reviewers working from a diff can't always see the full call chain. You can.
+"누가 여기에 null을 넘기면?"은 호출부가 실제로 null을 넘길 수 있을 때만 지적이다. 호출 지점을 따라간다. 입력이 앞에서 검증되거나 타입 시스템이 막으면 그 지적을 기각한다. diff만 보는 검토자는 전체 호출 사슬을 늘 볼 수는 없다. 나는 볼 수 있다.
 
-### Premature Abstraction Warnings
+### 섣부른 추상화 권고
 
-Reviewers often suggest extracting functions, adding interfaces, or creating abstractions. Does this code need to change in a second way? If not, the abstraction is premature. Simple inline code that works beats a clean abstraction that's overkill for the current scope.
+검토자는 함수 추출, 인터페이스 추가, 추상화 생성을 자주 권한다. 이 코드가 두 번째 방식으로 바뀔 필요가 있는가? 없다면 그 추상화는 섣부르다. 지금 범위에 과한 깔끔한 추상화보다 동작하는 단순한 인라인 코드가 낫다.
 
-### "I Would Have Done It Differently"
+### "나라면 다르게 했을 것"
 
-This is the most common false positive in code review. A finding that amounts to "I prefer a different approach" is not a bug, not a design flaw, and not actionable unless the reviewer shows a concrete problem with the current approach. Dismiss these, and say why.
+코드 검토에서 가장 흔한 거짓 양성이다. "다른 방식이 더 좋다"에 그치는 지적은 버그도 설계 결함도 아니고, 검토자가 현재 방식의 구체적인 문제를 보여 주지 않는 한 할 일도 없다. 이런 지적은 기각하고 이유를 말한다.
 
-### Missing Context Signals
+### 맥락을 놓친 신호
 
-Watch for findings that reveal the reviewer didn't understand the context:
-- Suggesting changes to code the author didn't write or modify
-- Flagging patterns that are consistent with the rest of the codebase (the reviewer just doesn't know that)
-- Recommending approaches that conflict with constraints you know about
+검토자가 맥락을 이해하지 못했음을 드러내는 지적을 살핀다.
+- 작성자가 쓰거나 고치지 않은 코드의 변경을 권함
+- 코드베이스 나머지와 일관된 패턴을 문제로 짚음(검토자가 그 사실을 모를 뿐)
+- 내가 아는 제약과 충돌하는 방식을 권함
 
-These are honest mistakes from reviewers working with limited information. Dismiss them gracefully.
+정보가 제한된 검토자가 저지르는 정직한 실수다. 정중하게 기각한다.
 
-## When Reviewers Are Right
+## 검토자가 옳을 때
 
-Don't dismiss findings just because they're uncomfortable. The whole point of adversarial review is to catch things you'd miss. Signs a finding deserves attention:
+불편하다는 이유로 지적을 기각하지 않는다. 공격적 검토의 목적은 내가 놓칠 것을 잡는 데 있다. 주의할 만한 지적의 신호는 다음과 같다.
 
-- Multiple models flag the same issue independently (consensus signal)
-- The finding identifies a concrete execution path, not a hypothetical
-- The finding reveals a gap in your mental model of the code
-- You read the finding and think "...yeah, actually"
+- 여러 모델이 독립적으로 같은 문제를 짚음(합의 신호)
+- 가정이 아니라 구체적인 실행 경로를 짚음
+- 코드에 대한 내 머릿속 모형의 빈틈을 드러냄
+- 읽고 나서 "...음, 사실 그렇네"라는 생각이 듦
 
-Be especially careful about dismissing security findings and correctness bugs. These deserve more scrutiny even when they come from a single model.
+보안 지적과 정확성 버그를 기각할 때는 특히 조심한다. 한 모델만 낸 지적이어도 더 꼼꼼히 따질 가치가 있다.

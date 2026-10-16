@@ -1,155 +1,155 @@
-### Multi-phase or multi-PR plan
+### 여러 단계 또는 여러 PR 계획
 
-**You own the plan, not the code. The plan is a checklist an owner runs box by box and the operator audits from the evidence.** The plan is the deliverable. Do not implement.
+**코드가 아니라 계획을 맡는다. 계획은 담당자가 상자 하나씩 실행하고 사용자가 증거로 감사하는 체크리스트다.** 계획이 산출물이다. 구현하지 않는다.
 
-1. When the change is one or two files with an obvious approach, skip the plan. Say so and stop.
-2. Settle open questions by prototype before you write. Run `playbooks/prototype.md` for each. Keep the branch, the SHA, and the screenshots for Appendix A. Ask the operator only about a product or preference call that no run can settle. Give options (the **never-block-on-the-human** principle skill).
-3. Explore in subagents with `subagent_type: "poteto-agent"` and an explicit model per the Subagents section (the **guard-the-context-window** principle skill). Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section. Each returns file pointers, conventions, test commands, and entry points. No inlined dumps.
-4. Copy the skeleton below into the plan file and fill every placeholder. Unless the operator names a path, write the file under the agent store's `docs/`. Keep every heading and every sub-block in the order shown. One section per PR. One PR is one change with its own evidence (the **sequence-verifiable-units** principle skill). Name the execution playbook in **How to read this**. Pick between `playbooks/autopilot-full.md` and `playbooks/autopilot-stack.md` per the rule at the end of `playbooks/autopilot-stack.md`. A standing program takes `playbooks/orchestrate.md`.
-5. Write under `/technical-writing` in full, then `/unslop`. The body is one Diátaxis mode, how-to. Appendices hold explanation and reference. Each heading states the task or the finding. No long dashes. No mid-sentence colons.
-6. Run `node pstack/skills/poteto-mode/scripts/check-plan.mjs <plan.md>` and fix every line it prints (the **encode-lessons-in-structure** principle skill).
-7. Hand back. Post the plan path and the script's output, then stop. Execution starts on the operator's explicit go, under the execution playbook the plan names.
+1. 변경이 파일 한두 개이고 방법이 뻔하면 계획을 건너뛴다. 그렇다고 말하고 멈춘다.
+2. 쓰기 전에 열린 질문을 프로토타입으로 정리한다. 질문마다 `playbooks/prototype.md`를 실행한다. 부록 A에 쓸 브랜치, SHA, 스크린샷을 남긴다. 어떤 실행으로도 정할 수 없는 제품·취향 판단만 사용자에게 묻는다. 선택지를 함께 준다(**never-block-on-the-human** 원칙 스킬).
+3. 탐색은 `pstack-agent` 서브에이전트에 맡긴다([호스트 대응표](../references/hosts.md)). 서브에이전트 절에 따라 역할별 모델을 명시한다(**guard-the-context-window** 원칙 스킬). 서브에이전트마다 일에 맞는 추론 수준을 고른다. 각 서브에이전트는 파일 위치, 관례, 테스트 명령, 진입점을 돌려준다. 내용을 통째로 붙여 넣지 않는다.
+4. 아래 뼈대를 계획 파일에 복사하고 모든 자리 표시자를 채운다. 사용자가 경로를 정하지 않으면 에이전트 스토어 폴더의 `docs/` 아래에 쓴다. 모든 제목과 하위 블록을 보인 순서대로 유지한다. PR 하나에 절 하나를 둔다. PR 하나는 자기 증거를 가진 변경 하나다(**sequence-verifiable-units** 원칙 스킬). **읽는 법**에 실행 플레이북 이름을 적는다. `playbooks/autopilot-full.md`와 `playbooks/autopilot-stack.md` 중 하나를 `playbooks/autopilot-stack.md` 끝의 규칙에 따라 고른다. 상시 운영 프로그램은 `playbooks/orchestrate.md`를 쓴다.
+5. `technical-writing` 스킬로 전부 쓴 뒤 `unslop` 스킬을 돌린다. 본문은 Diátaxis의 how-to 한 가지 방식으로 쓴다. 설명과 참고 자료는 부록에 둔다. 각 제목은 할 일이나 발견한 사실을 말한다. 긴 대시를 쓰지 않는다. 문장 중간에 콜론을 쓰지 않는다.
+6. `node <pstack-mode 스킬 폴더>/scripts/check-plan.mjs <plan.md>`를 실행하고 출력된 줄을 모두 고친다(**encode-lessons-in-structure** 원칙 스킬).
+7. 넘긴다. 계획 경로와 스크립트 출력을 올리고 멈춘다. 실행은 사용자의 명시적 시작 지시가 있을 때 계획이 정한 실행 플레이북으로 시작한다.
 
-**Verification.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked (the **prove-it-works** principle skill). That sentence is the verification rule. Every verification block opens with it. The live block is mandatory. Ten lanes at the PR head drive the real surface through its control skill, per the **swarm** skill, on the `swarm workers` model (default `grok-4.7-xhigh-fast`). Each lane is one box with a concrete scenario, the screenshot it saves, and its pass predicate. One lane is the **Regression lane against trunk.** It runs the same load-bearing scenario on trunk and head. If trunk does not have the feature, the lane records that fact and gates the behavior the diff adds plus the end state the user waits for instead of inventing a trunk result. The perf gate is dual-sided. Trunk and head must both produce the named metric. If trunk lacks the feature, also isolate the work the diff adds and set an absolute budget for that work plus the end-to-end state the user waits for. Do not claim a ratio between unlike scenarios. The perf block names the metric, the interleaved probe, the trunk baseline measured first, and the rule with the number that fails. A PR that changes an interaction is review-gated. The operator reviews it in chat with screenshots and a video before merge. A PR that changes no interaction writes `**Review gate.** None. <PR id> is not review-gated.` and no boxes under it.
+**검증.** 테스트만으로는 검증이 충분하지 않다. PR은 단위, 실사용, 성능 상자가 모두 체크됐을 때만 검증된 것이다(**prove-it-works** 원칙 스킬). 이 문장이 검증 규칙이다. 모든 검증 블록은 이 문장으로 시작한다. 실사용 블록은 필수다. **swarm** 스킬에 따라 PR head에서 검증 항목 10개가 검증 스킬로 실제 화면이나 CLI를 조작한다. 모델은 `code` 역할이다([역할별 모델](../references/models.md)). 검증 항목 하나는 상자 하나이고 구체적인 시나리오, 저장할 스크린샷, 통과 조건을 적는다. 그중 하나는 **trunk 대비 회귀 검증 항목**이다. 같은 핵심 시나리오를 trunk와 head에서 돌린다. trunk에 기능이 없으면 trunk 결과를 지어내지 않는다. 그 사실을 기록하고 diff가 더한 동작과 사용자가 기다리는 최종 상태를 대신 판정한다. 성능 게이트는 양쪽을 본다. trunk와 head 모두 같은 지표를 내야 한다. trunk에 기능이 없으면 diff가 더한 작업을 따로 떼어 그 작업과 사용자가 기다리는 종단 간 상태에 절대 예산을 정한다. 서로 다른 시나리오 사이의 비율을 주장하지 않는다. 성능 블록은 지표, 번갈아 돌리는 측정 방법, 먼저 잰 trunk 기준값, 실패로 보는 숫자가 든 판정 규칙을 적는다. 상호작용을 바꾸는 PR은 리뷰 게이트 대상이다. 사용자가 머지 전에 대화에서 스크린샷과 영상으로 검토한다. 상호작용을 바꾸지 않는 PR은 `**리뷰 게이트.** 없음. <PR id>는 리뷰 게이트 대상이 아니다.`라고 쓰고 그 아래에 상자를 두지 않는다.
 
-**Control skill.** Pick it by surface. Browser, Electron, and web UIs use `control-ui` from `cursor-team-kit`. CLIs and TUIs use `control-cli` from `cursor-team-kit`. Native mobile uses whatever simulator-driving skill the repo has. A PR that touches two surfaces gets lanes on both. A surface with no control skill is a risk in Appendix C, and its live block still names how each lane drives it.
+**검증 스킬.** 대상 화면에 따라 고른다. 브라우저, Electron, 웹 UI와 CLI, TUI는 `create-verification-skill`로 만든 프로젝트 검증 스킬(`verify-<앱>`)을 쓴다. 네이티브 모바일은 저장소에 있는 시뮬레이터 조작 스킬을 쓴다. 두 화면을 건드리는 PR은 양쪽에 검증 항목을 둔다. 검증 스킬이 없는 화면은 부록 C의 위험으로 적고, 실사용 블록에는 그래도 각 검증 항목을 어떻게 조작하는지 적는다.
 
 ````markdown
-# <Program> plan
+# <프로그램> 계획
 
-<Under ten lines. What changes, for whom, the rule the program enforces, and the PR ids in order.>
+<열 줄 미만. 무엇이 바뀌는지, 누구를 위한 것인지, 프로그램이 지키는 규칙, 순서대로 나열한 PR id.>
 
-## How to read this
+## 읽는 법
 
-One box is one unit of work. Every box names the evidence that checks it. A nested box is a sub-step of the box above it. Check a box only when its evidence exists, a file, a log line, a screenshot, a test run, or a SHA. The body is a how-to. The appendices explain and record.
+상자 하나가 작업 단위 하나다. 모든 상자는 자기를 체크할 증거를 적는다. 들여 쓴 상자는 위 상자의 하위 단계다. 증거가 있을 때만 상자를 체크한다. 증거는 파일, 로그 한 줄, 스크린샷, 테스트 실행, SHA다. 본문은 how-to다. 부록은 설명하고 기록한다.
 
-The program runs `pstack/skills/poteto-mode/playbooks/<execution playbook>.md`. <Who merges, and which PR ids are the operator's items that stop at merge-ready.>
+이 프로그램은 `<pstack-mode 스킬 폴더>/playbooks/<실행 플레이북>.md`로 실행한다. <누가 머지하는지, 그리고 어느 PR id가 머지 준비에서 멈추는 사용자 몫인지.>
 
-Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+테스트만으로는 검증이 충분하지 않다. PR은 단위, 실사용, 성능 상자가 모두 체크됐을 때만 검증된 것이다.
 
-## Program checklist
+## 프로그램 체크리스트
 
-### Arm the program
+### 프로그램 시작 준비
 
-- [ ] State the protocol and this plan to the operator, then stop. Start execution only on the operator's explicit go.
-- [ ] Read these from trunk at program start. Re-read them at every tick.
-  - [ ] `git show origin/main:pstack/skills/poteto-mode/playbooks/<execution playbook>.md`
-  - [ ] `git show origin/main:pstack/skills/swarm/SKILL.md`
-  - [ ] `git show origin/main:<control skill path>`
-  - [ ] `git show origin/main:pstack/skills/poteto-mode/playbooks/opening-a-pr.md`
-  - [ ] `git show origin/main:pstack/skills/<each other leaf skill the program uses>`
-- [ ] On the operator's go, arm the audit tick as `/loop 1h` with the tick prompt below. Never leave the cadence to memory.
-- [ ] Use this tick prompt, verbatim. "Re-read the execution playbook from trunk. Audit the operation against it and fix drift in this tick. Probe every active lane and judge progress by side effects only. Stand down a stuck lane and dispatch its replacement now. Then post a short status message to the operator in chat only when the audit found a tracked change that no earlier status message reported, such as a PR opened, a code-ready head, a round launched or closed, a verdict, a merge, a stuck agent and the action taken, a blocker added or cleared, or a decision only the operator can make. Name every such change and nothing else. Do not repeat a table, the merged list, or an unchanged blocker. If the audit found none, end the turn with no reply text. Either way, log this tick's row in your decision trail. The row names the items reported, or none."
-- [ ] On the operator's hold or stand-down, send every owner a zero-writes order at once.
+- [ ] 사용자에게 진행 방식과 이 계획을 설명하고 멈춘다. 실행은 사용자의 명시적 시작 지시가 있을 때만 시작한다.
+- [ ] 프로그램 시작 때 trunk에서 다음을 읽는다. 주기 확인 때마다 다시 읽는다. 스킬이 저장소 밖에 설치돼 있으면 설치된 파일을 매번 다시 읽는다.
+  - [ ] `git show origin/main:<pstack-mode 스킬 폴더>/playbooks/<실행 플레이북>.md`
+  - [ ] `git show origin/main:<swarm 스킬 폴더>/SKILL.md`
+  - [ ] `git show origin/main:<검증 스킬 경로>`
+  - [ ] `git show origin/main:<pstack-mode 스킬 폴더>/playbooks/opening-a-pr.md`
+  - [ ] `git show origin/main:<프로그램이 쓰는 다른 스킬 폴더>/SKILL.md`
+- [ ] 사용자의 시작 지시가 있으면 아래 주기 확인 프롬프트로 1시간마다 주기적으로 다시 깨우기를 건다(호스트 대응표). 주기를 기억에 맡기지 않는다.
+- [ ] 주기 확인 프롬프트는 이 문장을 그대로 쓴다. "trunk에서 실행 플레이북을 다시 읽는다. 운영 상태를 플레이북과 대조하고 어긋난 점을 이번 확인에서 고친다. 진행 중인 모든 작업을 확인하고 진행 여부는 부수 효과로만 판단한다. 멈춘 작업은 내리고 대체 작업을 바로 보낸다. 그다음 이전 상태 메시지가 알리지 않은 추적 대상 변화를 감사에서 찾았을 때만 사용자에게 대화로 짧은 상태 메시지를 보낸다. 예를 들면 PR 생성, 코드 준비가 끝난 head, 라운드 시작이나 종료, 판정, 머지, 멈춘 에이전트와 취한 조치, 추가되거나 풀린 차단 요인, 사용자만 내릴 수 있는 결정이다. 그런 변화만 모두 적고 다른 것은 적지 않는다. 표, 머지 목록, 바뀌지 않은 차단 요인을 반복하지 않는다. 찾은 것이 없으면 답변 글 없이 차례를 끝낸다. 어느 쪽이든 결정 기록에 이번 확인의 행을 남긴다. 그 행에는 알린 항목을 적거나 없음이라고 적는다."
+- [ ] 사용자가 보류나 중단을 지시하면 모든 담당자에게 즉시 쓰기 금지 지시를 보낸다.
 
-### Spawn owners
+### 담당자 띄우기
 
-- [ ] Spawn one owner per PR with the full lifecycle the execution playbook names.
-- [ ] Follow this dependency graph. Start dependent work only after its parent merges, or base it on the parent branch when the execution playbook stacks.
-  - [ ] <PR id> and <PR id> are independent and first. Both branch from `main`.
-  - [ ] <PR id> after <PR id>.
-- [ ] Hold the file boundaries. <PR id or class> touches only `<glob>`.
-- [ ] Hold the review gate. <PR ids> change an interaction. They wait for the operator's review in chat with screenshots and a video before merge.
+- [ ] PR마다 담당자 하나를 띄우고 실행 플레이북이 정한 전체 수명 주기를 맡긴다.
+- [ ] 이 의존 관계를 따른다. 의존 작업은 부모가 머지된 뒤 시작하거나, 실행 플레이북이 스택을 쌓으면 부모 브랜치 위에서 시작한다.
+  - [ ] <PR id>와 <PR id>는 서로 독립이고 먼저 시작한다. 둘 다 `main`에서 브랜치를 만든다.
+  - [ ] <PR id>는 <PR id> 다음이다.
+- [ ] 파일 경계를 지킨다. <PR id 또는 분류>는 `<glob>`만 건드린다.
+- [ ] 리뷰 게이트를 지킨다. <PR id 목록>은 상호작용을 바꾼다. 머지 전에 사용자가 대화에서 스크린샷과 영상으로 검토할 때까지 기다린다.
 
-### PR mechanics, for every PR
+### PR 절차(모든 PR 공통)
 
-- [ ] Resolve the forge once. Default to `gh`; if `command -v origin` succeeds and Origin can resolve the repository, use `origin pr` for every PR operation. Record any fallback to `gh`. Never require `gt`.
-- [ ] Open the PR ready, never draft, per **Opening a PR**. Use the run's built-in PR tool when it has one, else `origin pr create --status open --base <base-branch>` or `gh pr create --base <base-branch>` according to the resolved forge. A stack child targets its parent branch.
-- [ ] Run the repo's lint and typecheck once before the PR-facing push. Push with hooks on.
-- [ ] Run `/deslop` before each commit and `/no-comments` before review.
-- [ ] Triage every Bugbot and security-reviewer comment per `../references/bugbot-triage.md`.
-- [ ] Rebase onto current trunk before the code-ready report and babysit. Keep that merge base in fix rounds. Rebase again only at merge prep, on a `git merge-tree` conflict with trunk, or on a CI failure that comes from a change on trunk.
+- [ ] PR 작업은 모두 `gh`로 한다. `gt`를 요구하지 않는다.
+- [ ] `<pstack-mode 스킬 폴더>/playbooks/opening-a-pr.md`에 따라 PR을 draft가 아닌 ready로 연다. 실행 환경에 내장 PR 도구가 있으면 쓰고, 없으면 `gh pr create --base <base-branch>`를 쓴다. 스택의 자식 PR은 부모 브랜치를 대상으로 한다.
+- [ ] PR에 반영할 push 전에 저장소의 lint와 typecheck를 한 번 돌린다. hook을 켠 채로 push한다.
+- [ ] 커밋마다 그 전에 `unslop` 스킬을, 리뷰 전에 `no-comments` 스킬을 돌린다.
+- [ ] 리뷰 봇(설정된 경우)의 댓글은 모두 `<pstack-mode 스킬 폴더>/references/bugbot-triage.md`에 따라 분류한다. 리뷰 봇이 없으면 `interrogate` 스킬로 교차 검토한다.
+- [ ] 코드 준비 보고와 PR 관리 전에 현재 trunk 위로 rebase한다. 수정 라운드 동안 그 merge base를 유지한다. 다시 rebase하는 때는 머지 준비 단계, trunk와 `git merge-tree` 충돌이 날 때, trunk의 변경 때문에 CI가 실패할 때뿐이다.
 
-### Verdict and merge, for every PR
+### 판정과 머지(모든 PR 공통)
 
-- [ ] A full swarm runs once, at the code-ready head. Another full swarm runs only for new behavior, a redesign, or a large new diff. A rebase, a merge-conflict resolution, or a minor fix gets a single verifier at the new head. Run each full swarm per `pstack/skills/swarm/SKILL.md`. One gates lane. The ten live lanes from the PR's **Verify, live** block. The perf lane from its **Verify, perf** block. Two or more audit lanes, each with its own focus, that read the diff and the receipts and distrust the PR body. The root audits the receipts in the merge-ready report before the verdict.
-- [ ] Clean only when every lane is `PASS`. Findings go back to the owner, including a defect that a lane filed as a note. A new head gets a fresh verdict, except for results that stay valid under the patch-id rule in `playbooks/shipping.md`.
-- [ ] <The merge or append rule from the execution playbook, with the patch-id rule from `playbooks/shipping.md`.>
+- [ ] 전체 swarm은 코드 준비가 끝난 head에서 한 번 돈다. 전체 swarm을 다시 돌리는 때는 새 동작, 재설계, 큰 새 diff뿐이다. rebase, merge 충돌 해결, 작은 수정은 새 head에서 검증자 하나로 확인한다. 전체 swarm은 `<swarm 스킬 폴더>/SKILL.md`에 따라 돌린다. 게이트 검증 항목 하나. PR의 **검증, 실사용.** 블록에 있는 실사용 검증 항목 10개. **검증, 성능.** 블록의 성능 검증 항목. 각자 다른 초점으로 diff와 증거를 읽고 PR 본문을 믿지 않는 감사 검증 항목 둘 이상. 판정 전에 루트가 머지 준비 보고의 증거를 감사한다.
+- [ ] 모든 검증 항목이 `PASS`일 때만 깨끗한 판정이다. 발견 사항은 담당자에게 돌려보낸다. 검증 항목이 메모로 남긴 결함도 포함한다. 새 head는 새 판정을 받는다. `playbooks/shipping.md`의 patch-id 규칙으로 유효한 결과는 예외다.
+- [ ] <실행 플레이북의 머지 또는 스택 추가 규칙과 `playbooks/shipping.md`의 patch-id 규칙.>
 
-### Boot recipe, for every live lane
+### 부팅 절차(모든 실사용 검증 항목 공통)
 
-Each live lane runs on its own cloud VM at the PR head. Drive through `control-ui` or `control-cli` from `cursor-team-kit`.
+각 실사용 검증 항목은 PR head를 체크아웃한 별도 워크트리의 독립 서브에이전트에서 돈다. 프로젝트 검증 스킬(`verify-<앱>`)로 조작한다.
 
 - [ ] `git fetch origin <head-branch> && git checkout <head SHA>`.
-- [ ] <Start the backend and the surface. Wait for ready.>
-- [ ] <Deliver input only through the control skill's commands. Name the read-only diagnostics.>
-- [ ] Save every screenshot to `/tmp/swarm-<pr-id>/worker-<n>/<slug>.png` and return the paths with the report.
+- [ ] <백엔드와 대상 화면을 띄운다. 준비될 때까지 기다린다.>
+- [ ] <입력은 검증 스킬의 명령으로만 넣는다. 읽기 전용 진단 도구를 적는다.>
+- [ ] 모든 스크린샷을 `/tmp/swarm-<pr-id>/worker-<n>/<slug>.png`에 저장하고 보고와 함께 경로를 돌려준다.
 
-## <Task as a verb phrase> (<PR id>)
+## <동사구로 쓴 할 일> (<PR id>)
 
-**Depends on.** <PR id, or None.>
+**선행 PR.** <PR id 또는 없음.>
 
-**Files.**
+**파일.**
 
-- [ ] Edit `<path>`.
-- [ ] Create `<path>`.
-- [ ] Delete `<path>`.
+- [ ] `<path>`를 고친다.
+- [ ] `<path>`를 만든다.
+- [ ] `<path>`를 지운다.
 
-**Build.**
+**구현.**
 
-- [ ] <One change. Name the symbol and the file.>
+- [ ] <변경 하나. 심볼과 파일을 적는다.>
 
-**You see.**
+**확인할 결과.**
 
-- [ ] <One observable result, with the exact log line or screen state.>
+- [ ] <관찰 가능한 결과 하나. 정확한 로그 줄이나 화면 상태를 적는다.>
 
-**Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+**검증, 단위.** 테스트만으로는 검증이 충분하지 않다. PR은 단위, 실사용, 성능 상자가 모두 체크됐을 때만 검증된 것이다.
 
-- [ ] <Test file and the case it gains.> Run `<command>`.
+- [ ] <테스트 파일과 추가할 케이스.> `<command>`를 실행한다.
 
-**Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `<swarm workers model>` at the PR head, per the boot recipe.
+**검증, 실사용.** 테스트만으로는 검증이 충분하지 않다. PR은 단위, 실사용, 성능 상자가 모두 체크됐을 때만 검증된 것이다. 부팅 절차대로 PR head에서 `<swarm 작업자 역할>` 역할 모델로 검증 항목 10개를 돌린다.
 
-- [ ] Lane 1. Regression lane against trunk. Run <the same load-bearing scenario> at trunk and head. If trunk lacks the feature, record that and gate <the behavior the diff adds plus the end state the user waits for>. Save `<slug>.png`. Pass when <predicate>.
-- [ ] Lane 2. <Scenario.> Save `<slug>.png`. Pass when <predicate>.
-- [ ] Lane 3. <Scenario.> Save `<slug>.png`. Pass when <predicate>.
-- [ ] Lane 4. <Scenario.> Save `<slug>.png`. Pass when <predicate>.
-- [ ] Lane 5. <Scenario.> Save `<slug>.png`. Pass when <predicate>.
-- [ ] Lane 6. <Scenario.> Save `<slug>.png`. Pass when <predicate>.
-- [ ] Lane 7. <Scenario.> Save `<slug>.png`. Pass when <predicate>.
-- [ ] Lane 8. <Scenario.> Save `<slug>.png`. Pass when <predicate>.
-- [ ] Lane 9. <Scenario.> Save `<slug>.png`. Pass when <predicate>.
-- [ ] Lane 10. <Scenario.> Save `<slug>.png`. Pass when <predicate>.
+- [ ] 검증 항목 1. trunk 대비 회귀 검증 항목. <같은 핵심 시나리오>를 trunk와 head에서 돌린다. trunk에 기능이 없으면 그 사실을 기록하고 <diff가 더한 동작과 사용자가 기다리는 최종 상태>를 판정한다. `<slug>.png` 저장. 통과 조건은 <조건>.
+- [ ] 검증 항목 2. <시나리오.> `<slug>.png` 저장. 통과 조건은 <조건>.
+- [ ] 검증 항목 3. <시나리오.> `<slug>.png` 저장. 통과 조건은 <조건>.
+- [ ] 검증 항목 4. <시나리오.> `<slug>.png` 저장. 통과 조건은 <조건>.
+- [ ] 검증 항목 5. <시나리오.> `<slug>.png` 저장. 통과 조건은 <조건>.
+- [ ] 검증 항목 6. <시나리오.> `<slug>.png` 저장. 통과 조건은 <조건>.
+- [ ] 검증 항목 7. <시나리오.> `<slug>.png` 저장. 통과 조건은 <조건>.
+- [ ] 검증 항목 8. <시나리오.> `<slug>.png` 저장. 통과 조건은 <조건>.
+- [ ] 검증 항목 9. <시나리오.> `<slug>.png` 저장. 통과 조건은 <조건>.
+- [ ] 검증 항목 10. <시나리오.> `<slug>.png` 저장. 통과 조건은 <조건>.
 
-**Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+**검증, 성능.** 테스트만으로는 검증이 충분하지 않다. PR은 단위, 실사용, 성능 상자가 모두 체크됐을 때만 검증된 것이다.
 
-- [ ] Metric. <What is measured at both trunk and head. If trunk lacks the feature, also name the diff-added work and the end-to-end state the user waits for.>
-- [ ] Probe. <The command or procedure, run at trunk and at the head, interleaved. Both sides must produce the metric.>
-- [ ] Baseline. Record the trunk <value> first.
-- [ ] Rule. <Head against trunk, with the number that fails. If the scenarios differ, add absolute budgets for the diff-added work and the user-visible end state instead of an invalid ratio.>
+- [ ] 지표. <trunk와 head 양쪽에서 재는 것. trunk에 기능이 없으면 diff가 더한 작업과 사용자가 기다리는 종단 간 상태도 적는다.>
+- [ ] 측정. <trunk와 head에서 번갈아 돌리는 명령이나 절차. 양쪽 모두 지표를 내야 한다.>
+- [ ] 기준값. trunk의 <값>을 먼저 기록한다.
+- [ ] 판정. <trunk 대비 head, 실패로 보는 숫자. 시나리오가 다르면 잘못된 비율 대신 diff가 더한 작업과 사용자에게 보이는 최종 상태에 절대 예산을 둔다.>
 
-**Review gate.** The operator reviews before merge.
+**리뷰 게이트.** 머지 전에 사용자가 검토한다.
 
-- [ ] Copy lane <n> screenshots into `<media path>/<pr-id>-review-<slug>.png`.
-- [ ] Record a 30 to 60 second video of the change on a lane VM. Save it as `<media path>/<pr-id>-review.mp4`.
-- [ ] Post the screenshots and the video in chat. Stop at merge-ready. Wait for the operator's click.
+- [ ] 검증 항목 <n>의 스크린샷을 `<media path>/<pr-id>-review-<slug>.png`로 복사한다.
+- [ ] 검증 항목 워크트리에서 변경을 보여 주는 30초에서 60초 길이의 영상을 녹화한다. `<media path>/<pr-id>-review.mp4`로 저장한다.
+- [ ] 스크린샷과 영상을 대화에 올린다. 머지 준비에서 멈춘다. 사용자의 승인을 기다린다.
 
-**Merge.**
+**머지.**
 
-- [ ] Root's clean verdict at the exact head SHA.
-- [ ] Bugbot triage done.
-- [ ] Rebased onto current trunk after the verdict, patch-id unchanged.
-- [ ] <The owner squash-merges its own PR, or the root appends it to the base-branch stack and the operator lands it bottom-up.>
+- [ ] 정확한 head SHA에서 루트의 깨끗한 판정.
+- [ ] 리뷰 봇 댓글 분류 완료.
+- [ ] 판정 뒤 현재 trunk 위로 rebase했고 patch-id가 그대로다.
+- [ ] <담당자가 자기 PR을 squash-merge하거나, 루트가 base 브랜치 스택에 붙이고 사용자가 아래부터 머지한다.>
 
-## Close the program
+## 프로그램 마무리
 
-- [ ] Every box above is checked with its evidence.
-- [ ] Reply to the operator with the report the execution playbook names.
+- [ ] 위의 모든 상자가 증거와 함께 체크됐다.
+- [ ] 실행 플레이북이 정한 보고로 사용자에게 답한다.
 
-## Appendix A. Prototype evidence
+## 부록 A. 프로토타입 증거
 
-<Each open question a prototype answered, with the branch, the SHA, and the artifact links. Each question that stays unproven.>
+<프로토타입이 답한 열린 질문마다 브랜치, SHA, 산출물 링크. 증명되지 않은 채 남은 질문 각각.>
 
-## Appendix B. Alternatives rejected
+## 부록 B. 기각한 대안
 
-<Each approach weighed and why it lost.>
+<검토한 방법 각각과 진 이유.>
 
-## Appendix C. Risks
+## 부록 C. 위험
 
-<Each risk with the PR it lands in and what the owner watches.>
+<위험 각각과 그 위험이 들어가는 PR, 담당자가 지켜볼 것.>
 
-## Appendix D. Links and reading list
+## 부록 D. 링크와 읽을거리
 
-<Docs to read before editing. Which PRs get `pstack/skills/how/SKILL.md` and `pstack/skills/interrogate/SKILL.md`. The trail per `pstack/skills/show-me-your-work/SKILL.md`.>
+<고치기 전에 읽을 문서. 어느 PR이 `how` 스킬과 `interrogate` 스킬을 거치는지. `show-me-your-work` 스킬에 따른 결정 기록.>
 ````
 
-**Reply:** the plan path, the PR ids with their dependencies and the review-gated set, what the prototypes proved and what stays unproven, and the check script's output.
+**답변:** 계획 경로, 의존 관계를 붙인 PR id, 리뷰 게이트 대상 목록, 프로토타입이 증명한 것과 증명되지 않은 것, 점검 스크립트 출력.

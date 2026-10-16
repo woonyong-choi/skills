@@ -167,7 +167,6 @@ export interface ResolveGateParams {
 
 export interface SetFrontierParams {
   readonly repo: string;
-  readonly forge?: Forge;
   readonly prs?: readonly number[];
 }
 
@@ -288,7 +287,7 @@ export function parseVerdict(value: string): Verdict {
   const verdict = verdictOrNull(value);
   if (verdict === null) {
     throw new UserError(
-      "verdict must be live-ui-verified, unit-test-verified, type-check-only, verifier-blocked, or verifier-failed"
+      "verdict는 live-ui-verified, unit-test-verified, type-check-only, verifier-blocked, verifier-failed 중 하나여야 함"
     );
   }
   return verdict;
@@ -302,7 +301,7 @@ function cleanCell(value: string): string {
 function requiredCell(value: string, label: string): string {
   const cleaned = cleanCell(value);
   if (cleaned.trim().length === 0) {
-    throw new UserError(`${label} must not be empty`);
+    throw new UserError(`${label} 값이 비어 있음`);
   }
   return cleaned;
 }
@@ -310,14 +309,14 @@ function requiredCell(value: string, label: string): string {
 function requiredLine(value: string, label: string): string {
   const cleaned = value.replace(/[\n\r]/g, " ").trim();
   if (cleaned.length === 0) {
-    throw new UserError(`${label} must not be empty`);
+    throw new UserError(`${label} 값이 비어 있음`);
   }
   return cleaned;
 }
 
 function positiveInteger(value: number, label: string): number {
   if (!Number.isSafeInteger(value) || value < 1) {
-    throw new UserError(`${label} must be a positive integer`);
+    throw new UserError(`${label} 값은 양의 정수여야 함`);
   }
   return value;
 }
@@ -359,7 +358,7 @@ async function requiredFile(path: string): Promise<string> {
   } catch (error) {
     if (errorCode(error) === "ENOENT") {
       throw new UserError(
-        `store is not initialized at ${dirname(path)}; run orch init`
+        `스토어가 초기화되지 않음(${dirname(path)}). 먼저 orch init 실행`
       );
     }
     throw error;
@@ -399,7 +398,7 @@ async function acquireLock(
       if (errorCode(retryError) === "EEXIST") {
         const retryHolder =
           (await readFile(path, "utf8")).trim() || "unknown";
-        throw new UserError(`store lock held by pid ${retryHolder}`);
+        throw new UserError(`pid ${retryHolder} 프로세스가 스토어 잠금을 잡고 있음`);
       }
       throw retryError;
     }
@@ -424,7 +423,7 @@ async function acquireLock(
       options.onLockStolen?.(holder);
       await takeOver();
     } else {
-      throw new UserError(`store lock held by pid ${holder}`);
+      throw new UserError(`pid ${holder} 프로세스가 스토어 잠금을 잡고 있음`);
     }
   }
 
@@ -448,14 +447,14 @@ async function readTsv(
 ): Promise<readonly (readonly string[])[]> {
   const lines = (await requiredFile(path)).replace(/\r/g, "").split("\n");
   if (lines.shift() !== header) {
-    throw new UserError(`${basename(path)} has an invalid header`);
+    throw new UserError(`${basename(path)}의 머리 행이 잘못됨`);
   }
   return lines
     .filter((value) => value.length > 0)
     .map((value) => {
       const cells = value.split("\t");
       if (cells.length !== width) {
-        throw new UserError(`${basename(path)} has a malformed row`);
+        throw new UserError(`${basename(path)}에 형식이 잘못된 행이 있음`);
       }
       return cells;
     });
@@ -510,7 +509,7 @@ async function readLedger(store: string): Promise<readonly LedgerEntry[]> {
       const rawVerdict = row[2] ?? "";
       const verdict = verdictOrNull(rawVerdict);
       if (verdict === null) {
-        throw new UserError(`ledger.tsv has invalid verdict ${rawVerdict}`);
+        throw new UserError(`ledger.tsv에 잘못된 verdict가 있음: ${rawVerdict}`);
       }
       return {
         pr: row[0] ?? "",
@@ -565,7 +564,7 @@ async function readPointers(
   } catch (error) {
     if (errorCode(error) === "ENOENT") {
       throw new UserError(
-        `store is not initialized at ${dirname(directory)}; run orch init`
+        `스토어가 초기화되지 않음(${dirname(directory)}). 먼저 orch init 실행`
       );
     }
     throw error;
@@ -581,7 +580,7 @@ async function readPointers(
     );
     const row = raw.split("\t");
     if (/[\r\n]/.test(raw) || row.length !== 5) {
-      throw new UserError(`inbox pointer ${entry.name} is malformed`);
+      throw new UserError(`inbox 포인터 형식이 잘못됨: ${entry.name}`);
     }
     result.push({
       ts: row[0] ?? "",
@@ -620,7 +619,7 @@ async function readGates(store: string): Promise<readonly Gate[]> {
   }
   const prefix = "# Gates\n\n## ";
   if (!raw.startsWith(prefix)) {
-    throw new UserError("gates.md has an invalid heading");
+    throw new UserError("gates.md의 제목이 잘못됨");
   }
   const result: Gate[] = [];
   for (const block of raw.slice(prefix.length).split("\n\n## ")) {
@@ -630,7 +629,7 @@ async function readGates(store: string): Promise<readonly Gate[]> {
     for (const value of lines) {
       const match = /^- ([^:]+): (.*)$/.exec(value);
       if (match === null) {
-        throw new UserError(`gates.md has a malformed gate ${id}`);
+        throw new UserError(`gates.md의 gate 형식이 잘못됨: ${id}`);
       }
       fields.set(match[1] ?? "", match[2] ?? "");
     }
@@ -644,7 +643,7 @@ async function readGates(store: string): Promise<readonly Gate[]> {
       options === undefined ||
       defaultAnswer === undefined
     ) {
-      throw new UserError(`gates.md has a malformed gate ${id}`);
+      throw new UserError(`gates.md의 gate 형식이 잘못됨: ${id}`);
     }
     if (status === "open") {
       result.push({ kind: "open", id, question, options, defaultAnswer });
@@ -658,11 +657,11 @@ async function readGates(store: string): Promise<readonly Gate[]> {
         answer: fields.get("Answer") ?? "",
       });
     } else {
-      throw new UserError(`gates.md has invalid status ${status ?? ""}`);
+      throw new UserError(`gates.md에 잘못된 Status가 있음: ${status ?? ""}`);
     }
   }
   if (new Set(result.map((gate) => gate.id)).size !== result.length) {
-    throw new UserError("gates.md has duplicate gate ids");
+    throw new UserError("gates.md에 중복된 gate id가 있음");
   }
   return result;
 }
@@ -672,10 +671,10 @@ function parseFrontier(raw: string): Frontier {
   try {
     value = JSON.parse(raw);
   } catch {
-    throw new UserError("frontier.json is not valid JSON");
+    throw new UserError("frontier.json이 올바른 JSON이 아님");
   }
   if (!isRecord(value)) {
-    throw new UserError("frontier.json must contain an object");
+    throw new UserError("frontier.json은 객체여야 함");
   }
   if (Object.keys(value).length === 0) {
     return { generation: 0, prs: [], lowestUnmerged: null };
@@ -691,7 +690,7 @@ function parseFrontier(raw: string): Frontier {
         Number.isSafeInteger(value.lowestUnmerged))
     )
   ) {
-    throw new UserError("frontier.json has an invalid shape");
+    throw new UserError("frontier.json의 구조가 잘못됨");
   }
   const prs: FrontierPr[] = [];
   for (const row of value.prs) {
@@ -708,7 +707,7 @@ function parseFrontier(raw: string): Frontier {
       typeof row.sha !== "string" ||
       state === null
     ) {
-      throw new UserError("frontier.json has an invalid PR row");
+      throw new UserError("frontier.json에 잘못된 PR 행이 있음");
     }
     prs.push({
       pr: row.pr,
@@ -743,7 +742,7 @@ async function readStanding(
     const match = /^([1-9]\d*)\. (.+)$/.exec(value);
     const number = Number(match?.[1] ?? 0);
     if (match === null || number !== result.length + 1) {
-      throw new UserError("preferences.md has malformed numbering");
+      throw new UserError("preferences.md의 번호가 잘못됨");
     }
     result.push({ number, line: match[2] ?? "" });
   }
@@ -837,7 +836,7 @@ function previousSummary(raw: string): StatusSummary | null {
 
 function changed(before: StatusSummary | null, after: StatusSummary): string {
   if (before === null) {
-    return "first render";
+    return "첫 생성";
   }
   const result: string[] = [];
   const groups: readonly {
@@ -870,15 +869,15 @@ function changed(before: StatusSummary | null, after: StatusSummary): string {
   }
   if (before.frontierGeneration !== after.frontierGeneration) {
     result.push(
-      `frontier generation ${before.frontierGeneration}->${after.frontierGeneration}`
+      `frontier 세대 ${before.frontierGeneration}->${after.frontierGeneration}`
     );
   }
   if (before.openGateIds.join("\0") !== after.openGateIds.join("\0")) {
     result.push(
-      `open gates ${before.openGateIds.length}->${after.openGateIds.length}`
+      `열린 gate ${before.openGateIds.length}->${after.openGateIds.length}`
     );
   }
-  return result.length === 0 ? "no derived changes" : result.join("; ");
+  return result.length === 0 ? "파생 변경 없음" : result.join("; ");
 }
 
 function markdown(value: string): string {
@@ -906,32 +905,32 @@ function statusMarkdown(
   gateRows: readonly Gate[],
   currentSummary: StatusSummary
 ): string {
-  return `# Orchestrate status
+  return `# orchestrate 상태
 
-Generated: ${new Date().toISOString()}
+생성 시각: ${new Date().toISOString()}
 
-## Units
+## units
 
-States: ${countLine(currentSummary.unitStates)}
+상태별 개수: ${countLine(currentSummary.unitStates)}
 
 ${table(
   ["ID", "Track", "State", "Branch", "PR", "SHA", "Brief"],
   unitRows.map(unitCells)
 )}
 
-## Verification ledger
+## 검증 ledger
 
-Verdicts: ${countLine(currentSummary.ledgerVerdicts)}
+판정별 개수: ${countLine(currentSummary.ledgerVerdicts)}
 
 ${table(
   ["PR", "SHA", "Verdict", "Evidence", "Verifier", "Timestamp"],
   ledgerRows.map(ledgerCells)
 )}
 
-## Frontier
+## frontier
 
-Generation: ${currentFrontier.generation}
-Lowest unmerged: ${currentFrontier.lowestUnmerged ?? "none"}
+세대: ${currentFrontier.generation}
+머지 안 된 가장 아래 PR: ${currentFrontier.lowestUnmerged ?? "none"}
 
 ${table(
   ["Branch", "PR", "SHA", "State"],
@@ -968,49 +967,13 @@ function countLine(value: Counts): string {
     : entries.map(([name, count]) => `${name}=${count}`).join(", ");
 }
 
-export type Forge = "gh" | "origin";
+const GH_PR_STATES = new Map<string, FrontierPrState>([
+  ["OPEN", "OPEN"],
+  ["MERGED", "MERGED"],
+  ["CLOSED", "CLOSED"],
+]);
 
-interface ForgePullRequestQuery {
-  readonly stateField: string;
-  readonly headField: string;
-  readonly baseField: string;
-  readonly states: ReadonlyMap<string, FrontierPrState>;
-}
-
-const FORGE_PULL_REQUEST_QUERIES: Readonly<
-  Record<Forge, ForgePullRequestQuery>
-> = {
-  gh: {
-    stateField: "state",
-    headField: "headRefName",
-    baseField: "baseRefName",
-    states: new Map<string, FrontierPrState>([
-      ["OPEN", "OPEN"],
-      ["MERGED", "MERGED"],
-      ["CLOSED", "CLOSED"],
-    ]),
-  },
-  origin: {
-    stateField: "status",
-    headField: "headRef",
-    baseField: "baseRef",
-    states: new Map<string, FrontierPrState>([
-      ["open", "OPEN"],
-      ["draft", "OPEN"],
-      ["merged", "MERGED"],
-      ["closed", "CLOSED"],
-    ]),
-  },
-};
-
-export function parseForge(value: string): Forge {
-  if (value === "gh" || value === "origin") {
-    return value;
-  }
-  throw new UserError("forge must be gh or origin");
-}
-
-interface ForgePullRequest {
+interface PullRequestRow {
   readonly pr: number;
   readonly state: FrontierPrState;
   readonly branch: string;
@@ -1035,7 +998,7 @@ function runTool({
     });
   } catch (error) {
     throw new UserError(
-      `${command} ${args.join(" ")} failed: ${errorMessage(error)}`
+      `${command} ${args.join(" ")} 실패: ${errorMessage(error)}`
     );
   }
 }
@@ -1043,20 +1006,16 @@ function runTool({
 function listPullRequests({
   filter,
   branch,
-  forge,
   repo,
 }: {
   filter: "--head" | "--base";
   branch: string;
-  forge: Forge;
   repo: string;
-}): readonly ForgePullRequest[] {
-  const query = FORGE_PULL_REQUEST_QUERIES[forge];
-  const command = `${forge} pr list ${filter} ${branch}`;
-  // Every state is fetched because a merged or closed PR still anchors the
-  // chain, and a draft counts as OPEN.
+}): readonly PullRequestRow[] {
+  const command = `gh pr list ${filter} ${branch}`;
+  // 머지되거나 닫힌 PR도 체인을 잇기 때문에 모든 상태를 가져온다.
   const raw = runTool({
-    command: forge,
+    command: "gh",
     args: [
       "pr",
       "list",
@@ -1065,9 +1024,7 @@ function listPullRequests({
       "--state",
       "all",
       "--json",
-      ["number", query.stateField, query.headField, query.baseField].join(
-        ","
-      ),
+      "number,state,headRefName,baseRefName",
     ],
     repo,
   });
@@ -1075,17 +1032,17 @@ function listPullRequests({
   try {
     value = JSON.parse(raw);
   } catch {
-    throw new UserError(`${command} output is not valid JSON`);
+    throw new UserError(`${command} 출력이 올바른 JSON이 아님`);
   }
   if (!isUnknownArray(value)) {
-    throw new UserError(`${command} output is not a JSON array`);
+    throw new UserError(`${command} 출력이 JSON 배열이 아님`);
   }
   return value.map((row) => {
-    const status = isRecord(row) ? row[query.stateField] : undefined;
+    const status = isRecord(row) ? row.state : undefined;
     const state =
-      typeof status === "string" ? (query.states.get(status) ?? null) : null;
-    const head = isRecord(row) ? row[query.headField] : undefined;
-    const base = isRecord(row) ? row[query.baseField] : undefined;
+      typeof status === "string" ? (GH_PR_STATES.get(status) ?? null) : null;
+    const head = isRecord(row) ? row.headRefName : undefined;
+    const base = isRecord(row) ? row.baseRefName : undefined;
     if (
       !isRecord(row) ||
       typeof row.number !== "number" ||
@@ -1097,7 +1054,7 @@ function listPullRequests({
       typeof base !== "string" ||
       base.length === 0
     ) {
-      throw new UserError(`${command} output has an invalid PR row`);
+      throw new UserError(`${command} 출력에 잘못된 PR 행이 있음`);
     }
     return { pr: row.number, state, branch: head, base };
   });
@@ -1105,23 +1062,21 @@ function listPullRequests({
 
 function branchPullRequest({
   branch,
-  forge,
   repo,
 }: {
   branch: string;
-  forge: Forge;
   repo: string;
-}): ForgePullRequest {
-  const rows = listPullRequests({ filter: "--head", branch, forge, repo });
+}): PullRequestRow {
+  const rows = listPullRequests({ filter: "--head", branch, repo });
   const row = rows[0];
   if (row === undefined) {
     throw new UserError(
-      `branch ${branch} has no pull request; open one with ${forge} pr create, or resolve the frontier from a branch whose chain is fully submitted`
+      `브랜치 ${branch}에 PR이 없음. gh pr create로 PR을 열거나, 체인 전체가 PR로 올라간 브랜치에서 frontier를 계산`
     );
   }
   if (rows.length > 1) {
     throw new UserError(
-      `branch ${branch} has multiple pull requests (${rows.map((item) => `#${item.pr}`).join(", ")}); close the stale ones first`
+      `브랜치 ${branch}에 PR이 여러 개 있음(${rows.map((item) => `#${item.pr}`).join(", ")}). 오래된 PR을 먼저 닫을 것`
     );
   }
   return row;
@@ -1129,14 +1084,12 @@ function branchPullRequest({
 
 function openChildren({
   branch,
-  forge,
   repo,
 }: {
   branch: string;
-  forge: Forge;
   repo: string;
-}): readonly ForgePullRequest[] {
-  return listPullRequests({ filter: "--base", branch, forge, repo }).filter(
+}): readonly PullRequestRow[] {
+  return listPullRequests({ filter: "--base", branch, repo }).filter(
     (row) => row.state === "OPEN"
   );
 }
@@ -1160,7 +1113,7 @@ function branchSha({
 }): string {
   const sha = runGit({ args: ["rev-parse", branch], repo });
   if (!/^[0-9a-f]{40,64}$/i.test(sha)) {
-    throw new UserError(`git rev-parse ${branch} returned an invalid SHA`);
+    throw new UserError(`git rev-parse ${branch}가 잘못된 SHA를 반환함`);
   }
   return sha;
 }
@@ -1176,45 +1129,45 @@ function trunkBranch(repo: string): string {
       repo,
     }).replace(/^origin\//, "");
   } catch {
-    // Init-plus-fetch checkouts and local fixtures lack origin/HEAD.
+    // init 후 fetch한 체크아웃과 로컬 fixture에는 origin/HEAD가 없다.
     return "main";
   }
 }
 
-function resolveFrontier(repo: string, forge: Forge): readonly FrontierPr[] {
+function resolveFrontier(repo: string): readonly FrontierPr[] {
   const trunk = trunkBranch(repo);
   const current = currentBranch(repo);
   if (current === trunk) {
     return [];
   }
   const seen = new Set([current]);
-  let bottom = branchPullRequest({ branch: current, forge, repo });
+  let bottom = branchPullRequest({ branch: current, repo });
   const chain = [bottom];
   while (bottom.base !== trunk) {
     if (seen.has(bottom.base)) {
       throw new UserError(
-        `pull request base chain loops at branch ${bottom.base}`
+        `PR base 체인이 순환함: ${bottom.base}`
       );
     }
     seen.add(bottom.base);
-    bottom = branchPullRequest({ branch: bottom.base, forge, repo });
+    bottom = branchPullRequest({ branch: bottom.base, repo });
     chain.unshift(bottom);
   }
   let tip = current;
   for (;;) {
-    const children = openChildren({ branch: tip, forge, repo });
+    const children = openChildren({ branch: tip, repo });
     const child = children[0];
     if (child === undefined) {
       break;
     }
     if (children.length > 1) {
       throw new UserError(
-        `stack is not linear: branches ${children.map((row) => row.branch).join(", ")} all target ${tip}`
+        `스택이 일직선이 아님. 브랜치 ${children.map((row) => row.branch).join(", ")}가 모두 ${tip}을 대상으로 함`
       );
     }
     if (seen.has(child.branch)) {
       throw new UserError(
-        `pull request base chain loops at branch ${child.branch}`
+        `PR base 체인이 순환함: ${child.branch}`
       );
     }
     seen.add(child.branch);
@@ -1223,7 +1176,7 @@ function resolveFrontier(repo: string, forge: Forge): readonly FrontierPr[] {
   }
   if (new Set(chain.map((row) => row.pr)).size !== chain.length) {
     throw new UserError(
-      "pull request base chain contains duplicate pull requests"
+      "PR base 체인에 같은 PR이 중복됨"
     );
   }
   return chain.map((row) => ({
@@ -1253,17 +1206,17 @@ function validateFrontierPin({
   const extra = actual.filter((pr) => !expectedSet.has(pr));
   const drift: string[] = [];
   if (missing.length > 0) {
-    drift.push(`missing from resolved chain: ${missing.join(",")}`);
+    drift.push(`계산한 체인에 없음 ${missing.join(",")}`);
   }
   if (extra.length > 0) {
-    drift.push(`extra in resolved chain: ${extra.join(",")}`);
+    drift.push(`계산한 체인에만 있음 ${extra.join(",")}`);
   }
   if (missing.length === 0 && extra.length === 0) {
     drift.push(
-      `order differs: expected ${expected.join(",")}; resolved ${actual.join(",")}`
+      `순서가 다름. 기대 ${expected.join(",")}, 계산 ${actual.join(",")}`
     );
   }
-  throw new UserError(`frontier pin mismatch: ${drift.join("; ")}`);
+  throw new UserError(`frontier 고정 순서 불일치: ${drift.join("; ")}`);
 }
 
 export function openStore(
@@ -1277,7 +1230,7 @@ export function openStore(
 
   const ensureOpen = (): void => {
     if (closed) {
-      throw new UserError("store is closed");
+      throw new UserError("스토어가 이미 닫힘");
     }
   };
 
@@ -1303,7 +1256,7 @@ export function openStore(
     ensureOpen();
     if (!(await exists(store))) {
       throw new UserError(
-        `store is not initialized at ${store}; run orch init`
+        `스토어가 초기화되지 않음(${store}). 먼저 orch init 실행`
       );
     }
     await ensureLock();
@@ -1327,7 +1280,7 @@ export function openStore(
         };
         const rows = [...(await readUnits(store))];
         if (rows.some((unit) => unit.id === row.id)) {
-          throw new UserError(`unit ${row.id} already exists`);
+          throw new UserError(`이미 있는 unit: ${row.id}`);
         }
         rows.push(row);
         await saveUnits(store, rows);
@@ -1341,7 +1294,7 @@ export function openStore(
         const index = rows.findIndex((unit) => unit.id === id);
         const old = rows[index];
         if (index < 0 || old === undefined) {
-          throw new NotFoundError(`unit ${id} not found`);
+          throw new NotFoundError(`없는 unit: ${id}`);
         }
         const row: Unit = {
           ...old,
@@ -1370,7 +1323,7 @@ export function openStore(
           (unit) => unit.id === cleanId
         );
         if (row === undefined) {
-          throw new NotFoundError(`unit ${cleanId} not found`);
+          throw new NotFoundError(`없는 unit: ${cleanId}`);
         }
         return row;
       },
@@ -1462,7 +1415,7 @@ export function openStore(
         const inbox = join(store, "inbox");
         if (!(await exists(inbox))) {
           throw new UserError(
-            `store is not initialized at ${store}; run orch init`
+            `스토어가 초기화되지 않음(${store}). 먼저 orch init 실행`
           );
         }
         const timestamp = pointer.ts.replace(/[:.]/g, "-");
@@ -1534,7 +1487,7 @@ export function openStore(
         const index = rows.findIndex((gate) => gate.id === id);
         const old = rows[index];
         if (index < 0 || old === undefined) {
-          throw new NotFoundError(`gate ${id} not found`);
+          throw new NotFoundError(`없는 gate: ${id}`);
         }
         const gate: ResolvedGate = {
           kind: "resolved",
@@ -1553,16 +1506,15 @@ export function openStore(
       set: async (params) => {
         await beginWrite();
         const repo = resolve(requiredLine(params.repo, "repo directory"));
-        const forge = parseForge(params.forge ?? "gh");
         const pin =
           params.prs === undefined
             ? undefined
             : params.prs.map((pr) => positiveInteger(pr, "PR"));
         if (pin !== undefined && new Set(pin).size !== pin.length) {
-          throw new UserError("--prs must not contain duplicates");
+          throw new UserError("--prs에 중복된 PR 번호가 있음");
         }
         const old = await readFrontier(store);
-        const prs = resolveFrontier(repo, forge);
+        const prs = resolveFrontier(repo);
         if (pin !== undefined) {
           validateFrontierPin({
             actual: prs.map((row) => row.pr),
@@ -1663,7 +1615,7 @@ export function openStore(
         try {
           await lockRequest;
         } catch {
-          // A failed acquisition has no lock to release.
+          // 잠금을 얻지 못했으면 풀 잠금도 없다.
         }
       }
       const release = releaseLock;

@@ -1,12 +1,12 @@
-### Autopilot-stack
+### 오토파일럿 스택
 
-**You own the stack, never the landing. Hand the operator one linear stack of base-chained PRs to review and land.** **Autopilot-full** holds except for how verified work leaves. Each tick re-reads both playbooks from trunk, and this one wins where they differ.
+**스택은 내가 책임지고 머지는 책임지지 않는다. 기준 브랜치로 이어진 PR들을 일직선 스택 하나로 사용자에게 넘겨 리뷰하고 머지하게 한다.** 검증된 작업을 내보내는 방식만 빼고 **오토파일럿 전체**가 그대로 적용된다. 매번 깨어날 때 두 플레이북을 trunk에서 다시 읽고, 둘이 다르면 이 플레이북을 따른다.
 
-1. **Run Autopilot-full's owners, minus the landing.** Owners report STACK-READY in place of merge-ready. They never rebase onto another branch, trunk included, and never retarget, merge, close a PR, or arm auto-merge, because the root owns the chain's topology and the operator owns the landing. When an item depends on another, its owner branches from that item's branch, not from trunk.
-2. **Give the topology one writer.** Owners push only their own branches and report each tip and its intended parent. Only you rebase or retarget a link, because two writers on one chain undo each other. Append each clean PR in dependency order, with its base set to its parent's branch (`origin pr edit <pr> --base <parent-branch>` or `gh pr edit <pr> --base <parent-branch>`). Never require `gt`. An owner takes your push as its new base and lease, and on a conflict resolves its own slice for you to push.
-3. **Absorb drift at the root.** Until landing starts, apply Autopilot-full step 5's test to each link and rebase the chain bottom-up where it calls for one. Then apply the patch-id rule link by link, since a link's base is its parent.
-4. **Deliver the chain, then keep your hands off it.** Each link carries its verdict in its PR. Once landing starts, nobody writes to the chain except the post-merge retarget that `playbooks/shipping.md` sanctions, because a second writer breaks a landing in flight. A mid-landing problem goes through you to the operator, and any fix waits for the operator's go.
+1. **오토파일럿 전체의 담당자를 돌리되 머지는 뺀다.** 담당자는 머지 준비 대신 STACK-READY를 보고한다. 담당자는 trunk를 포함해 어떤 브랜치로도 리베이스하지 않고, PR의 기준 브랜치를 바꾸거나, 머지하거나, 닫거나, 자동 머지를 켜지 않는다. 체인 구조는 루트가, 머지는 사용자가 맡기 때문이다. 한 항목이 다른 항목에 의존하면 그 담당자는 trunk가 아니라 그 항목의 브랜치에서 분기한다.
+2. **체인 구조의 작성자는 하나로 둔다.** 담당자는 자기 브랜치에만 push하고 각 끝 커밋과 의도한 부모를 보고한다. 한 체인에 작성자가 둘이면 서로의 작업을 되돌리므로, 연결 고리의 리베이스와 기준 브랜치 변경은 나만 한다. 깨끗한 PR을 의존 순서대로 하나씩 붙이고, 기준 브랜치를 부모의 브랜치로 둔다(`gh pr edit <pr> --base <parent-branch>`). `gt`를 요구하지 않는다. 담당자는 내 push를 새 기준이자 lease로 받아들이고, 충돌이 나면 자기 조각을 해결해 내가 push하게 넘긴다.
+3. **어긋남은 루트에서 흡수한다.** 머지가 시작되기 전까지 각 연결 고리에 오토파일럿 전체 5단계의 판단을 적용하고, 리베이스가 필요하면 체인을 아래에서 위로 리베이스한다. 그다음 연결 고리의 기준은 부모이므로 patch-id 규칙을 고리마다 적용한다.
+4. **체인을 넘긴 뒤에는 손대지 않는다.** 각 연결 고리는 자기 PR에 판정을 담는다. 머지가 시작되면 `playbooks/shipping.md`가 허용한 머지 후 기준 브랜치 변경 말고는 아무도 체인에 쓰지 않는다. 두 번째 작성자는 진행 중인 머지를 깨뜨리기 때문이다. 머지 도중 생긴 문제는 나를 거쳐 사용자에게 가고, 어떤 수정도 사용자의 승인을 기다린다.
 
-**Choosing between the autopilots.** Autopilot-full when the PRs are independent and landing authority is granted. Autopilot-stack when the operator wants review before landing, the work is sequenced or coupled, or merge authority is withheld.
+**두 오토파일럿 중 고르기.** PR들이 서로 독립이고 머지 권한을 위임받았으면 오토파일럿 전체. 사용자가 머지 전에 리뷰하고 싶어 하거나, 작업이 순서대로 이어지거나 서로 얽혀 있거나, 머지 권한을 주지 않았으면 오토파일럿 스택.
 
-**Reply:** catch the operator up per the **ketchup** skill, with links to the stack root and tip, a one-line verdict per link, and anything parked or excluded with the reason.
+**답변:** **ketchup** 스킬에 따라 사용자에게 현황을 알린다. 스택 루트와 끝 PR 링크, 연결 고리마다 한 줄 판정, 보류하거나 제외한 것과 그 이유를 담는다.

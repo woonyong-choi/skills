@@ -7,7 +7,6 @@ import {
   openStore,
   parseVerdict,
   type Counts,
-  type Forge,
   type Frontier,
   type InboxPointer,
   type OpenGate,
@@ -82,7 +81,6 @@ interface GateResolveOptions {
 
 interface FrontierSetOptions {
   readonly repo?: string;
-  readonly forge: Forge;
   readonly prs?: readonly number[];
 }
 
@@ -93,7 +91,7 @@ function message(error: unknown): string {
 function positiveInteger(value: string): number {
   const parsed = Number(value);
   if (!/^[1-9]\d*$/.test(value) || !Number.isSafeInteger(parsed)) {
-    throw new InvalidArgumentError("must be a positive integer");
+    throw new InvalidArgumentError("양의 정수여야 함");
   }
   return parsed;
 }
@@ -101,7 +99,7 @@ function positiveInteger(value: string): number {
 function prList(value: string): readonly number[] {
   const parts = value.split(",");
   if (parts.some((part) => part.length === 0)) {
-    throw new InvalidArgumentError("requires a comma-separated PR list");
+    throw new InvalidArgumentError("쉼표로 구분한 PR 번호 목록이어야 함");
   }
   return parts.map(positiveInteger);
 }
@@ -156,7 +154,7 @@ function compactRows<T>(
   const visible = limit === null ? rows : rows.slice(0, limit);
   const lines = visible.map(format);
   if (limit !== null && rows.length > limit) {
-    lines.push(`... ${rows.length - limit} more; use --json`);
+    lines.push(`... 외 ${rows.length - limit}개. 전체는 --json`);
   }
   return lines.join("\n");
 }
@@ -178,12 +176,12 @@ function statusLines(report: StatusReport): string {
   const visible = report.summary.openGateIds.slice(0, DISPLAY_LIMIT);
   const more =
     report.summary.openGateIds.length > DISPLAY_LIMIT
-      ? `,+${report.summary.openGateIds.length - DISPLAY_LIMIT} more`
+      ? `,외 ${report.summary.openGateIds.length - DISPLAY_LIMIT}개`
       : "";
   return [
-    `counts: units=${report.units.length}; states=${countLine(report.summary.unitStates)}; ledger=${countLine(report.summary.ledgerVerdicts)}`,
-    `changed: ${report.changed}`,
-    `gates open: ${report.summary.openGateIds.length}${
+    `개수: units=${report.units.length}; states=${countLine(report.summary.unitStates)}; ledger=${countLine(report.summary.ledgerVerdicts)}`,
+    `변경: ${report.changed}`,
+    `열린 gate: ${report.summary.openGateIds.length}${
       visible.length > 0 ? `; ids=${visible.join(",")}${more}` : ""
     }`,
   ].join("\n");
@@ -205,7 +203,7 @@ function emit<T>(
 function storeDirectory(program: Command): string {
   const value = program.opts<GlobalOptions>().store;
   if (value === undefined || value.trim().length === 0) {
-    throw new UsageError("set --store <dir> or ORCH_STORE");
+    throw new UsageError("--store <dir> 또는 ORCH_STORE를 지정");
   }
   return value;
 }
@@ -213,7 +211,7 @@ function storeDirectory(program: Command): string {
 function frontierRepo(options: FrontierSetOptions): string {
   const value = options.repo;
   if (value === undefined || value.trim().length === 0) {
-    throw new UsageError("set --repo <dir> or ORCH_REPO");
+    throw new UsageError("--repo <dir> 또는 ORCH_REPO를 지정");
   }
   return value;
 }
@@ -229,9 +227,9 @@ async function runStore<T>(
   const store = openStore(storeDirectory(program), {
     force: options.force,
     onLockStolen: (holder) =>
-      io.stderr(`stealing store lock held by pid ${holder}\n`),
+      io.stderr(`pid ${holder} 프로세스가 잡은 스토어 잠금을 가져옴\n`),
     onStaleLock: (holder) =>
-      io.stderr(`replacing stale store lock (pid ${holder} is dead)\n`),
+      io.stderr(`끝난 프로세스(pid ${holder})의 스토어 잠금을 교체함\n`),
   });
   try {
     const result = await operation(store);
@@ -250,41 +248,41 @@ function leaf(parent: Command, name: string, description: string): Command {
 
 function requireSubcommand(program: Command): never {
   storeDirectory(program);
-  throw new UsageError("a valid command is required");
+  throw new UsageError("올바른 명령이 필요함");
 }
 
 function createProgram(io: Io): Command {
   const program = new CommanderCommand("orch")
-    .description("Plain-file orchestrate bookkeeping")
+    .description("일반 파일로 orchestrate 진행 상태를 기록")
     .usage("[--store <dir>] [--json] [--force] <command>")
     .configureOutput({ writeOut: io.stdout, writeErr: io.stderr })
     .exitOverride()
     .showHelpAfterError()
     .allowExcessArguments(false)
     .addOption(
-      new Option("--store <dir>", "store directory (or ORCH_STORE)").env(
+      new Option("--store <dir>", "스토어 폴더(또는 ORCH_STORE)").env(
         "ORCH_STORE"
       )
     )
-    .option("--json", "print complete rows as JSON", false)
-    .option("--force", "steal an existing store lock", false);
+    .option("--json", "전체 행을 JSON으로 출력", false)
+    .option("--force", "다른 프로세스의 스토어 잠금을 가져옴", false);
 
-  leaf(program, "init", "initialize the store").action(() =>
+  leaf(program, "init", "스토어 폴더 초기화").action(() =>
     runStore(
       program,
       io,
       (store) => store.init(),
-      (result) => `initialized ${result.store}`
+      (result) => `초기화함 ${result.store}`
     )
   );
 
   const unit = program
     .command("unit")
-    .description("manage work units")
+    .description("작업 unit 관리")
     .action(() => requireSubcommand(program));
-  leaf(unit, "add <id>", "add a unit")
-    .requiredOption("--track <track>", "unit track")
-    .option("--brief <path>", "brief path")
+  leaf(unit, "add <id>", "unit 추가")
+    .requiredOption("--track <track>", "unit 트랙")
+    .option("--brief <path>", "작업 지시 파일 경로")
     .action((id: string, options: UnitAddOptions) =>
       runStore(
         program,
@@ -298,11 +296,11 @@ function createProgram(io: Io): Command {
         unitLine
       )
     );
-  leaf(unit, "set <id>", "update a unit")
-    .requiredOption("--state <state>", "unit state")
-    .option("--branch <branch>", "branch name")
-    .option("--pr <number>", "pull request number", positiveInteger)
-    .option("--sha <sha>", "commit SHA")
+  leaf(unit, "set <id>", "unit 갱신")
+    .requiredOption("--state <state>", "unit 상태")
+    .option("--branch <branch>", "브랜치 이름")
+    .option("--pr <number>", "PR 번호", positiveInteger)
+    .option("--sha <sha>", "커밋 SHA")
     .action((id: string, options: UnitSetOptions) =>
       runStore(
         program,
@@ -318,34 +316,34 @@ function createProgram(io: Io): Command {
         unitLine
       )
     );
-  leaf(unit, "get <id>", "get a unit").action((id: string) =>
+  leaf(unit, "get <id>", "unit 조회").action((id: string) =>
     runStore(program, io, (store) => store.units.get(id), unitLine)
   );
-  leaf(unit, "list", "list units")
-    .option("--state <state>", "filter by state")
-    .option("--track <track>", "filter by track")
+  leaf(unit, "list", "unit 목록")
+    .option("--state <state>", "상태로 거르기")
+    .option("--track <track>", "트랙으로 거르기")
     .action((options: UnitListOptions) =>
       runStore(
         program,
         io,
         (store) => store.units.list(options),
-        (rows) => compactRows(rows, unitLine, "(no units)")
+        (rows) => compactRows(rows, unitLine, "(unit 없음)")
       )
     );
-  leaf(unit, "counts", "count units by state").action(() =>
+  leaf(unit, "counts", "상태별 unit 개수").action(() =>
     runStore(program, io, (store) => store.units.counts(), countLine)
   );
 
   const ledger = program
     .command("ledger")
-    .description("manage verification records")
+    .description("검증 기록 관리")
     .action(() => requireSubcommand(program));
-  leaf(ledger, "record", "record a verification verdict")
-    .argument("<pr>", "pull request number", positiveInteger)
-    .argument("<sha>", "commit SHA")
-    .argument("<verdict>", "verification verdict", parseVerdict)
-    .requiredOption("--evidence <path>", "evidence path")
-    .option("--verifier <name>", "verifier name")
+  leaf(ledger, "record", "검증 판정 기록")
+    .argument("<pr>", "PR 번호", positiveInteger)
+    .argument("<sha>", "커밋 SHA")
+    .argument("<verdict>", "검증 판정", parseVerdict)
+    .requiredOption("--evidence <path>", "증거 경로")
+    .option("--verifier <name>", "검증자 이름")
     .action(
       (
         pr: number,
@@ -367,9 +365,9 @@ function createProgram(io: Io): Command {
           (row) => `${row.pr}\t${row.sha}\t${row.verdict}`
         )
     );
-  leaf(ledger, "check", "check a verification verdict")
-    .argument("<pr>", "pull request number", positiveInteger)
-    .argument("<sha>", "commit SHA")
+  leaf(ledger, "check", "검증 판정 확인")
+    .argument("<pr>", "PR 번호", positiveInteger)
+    .argument("<sha>", "커밋 SHA")
     .action((pr: number, sha: string) =>
       runStore(
         program,
@@ -378,16 +376,16 @@ function createProgram(io: Io): Command {
         (row) => row.verdict
       )
     );
-  leaf(ledger, "summary", "count verification verdicts").action(() =>
+  leaf(ledger, "summary", "판정별 개수").action(() =>
     runStore(program, io, (store) => store.ledger.summary(), countLine)
   );
 
   const inbox = program
     .command("inbox")
-    .description("manage agent pointers")
+    .description("에이전트 완료 포인터 관리")
     .action(() => requireSubcommand(program));
-  leaf(inbox, "push <agent> <unit> <status>", "push an inbox pointer")
-    .option("--report <path>", "report path")
+  leaf(inbox, "push <agent> <unit> <status>", "inbox 포인터 추가")
+    .option("--report <path>", "보고서 경로")
     .action(
       (
         agent: string,
@@ -410,18 +408,18 @@ function createProgram(io: Io): Command {
           (result) => result.pointer
         )
     );
-  leaf(inbox, "drain", "drain inbox pointers")
-    .option("--peek", "read without draining", false)
+  leaf(inbox, "drain", "inbox 포인터 수거")
+    .option("--peek", "수거하지 않고 읽기만", false)
     .action((options: InboxDrainOptions) =>
       runStore(
         program,
         io,
         (store) =>
           options.peek ? store.inbox.peek() : store.inbox.drain(),
-        (rows) => compactRows(rows, pointerLine, "(empty)", null)
+        (rows) => compactRows(rows, pointerLine, "(비어 있음)", null)
       )
     );
-  leaf(inbox, "count", "count inbox pointers").action(() =>
+  leaf(inbox, "count", "inbox 포인터 개수").action(() =>
     runStore(
       program,
       io,
@@ -433,12 +431,12 @@ function createProgram(io: Io): Command {
 
   const gate = program
     .command("gate")
-    .description("manage decision gates")
+    .description("결정 gate 관리")
     .action(() => requireSubcommand(program));
-  leaf(gate, "park <id>", "park a decision gate")
-    .requiredOption("--question <question>", "gate question")
-    .requiredOption("--options <options>", "gate options")
-    .requiredOption("--default <answer>", "default answer")
+  leaf(gate, "park <id>", "결정 gate 보류 등록")
+    .requiredOption("--question <question>", "gate 질문")
+    .requiredOption("--options <options>", "gate 선택지")
+    .requiredOption("--default <answer>", "기본 답")
     .action((id: string, options: GateParkOptions) =>
       runStore(
         program,
@@ -453,16 +451,16 @@ function createProgram(io: Io): Command {
         (result) => `${result.id}\topen`
       )
     );
-  leaf(gate, "list", "list open decision gates").action(() =>
+  leaf(gate, "list", "열린 결정 gate 목록").action(() =>
     runStore(
       program,
       io,
       (store) => store.gates.list(),
-      (rows) => compactRows(rows, gateLine, "(no open gates)")
+      (rows) => compactRows(rows, gateLine, "(열린 gate 없음)")
     )
   );
-  leaf(gate, "resolve <id>", "resolve a decision gate")
-    .requiredOption("--answer <answer>", "chosen answer")
+  leaf(gate, "resolve <id>", "결정 gate 해결")
+    .requiredOption("--answer <answer>", "고른 답")
     .action((id: string, options: GateResolveOptions) =>
       runStore(
         program,
@@ -474,27 +472,22 @@ function createProgram(io: Io): Command {
 
   const frontier = program
     .command("frontier")
-    .description("manage the stack frontier")
+    .description("스택 frontier 관리")
     .action(() => requireSubcommand(program));
   leaf(
     frontier,
     "set",
-    "resolve the pull request base chain and set the frontier"
+    "gh로 PR base 체인을 계산해 frontier 설정"
   )
     .addOption(
       new Option(
         "--repo <dir>",
-        "repository directory (or ORCH_REPO)"
+        "저장소 폴더(또는 ORCH_REPO)"
       ).env("ORCH_REPO")
-    )
-    .addOption(
-      new Option("--forge <forge>", "pull request forge")
-        .choices(["gh", "origin"])
-        .default("gh")
     )
     .option(
       "--prs <n,...>",
-      "optional expected pull request order pin",
+      "기대하는 PR 순서 고정(선택)",
       prList
     )
     .action((options: FrontierSetOptions) =>
@@ -504,25 +497,24 @@ function createProgram(io: Io): Command {
         (store) =>
           store.frontier.set({
             repo: frontierRepo(options),
-            forge: options.forge,
             prs: options.prs,
           }),
         frontierLine
       )
     );
-  leaf(frontier, "show", "show the frontier").action(() =>
+  leaf(frontier, "show", "frontier 보기").action(() =>
     runStore(program, io, (store) => store.frontier.show(), frontierLine)
   );
 
-  leaf(program, "status", "render status.md and print a summary").action(() =>
+  leaf(program, "status", "status.md를 만들고 요약 출력").action(() =>
     runStore(program, io, (store) => store.status.render(), statusLines)
   );
 
   const standing = program
     .command("standing")
-    .description("manage standing orders")
+    .description("상시 지시 관리")
     .action(() => requireSubcommand(program));
-  leaf(standing, "show", "show standing orders").action(() =>
+  leaf(standing, "show", "상시 지시 보기").action(() =>
     runStore(
       program,
       io,
@@ -531,11 +523,11 @@ function createProgram(io: Io): Command {
         compactRows(
           rows,
           (item: StandingLine) => `${item.number}. ${item.line}`,
-          "(no standing orders)"
+          "(상시 지시 없음)"
         )
     )
   );
-  leaf(standing, "add <line>", "add a standing order").action((line: string) =>
+  leaf(standing, "add <line>", "상시 지시 추가").action((line: string) =>
     runStore(
       program,
       io,
@@ -556,13 +548,13 @@ function handleError(error: unknown, program: Command, io: Io): number {
   if (error instanceof NotFoundError) {
     const output = error.output;
     if (output === undefined) {
-      io.stderr(`error: ${error.message}\n`);
+      io.stderr(`오류: ${error.message}\n`);
     } else {
       emit(io, json, output.json, () => output.compact);
     }
     return 2;
   }
-  io.stderr(`error: ${message(error)}\n`);
+  io.stderr(`오류: ${message(error)}\n`);
   if (error instanceof UsageError) {
     io.stderr(program.helpInformation());
   }

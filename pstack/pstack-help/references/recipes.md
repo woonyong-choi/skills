@@ -1,49 +1,49 @@
-# Prompts worth copying
+# 따라 쓸 만한 프롬프트
 
-Swap in the real paths, skills, and done checks. Informal wording works.
+실제 경로, 스킬, 확인 조건으로 바꿔 쓴다. 편한 말투여도 된다. 아래는 `/이름` 표기다. 호스트마다 스킬을 부르는 방법이 다르면 [호스트 대응표](../../pstack-mode/references/hosts.md)에 맞춰 바꾼다.
 
-## Understand
+## 이해하기
 
-- `/poteto-mode read <thread>. restate the underlying issue in your own words, in plain english.`
-- `/in-your-own-words <long or messy ask>`
-- `/sharpen <your task>`
-- `/poteto-mode investigate why <symptom>. give me what we know, what data you used, and your best hypotheses. don't change any code yet.`
-- `use /how to understand <subsystem>. then use /why to find out why it broke recently.`
-- `/recall my work on <topic> from last week, then read <issue>.`
-- `/teach me why you implemented it this way and not <other way>. what did you trade off?`
-- `/poteto-mode take over this branch. read the decision log, find what's done, and continue. don't redo finished work.`
+- `/pstack-mode <스레드> 읽고 근본 문제를 네 말로, 쉬운 말로 다시 말해 줘.`
+- `/in-your-own-words <길거나 정리 안 된 요청>`
+- `/sharpen <작업>`
+- `/pstack-mode <증상>이 왜 생기는지 조사해 줘. 아는 것, 쓴 데이터, 가장 유력한 가설을 알려 줘. 아직 코드는 바꾸지 마.`
+- `/how로 <하위 시스템>을 파악하고, /why로 최근에 왜 깨졌는지 찾아 줘.`
+- `/recall 지난주 <주제> 작업 불러오고 <이슈> 읽어 줘.`
+- `/teach <다른 방식> 말고 왜 이렇게 구현했는지 설명해 줘. 무엇을 포기했어?`
+- `/pstack-mode 이 브랜치 넘겨받아. 결정 기록 읽고 끝난 것 확인하고 이어서 해. 끝난 작업은 다시 하지 마.`
 
-## Build
+## 만들기
 
-- Bug: `/poteto-mode <symptom>. repro first, then fix and verify.`
-- Bug in an app: `/poteto-mode repro this with /verify-<app>. if it repros on main, fix it and show me a video as proof.`
-- Bug with a cheap test: `/poteto-mode repro <bug> first. if there's a cheap test path, /tdd it. then fix and rerun.`
-- Feature: `/poteto-mode add <behavior>. <current output> stays byte-identical. verify both.`
-- Refactor: `/poteto-mode move <code> into one module, zero behavior change. record the current output first and prove it's unchanged after.`
-- Perf: `/poteto-mode <operation> takes <time> on <fixture>. trace it, fix the measured cause, show me before and after.`
+- 버그: `/pstack-mode <증상>. 먼저 재현하고, 고치고, 검증해 줘.`
+- 앱 버그: `/pstack-mode /verify-<앱>으로 재현해 줘. main에서 재현되면 고치고 증거로 영상을 보여 줘.`
+- 싼 테스트가 있는 버그: `/pstack-mode <버그> 먼저 재현해. 싼 테스트 경로가 있으면 /tdd로 해. 그다음 고치고 다시 돌려.`
+- 기능: `/pstack-mode <동작> 추가해 줘. <현재 출력>은 바이트 단위로 그대로여야 해. 둘 다 검증해.`
+- 리팩터링: `/pstack-mode <코드>를 모듈 하나로 옮겨 줘. 동작 변화 없이. 지금 출력을 먼저 기록하고 끝난 뒤 그대로임을 증명해.`
+- 성능: `/pstack-mode <작업>이 <픽스처>에서 <시간> 걸려. 트레이스 떠서 측정된 원인을 고치고 전후를 보여 줘.`
 
-## Design and plan
+## 설계와 계획
 
-- `/poteto-mode prototype a few options for <feature>. take screenshots or videos for me to compare.`
-- `/poteto-mode we need <feature>. /architect it first, and answer open questions with prototypes. let me review before proceeding.`
-- `/poteto-mode write a tutorial for how i would use <new package> first. then /teach me why it beats the current one.`
-- `ask /arena for a second opinion on this thread and our approach.`
-- `/poteto-mode turn this design into a plan. small verifiable PRs, each with its own verification steps.`
-- `/poteto-mode plan the migration of <library> to <target>. small verifiable PRs. the result must match the original exactly, bugs included.`
+- `/pstack-mode <기능> 선택지 몇 개 프로토타입으로 만들어 줘. 비교할 수 있게 스크린샷이나 영상 찍어 줘.`
+- `/pstack-mode <기능>이 필요해. 먼저 /architect로 설계하고, 열린 질문은 프로토타입으로 답해. 진행 전에 내가 검토할게.`
+- `/pstack-mode <새 패키지>를 내가 어떻게 쓸지 튜토리얼부터 써 줘. 그다음 /teach로 지금 것보다 왜 나은지 설명해.`
+- `/arena로 이 스레드와 우리 접근에 대한 두 번째 의견 받아 줘.`
+- `/pstack-mode 이 설계를 계획으로 바꿔 줘. 작고 검증 가능한 PR로, 각각 자기 검증 단계를 넣어서.`
+- `/pstack-mode <라이브러리>를 <목표>로 옮기는 마이그레이션 계획 세워 줘. 작고 검증 가능한 PR로. 결과는 버그까지 원본과 정확히 같아야 해.`
 
-## Review and ship
+## 리뷰와 배포
 
-- `/interrogate the whole branch, but skeptically. don't change anything yet. no nitpicks unless it's a real bug or regression.` Read the dismissals too.
-- `/swarm check every package under <dir> against its check script. one worker per package. one report.`
-- `/poteto-mode open the pr. small ordered commits, evidence in the description.`
-- `/poteto-mode babysit this pr. get it green.` For status only: `/poteto-mode check on pr <number>. anything outstanding?`
-- `/poteto-mode land the stack.`
+- `/interrogate 브랜치 전체를 회의적으로 검토해 줘. 아직 아무것도 바꾸지 마. 진짜 버그나 회귀가 아니면 사소한 지적은 빼.` 기각한 항목도 읽는다.
+- `/swarm <폴더> 아래 모든 패키지를 각자 check 스크립트로 확인해 줘. 패키지마다 작업자 하나. 보고서 하나로.`
+- `/pstack-mode PR 열어 줘. 작고 순서 있는 커밋, 설명에 증거 넣어서.`
+- `/pstack-mode 이 PR 봐 줘. 초록불 만들어.` 상태만 볼 때는 `/pstack-mode PR <번호> 확인해 줘. 남은 거 있어?`
+- `/pstack-mode 스택 머지해 줘.`
 
-## Away and back
+## 자리 비우고 돌아오기
 
-- `/poteto-mode im going to bed. <goal> in a fresh worktree off <base>. done means <checks>. keep a decision log. don't ask me before committing. /loop until done. if you're truly stuck after a few hours, stop and write up why.`
-- `/show-me-your-work catch me up on what you did last night.` Read its Attention section first.
-- `/poteto-mode full autopilot on this queue. each item is independent.`
-- `/poteto-mode autopilot these changes but stack them, don't ship. i'll land the stack.`
-- `/reflect capture what we learned so the next run doesn't repeat it.` Approve only edits that change a future decision.
-- `/bro` restates the last reply in plain words.
+- `/pstack-mode 자러 간다. <기준 브랜치>에서 새 워크트리로 <목표>. 끝남은 <확인 조건>. 결정 기록 남겨. 커밋 전에 묻지 마. 끝날 때까지 주기적으로 다시 깨워서 반복해. 몇 시간 해도 정말 막히면 멈추고 이유를 정리해.`
+- `/show-me-your-work 어젯밤에 한 일 따라잡게 해 줘.` "주의할 점" 절부터 읽는다.
+- `/pstack-mode 이 대기열 완전 오토파일럿. 항목마다 서로 독립이야.`
+- `/pstack-mode 이 변경들 오토파일럿으로 하되 스택으로 쌓고 배포는 하지 마. 스택 머지는 내가 할게.`
+- `/reflect 다음 실행이 되풀이하지 않게 배운 것 정리해 줘.` 앞으로의 결정을 바꾸는 수정만 승인한다.
+- `/bro`는 마지막 답변을 쉬운 말로 다시 말해 준다.

@@ -1,31 +1,31 @@
 ---
 name: typescript-best-practices
-description: TypeScript best practices. Use when reading or editing any .ts or .tsx file.
+description: .ts나 .tsx 파일을 읽거나 고칠 때 쓴다. TypeScript 모범 사례다.
 paths: ["**/*.ts", "**/*.tsx"]
 disable-model-invocation: true
 ---
 
-# TypeScript best practices
+# TypeScript 모범 사례
 
-Apply the **type-system-discipline** principle skill first.
+**type-system-discipline** 원칙 스킬을 먼저 적용한다.
 
-| Rule | Summary |
+| 규칙 | 요약 |
 |------|---------|
-| Discriminated unions | Model variants with a `kind` literal discriminant so impossible states can't be represented. No optional-field bags. |
-| Branded types | Brand primitives with `& { readonly __brand: "X" }` so they can't be mixed up. Validate once at the boundary. |
-| Constructive modeling | Build the shape so the illegal value can't be constructed. `[T, ...T[]]` for non-empty, `[T, T][]` for even length, `start` plus `duration` for a range. Not a runtime guard, not a wish for refinement types. |
-| Simplest total type | Keep `T[]` while every operation on it stays total. Strengthen to `NonEmpty<T>` only where the loose type forces `!`, a cast, or a "should never happen" throw. |
-| `unknown` over `any` | External data is `unknown`. |
-| Schemas before guards | Before hand-writing a property-by-property type guard, use the repository's runtime schema library and infer the type from the schema, such as `z.infer`. |
-| No `as` casts | Every `as` is a runtime crash waiting. Cast only after validation. |
-| Narrowing hierarchy | Discriminant switch > `in` operator > `typeof`/`instanceof` > user-defined type guard > `as`. |
-| Type guards | Must verify the claim. A lying guard is worse than `as` because the bug hides behind a name that says it's safe. Name them `isX` or `hasX`. |
-| Exhaustiveness | Inline `const _exhaustive: never = x;` in default arms so the compiler errors when a new variant is added. |
-| `satisfies` over `as` | Validates the value without widening literal types. |
-| Boundary validation | Parse where data crosses in, into a named domain type. `Record<string, unknown>` (however spelled) stops at that parse. Trust types inside. See the **boundary-discipline** principle skill. |
-| Schema-derived types | Reach for `Pick`/`Omit`/`Parameters`/`ReturnType`/`Awaited`/`typeof` before declaring a new interface. |
-| Object args | Pass objects, not positional, so argument order is self-documenting. Skip on hot paths (per-frame render, tokenizers, parsers). |
-| Real tests | Don't mock what you can run. Prefer the framework's real test primitives with leak/disposable checks, and verify UI in a running build. Mock only what you can't run locally. |
-| Structured telemetry | Prefer structured logger diagnostics with enough context to debug from an id. No `console.log` in shipped code. |
+| 판별 유니온 | 변형은 `kind` 리터럴 판별자로 모델링해 불가능한 상태를 표현할 수 없게 한다. 선택적 필드 묶음을 쓰지 않는다. |
+| 브랜드 타입 | 원시 타입에 `& { readonly __brand: "X" }`로 브랜드를 붙여 서로 섞이지 않게 한다. 경계에서 한 번 검증한다. |
+| 구성적 모델링 | 잘못된 값을 만들 수 없게 모양을 짠다. 비어 있지 않음은 `[T, ...T[]]`, 짝수 길이는 `[T, T][]`, 범위는 `start`와 `duration`. 런타임 방어 코드도, 정제 타입에 대한 바람도 아니다. |
+| 가장 단순한 전함수 타입 | 그 위의 모든 연산이 전함수인 동안은 `T[]`를 유지한다. 느슨한 타입이 `!`, 캐스트, "일어날 리 없음" throw를 강요하는 곳에서만 `NonEmpty<T>`로 강화한다. |
+| `any`보다 `unknown` | 외부 데이터는 `unknown`이다. |
+| 가드보다 스키마 먼저 | 속성마다 확인하는 타입 가드를 손으로 쓰기 전에 저장소의 런타임 스키마 라이브러리를 쓰고 `z.infer`처럼 스키마에서 타입을 추론한다. |
+| `as` 캐스트 금지 | 모든 `as`는 기다리고 있는 런타임 충돌이다. 검증한 뒤에만 캐스트한다. |
+| 좁히기 위계 | 판별자 switch > `in` 연산자 > `typeof`/`instanceof` > 사용자 정의 타입 가드 > `as`. |
+| 타입 가드 | 주장을 실제로 확인해야 한다. 거짓말하는 가드는 `as`보다 나쁘다. 안전하다고 말하는 이름 뒤에 버그가 숨기 때문이다. 이름은 `isX`나 `hasX`로 짓는다. |
+| 빠짐없음 검사 | default 갈래에 `const _exhaustive: never = x;`를 인라인으로 둬서 새 변형이 더해지면 컴파일러가 오류를 내게 한다. |
+| `as`보다 `satisfies` | 리터럴 타입을 넓히지 않고 값을 검증한다. |
+| 경계 검증 | 데이터가 들어오는 곳에서 이름 붙은 도메인 타입으로 파싱한다. `Record<string, unknown>`(어떻게 쓰든)은 그 파싱에서 끝난다. 안에서는 타입을 믿는다. **boundary-discipline** 원칙 스킬을 본다. |
+| 스키마에서 끌어낸 타입 | 새 인터페이스를 선언하기 전에 `Pick`/`Omit`/`Parameters`/`ReturnType`/`Awaited`/`typeof`를 먼저 쓴다. |
+| 객체 인자 | 위치 인자가 아니라 객체를 넘겨 인자 순서가 스스로 설명되게 한다. 뜨거운 경로(프레임마다 렌더, 토크나이저, 파서)에서는 건너뛴다. |
+| 진짜 테스트 | 돌릴 수 있는 것은 목으로 만들지 않는다. 누수·해제 검사가 있는 프레임워크의 진짜 테스트 도구를 택하고, UI는 실행 중인 빌드에서 확인한다. 로컬에서 돌릴 수 없는 것만 목으로 만든다. |
+| 구조화된 원격 측정 | id 하나로 디버깅할 만큼 맥락이 있는 구조화된 로거 진단을 택한다. 배포 코드에 `console.log`를 두지 않는다. |
 
-Examples: `references/patterns.md`.
+예제: `references/patterns.md`.

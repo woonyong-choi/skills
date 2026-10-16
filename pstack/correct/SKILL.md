@@ -1,32 +1,32 @@
 ---
 name: correct
-description: "Find the mistakes agents keep repeating in this repo and make each one impossible. Try architecture first, then types, then a lint whose error names the fix, then a test, and write docs last. Prove each check fails on a real past mistake. Repeat this each time the operator corrects you. Use for /correct."
+description: "에이전트가 이 저장소에서 계속 되풀이하는 실수를 찾아 각각을 불가능하게 만든다. 아키텍처를 먼저, 다음은 타입, 다음은 오류 메시지가 고칠 방법을 알려 주는 린트, 다음은 테스트, 문서는 마지막에 시도한다. 각 검사가 실제 과거 실수에서 실패함을 증명한다. 사용자가 바로잡을 때마다 되풀이한다. /correct에 쓴다."
 disable-model-invocation: true
 ---
 
 # Correct
 
-The operator keeps correcting agents in this repo for the same mistakes. Change the repo so the next agent can't make them.
+사용자는 이 저장소에서 같은 실수로 에이전트를 계속 바로잡고 있다. 다음 에이전트가 그 실수를 할 수 없도록 저장소를 바꾼다.
 
-Assume every contributor is an agent that sees only the files it opened, copies the nearest example, and takes the shortest path that compiles. Design the repo so a change that looks right from one file is right for the whole repo.
+모든 기여자는 연 파일만 보고, 가장 가까운 예시를 베끼고, 컴파일되는 가장 짧은 길을 택하는 에이전트라고 가정한다. 한 파일에서 맞아 보이는 변경이 저장소 전체에서도 맞도록 저장소를 설계한다.
 
-## Find the mistake classes
+## 실수 유형 찾기
 
-First, read recent commits, reverts, review comments, agent instruction files, and comments that explain workarounds. Group the mistakes into classes. A class counts once it has happened twice.
+먼저 최근 커밋, 되돌림, 리뷰 댓글, 에이전트 지시 파일, 우회책을 설명하는 주석을 읽는다. 실수를 유형으로 묶는다. 두 번 일어나면 유형으로 친다.
 
-## Fix each class at the highest level that works
+## 유형마다 통하는 가장 높은 수준에서 고치기
 
-1. **Eliminate it with architecture.** Give each piece of state one owner and each task one supported way. Hide internals so the wrong import fails. Replace hand-synced lists with one source of truth. Delete old ways and dead code an agent would copy.
-2. **Enforce it with types so the bad state can't be written.** If bad code still compiles, add a lint or CI check whose error names the file, type, or function to use instead. If the pattern is already common, fail only when a change adds more.
-3. **Test the behavior.** Fix or delete any test that still passes when the behavior it checks breaks, or that fails when only the internals change.
-4. **Write docs or agent rules last, only for judgment calls.** Nothing fails when an agent skips them.
+1. **아키텍처로 없앤다.** 상태마다 소유자 하나, 작업마다 지원하는 방법 하나를 둔다. 내부를 숨겨 잘못된 import가 실패하게 한다. 손으로 맞추는 목록을 정본 하나로 바꾼다. 에이전트가 베낄 옛 방식과 죽은 코드를 지운다.
+2. **타입으로 강제해 나쁜 상태를 쓸 수 없게 한다.** 나쁜 코드가 그래도 컴파일되면, 대신 쓸 파일, 타입, 함수를 오류 메시지에 담은 린트나 CI 검사를 더한다. 패턴이 이미 흔하면 변경이 더 늘릴 때만 실패하게 한다.
+3. **동작을 테스트한다.** 검사하는 동작이 깨져도 통과하는 테스트, 내부만 바뀌어도 실패하는 테스트는 고치거나 지운다.
+4. **문서나 에이전트 규칙은 마지막에, 판단이 필요한 것에만 쓴다.** 에이전트가 건너뛰어도 아무것도 실패하지 않는다.
 
-## Fix and prove
+## 고치고 증명하기
 
-Then fix the most frequent classes now, one commit each. Prove each new check fails on a real past mistake. Run the same command locally and in CI. Exceptions go on the offending line with a reason, an expiry date, and a human's approval.
+그다음 가장 잦은 유형부터 지금 고친다. 유형마다 커밋 하나. 새 검사마다 실제 과거 실수에서 실패함을 증명한다. 로컬과 CI에서 같은 명령을 돌린다. 예외는 문제가 되는 줄에 이유, 만료일, 사람의 승인과 함께 둔다.
 
-## Keep the rule table
+## 규칙 표 유지하기
 
-Last, keep a table in the agent instruction file that pairs each rule with what enforces it. When the operator corrects you, fix the mistake and add the rule. If the rule was already there and nothing enforces it, that's a repeat, so fix it at the highest level in the same change. Drop a rule once its mistake can't happen.
+마지막으로 에이전트 지시 파일에 규칙마다 무엇이 그것을 강제하는지 짝지은 표를 둔다. 사용자가 바로잡으면 실수를 고치고 규칙을 더한다. 규칙이 이미 있었는데 강제하는 것이 없었다면 그것은 반복이므로, 같은 변경에서 가장 높은 수준으로 고친다. 실수가 일어날 수 없게 되면 규칙을 뺀다.
 
-**Reply:** each class with its evidence, the level you picked, and why a higher level didn't work.
+**답변:** 유형마다 증거, 고른 수준, 더 높은 수준이 통하지 않은 이유.

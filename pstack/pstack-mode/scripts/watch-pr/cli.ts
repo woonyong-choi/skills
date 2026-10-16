@@ -34,34 +34,34 @@ export interface CliOptions {
 function positiveNumber(value: string): number {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed <= 0)
-    throw new InvalidArgumentError("must be greater than zero");
+    throw new InvalidArgumentError("0보다 커야 함");
   return parsed;
 }
 function nonNegativeNumber(value: string): number {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < 0)
-    throw new InvalidArgumentError("must be zero or greater");
+    throw new InvalidArgumentError("0 이상이어야 함");
   return parsed;
 }
 function positiveInteger(value: string): number {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed <= 0)
-    throw new InvalidArgumentError("must be a positive integer");
+    throw new InvalidArgumentError("양의 정수여야 함");
   return parsed;
 }
 function prNumber(value: string): T.PrNumber {
   try {
     return parsePrNumber(Number(value.replace(/^#/, "")));
   } catch {
-    throw new InvalidArgumentError("must be a positive integer");
+    throw new InvalidArgumentError("양의 정수여야 함");
   }
 }
 function stackPrList(value: string): T.NonEmpty<T.PrNumber> {
   const numbers = value.split(",").map((part) => prNumber(part.trim()));
   if (new Set(numbers).size !== numbers.length)
-    throw new InvalidArgumentError("contains a duplicate PR");
+    throw new InvalidArgumentError("중복된 PR이 있음");
   const parsed = nonEmpty(numbers);
-  if (parsed === null) throw new InvalidArgumentError("cannot be empty");
+  if (parsed === null) throw new InvalidArgumentError("비어 있으면 안 됨");
   return parsed;
 }
 interface RawOptions {
@@ -85,54 +85,54 @@ export function parseArgs(
 ): CliOptions {
   const program = new Command("watch-pr")
     .description(
-      "Watch one pull request, a connected stack, or an immutable queued stack.\nJSON (NDJSON while polling) is the default; --pretty renders human text."
+      "PR 하나, 연결된 스택, 순서를 고정한 대기열 스택을 지켜본다.\n기본 출력은 JSON(폴링 중에는 NDJSON)이고 --pretty는 사람이 읽는 글로 출력한다."
     )
     .configureOutput({ writeOut: io.stdout, writeErr: io.stderr })
     .exitOverride()
-    .option("--owner <owner>", "GitHub repository owner")
-    .option("--repo <repo>", "GitHub repository name")
-    .option("--pr <number>", "pull request number", prNumber)
+    .option("--owner <owner>", "GitHub 저장소 소유자")
+    .option("--repo <repo>", "GitHub 저장소 이름")
+    .option("--pr <number>", "PR 번호", prNumber)
     .addOption(
-      new Option("--stack", "watch the connected open stack")
+      new Option("--stack", "연결된 열린 스택을 지켜봄")
         .default(false)
         .conflicts("queuedStack")
     )
     .option(
       "--queued-stack",
-      "watch the captured stack until all PRs merge",
+      "고정한 스택의 PR이 모두 머지될 때까지 지켜봄",
       false
     )
     .option(
       "--stack-prs <n,...>",
-      "frozen bottom-to-top queue (queued mode only)",
+      "아래부터 위 순서로 고정한 대기열(queued 모드 전용)",
       stackPrList
     )
-    .option("--interval <seconds>", "poll interval", positiveNumber, 60)
+    .option("--interval <seconds>", "폴링 간격", positiveNumber, 60)
     .option(
       "--sweep-interval <seconds>",
-      "whole-stack sweep interval",
+      "스택 전체 재확인 간격",
       positiveNumber,
       300
     )
     .option(
       "--timeout <seconds>",
-      "deadline; 0 disables it",
+      "제한 시간. 0이면 끔",
       nonNegativeNumber,
       0
     )
     .option(
       "--max-query-errors <count>",
-      "consecutive query-error budget",
+      "연속 조회 오류 허용 횟수",
       positiveInteger,
       5
     )
-    .option("--status-only", "print one status table and exit 0", false)
-    .option("--allow-draft", "do not treat a draft as a merge gate", false)
-    .option("--pretty", "render human text instead of JSON", false);
+    .option("--status-only", "상태 표를 한 번 출력하고 0으로 끝냄", false)
+    .option("--allow-draft", "draft를 머지 차단 요인으로 보지 않음", false)
+    .option("--pretty", "JSON 대신 사람이 읽는 글로 출력", false);
   program.parse(argv, { from: "user" });
   const raw = program.opts<RawOptions>();
   if (raw.stackPrs !== undefined && !raw.queuedStack)
-    program.error("error: --stack-prs requires --queued-stack");
+    program.error("error: --stack-prs는 --queued-stack과 함께 써야 함");
   return {
     owner: raw.owner ?? null,
     repo: raw.repo ?? null,

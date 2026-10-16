@@ -1,77 +1,77 @@
-# Review Rubric
+# 검토 채점 기준
 
-Review through whichever lenses are relevant. Not every lens applies to every change.
+관련 있는 관점으로만 검토한다. 모든 관점이 모든 변경에 맞지는 않는다.
 
-## Correctness
+## 정확성
 
-Does the code actually do what the intent says it should?
+코드가 의도대로 실제로 동작하는가?
 
-- Edge cases: empty inputs, nil/undefined, boundary values, concurrent access
-- Error handling: are errors caught, propagated, or silently swallowed?
-- Off-by-one, type coercion, integer overflow, string encoding
-- State management: race conditions, stale closures, dangling references
-- Do both the happy path and the sad path work?
-- Idempotency: what happens if this operation runs twice, or if a previous run crashed halfway? If the answer is "it depends on what state was left behind," a reconciliation step is missing.
-- Concurrency: if multiple actors can touch the same mutable state (files, branches, shared data), is access serialized structurally (locks, sequential phases, exclusive ownership), or by conventions that won't hold?
+- 경계 사례: 빈 입력, nil/undefined, 경계값, 동시 접근
+- 오류 처리: 오류를 잡는가, 넘기는가, 조용히 삼키는가?
+- 하나 차이 오류, 타입 강제 변환, 정수 오버플로, 문자열 인코딩
+- 상태 관리: 경쟁 상태, 낡은 클로저, 매달린 참조
+- 정상 경로와 실패 경로가 둘 다 동작하는가?
+- 멱등: 이 작업이 두 번 돌거나 이전 실행이 중간에 죽으면 어떻게 되는가? 답이 "남은 상태에 따라 다르다"면 상태를 맞추는 단계가 빠져 있다.
+- 동시성: 여러 주체가 같은 변경 가능 상태(파일, 브랜치, 공유 데이터)를 건드릴 수 있다면, 접근이 구조(잠금, 순차 단계, 배타적 소유)로 직렬화되는가, 아니면 지켜지지 않을 관례에 기대는가?
 
-When you find a potential bug, trace the execution path. Don't just flag "this could be nil". Show the call chain that makes it nil.
+버그 가능성을 찾으면 실행 경로를 따라간다. "이게 nil일 수 있다"만 짚지 않는다. 그 값을 nil로 만드는 호출 사슬을 보여 준다.
 
-## Root Causes vs. Symptoms
+## 근본 원인 대 증상
 
-Is the code fixing the actual problem or papering over a symptom?
+코드가 실제 문제를 고치는가, 증상을 덮는가?
 
-Answering this often requires looking beyond the changed files. Read the surrounding code (callers, callees, type definitions, sibling modules) and understand the architecture the change lives in. Use the tools available to you (Read, Grep, Glob) to follow the call chain, read the types, and understand why the code exists before judging whether the change addresses the right layer.
+이 질문에 답하려면 바뀐 파일 밖을 봐야 할 때가 많다. 주변 코드(호출부, 호출되는 쪽, 타입 정의, 이웃 모듈)를 읽고 변경이 놓인 아키텍처를 이해한다. 쓸 수 있는 도구(파일 읽기, 검색)로 호출 사슬을 따라가고, 타입을 읽고, 코드가 왜 있는지 이해한 뒤에 변경이 맞는 계층을 다루는지 판단한다.
 
-- Guard clauses that mask a deeper invariant violation
-- Retry logic that hides a broken contract
-- Type casts that silence a modeling error
-- A workaround: why is it needed? What would a proper fix look like?
-- A fix in module A that should really be a fix in module B's contract
-- Instructions where structure would be better: if the fix is a comment saying "don't do X" or a convention someone has to remember, ask whether it could instead be a type constraint, a lint rule, or a runtime check that makes the wrong thing impossible
+- 더 깊은 불변 조건 위반을 가리는 방어 코드
+- 깨진 계약을 숨기는 재시도 로직
+- 모델링 오류를 덮는 타입 캐스트
+- 우회책: 왜 필요한가? 제대로 고치면 어떤 모습인가?
+- 모듈 A에서 고쳤지만 사실 모듈 B의 계약에서 고쳐야 하는 수정
+- 구조가 나은 곳의 지시문: 수정이 "X를 하지 말 것"이라는 주석이나 누군가 기억해야 하는 관례라면, 잘못된 일을 불가능하게 만드는 타입 제약, 린트 규칙, 런타임 검사로 바꿀 수 있는지 묻는다
 
-## Structural Integrity
+## 구조적 무결성
 
-Does the code fit well into the system it's part of?
+코드가 속한 시스템에 잘 맞는가?
 
-- Boundary discipline: is validation at system boundaries, or scattered through business logic? Validate data once where it enters the system, then trust it internally.
-- Abstraction level: is the code mixing high-level orchestration with low-level detail?
-- Coupling: does this change introduce dependencies that will make future changes harder?
-- Data model fit: do the data structures match the actual access patterns?
-- Bolted-on vs. integrated: if the new requirement had been known from the start, would the code look like this, or does the change feel patched onto the existing design?
-- Legacy dual-paths: does the change introduce a new API while keeping the old one alive? If there are no external consumers, migrate callers and delete the old path in the same wave. Don't leave compatibility layers that will become permanent.
+- 경계 규율: 검증이 시스템 경계에 있는가, 비즈니스 로직 곳곳에 흩어져 있는가? 데이터가 시스템에 들어오는 곳에서 한 번 검증하고 안에서는 믿는다.
+- 추상화 수준: 고수준 조율과 저수준 세부를 섞고 있는가?
+- 결합: 이 변경이 앞으로의 변경을 어렵게 할 의존성을 들이는가?
+- 데이터 모델 적합성: 자료구조가 실제 접근 패턴에 맞는가?
+- 덧댄 것 대 녹아든 것: 새 요구를 처음부터 알았다면 코드가 이 모습이었을까, 아니면 변경이 기존 설계에 덧댄 느낌인가?
+- 레거시 이중 경로: 변경이 새 API를 들이면서 옛 API를 살려 두는가? 외부 사용자가 없으면 같은 흐름에서 호출부를 옮기고 옛 경로를 지운다. 영구로 굳을 호환 계층을 남기지 않는다.
 
-Don't penalize simple code for lacking abstraction. Premature abstraction is worse than duplication.
+단순한 코드를 추상화가 없다는 이유로 깎지 않는다. 섣부른 추상화는 중복보다 나쁘다.
 
-## Verification
+## 검증
 
-Can you tell that this code works from reading it?
+읽어서 이 코드가 동작한다고 알 수 있는가?
 
-- Are there tests? Do they test behavior or implementation details?
-- Are there assertions/invariants that would catch regressions?
-- If this is a bug fix: is there a test for the bug?
-- If this touches an integration boundary: is the full path tested?
-- Check the real thing, not a proxy. If the code checks liveness via file mtime or cached state instead of reading the actual value, that's a verification gap.
-- For delegated or async work: does the code verify actual output artifacts, or does it trust self-reports and summaries?
+- 테스트가 있는가? 동작을 시험하는가, 구현 세부를 시험하는가?
+- 회귀를 잡을 단언이나 불변 조건이 있는가?
+- 버그 수정이라면 그 버그에 대한 테스트가 있는가?
+- 통합 경계를 건드린다면 전체 경로를 시험하는가?
+- 대리 지표가 아니라 실제 값을 확인한다. 코드가 실제 값을 읽지 않고 파일 mtime이나 캐시한 상태로 살아 있음을 확인한다면 검증 빈틈이다.
+- 위임하거나 비동기로 돌린 일이라면, 코드가 실제 출력 산출물을 확인하는가, 자기 보고와 요약을 믿는가?
 
-## Complexity Budget
+## 복잡도 예산
 
-Is the complexity justified by what the code accomplishes?
+코드가 이루는 일에 비해 복잡도가 정당한가?
 
-- Code that could be simpler without losing correctness or clarity
-- Abstractions that serve only one call site
-- Configuration or parameterization for cases that don't exist yet
-- Dead code, unused imports, vestigial parameters
-- Over-engineering: "just in case" code paths with no current callers
-- Obsolete compatibility paths kept alive for transitional stability that's no longer needed. If the migration is done, delete the scaffolding
-- Does the user experience justify the complexity? Every feature, control, and option should earn its place. Half-finished features are worse than missing ones.
+- 정확성이나 명확성을 잃지 않고 더 단순해질 수 있는 코드
+- 호출 지점이 하나뿐인 추상화
+- 아직 없는 사례를 위한 설정이나 매개변수화
+- 죽은 코드, 쓰지 않는 import, 흔적만 남은 매개변수
+- 과설계: 지금 호출부가 없는 "혹시 몰라" 코드 경로
+- 더는 필요 없는 과도기 안정성을 위해 살려 둔 낡은 호환 경로. 이전이 끝났으면 비계를 지운다
+- 사용자 경험이 그 복잡도를 정당화하는가? 기능, 조작, 옵션마다 자리값을 해야 한다. 반쯤 만든 기능은 없는 기능보다 나쁘다.
 
-Simpler is better unless simpler is wrong.
+단순한 쪽이 틀리지 않는 한 단순한 쪽이 낫다.
 
-## Security
+## 보안
 
-For each security finding, trace the input path through the code and show it.
+보안 지적마다 코드 안의 입력 경로를 따라가 보여 준다.
 
-- User input flowing to dangerous sinks (SQL, shell, eval, innerHTML) without sanitization
-- Authentication/authorization gaps in new endpoints
-- Secrets in code, logs, or error messages
-- TOCTOU (time-of-check-time-of-use) in security-critical paths
+- 정제 없이 위험한 지점(SQL, 셸, eval, innerHTML)으로 흐르는 사용자 입력
+- 새 엔드포인트의 인증·인가 빈틈
+- 코드, 로그, 오류 메시지 안의 비밀 값
+- 보안에 중요한 경로의 TOCTOU(확인 시점과 사용 시점 차이)

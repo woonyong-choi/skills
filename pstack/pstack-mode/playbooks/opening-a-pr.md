@@ -1,34 +1,34 @@
-### Opening a PR
+### PR 열기
 
-Invoked at the end of every other playbook.
+다른 모든 플레이북의 끝에서 부른다.
 
-**Worktree.** Work from a git worktree off main. Subagents inherit it. Multiple `Task` calls on the same branch each get their own worktree, or `git fetch && git reset --hard origin/<branch>` between them. Dirty branch with unrelated work: patch out, fresh worktree, apply. Snarled worktree: reset from main, redo minimally.
+**워크트리.** main에서 딴 git 워크트리에서 일한다. 서브에이전트도 그것을 물려받는다. 같은 브랜치에서 서브에이전트를 여러 개 띄우면 각자 자기 워크트리를 받거나, 사이사이 `git fetch && git reset --hard origin/<branch>`를 한다. 무관한 작업이 섞인 더러운 브랜치: 패치로 빼고, 새 워크트리를 만들고, 적용한다. 엉킨 워크트리: main에서 리셋하고 최소한으로 다시 한다.
 
-**Commits.** Commit liberally. Rebase into small, ordered commits before opening PRs. Each commit is a future PR: landable, ordered to tell the story. Amend when the fix belongs in a just-made commit. New commit when separable. Commit bodies don't restate the subject.
+**커밋.** 커밋은 자주 한다. PR을 열기 전에 작고 순서 있는 커밋으로 리베이스한다. 커밋 하나하나가 미래의 PR이다. 따로 머지할 수 있어야 하고, 이야기가 이어지게 순서를 둔다. 방금 만든 커밋에 속하는 수정이면 amend한다. 떼어 낼 수 있으면 새 커밋을 만든다. 커밋 본문은 제목을 되풀이하지 않는다.
 
-**PRs.** Run `/deslop` from `cursor-team-kit` over the diff before commit and `/no-comments` before review. Write every PR title, description, and commit body with `/technical-writing` (every layer except Diátaxis, and apply the STE vocabulary rules: one word per action, keep articles, a plain verb over `-ing` where one works), then apply `/unslop`.
+**PR.** 커밋 전에 diff에 **unslop** 스킬로 AI 티 나는 군더더기를 걷어내고, 리뷰 전에 **no-comments** 스킬을 돌린다. 모든 PR 제목, 설명, 커밋 본문은 **technical-writing** 스킬로 쓰고(Diátaxis를 뺀 모든 계층과 STE 어휘 규칙 적용: 동작 하나에 낱말 하나, 관사 유지, 맞는 곳에서는 `-ing`보다 평범한 동사), 그다음 **unslop**을 적용한다.
 
-**Titles.** Conventional Commits `type(scope): subject`, no trailing period. Type such as `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, or `perf`. Scope is the area, such as `pstack` or `poteto-mode`. Subject is short, imperative, and names a real symbol when one carries the change, for example `fix(pstack): retarget opening-a-pr babysit trigger`.
+**제목.** Conventional Commits `type(scope): subject` 형식이고 끝에 마침표를 찍지 않는다. type은 `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf` 같은 것이다. scope는 영역이다. 예를 들어 `pstack`이나 `pstack-mode`다. subject는 짧은 명령형이고, 변경을 실어 나르는 실제 심볼이 있으면 그 이름을 쓴다. 예: `fix(pstack): retarget opening-a-pr babysit trigger`.
 
-**Descriptions.** The PR body is a one-minute briefing, not a lab notebook, for a reviewer who has the diff. It says why the change exists, what it leaves out, what it could break, and how you proved it works. Write short, simple sentences with few identifiers, no walls of text. The body becomes the squash commit body, so keep that commit under about 40 lines. Use `##` headings, not bold lead-ins, in this order, and drop a section with nothing to say:
+**설명.** PR 본문은 diff를 가진 리뷰어를 위한 1분짜리 브리핑이지 실험 노트가 아니다. 변경이 왜 있는지, 무엇을 빼 두었는지, 무엇을 깨뜨릴 수 있는지, 동작을 어떻게 증명했는지를 말한다. 짧고 단순한 문장으로, 식별자는 적게, 글 벽 없이 쓴다. 본문은 squash 커밋 본문이 되므로 그 커밋을 약 40줄 안으로 유지한다. 굵은 글씨 머리말이 아니라 `##` 제목을 이 순서로 쓰고, 할 말이 없는 절은 뺀다.
 
-- `## Why`: the problem and approach, 1–3 short sentences. No SHAs, rebase genealogy, or "based on main" preamble.
-- `## What changed`: 1–3 short bullets. Name a real symbol or path only when it carries the change. Name both sides of a rename or retarget.
-- `## Scope`: always. 1–3 short items on what it covers and what it deliberately leaves out (a follow-up, a known gap). No symbols, paths, or file-by-file essay.
-- `## Tradeoffs`: only rejected alternatives a reviewer would otherwise ask about. Skip when there was no real choice.
-- `## Blast Radius`: 1–2 sentences on who or what it touches and why that is safe or risky. If main is red, state the cost of leaving it red.
-- `## Verification`: 1–3 bullets, each a real run path and its outcome. Perf: one primary number with its unit, `before → after`, and a link to the arena or swarm directory for the rest. No sample-size methodology, swarm recitals, or metric tables.
+- `## Why`: 문제와 접근, 짧은 문장 1~3개. SHA, 리베이스 계보, "main 기준" 같은 서두는 쓰지 않는다.
+- `## What changed`: 짧은 글머리 1~3개. 변경을 실어 나를 때만 실제 심볼이나 경로를 쓴다. 이름 바꾸기나 기준 변경이면 양쪽 이름을 모두 쓴다.
+- `## Scope`: 항상 쓴다. 다루는 것과 일부러 뺀 것(후속 작업, 알려진 빈틈)을 짧은 항목 1~3개로. 심볼, 경로, 파일별 설명은 쓰지 않는다.
+- `## Tradeoffs`: 리뷰어가 물어볼 법한, 버린 대안만 쓴다. 진짜 선택지가 없었으면 건너뛴다.
+- `## Blast Radius`: 누가 또는 무엇이 영향을 받고 왜 안전하거나 위험한지 1~2문장. main이 실패 중이면 그대로 둘 때의 비용을 적는다.
+- `## Verification`: 글머리 1~3개, 각각 실제 실행 경로와 결과. 성능이면 대표 숫자 하나를 단위와 함께 `before → after`로 쓰고, 나머지는 arena나 swarm 폴더 링크로 둔다. 표본 크기 방법론, 검증자 무리 나열, 지표 표는 쓰지 않는다.
 
-After the sections, attach videos or screenshots when they prove a claim. Full SHAs, swarm or arena lane recitals, lever-correction essays, file-by-file checklists, and "CLEAN" verdicts go in a linked artifact, not the body.
+절 다음에는 주장을 증명하는 영상이나 스크린샷을 붙인다. 전체 SHA, swarm이나 arena 검증 항목 나열, 도구 보정 설명, 파일별 체크리스트, "CLEAN" 판정은 본문이 아니라 링크한 별도 산출물에 둔다.
 
-**Forge.** Resolve the forge before the first PR operation and keep that choice for create, edit, view, watch, and merge. GitHub CLI (`gh`) is the default. If `command -v origin` succeeds and Origin can resolve the repository, prefer `origin pr ...`. If Origin is absent or cannot resolve the repository, stay on `gh` and record the fallback. Do not require Graphite (`gt`).
+**PR 도구.** PR 생성, 수정, 보기, 감시, 머지는 GitHub CLI(`gh`)로 한다. Graphite(`gt`)를 요구하지 않는다.
 
-**Built-in PR tool.** When the run provides a built-in PR tool, create, edit, retarget, and mark ready through it, never through a forge CLI. A CLI-made PR misses what the tool tracks. Use the resolved forge for everything the tool does not cover, and for every PR operation when the run has no such tool.
+**내장 PR 도구.** 실행 환경에 내장 PR 도구가 있으면 생성, 수정, 기준 브랜치 변경, 준비 표시는 그 도구로 하고 CLI로 하지 않는다. CLI로 만든 PR은 그 도구가 추적하는 정보를 놓친다. 그 도구가 다루지 않는 일과, 그런 도구가 없을 때의 모든 PR 작업은 `gh`로 한다.
 
-**Size and stacks.** Prefer five narrow PRs to one large PR. A stack is a base-branch chain. The root PR targets trunk. Each child branch rebases onto its parent's exact tip and its PR targets the parent branch. As a parent merges, move its child onto trunk per `playbooks/shipping.md` step 4. Without a built-in PR tool, per the resolved forge, create a child with `origin pr create --status open --base <parent-branch>` or `gh pr create --base <parent-branch>`, and retarget one with `origin pr edit <pr> --base <parent-branch>` or `gh pr edit <pr> --base <parent-branch>`. Branch from trunk only for independent work. Rebase on trunk before substantial stack work.
+**크기와 스택.** 큰 PR 하나보다 좁은 PR 다섯이 낫다. 스택은 기준 브랜치의 사슬이다. 루트 PR은 trunk를 대상으로 한다. 각 자식 브랜치는 부모의 정확한 끝 커밋 위로 리베이스하고, 그 PR은 부모 브랜치를 대상으로 한다. 부모가 머지되면 `playbooks/shipping.md` 4단계에 따라 자식을 trunk로 옮긴다. 내장 PR 도구가 없으면 자식은 `gh pr create --base <parent-branch>`로 만들고, 기준 변경은 `gh pr edit <pr> --base <parent-branch>`로 한다. 독립된 작업일 때만 trunk에서 분기한다. 스택 작업을 크게 하기 전에 trunk로 리베이스한다.
 
-**Readiness.** Open every PR ready, never as a draft. A built-in PR tool can default to draft, so set `draft: false` on every creation call through it. With Origin, pass `--status open`. With `gh`, omit `--draft`. If a PR still opens as a draft, mark it ready through the PR tool, or run `origin pr ready <number>` or `gh pr ready <number>` according to the resolved forge. Run `origin pr view <number>` or `gh pr view <number>` before you refer to PR status.
+**준비 상태.** 모든 PR은 초안이 아니라 준비 상태로 연다. 내장 PR 도구는 기본이 초안일 수 있으므로 그 도구로 만들 때마다 `draft: false`를 준다. `gh`에서는 `--draft`를 뺀다. 그래도 초안으로 열리면 PR 도구로 준비 표시를 하거나 `gh pr ready <number>`를 실행한다. PR 상태를 말하기 전에 `gh pr view <number>`를 실행한다.
 
-**Babysit.** Opening a PR does not start a babysit. Post the URL and keep building. Finish the phase or stack first. Run a separate babysit pass only when the user asks for one after the whole stack exists. A babysit for each new PR stalls the build and spends checks on commits later waves restart. Push back when feedback drifts from intent.
+**PR 돌보기.** PR을 연다고 PR 돌보기가 시작되지 않는다. URL을 올리고 계속 만든다. 단계나 스택을 먼저 끝낸다. 스택 전체가 생긴 뒤 사용자가 요청할 때만 따로 PR 돌보기를 돌린다. 새 PR마다 돌보면 빌드가 멈추고, 다음 물결이 다시 돌릴 커밋에 검사를 낭비한다. 피드백이 의도에서 벗어나면 반박한다.
 
-A subagent that opens a PR runs `interrogate`, `/deslop`, and `/no-comments`, and posts the URL. It returns to the parent without babysitting, unless it is an Autopilot-full or Autopilot-stack owner. That owner's brief assigns the babysit loop and is the ask `playbooks/babysit.md` waits for. The owner starts the loop after its code-ready report, reports merge-ready or STACK-READY per its playbook, and is exempt from the rules here and in `playbooks/babysit.md` that hold babysitting until a whole stack is built.
+PR을 연 서브에이전트는 `interrogate`, **unslop**, **no-comments**를 돌리고 URL을 올린다. 오토파일럿 전체나 오토파일럿 스택의 담당자가 아니면 PR 돌보기 없이 부모에게 돌아간다. 그 담당자의 지시가 PR 돌보기 반복을 맡기고, 그것이 `playbooks/babysit.md`가 기다리는 요청이다. 담당자는 코드 준비 보고 뒤에 반복을 시작하고, 자기 플레이북에 따라 머지 준비나 STACK-READY를 보고하며, 스택 전체가 만들어질 때까지 PR 돌보기를 미루라는 이 문서와 `playbooks/babysit.md`의 규칙에서 제외된다.

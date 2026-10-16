@@ -1,14 +1,14 @@
-### Trace forensics
+### 트레이스 포렌식
 
-**You own the diagnosis from the artifact.**
+**결과물에서 나온 진단을 맡는다.**
 
-Distinct from **Runtime forensics**, which instruments the live process. Here the capture already exists. The artifact is a fixed dataset, read it, don't re-run it. Keep tooling generic: a DevTools or trace parser for cpuprofile and `.json.gz`, a text editor for a spindump, your heap tooling for a heapsnapshot.
+살아 있는 프로세스를 계측하는 **실행 중 포렌식**(`playbooks/runtime-forensics.md`)과 다르다. 여기서는 캡처가 이미 있다. 결과물은 고정된 데이터셋이다. 읽고, 다시 돌리지 않는다. 도구는 일반적인 것을 쓴다. cpuprofile과 `.json.gz`에는 DevTools나 트레이스 파서, spindump에는 텍스트 편집기, heapsnapshot에는 쓰는 힙 도구.
 
-1. Identify the format and load it with the right tool. Parse large artifacts in a subagent (the **principle-guard-the-context-window** skill) and keep the reduced finding in the main thread. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section.
-2. Transform the raw artifact into a form you can query. Dump the trace or heap snapshot into sqlite, one row per sample, frame, or node. Reach the queryable shape before you read.
-3. Narrow to the cause. Query for the frames that hold the most time and walk the call tree to the hot path. For a leak, follow the retainer chain from the leaked object to a GC root. For a spindump, find the thread stuck on-CPU or blocked and its wait reason.
-4. Attribute to source. Map the hot frame to file, symbol, and line via the artifact's own symbols. A frame with no source mapping is not yet a diagnosis. Resolve the symbols, or say plainly the artifact does not carry them.
-5. If you have a paired capture, diff the before and after artifacts to confirm. Otherwise, mark the finding as the strongest hypothesis the artifact supports, not a confirmed cause.
-6. Hand back a cited diagnosis, no fix unless asked. Route to Bug fix or Perf issue once the cause is known. Throughput checkpoint stays one line: `throughput checkpoint: n/a, read-only forensics`.
+1. 형식을 알아내고 맞는 도구로 불러온다. 큰 결과물은 서브에이전트에서 파싱하고(**principle-guard-the-context-window** 스킬) 줄인 발견만 주 대화에 둔다. 서브에이전트마다 일에 맞는 역할([역할별 모델](../references/models.md))과 추론 수준을 SKILL.md의 서브에이전트 절에 따라 고른다.
+2. 날것의 결과물을 질의할 수 있는 모양으로 바꾼다. 트레이스나 힙 스냅샷을 sqlite에 넣는다. 샘플, 프레임, 노드마다 한 줄. 읽기 전에 질의할 수 있는 모양부터 만든다.
+3. 원인으로 좁힌다. 시간을 가장 많이 잡은 프레임을 질의하고 호출 트리를 따라 뜨거운 경로까지 간다. 누수면 누수된 객체에서 GC 루트까지 보존 체인을 따라간다. spindump면 CPU에 붙어 있거나 막힌 스레드와 그 대기 이유를 찾는다.
+4. 소스에 돌린다. 결과물 자체의 심볼로 뜨거운 프레임을 파일, 심볼, 줄에 대응시킨다. 소스 대응이 없는 프레임은 아직 진단이 아니다. 심볼을 풀거나, 결과물에 심볼이 없다고 분명히 말한다.
+5. 짝지은 캡처가 있으면 전후 결과물을 비교해 확인한다. 없으면 발견을 확인된 원인이 아니라 결과물이 뒷받침하는 가장 강한 가설로 표시한다.
+6. 근거를 단 진단을 넘긴다. 요청이 없으면 수정하지 않는다. 원인을 알면 버그 수정(`playbooks/bug-fix.md`)이나 성능 문제(`playbooks/perf-issue.md`)로 보낸다. 처리량 체크포인트는 한 줄로 둔다: `throughput checkpoint: n/a, read-only forensics`.
 
-**Reply:** the artifact and format, the reduced finding, the source location, the artifact paths, and whether a paired capture confirmed it.
+**답변:** 결과물과 형식, 줄인 발견, 소스 위치, 결과물 경로, 짝지은 캡처로 확인했는지.

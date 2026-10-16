@@ -1,25 +1,25 @@
-### Perf issue
+### 성능 문제
 
-**You own the measurement story. Plan, review, verify the numbers.** Tie every fix to a measurement, don't read source instead of measuring.
+**측정의 이야기를 맡는다. 계획하고, 검토하고, 숫자를 검증한다.** 모든 수정을 측정에 묶는다. 측정 대신 소스를 읽지 않는다.
 
-1. Capture a baseline trace via the matching control skill. Vet the baseline, and each later number, with the **benchmark-checklist** skill.
-2. `how` to ground hypotheses. Don't claim a perf ceiling without running it first.
-   Try the performance mantras in order, cheapest first:
-   1. Don't do it. Stop work whose result nothing uses rather than cheapening it.
-   2. Do it, but don't do it again.
-   3. Do it less.
-   4. Do it later.
-   5. Do it when they're not looking.
-   6. Do it concurrently.
-   7. Do it cheaper.
+1. 맞는 검증 스킬로 기준 트레이스를 잡는다. 기준값과 이후의 모든 숫자는 **benchmark-checklist** 스킬로 점검한다.
+2. `how`로 가설의 근거를 잡는다. 먼저 돌려 보지 않고 성능 상한을 주장하지 않는다.
+   성능 주문을 싼 것부터 차례로 시도한다.
+   1. 하지 않는다. 결과를 아무도 쓰지 않는 일은 싸게 만들지 말고 멈춘다.
+   2. 하되, 다시 하지 않는다.
+   3. 덜 한다.
+   4. 나중에 한다.
+   5. 아무도 보지 않을 때 한다.
+   6. 동시에 한다.
+   7. 더 싸게 한다.
 
-   When an earlier mantra meets the target, stop.
-3. Plan the fix from the trace. If it crosses a function boundary, `architect` first. Delegate implementation to a subagent using your configured perf-issue model (default `grok-4.7-xhigh-fast`). Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section. Review the diff. Capture a post-fix trace.
-   Apply the **sequence-verifiable-units** principle skill, verifying each attempt before trying the next.
-4. Parse and compare the artifacts (JSON to sqlite, diff). "Inconclusive" or wrong-surface is not a pass. Flag it.
-5. Cite the measurement in the PR.
-6. Run **Opening a PR**.
+   앞선 주문이 목표에 닿으면 멈춘다.
+3. 트레이스에서 수정을 계획한다. 함수 경계를 넘으면 먼저 `architect`를 쓴다. 구현은 `code` 역할 모델([역할별 모델](../references/models.md))의 서브에이전트에게 맡긴다. 서브에이전트마다 일에 맞는 추론 수준을 SKILL.md의 서브에이전트 절에 따라 고른다. diff를 검토한다. 수정 후 트레이스를 잡는다.
+   **sequence-verifiable-units** 원칙 스킬을 적용해 시도마다 검증한 뒤 다음을 시도한다.
+4. 결과물을 파싱해 비교한다(JSON을 sqlite로, diff). "결론 없음"이나 엉뚱한 곳에서 잰 것은 통과가 아니다. 표시해 둔다.
+5. PR에 측정을 인용한다.
+6. **PR 열기**(`playbooks/opening-a-pr.md`)를 실행한다.
 
-For sustained improvement against a metric rather than a one-off fix, use the Hillclimb playbook (`playbooks/hillclimb.md`).
+한 번의 수정이 아니라 지표를 꾸준히 올리는 일이면 힐클라이밍 플레이북(`playbooks/hillclimb.md`)을 쓴다.
 
-**Reply:** baseline number, post-fix number, delta, artifact path.
+**답변:** 기준 숫자, 수정 후 숫자, 차이, 결과물 경로.

@@ -1,12 +1,12 @@
-### Authoring or modifying a skill
+### 스킬 작성·수정
 
-**You own the skill's voice.**
+**스킬의 말투는 내가 책임진다.**
 
-1. Use the **create-skill** skill (Cursor's built-in for authoring SKILL.md files).
-2. Validate the skill: frontmatter has `name` and `description`, referenced files exist, cross-skill links resolve.
-3. Test cases if structural. Skip if subjective.
-4. Run **Opening a PR**.
+1. **skill-creator** 스킬이 있으면 그것으로 SKILL.md를 쓴다. 없으면 SKILL.md 형식(frontmatter의 `name`, `description`)을 직접 작성한다.
+2. 스킬을 검증한다. frontmatter에 `name`과 `description`이 있는지, 참조한 파일이 있는지, 다른 스킬로 가는 링크가 열리는지 확인한다.
+3. 구조적인 스킬이면 테스트 케이스를 만든다. 주관적인 스킬이면 건너뛴다.
+4. **PR 열기**를 실행한다.
 
-When in doubt, delete. Keep only prose that changes a decision. Tell it to do the thing and skip the reason. Explain only when the rule is confusing without one. Match tone to scope. Point at structural sources (types, READMEs, config) per the **encode-lessons-in-structure** principle skill. Delegate to other skills by path. Don't restate. A workflow you keep hitting but isn't captured → propose a new skill.
+애매하면 지운다. 결정을 바꾸는 글만 남긴다. 할 일을 시키고 이유는 생략한다. 이유 없이는 헷갈리는 규칙에만 설명을 붙인다. 말투는 범위에 맞춘다. **encode-lessons-in-structure** 원칙 스킬에 따라 구조적인 출처(타입, README, 설정)를 가리킨다. 다른 스킬에는 경로로 맡긴다. 같은 내용을 다시 쓰지 않는다. 자주 부딪히는데 스킬로 정리되지 않은 작업 흐름이 있으면 새 스킬을 제안한다.
 
-**Reply:** summary of the skill, key design decisions, validation notes.
+**답변:** 스킬 요약, 핵심 설계 결정, 검증 메모.

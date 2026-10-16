@@ -1,74 +1,99 @@
 ---
 name: setup-pstack
-description: Configure which models pstack uses per role and at what reasoning budget. Detects your available models and writes an always-applied rule that overrides the skill defaults. Use for /setup-pstack, "configure pstack models", "pstack budget", or changing pstack's model choices.
+description: pstack이 역할마다 쓸 모델과 추론 예산을 정한다. 현재 호스트(Claude Code, Codex, OpenCode)와 쓸 수 있는 모델을 알아내고, 스킬 기본값보다 우선하는 ~/.config/skills/models.json을 쓴다. /setup-pstack, "pstack 모델 설정", "pstack 예산", pstack 모델 선택 변경에 쓴다.
 ---
 
-# Setup pstack
+# pstack 설정
 
-Write `~/.cursor/rules/pstack-models.mdc`, an always-applied rule that sets pstack's model per role.
+`~/.config/skills/models.json`을 써서 pstack이 역할마다 쓸 모델과 추론 수준을 정한다. 파일 형식, 역할의 뜻, 기본값은 [역할별 모델](../pstack-mode/references/models.md)이 정본이다. 호스트를 알아내는 방법은 [호스트 대응표](../pstack-mode/references/hosts.md)를 따른다.
 
-## Steps
+## 단계
 
-### 1. Detect available models
+### 1. 호스트 알아내기
 
-Enumerate the model slugs you can pass to a `Task` subagent in this session. That is the dependable source. If Cursor also exposes a models API or CLI that lists the user's entitled models, prefer it for completeness. If you cannot detect any, ask the user to paste the slugs they have access to. Never write a real slug you have not confirmed is available. The aliases `inherit-parent` and `auto` are always valid even though they are not detected slugs.
+[호스트 대응표](../pstack-mode/references/hosts.md)의 "현재 호스트 알아내기"로 지금 호스트가 `claude`(Claude Code), `codex`(Codex), `opencode`(OpenCode) 중 무엇인지 정한다. 이 값이 설정 파일에서 이번에 고칠 열이다. 셋 다 아니면 사용자에게 어느 호스트에서 쓸지 질문한다.
 
-### 2. Load current state
+다른 회사 CLI가 있는지도 확인한다. `command -v claude`와 `command -v codex`를 돌려 둘 다 기록한다. `review` 역할에 쓴다.
 
-The default role-to-model mapping is the rule shape shown in step 5 below. If `~/.cursor/rules/pstack-models.mdc` already exists, read it and treat its `# budget` line and its role values as the current choices. Otherwise start from those defaults. A line whose role is not in step 5, such as `how critics`, is from a retired role. Drop it.
+### 2. 쓸 수 있는 모델 알아내기
 
-### 3. Budget, map, and confirm
+확인한 모델만 쓴다. 확인하지 않은 모델 이름을 파일에 쓰지 않는다. 빈 문자열(호스트 기본 모델)은 언제나 쓸 수 있다.
 
-**(a) Ask for a budget.** Prefer AskQuestion over free text. Offer these four options with these exact labels, and name the current budget when the rule records one. With no rule, say that `large` matches the skill defaults.
+- Claude Code: 별칭 `opus`, `sonnet`, `haiku`를 쓸 수 있다. 사용자가 전체 모델 ID를 주면 그 값도 받는다.
+- Codex: 모델 목록을 내는 명령이 없다. `~/.codex/config.toml`의 `model` 값이 있으면 그것을 현재 기본 모델로 보고, 다른 모델은 사용자에게 쓸 수 있는 이름을 질문한다. 사용자가 모르면 빈 문자열(기본 모델)로 둔다.
+- OpenCode: `opencode models`를 돌려 나온 `<제공자>/<모델>` 목록을 쓴다.
+- 다른 회사 CLI: `claude`가 있으면 `claude:opus`, `claude:sonnet`, `claude:haiku`를 쓸 수 있다. `codex`가 있으면 `codex:`(Codex 기본 모델)와 사용자가 확인해 준 `codex:<모델>`을 쓸 수 있다.
 
-- `unlimited — max reasoning`
-- `large — xhigh reasoning`
-- `medium — high reasoning`
-- `small — medium reasoning`
+하나도 알아낼 수 없으면 사용자에게 쓸 수 있는 모델 이름을 붙여 달라고 질문한다.
 
-**(b) Apply it.** Build the working table from the skill defaults, and on a re-run keep any role you changed by family, list, or alias (`inherit-parent`, `auto`). `unlimited`, `large`, `medium`, and `small` set the effort token of every real slug, panel entries included, to `max`, `xhigh`, `high`, or `medium`. The effort token is the last token, or the one before a trailing `fast`, on the ladder `max` > `xhigh` > `high` > `medium` > `low`. If the result is not a detected slug, use the same family's detected slug with the highest effort at or below the target, else mark the role as needing a choice. `inherit-parent` and `auto` do not change. So `unlimited` turns `claude-opus-5-5-xhigh` into `claude-opus-5-5-max`. Grok slugs top out at `xhigh`, so under `unlimited` the fallback puts Grok at `xhigh` and keeps `grok-4.7-xhigh-fast` as it is. `large` keeps both defaults. `small` turns them into `claude-opus-5-5-medium` and `grok-4.7-medium-fast`.
+### 3. 현재 상태 읽기
 
-**(c) Show the roles and confirm.** Show every role with its model, marking any real slug not in the detected set as needing a choice. Also list each line step 2 dropped. Ask whether to accept as-is or change specific roles, offering the detected models plus `inherit-parent` and `auto` (both mean: this role runs on the parent chat model, which is how Auto users stay on Auto) as the options. Prefer AskQuestion over free text. For panel roles (arena runners, architect runners, interrogate reviewers) the value is a list, and one subagent runs per entry, alias entries included, so the list length sets the count. `arena cross-judge pool` is also a list, but Arena selects one value from it whose model family differs from the parent's when possible. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
+`~/.config/skills/models.json`이 있으면 읽고, 그 안의 `roles`와 `effort`를 현재 선택으로 본다. 없으면 [역할별 모델](../pstack-mode/references/models.md)의 기본값에서 시작한다. 파일이 JSON으로 읽히지 않으면 덮어쓰지 않고 사용자에게 알리고 멈춘다.
 
-### 4. Validate
+현재 예산은 `effort`를 기본값(`code` `medium`, `judgment` `high`, `review` `high`, `cheap` `low`)과 비교해 알아낸다. 단계가 다르게 섞여 있으면 "사용자 지정"으로 본다.
 
-Every real slug written must be in the detected set. `inherit-parent` and `auto` always pass. If a chosen real slug is not available, stop and ask again.
+### 4. 예산 정하고, 모델 정하고, 확인받기
 
-### 5. Write the rule
+**(가) 예산을 묻는다.** 자유 입력보다 선택지 질문을 쓴다. 아래 네 선택지를 이 이름 그대로 주고, 현재 예산을 알면 함께 말한다. 설정 파일이 없으면 `large`가 스킬 기본값과 같다고 말한다.
 
-Write `~/.cursor/rules/pstack-models.mdc` with `alwaysApply: true`, a `# budget` line with the chosen label and its target effort, and one line per role, using the same labels poteto-mode uses. Overwrite the whole file so re-runs stay idempotent. Shape:
+- `unlimited — 최대 추론`
+- `large — 기본 추론`
+- `medium — 한 단계 낮춤`
+- `small — 두 단계 낮춤`
 
+**(나) 예산을 적용한다.** 추론 수준 사다리는 `low` < `medium` < `high` < `xhigh` < `max`다. `large`는 역할별 기본값을 그대로 쓴다. `unlimited`는 모든 역할을 `max`로 올린다. `medium`은 기본값에서 한 단계, `small`은 두 단계 내린다. `low`보다 내려가지 않는다. 현재 호스트가 지원하지 않는 수준이면 그보다 낮은 수준 중 가장 가까운 것을 쓴다(예: Codex에는 `max`가 없으므로 `xhigh`).
+
+**(다) 역할마다 모델을 고른다.** 다시 돌릴 때 사용자가 전에 바꾼 값은 그대로 둔다. 처음이면 기본값에서 출발한다.
+
+- `code`: 코드 작성, 기계적 수정, 검증 작업자. 빠르고 충분히 강한 모델.
+- `judgment`: 설계 판단, 가장 어려운 변경, 글쓰기. 쓸 수 있는 가장 강한 모델.
+- `review`: 교차 검토 패널. 목록이고, 항목 하나마다 서브에이전트 하나가 돈다. **서로 다른 회사 모델 두 개 이상**이어야 한다(예: Claude 하나, GPT 하나). 현재 호스트의 모델 하나와 2단계에서 확인한 다른 회사 CLI 항목(`codex:<모델>` 또는 `claude:<모델>`) 하나를 기본으로 넣는다. 다른 회사 CLI가 없으면 "선택 필요"로 표시하고, 그 CLI를 설치하고 로그인해야 교차 검토가 다양해진다고 알린다.
+- `cheap`: 읽기 검토, 요약 같은 가벼운 일. 쓸 수 있는 가장 싼 모델.
+
+**(라) 보여 주고 확인받는다.** 역할마다 모델과 추론 수준을 표로 보여 준다. 2단계에서 확인하지 못한 모델은 "선택 필요"로 표시한다. 그대로 받을지, 특정 역할을 바꿀지 사용자에게 질문한다. 선택지는 확인한 모델과 빈 문자열(호스트 기본 모델)이다.
+
+### 5. 검증
+
+- 쓰려는 모든 모델 이름이 2단계에서 확인한 목록에 있다. 빈 문자열은 언제나 통과한다.
+- `review` 목록에 서로 다른 회사 모델이 두 개 이상 있다. `codex:`나 `claude:`로 시작하는 항목은 그 CLI가 2단계에서 확인된 경우에만 통과한다.
+- 하나라도 실패하면 쓰지 않고 그 역할을 다시 질문한다.
+
+### 6. 파일 쓰기
+
+`~/.config/skills/models.json`에 병합해서 쓴다. 덮어쓰지 않는다.
+
+- 이번 호스트 열(`roles.<역할>.<호스트>`)과 `effort`만 바꾼다.
+- 다른 호스트 열, 모르는 역할, 모르는 최상위 키는 그대로 둔다.
+- 폴더가 없으면 `mkdir -p ~/.config/skills`로 만든다.
+- 같은 폴더의 임시 파일에 2칸 들여쓰기 JSON으로 쓴 뒤 이름을 바꿔 교체한다. 같은 입력으로 다시 돌리면 같은 파일이 나와야 한다.
+
+병합 예시는 다음과 같다. `HOST`, `ROLES`, `EFFORT`를 고른 값으로 바꾼다.
+
+```sh
+python3 - <<'EOF'
+import json, os, tempfile
+path = os.path.expanduser("~/.config/skills/models.json")
+HOST = "claude"
+ROLES = {"code": "sonnet", "judgment": "opus", "review": ["opus", "codex:"], "cheap": "haiku"}
+EFFORT = {"code": "medium", "judgment": "high", "review": "high", "cheap": "low"}
+os.makedirs(os.path.dirname(path), exist_ok=True)
+data = json.load(open(path)) if os.path.exists(path) else {}
+roles = data.setdefault("roles", {})
+for role, model in ROLES.items():
+    roles.setdefault(role, {})[HOST] = model
+data.setdefault("effort", {}).update(EFFORT)
+fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path))
+with os.fdopen(fd, "w") as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+    f.write("\n")
+os.replace(tmp, path)
+EOF
 ```
----
-description: pstack per-role model choices (overrides skill defaults)
-alwaysApply: true
----
-# pstack model configuration. One line per role. Delete a line to fall back to the skill default.
-# `inherit-parent` or `auto` as a value: the role runs on the parent chat model (omit Task `model`). Alias entries in a panel list still count toward its fan-out.
-# budget: large (xhigh)
-feature, refactoring: grok-4.7-xhigh-fast
-bug-fix: grok-4.7-xhigh-fast
-perf-issue: grok-4.7-xhigh-fast
-hillclimb: grok-4.7-xhigh-fast
-judgment and prose: claude-opus-5-5-xhigh
-hardest tasks: claude-opus-5-5-xhigh
-how explorer: grok-4.7-xhigh-fast
-how explainer: claude-opus-5-5-xhigh
-why investigators: grok-4.7-xhigh-fast
-why synthesizer: claude-opus-5-5-xhigh
-reflect tooling: grok-4.7-xhigh-fast
-reflect judgment, divergent, synthesizer: claude-opus-5-5-xhigh
-arena runners: claude-opus-5-5-xhigh, grok-4.7-xhigh-fast
-arena cross-judge pool: claude-opus-5-5-xhigh, grok-4.7-xhigh-fast
-swarm workers: grok-4.7-xhigh-fast
-architect runners: claude-opus-5-5-xhigh, grok-4.7-xhigh-fast
-interrogate reviewers: claude-opus-5-5-xhigh, grok-4.7-xhigh-fast
-```
 
-### 6. Confirm
+### 7. 확인
 
-Tell the user the rule was written and that it applies to new sessions. Re-running this skill updates it.
+파일을 썼다고 알리고, 바뀐 역할과 값을 보여 준다. 설정은 그 뒤에 띄우는 서브에이전트부터 적용되고, 이미 돌고 있는 서브에이전트에는 적용되지 않는다고 말한다. 이 스킬을 다시 돌리면 갱신된다.
 
-### 7. Offer a verification skill (optional)
+### 8. 검증 스킬 제안(선택)
 
-Check whether the project has a way to drive the real app for proof (a `verify-*` skill, or an existing harness). If not, offer once: "want a project-local verification skill, so agents can drive the app the way a user does and prove changes work? I can generate one with /create-verification-skill." On yes, invoke `/create-verification-skill` (resolves wherever pstack is installed: workspace, user, or plugin). On no, move on without pushing.
+프로젝트에 실제 앱을 움직여 증명할 방법(`verify-*` 스킬이나 기존 검증 도구)이 있는지 확인한다. 없으면 한 번만 제안한다. "에이전트가 사용자처럼 앱을 움직여 변경이 동작함을 증명할 수 있게 프로젝트 전용 검증 스킬을 만들까요? /create-verification-skill로 만들 수 있습니다." 그렇다고 하면 `/create-verification-skill`을 부른다(Codex는 `$create-verification-skill`). 아니라고 하면 더 권하지 않고 넘어간다.

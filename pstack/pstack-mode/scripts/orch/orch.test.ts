@@ -16,7 +16,6 @@ import {
   UserError,
   openStore,
   parseVerdict,
-  type Forge,
   type OpenStoreOptions,
   type Store,
 } from "./store.ts";
@@ -113,42 +112,7 @@ async function makeGitStack(directory: string): Promise<{
 
 type FixtureState = "open" | "draft" | "merged" | "closed";
 
-const FORGE_FIXTURES: Readonly<
-  Record<
-    Forge,
-    {
-      readonly fields: string;
-      readonly row: (pr: {
-        number: number;
-        state: FixtureState;
-        head: string;
-        base: string;
-      }) => Record<string, unknown>;
-    }
-  >
-> = {
-  gh: {
-    fields: "number,state,headRefName,baseRefName",
-    row: ({ number, state, head, base }) => ({
-      number,
-      state: state === "draft" ? "OPEN" : state.toUpperCase(),
-      headRefName: head,
-      baseRefName: base,
-    }),
-  },
-  origin: {
-    fields: "number,status,headRef,baseRef",
-    row: ({ number, state, head, base }) => ({
-      number,
-      status: state,
-      headRef: head,
-      baseRef: base,
-    }),
-  },
-};
-
-function forgeRows(
-  forge: Forge,
+function ghRows(
   prs: readonly {
     number: number;
     state: FixtureState;
@@ -156,28 +120,33 @@ function forgeRows(
     base: string;
   }[]
 ): string {
-  return JSON.stringify(prs.map((pr) => FORGE_FIXTURES[forge].row(pr)));
+  return JSON.stringify(
+    prs.map(({ number, state, head, base }) => ({
+      number,
+      state: state === "draft" ? "OPEN" : state.toUpperCase(),
+      headRefName: head,
+      baseRefName: base,
+    }))
+  );
 }
 
-async function withFakeForge<T>({
+async function withFakeGh<T>({
   directory,
-  forge,
   operation,
   currentRows,
 }: {
   directory: string;
-  forge: Forge;
   operation: () => Promise<T>;
   currentRows?: string;
 }): Promise<T> {
   const bin = join(directory, "bin");
-  const outputPath = join(directory, "forge-output.txt");
+  const outputPath = join(directory, "gh-output.txt");
   await mkdir(bin, { recursive: true });
   await writeFile(
     outputPath,
     `${
       currentRows ??
-      forgeRows(forge, [
+      ghRows([
         {
           number: 11,
           state: "open",
@@ -187,16 +156,15 @@ async function withFakeForge<T>({
       ])
     }\n`
   );
-  const { fields } = FORGE_FIXTURES[forge];
   const list = (filter: string, branch: string): string =>
-    `pr list ${filter} ${branch} --state all --json ${fields}`;
-  const fake = join(bin, forge);
+    `pr list ${filter} ${branch} --state all --json number,state,headRefName,baseRefName`;
+  const fake = join(bin, "gh");
   await writeFile(
     fake,
     `#!/usr/bin/env bash
 set -euo pipefail
 if [ "$(pwd -P)" != "${realpathSync(join(directory, "repo"))}" ]; then
-  printf '${forge} ran outside the fixture repo: %s\\n' "$(pwd -P)" >&2
+  printf 'gh ran outside the fixture repo: %s\\n' "$(pwd -P)" >&2
   exit 2
 fi
 case "$*" in
@@ -204,13 +172,13 @@ case "$*" in
     cat "${outputPath}"
     ;;
   "${list("--head", "stack/closed")}")
-    printf '%s\\n' '${forgeRows(forge, [{ number: 13, state: "closed", head: "stack/closed", base: "stack/merged" }])}'
+    printf '%s\\n' '${ghRows([{ number: 13, state: "closed", head: "stack/closed", base: "stack/merged" }])}'
     ;;
   "${list("--head", "stack/merged")}")
-    printf '%s\\n' '${forgeRows(forge, [{ number: 10, state: "merged", head: "stack/merged", base: "main" }])}'
+    printf '%s\\n' '${ghRows([{ number: 10, state: "merged", head: "stack/merged", base: "main" }])}'
     ;;
   "${list("--base", "stack/open")}")
-    printf '%s\\n' '${forgeRows(forge, [
+    printf '%s\\n' '${ghRows([
       { number: 14, state: "draft", head: "stack/draft", base: "stack/open" },
       {
         number: 15,
@@ -224,7 +192,7 @@ case "$*" in
     printf '[]\\n'
     ;;
   *)
-    printf 'unexpected ${forge} arguments: %s\\n' "$*" >&2
+    printf 'unexpected gh arguments: %s\\n' "$*" >&2
     exit 2
     ;;
 esac
@@ -316,7 +284,7 @@ describe("Store", () => {
     const updated = await store.units.set({
       id: "u1",
       state: "done",
-      branch: "poteto/u1",
+      branch: "feature/u1",
       pr: 184530,
       sha: "abc123",
     });
@@ -324,7 +292,7 @@ describe("Store", () => {
       id: "u1",
       track: "build",
       state: "done",
-      branch: "poteto/u1",
+      branch: "feature/u1",
       pr: "184530",
       sha: "abc123",
       brief: "briefs/u1.md",
@@ -336,7 +304,7 @@ describe("Store", () => {
     expect(await store.units.counts()).toEqual({ done: 1, pending: 1 });
     await expect(
       store.units.add({ id: "u1", track: "build" })
-    ).rejects.toThrow("unit u1 already exists");
+    ).rejects.toThrow("이미 있는 unit: u1");
     await expect(
       store.units.set({ id: "missing", state: "done" })
     ).rejects.toBeInstanceOf(NotFoundError);
@@ -361,7 +329,7 @@ describe("Store", () => {
         });
       }
     }
-    expect(() => parseVerdict("looks-good")).toThrow("verdict must be");
+    expect(() => parseVerdict("looks-good")).toThrow("verdict는");
 
     const recorded = await store.ledger.record({
       pr: 184530,
@@ -444,7 +412,7 @@ describe("Store", () => {
     const blocked = useStore(directory);
     await expect(
       blocked.units.add({ id: "u1", track: "build" })
-    ).rejects.toThrow(`store lock held by pid ${process.pid}`);
+    ).rejects.toThrow(`pid ${process.pid} 프로세스가 스토어 잠금을 잡고 있음`);
 
     const stolen: string[] = [];
     const forced = useStore(directory, {
@@ -475,134 +443,124 @@ describe("Store", () => {
     ).toEqual({ number: 1, line: "Never force push." });
 
     const first = await store.status.render();
-    expect(first.changed).toBe("first render");
+    expect(first.changed).toBe("첫 생성");
     expect(first.summary.openGateIds).toEqual(["release"]);
     expect(await readFile(join(directory, "status.md"), "utf8")).toContain(
       "| release | open | Ship now? |"
     );
-    expect((await store.status.render()).changed).toBe("no derived changes");
+    expect((await store.status.render()).changed).toBe("파생 변경 없음");
 
     expect(
       await store.gates.resolve({ id: "release", answer: "ship" })
     ).toMatchObject({ kind: "resolved", answer: "ship" });
-    expect((await store.status.render()).changed).toBe("open gates 1->0");
+    expect((await store.status.render()).changed).toBe("열린 gate 1->0");
     expect(await store.gates.list()).toEqual([]);
     expect(await store.standing.show()).toEqual([
       { number: 1, line: "Never force push." },
     ]);
   });
 
-  for (const forge of ["gh", "origin"] as const) {
-    it(`resolves the ordered frontier from the ${forge} base chain and validates an optional pin`, async () => {
-      const { directory, store } = await initializedStore();
-      const stack = await makeGitStack(directory);
-      const forgeParams = forge === "gh" ? {} : { forge };
+  it("resolves the ordered frontier from the gh base chain and validates an optional pin", async () => {
+    const { directory, store } = await initializedStore();
+    const stack = await makeGitStack(directory);
 
-      await withFakeForge({
-        directory,
-        forge,
-        operation: async () => {
-          expect(
-            await store.frontier.set({ repo: stack.repo, ...forgeParams })
-          ).toEqual({
-            generation: 1,
-            prs: [
-              {
-                pr: 10,
-                branches: "stack/merged",
-                sha: stack.mergedSha,
-                state: "MERGED",
-              },
-              {
-                pr: 13,
-                branches: "stack/closed",
-                sha: stack.closedSha,
-                state: "CLOSED",
-              },
-              {
-                pr: 11,
-                branches: "stack/open",
-                sha: stack.openSha,
-                state: "OPEN",
-              },
-              {
-                pr: 14,
-                branches: "stack/draft",
-                sha: stack.draftSha,
-                state: "OPEN",
-              },
-            ],
-            lowestUnmerged: 11,
-          });
-          expect(
-            (
-              await store.frontier.set({
-                repo: stack.repo,
-                ...forgeParams,
+    await withFakeGh({
+      directory,
+      operation: async () => {
+        expect(
+          await store.frontier.set({ repo: stack.repo })
+        ).toEqual({
+          generation: 1,
+          prs: [
+            {
+              pr: 10,
+              branches: "stack/merged",
+              sha: stack.mergedSha,
+              state: "MERGED",
+            },
+            {
+              pr: 13,
+              branches: "stack/closed",
+              sha: stack.closedSha,
+              state: "CLOSED",
+            },
+            {
+              pr: 11,
+              branches: "stack/open",
+              sha: stack.openSha,
+              state: "OPEN",
+            },
+            {
+              pr: 14,
+              branches: "stack/draft",
+              sha: stack.draftSha,
+              state: "OPEN",
+            },
+          ],
+          lowestUnmerged: 11,
+        });
+        expect(
+          (
+            await store.frontier.set({
+              repo: stack.repo,
                 prs: [10, 13, 11, 14],
-              })
-            ).generation
-          ).toBe(2);
-          expect((await store.frontier.show()).generation).toBe(2);
-          await expect(
-            store.frontier.set({
-              repo: stack.repo,
-              ...forgeParams,
-              prs: [10, 11, 12],
             })
-          ).rejects.toThrow(
-            "frontier pin mismatch: missing from resolved chain: 12; extra in resolved chain: 13,14"
-          );
-          await expect(
-            store.frontier.set({
-              repo: stack.repo,
-              ...forgeParams,
-              prs: [13, 10, 11, 14],
-            })
-          ).rejects.toThrow(
-            "frontier pin mismatch: order differs: expected 13,10,11,14; resolved 10,13,11,14"
-          );
-          await expect(
-            store.frontier.set({
-              repo: stack.repo,
-              ...forgeParams,
-              prs: [10, 10],
-            })
-          ).rejects.toThrow("--prs must not contain duplicates");
-        },
-      });
+          ).generation
+        ).toBe(2);
+        expect((await store.frontier.show()).generation).toBe(2);
+        await expect(
+          store.frontier.set({
+            repo: stack.repo,
+            prs: [10, 11, 12],
+          })
+        ).rejects.toThrow(
+          "frontier 고정 순서 불일치: 계산한 체인에 없음 12; 계산한 체인에만 있음 13,14"
+        );
+        await expect(
+          store.frontier.set({
+            repo: stack.repo,
+            prs: [13, 10, 11, 14],
+          })
+        ).rejects.toThrow(
+          "frontier 고정 순서 불일치: 순서가 다름. 기대 13,10,11,14, 계산 10,13,11,14"
+        );
+        await expect(
+          store.frontier.set({
+            repo: stack.repo,
+            prs: [10, 10],
+          })
+        ).rejects.toThrow("--prs에 중복된 PR 번호가 있음");
+      },
     });
+  });
 
-    it(`rejects unparseable ${forge} output loudly`, async () => {
-      const { directory, store } = await initializedStore();
-      const stack = await makeGitStack(directory);
+  it("rejects unparseable gh output loudly", async () => {
+    const { directory, store } = await initializedStore();
+    const stack = await makeGitStack(directory);
 
-      await withFakeForge({
-        directory,
-        forge,
-        currentRows: "this line is not forge output",
-        operation: async () => {
-          await expect(
-            store.frontier.set({ repo: stack.repo, forge })
-          ).rejects.toThrow(
-            `${forge} pr list --head stack/open output is not valid JSON`
-          );
-        },
-      });
+    await withFakeGh({
+      directory,
+      currentRows: "this line is not gh output",
+      operation: async () => {
+        await expect(
+          store.frontier.set({ repo: stack.repo })
+        ).rejects.toThrow(
+          "gh pr list --head stack/open 출력이 올바른 JSON이 아님"
+        );
+      },
     });
-  }
+  });
 
   it("names the missing pull request when a chain branch has none", async () => {
     const { directory, store } = await initializedStore();
     const stack = await makeGitStack(directory);
 
-    await withFakeForge({
+    await withFakeGh({
       directory,
-      forge: "gh",
       currentRows: "[]",
       operation: async () => {
         await expect(store.frontier.set({ repo: stack.repo })).rejects.toThrow(
-          "branch stack/open has no pull request; open one with gh pr create"
+          "브랜치 stack/open에 PR이 없음. gh pr create로 PR을 열거나"
         );
       },
     });
@@ -613,14 +571,14 @@ describe("Store", () => {
 
     await writeFile(join(directory, "units.tsv"), "wrong\n");
     await expect(store.units.list()).rejects.toThrow(
-      "units.tsv has an invalid header"
+      "units.tsv의 머리 행이 잘못됨"
     );
     await writeFile(
       join(directory, "units.tsv"),
       "id\ttrack\tstate\tbranch\tpr\tsha\tbrief\nshort\trow\n"
     );
     await expect(store.units.list()).rejects.toThrow(
-      "units.tsv has a malformed row"
+      "units.tsv에 형식이 잘못된 행이 있음"
     );
 
     await writeFile(
@@ -628,24 +586,24 @@ describe("Store", () => {
       "pr\tsha\tverdict\tevidence\tverifier\tts\n1\tsha\tinvalid\treport\tme\tnow\n"
     );
     await expect(store.ledger.summary()).rejects.toThrow(
-      "ledger.tsv has invalid verdict invalid"
+      "ledger.tsv에 잘못된 verdict가 있음: invalid"
     );
 
     await writeFile(join(directory, "frontier.json"), '{"generation":"1"}\n');
     await expect(store.frontier.show()).rejects.toThrow(
-      "frontier.json has an invalid shape"
+      "frontier.json의 구조가 잘못됨"
     );
 
     await writeFile(join(directory, "inbox", "bad.tsv"), "too\tshort\n");
     await expect(store.inbox.peek()).rejects.toThrow(
-      "inbox pointer bad.tsv is malformed"
+      "inbox 포인터 형식이 잘못됨: bad.tsv"
     );
   });
 
   it("rejects operations after close", async () => {
     const { store } = await initializedStore();
     await store.close();
-    await expect(store.units.list()).rejects.toThrow("store is closed");
+    await expect(store.units.list()).rejects.toThrow("스토어가 이미 닫힘");
     await expect(store.status.render()).rejects.toBeInstanceOf(UserError);
   });
 });
@@ -661,7 +619,6 @@ describe("orch CLI", () => {
     const frontierHelp = runCli(["frontier", "set", "--help"]);
     expect(frontierHelp.code).toBe(0);
     expect(frontierHelp.stdout).toContain("--repo <dir>");
-    expect(frontierHelp.stdout).toContain("--forge <forge>");
     expect(frontierHelp.stdout).toContain("--prs <n,...>");
 
     const directory = await makeDirectory();
@@ -669,7 +626,7 @@ describe("orch CLI", () => {
     expect(invalid.code).toBe(1);
     expect(invalid.stderr).toContain("required option '--track <track>'");
 
-    const badForge = runCli([
+    const removedForge = runCli([
       "--store",
       directory,
       "frontier",
@@ -677,10 +634,10 @@ describe("orch CLI", () => {
       "--repo",
       directory,
       "--forge",
-      "gt",
+      "gh",
     ]);
-    expect(badForge.code).toBe(1);
-    expect(badForge.stderr).toContain("Allowed choices are gh, origin");
+    expect(removedForge.code).toBe(1);
+    expect(removedForge.stderr).toContain("unknown option '--forge'");
   });
 
   it("accepts ORCH_STORE and emits complete JSON", async () => {
@@ -716,7 +673,7 @@ describe("orch CLI", () => {
     ]);
     expect(missingRepo.code).toBe(1);
     expect(missingRepo.stderr).toContain(
-      "set --repo <dir> or ORCH_REPO"
+      "--repo <dir> 또는 ORCH_REPO를 지정"
     );
 
     const userError = runCli([
@@ -729,7 +686,7 @@ describe("orch CLI", () => {
       "build",
     ]);
     expect(userError.code).toBe(1);
-    expect(userError.stderr).toContain("unit id must not be empty");
+    expect(userError.stderr).toContain("unit id 값이 비어 있음");
 
     const missingUnit = runCli([
       "--store",
@@ -739,7 +696,7 @@ describe("orch CLI", () => {
       "missing",
     ]);
     expect(missingUnit.code).toBe(2);
-    expect(missingUnit.stderr).toContain("unit missing not found");
+    expect(missingUnit.stderr).toContain("없는 unit: missing");
 
     const missingLedger = runCli([
       "--store",

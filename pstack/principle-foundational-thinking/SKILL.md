@@ -1,21 +1,21 @@
 ---
 name: principle-foundational-thinking
-description: "Apply before writing logic: choosing core types and data structures, sequencing scaffold-vs-feature work, asking what concurrent actors share. Get the data structures right so downstream code becomes obvious."
+description: "로직을 쓰기 전에 적용한다. 핵심 타입과 자료구조를 고르고, 뼈대 작업과 기능 작업의 순서를 정하고, 동시에 움직이는 주체들이 무엇을 공유하는지 묻는다. 자료구조를 제대로 잡으면 그 뒤 코드가 뻔해진다."
 disable-model-invocation: true
 ---
 
-# Foundational Thinking
+# 기초부터 생각하기(Foundational Thinking)
 
-**Structural decisions** protect option value. **Code-level decisions** protect simplicity.
+**구조 결정**은 선택지의 가치를 지킨다. **코드 수준 결정**은 단순함을 지킨다.
 
-**Data structures first.** Get the data shape right before writing logic. Define core types early, trace every access pattern, and choose structures that match the dominant paths.
+**자료구조가 먼저다.** 로직을 쓰기 전에 데이터 모양을 제대로 잡는다. 핵심 타입을 일찍 정의하고, 모든 접근 패턴을 따라가 보고, 주된 경로에 맞는 구조를 고른다.
 
-At code level, DRY the structure, not every line. Types and data models should converge. Three similar statements still beat a premature abstraction. Prefer explicit over clever. Test behavior and edge cases, not line counts.
+코드 수준에서는 모든 줄이 아니라 구조의 중복을 없앤다. 타입과 데이터 모델은 하나로 모여야 한다. 비슷한 문장 세 개가 섣부른 추상화보다 여전히 낫다. 영리한 코드보다 명시적인 코드를 고른다. 줄 수가 아니라 동작과 경계 사례를 시험한다.
 
-**Concurrency corollary.** Before sharing state between actors, ask "what happens if another actor modifies this concurrently?" If not "nothing", isolate.
+**동시성 따름 규칙.** 주체들 사이에 상태를 공유하기 전에 "다른 주체가 이것을 동시에 바꾸면 어떻게 되는가?"를 묻는다. 답이 "아무 일도 없다"가 아니면 격리한다.
 
-**Scaffold first.** If something helps every later phase, do it first. Ask "does every subsequent phase benefit from this existing?" CI, linting, test infrastructure, and shared types are scaffold. Sequence for option value: setup before features, tests before fixes. Keep commits small and single-purpose.
+**뼈대가 먼저다.** 이후 모든 단계에 도움이 되는 것은 먼저 한다. "이것이 있으면 이후 모든 단계가 득을 보는가?"를 묻는다. CI, 린트, 시험 기반, 공유 타입이 뼈대다. 선택지의 가치를 지키는 순서로 진행한다. 기능보다 설정을, 수정보다 시험을 먼저 한다. 커밋은 작고 목적이 하나여야 한다.
 
-Each increment should land a coherent abstraction or deepen one that exists. Do not spread a new capability across callers as special-case coordination.
+각 단계는 일관된 추상화 하나를 머지하거나 이미 있는 추상화를 깊게 만들어야 한다. 새 기능을 호출부마다 특수 사례 조정으로 흩뿌리지 않는다.
 
-Subtraction comes before scaffolding. Remove dead code first, then lay foundations.
+빼기는 뼈대보다 먼저다. 죽은 코드를 먼저 지우고 그다음 기반을 놓는다.

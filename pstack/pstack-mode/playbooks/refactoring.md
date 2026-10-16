@@ -1,16 +1,16 @@
-### Refactoring
+### 리팩터링
 
-**You own the contract. The structure changes. The behavior does not.** Distinct from Feature, which adds behavior, and Bug fix, which corrects it.
+**계약을 맡는다. 구조는 바뀌고 동작은 바뀌지 않는다.** 동작을 더하는 기능 개발 플레이북(`playbooks/feature.md`), 동작을 바로잡는 버그 수정 플레이북(`playbooks/bug-fix.md`)과 다르다.
 
-If the cleanup reveals a missing feature or a real bug, split it out and ship the structural change first against the pinned contract. A redesign is allowed, but name it and route to Feature. Large or cross-cutting structural work belongs to the **figure-it-out** skill. This playbook is the focused-to-medium change.
+정리하다가 빠진 기능이나 진짜 버그가 드러나면 떼어 내고, 고정한 계약에 맞춰 구조 변경을 먼저 배포한다. 재설계는 해도 되지만 재설계라고 밝히고 기능 개발 플레이북으로 보낸다. 크거나 여러 곳에 걸친 구조 작업은 **figure-it-out** 스킬이 맡는다. 이 플레이북은 작거나 중간 크기 변경용이다.
 
-1. Pin the behavior contract first. Run the **how** skill over the affected subsystem to learn the contract, then write a characterization test, snapshot, or equivalence harness that captures current behavior before any structure moves. If the area has no coverage, write the pin before touching structure. Type check and lint are not a pin.
-2. Name the structure the code is missing per **principle-model-the-domain**. Boring code stays when the shape is already clear and local. The reshape must delete branches or invalid states, not add indirection.
-3. Name the target shape. State what the module layout, types, and call graph should be if built today (**principle-foundational-thinking**, **principle-redesign-from-first-principles**). If the target crosses a function boundary, run the **architect** skill for parallel design exploration of the shape before the move.
-4. Subtract before you add. Delete dead code, collapse one-caller wrappers, drop redundant validators, and remove orphan references before introducing the new shape (**principle-subtract-before-you-add**). The smallest change that reaches the target shape ships (**principle-laziness-protocol**). A speculative cleanup that "might help" gets reverted.
-5. Move in small behavior-preserving steps, each keeping the pin green. For API reshapes, migrate every caller and delete the old API in the same wave (**principle-migrate-callers-then-delete-legacy-apis**). No compatibility shims, no parallel old-and-new paths. Spot-check every rename against the actual files. Renames silently miss usages in strings, prose, and back-references. Delegate the mechanical edits to a subagent using your configured refactoring model (default `grok-4.7-xhigh-fast`) with a specific scope (file paths, the names being moved, the behavior to hold). Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section.
-6. Prove behavior is unchanged on the real artifact, not "it compiles" (**principle-prove-it-works**). For larger reshapes, run an equivalence check: a script that diffs old-vs-new outputs, a recorded baseline replayed against the new code, or a smoke run on the matching surface via the relevant control skill.
-7. Confirm the change is worth keeping. The success measure is reduced reader load (**principle-minimize-reader-load**). If the diff does not lower reader load somewhere, revert it.
-8. Rebase into small ordered commits. A subtraction commit, then the reshape, then any follow-on cleanup. Shape them with the **sequence-verifiable-units** principle skill, so each behavior-preserving slice stays green before the next. Run **Opening a PR**.
+1. 동작 계약부터 고정한다. 영향받는 하위 시스템에 **how** 스킬을 돌려 계약을 익히고, 구조를 움직이기 전에 현재 동작을 담는 특성 테스트, 스냅샷, 동등성 하네스를 쓴다. 테스트가 없는 영역이면 구조를 건드리기 전에 고정 장치부터 쓴다. 타입 검사와 린트는 고정 장치가 아니다.
+2. **principle-model-the-domain**에 따라 코드에 빠진 구조에 이름을 붙인다. 모양이 이미 분명하고 국소적이면 평범한 코드는 그대로 둔다. 모양 바꾸기는 간접 층을 더하는 게 아니라 분기나 잘못된 상태를 지워야 한다.
+3. 목표 모양에 이름을 붙인다. 오늘 만든다면 모듈 배치, 타입, 호출 그래프가 어떠해야 하는지 적는다(**principle-foundational-thinking**, **principle-redesign-from-first-principles**). 목표가 함수 경계를 넘으면 옮기기 전에 **architect** 스킬로 모양을 병렬 설계 탐색한다.
+4. 더하기 전에 뺀다. 새 모양을 들이기 전에 죽은 코드를 지우고, 호출부가 하나뿐인 래퍼를 합치고, 중복 검증기를 빼고, 고아 참조를 없앤다(**principle-subtract-before-you-add**). 목표 모양에 닿는 가장 작은 변경을 배포한다(**principle-laziness-protocol**). "도움이 될지도 모르는" 추측성 정리는 되돌린다.
+5. 동작을 지키는 작은 걸음으로 옮기고, 걸음마다 고정 장치를 초록으로 유지한다. API 모양을 바꿀 때는 같은 웨이브에서 모든 호출부를 옮기고 옛 API를 지운다(**principle-migrate-callers-then-delete-legacy-apis**). 호환 심도, 옛것과 새것의 병행 경로도 두지 않는다. 이름 바꾸기는 모두 실제 파일에서 표본 확인한다. 이름 바꾸기는 문자열, 글, 역참조 속 사용처를 말없이 놓친다. 기계적 수정은 `code` 역할 모델([역할별 모델](../references/models.md))의 서브에이전트에게 구체적인 범위(파일 경로, 옮기는 이름, 지켜야 할 동작)와 함께 맡긴다. 서브에이전트마다 일에 맞는 추론 수준을 SKILL.md의 서브에이전트 절에 따라 고른다.
+6. "컴파일된다"가 아니라 실제 결과물에서 동작이 그대로임을 증명한다(**principle-prove-it-works**). 큰 모양 바꾸기에는 동등성 확인을 돌린다. 옛 출력과 새 출력을 비교하는 스크립트, 기록한 기준을 새 코드에 재생하기, 또는 관련 검증 스킬로 맞는 곳에서 돌리는 스모크 실행.
+7. 남길 가치가 있는 변경인지 확인한다. 성공 기준은 읽는 사람의 부담이 줄어드는 것이다(**principle-minimize-reader-load**). diff가 어디에서도 읽는 부담을 낮추지 않으면 되돌린다.
+8. 작고 순서 있는 커밋으로 리베이스한다. 빼기 커밋, 그다음 모양 바꾸기, 그다음 이어지는 정리. **sequence-verifiable-units** 원칙 스킬로 모양을 잡아, 동작을 지키는 조각마다 다음 조각 전에 초록을 유지한다. **PR 열기**(`playbooks/opening-a-pr.md`)를 실행한다.
 
-**Reply:** the structure that changed, the pin you held it against, the equivalence proof, the reader-load delta, what shipped and what got reverted. No new behavior.
+**답변:** 바뀐 구조, 기준으로 삼은 고정 장치, 동등성 증명, 읽는 부담의 변화, 배포한 것과 되돌린 것. 새 동작은 없다.

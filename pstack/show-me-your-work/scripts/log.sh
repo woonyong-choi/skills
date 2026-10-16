@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Append a well-formed row to a show-me-your-work decision log (TSV).
-# Usage: log.sh <logfile> <phase> <decision> <why> <evidence> <result>
+# show-me-your-work 결정 기록(TSV)에 올바른 형식의 행 하나를 덧붙인다.
+# 사용법: log.sh <logfile> <phase> <decision> <why> <evidence> <result>
 set -euo pipefail
 
 if [ "$#" -ne 6 ]; then
-	printf 'usage: log.sh <logfile> <phase> <decision> <why> <evidence> <result>\n' >&2
+	printf '사용법: log.sh <logfile> <phase> <decision> <why> <evidence> <result>\n' >&2
 	exit 1
 fi
 
@@ -16,19 +16,15 @@ if [ -n "$logdir" ] && [ "$logdir" != "." ] && [ ! -d "$logdir" ]; then
 	mkdir -p "$logdir"
 fi
 
-# Use `>>` here, never `>`. A network mount can fail this test for a log
-# that exists. Then the cost is one stray header line, not the rows.
+# `>`가 아니라 `>>`를 쓴다. 네트워크 마운트에서는 있는 파일도 이 검사에 실패할 수
+# 있는데, 그때 잃는 것은 행이 아니라 남는 머리 행 하나다.
 if [ ! -s "$logfile" ]; then
 	printf 'ts\tphase\tdecision\twhy\tevidence\tresult\n' >> "$logfile"
 fi
 
 ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-# Strip tabs/newlines/CR so cells stay on one line, and prefix any cell
-# whose first char a spreadsheet would parse as a formula (=, +, -, @)
-# with a single quote. The skill expects this log to be read in
-# spreadsheets, so attacker-controlled evidence (PR titles, filenames,
-# generated text) must not become formula execution when a reviewer
-# opens the file.
+# 기록은 스프레드시트로도 열리므로 PR 제목, 파일 이름, 생성된 글 같은 외부 입력이
+# 수식(=, +, -, @로 시작)으로 실행되지 않게 작은따옴표를 붙인다.
 clean() {
 	local v
 	v=$(printf '%s' "$1" | tr '\t\n\r' '   ')

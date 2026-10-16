@@ -1,21 +1,21 @@
-### Hillclimb
+### 힐클라이밍
 
-**You own the metric and the experiment's integrity. Supervise and review. Delegate the attempts.** For sustained, iterative improvement of one measurable thing against a target. A one-off fix is Bug fix or Perf issue. This is the loop.
+**지표와 실험의 무결성은 내가 책임진다. 감독하고 검토한다. 시도는 맡긴다.** 측정 가능한 한 가지를 목표치에 맞춰 꾸준히 반복 개선할 때 쓴다. 한 번에 끝나는 수정은 버그 수정이나 성능 문제다. 이것은 반복이다.
 
-Core discipline: one change, one measurement, keep or revert. Never stack untested changes, and never claim a win from code inspection (the **prove-it-works** principle skill).
+핵심 규율: 변경 하나, 측정 하나, 유지 아니면 되돌리기. 테스트하지 않은 변경을 쌓지 않고, 코드만 읽고 개선을 주장하지 않는다(**prove-it-works** 원칙 스킬).
 
-1. Ground the workload and architecture before choosing the metric. Run the **how** skill over the target, name the realistic workload dimensions that can move the result (data size, history, state, concurrency), and select a case that reproduces the user's complaint. If no case reproduces it, fix the repro instead of hillclimbing. Then fix one metric, the direction that counts as better, and a checkable stop predicate that pairs a target with a floor on attempts so a lucky early win can't end the run (the example "at least 50% better than baseline and at least 10 iterations" is this shape). Use the user's numbers when given, otherwise agree them.
-2. Build the measurement harness, prove its sensitivity, then freeze it (the **build-the-lever** principle skill). Run contrasting realistic workloads and confirm the target case reproduces the symptom while easier cases separate as expected. If the harness cannot distinguish them, revise the workload or metric. Vet the harness with the **benchmark-checklist** skill before you freeze it, and make it print its error count and a count of the work done. Once frozen, one repeatable command emits the metric, sampled enough to clear the noise (median of N, not a single run). Record the baseline metric and a green run of the regression gate (the tests that must keep passing) before any change.
-3. Open the decision log via the **show-me-your-work** skill. A `decision.tsv`, one row per attempt: id, hypothesis, change, before, after, delta, tests, verdict (kept or reverted), note. Read it before each attempt. Keep it out of the tree (gitignored).
-4. Ground each hypothesis in the architecture model from step 1, so it names a specific mechanism ("defer X off the boot path because it blocks first paint"), not "try memoizing something". For a perf metric, order hypotheses by the performance mantras in step 2 of the Perf issue playbook (`playbooks/perf-issue.md`). Borrow only their order, not that step's stop rule.
-5. Loop, one hypothesis per iteration:
-   - Hand the change to a subagent using your configured hillclimb model (default `grok-4.7-xhigh-fast`) with a tight scope. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section. Supervise and review the diff rather than typing it (the **guard-the-context-window** principle skill). When several independent hypotheses are live, fan them to parallel subagents, each in its own worktree (the **separate-before-serializing-shared-state** principle skill).
-   - Measure before and after with the frozen harness, and run the regression gate.
-   - Accept only when the metric moves past noise and the gate stays green. Otherwise revert the change in full. A tweak that "might help" is not kept.
-   - One commit per accepted fix, staging only the files you changed (`git add <files>`, never `-A`). Log the row either way, kept or reverted.
-   Each iteration ends in a check before the next begins (the **sequence-verifiable-units** principle skill). If the run is unattended, borrow only the wake mechanism from the Autonomous run playbook (`playbooks/autonomous-run.md`), not its stop rule.
-6. Push past the first plateau. On a stall, several rejects in a row, pivot category, combine near-misses, re-read the source, or try something more radical before concluding the hill is climbed. Correctness and simplicity outrank the number. Revert a win that breaks behavior, and keep a simplification that holds the number (the **laziness-protocol** principle skill).
-7. Stop when the predicate is met, or when the remaining ideas are marginal and not worth their cost. Don't relax the predicate to meet it, and don't quit while cheap untried hypotheses remain. If you are stuck, surface it instead of spinning.
-8. Run **Opening a PR** with the accepted commits stacked in the order they landed.
+1. 지표를 고르기 전에 작업 부하와 구조를 파악한다. 대상에 **how** 스킬을 돌리고, 결과를 움직일 수 있는 현실적인 작업 부하 차원(데이터 크기, 이력, 상태, 동시성)을 적고, 사용자의 불만을 재현하는 사례를 고른다. 재현하는 사례가 없으면 힐클라이밍 대신 재현부터 고친다. 그다음 지표 하나, 무엇이 나아진 방향인지, 확인 가능한 종료 조건을 정한다. 종료 조건은 목표치와 최소 시도 횟수를 함께 묶어서 초반의 운 좋은 개선으로 실행이 끝나지 않게 한다("기준선보다 50% 이상 나아지고 반복 10회 이상"이 이런 모양이다). 사용자가 숫자를 주면 그것을 쓰고, 아니면 합의한다.
+2. 측정 도구를 만들고, 민감도를 증명하고, 고정한다(**build-the-lever** 원칙 스킬). 대비되는 현실적 작업 부하를 돌려, 목표 사례가 증상을 재현하고 쉬운 사례는 예상대로 갈리는지 확인한다. 도구가 둘을 구분하지 못하면 작업 부하나 지표를 고친다. 고정하기 전에 **benchmark-checklist** 스킬로 도구를 점검하고, 오류 수와 처리한 작업량을 출력하게 한다. 고정한 뒤에는 반복 가능한 명령 하나가 잡음을 넘을 만큼 표본을 뽑아(한 번 실행이 아니라 N번의 중앙값) 지표를 낸다. 어떤 변경이든 하기 전에 기준선 지표와 회귀 관문(계속 통과해야 하는 테스트)의 통과 실행을 기록한다.
+3. **show-me-your-work** 스킬로 결정 기록을 연다. `decision.tsv`에 시도마다 한 줄을 쓴다: id, hypothesis, change, before, after, delta, tests, verdict(kept 또는 reverted), note. 시도할 때마다 먼저 읽는다. 작업 트리 밖에 둔다(gitignore).
+4. 가설마다 1단계의 구조 모델에 근거를 두어, "뭔가 메모이제이션해 보기"가 아니라 구체적인 메커니즘을 말하게 한다("X가 첫 화면 그리기를 막으므로 부팅 경로에서 뺀다"). 성능 지표면 성능 문제 플레이북(`playbooks/perf-issue.md`) 2단계의 성능 격언 순서로 가설을 정렬한다. 그 순서만 빌리고 그 단계의 멈춤 규칙은 빌리지 않는다.
+5. 반복마다 가설 하나로 돈다.
+   - 변경은 `code` 역할 모델([역할별 모델](../references/models.md))의 서브에이전트에게 좁은 범위로 맡긴다. 서브에이전트마다 일에 맞는 역할과 추론 수준을 SKILL.md의 서브에이전트 절에 따라 고른다. 직접 타이핑하지 않고 diff를 감독하고 검토한다(**guard-the-context-window** 원칙 스킬). 서로 독립된 가설이 여럿 살아 있으면 병렬 서브에이전트에 나눠 주고 각자 자기 워크트리에서 돌게 한다(**separate-before-serializing-shared-state** 원칙 스킬).
+   - 고정한 측정 도구로 전후를 재고 회귀 관문을 돌린다.
+   - 지표가 잡음을 넘어 움직이고 관문이 통과할 때만 받아들인다. 아니면 변경을 전부 되돌린다. "도움이 될지도 모르는" 조정은 남기지 않는다.
+   - 받아들인 수정마다 커밋 하나를 만들고, 바꾼 파일만 스테이징한다(`git add <files>`, `-A`는 쓰지 않는다). 유지든 되돌리기든 기록 줄은 남긴다.
+   반복마다 다음을 시작하기 전에 확인으로 끝낸다(**sequence-verifiable-units** 원칙 스킬). 지켜보는 사람 없이 돌리면 자율 실행 플레이북(`playbooks/autonomous-run.md`)에서 깨우는 방법만 빌리고 멈춤 규칙은 빌리지 않는다.
+6. 첫 정체를 넘어간다. 막히거나 연달아 몇 번 거절되면 범주를 바꾸거나, 아깝게 놓친 것들을 합치거나, 원본을 다시 읽거나, 더 과감한 시도를 한 뒤에야 언덕을 다 올랐다고 결론 낸다. 정확성과 단순함이 숫자보다 앞선다. 동작을 깨뜨리는 개선은 되돌리고, 숫자를 유지하는 단순화는 남긴다(**laziness-protocol** 원칙 스킬).
+7. 종료 조건을 만족하거나, 남은 아이디어가 미미해 비용만큼의 가치가 없으면 멈춘다. 종료 조건을 맞추려고 조건을 느슨하게 하지 않고, 싸고 안 해 본 가설이 남아 있으면 그만두지 않는다. 막혔으면 헛돌지 말고 알린다.
+8. 받아들인 커밋을 반영된 순서대로 쌓아 **PR 열기**를 실행한다.
 
-**Reply:** the metric and target, baseline to final with the percent delta, iterations run (kept vs reverted), each accepted fix on one line, the `decision.tsv` path, and the best idea you would try next if pushed further.
+**답변:** 지표와 목표치, 기준선에서 최종값까지와 변화율, 실행한 반복 수(유지 대 되돌리기), 받아들인 수정마다 한 줄, `decision.tsv` 경로, 더 밀어붙인다면 다음에 해 볼 가장 좋은 아이디어.
