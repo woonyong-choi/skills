@@ -22,10 +22,7 @@ def main() -> int:
     parser.add_argument("--home", type=Path, default=Path.home())
     args = parser.parse_args()
     settings_path = args.home / ".claude/settings.json"
-    saved_path = (
-        args.home
-        / "workspace/woon/.local/orchestration/issue-continuity/statusline-original.json"
-    )
+    saved_path = core.default_root() / "issue-continuity/statusline-original.json"
     script = Path(__file__).with_name("continuity_statusline.py").resolve()
     wrapper = {
         "type": "command",

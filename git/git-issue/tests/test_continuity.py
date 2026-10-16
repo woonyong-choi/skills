@@ -1,6 +1,7 @@
 """HOME 훅 진입점 유무별 실제 훅 명령의 결과 확인."""
 
 import json
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -64,11 +65,7 @@ def test_hook_records_without_reset_or_read_only_stop(host: str) -> None:
 
     plugin = Path(__file__).resolve().parents[1]
     repo = plugin.parents[1]
-    root = (
-        repo.parent
-        / ".local/orchestration/issue-continuity/test-runtime"
-        / ("hook-policy-" + host)
-    )
+    root = Path(tempfile.gettempdir()) / "skills-test-runtime" / ("hook-policy-" + host)
     # 원격 조회 실패가 고정 경로를 남기지 않도록 생성 전에 조회한다.
     issue = json.loads(subprocess.run(["gh", "api", "repos/woonyong-choi/skills/issues/43"], capture_output=True, text=True, check=True).stdout)
     assert not root.exists()

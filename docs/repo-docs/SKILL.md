@@ -60,7 +60,7 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 - `<Vault>/worktree/<프로젝트>/docs/보고서/{YYYY-MM-DD}-{주제}/`, 프로젝트 무관은 `<Vault>/legacy/보고서/{YYYY-MM-DD}-{주제}/` → 본인 → 개념 설명, 시각 후보 선택, 전후 결과 확인 → 브라우저로 볼 보고서가 있을 때 → html-report
 
 - `docs/README.md` 목록 분류와 순서: (repo-docs-design references/index.md)
-- 비공개 문서: Vault에만(위 목록의 Vault 경로, project-context). 저장소 안 `.local/`·`archive/`에 문서 저장 금지. `.local/`은 git 제외된 실행 임시물(캡처 작업 폴더, 검사 출력)만
+- 비공개 문서·실행 임시물: 모두 Vault(위 목록의 Vault 경로, project-context). 저장소 안 `.local/`·`archive/` 사용 금지
 - 공개 문서·이슈·PR·커밋에서 정책상 비공개 경로 링크와 내용 전재 금지
 - 비공개 설계서를 공개 문서로 옮길 때: 확인된 사실만 새로 작성, 원문 문장·내부 기호 복사 금지
 

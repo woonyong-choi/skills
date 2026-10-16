@@ -4,7 +4,7 @@
 
 ## 실행 환경
 
-Python 3.9 이상, macOS/Linux, 표준 라이브러리, git, 인증된 gh. 기록 루트: 환경 변수 `ISSUE_CONTINUITY_ROOT` 하나(훅·status line·창 실행기·continuity.py 공통, 판정 정본 continuity.py `default_root`). 없으면 `~/workspace/woon/.local/orchestration`. 다른 환경은 호스트를 실행하는 환경에 이 변수 설정. continuity.py 전역 `--root`는 그 실행 한 번만 변경, 훅 미적용. 개인 경로를 공통 필수 경로로 간주 금지
+Python 3.9 이상, macOS/Linux, 표준 라이브러리, git, 인증된 gh. 기록 루트: 환경 변수 `ISSUE_CONTINUITY_ROOT` 하나(훅·status line·창 실행기·continuity.py 공통, 판정 정본 continuity.py `default_root`). 없으면 등록 Vault의 `legacy/orchestration`(이전 기본 위치의 기록은 첫 실행 때 한 번 옮김, Vault 미등록이면 오류). 다른 위치가 필요하면 호스트를 실행하는 환경에 이 변수 설정. continuity.py 전역 `--root`는 그 실행 한 번만 변경, 훅 미적용. 개인 경로를 공통 필수 경로로 간주 금지
 
 ## 훅
 
