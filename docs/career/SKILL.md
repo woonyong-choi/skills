@@ -40,8 +40,8 @@ Vault 미등록: 쓰기 전 사용자에게 Vault 절대 경로 요청 → 훅 �
 
 - 공고 폴더: `{마감일}-{회사명}-{직군명}/`. `career.typ`(양식)와 `figures/`(그림)는 두 문서 공용
 - 문서 폴더: `이력서/`, `포트폴리오/`. 작업 파일(`{문서}.typ`) 하나와 확정 버전(`{문서}-{NNNN}.typ`, 4자리)
-- 문서 파일의 참조: `#import "../career.typ": *`, `#diagram("../figures/{사례}-{그림}.png", [...])`
-- 만들기: 공고 폴더에서 `typst compile --root . 이력서/이력서.typ`. 상위 폴더 참조 허용을 위해 `--root .` 필수
+- 문서 파일의 참조: 공고 폴더 기준 절대 경로. `#import "/career.typ": *`, `#diagram("/figures/{사례}-{그림}.png", [...])`. `../`는 Typst가 양식 파일 기준으로 풀어 폴더 밖 오류
+- 만들기: 공고 폴더에서 `typst compile --root . 이력서/이력서.typ`. `/`로 시작하는 경로의 기준이 공고 폴더가 되도록 `--root .` 필수
 - `{마감일}`: JD 마감일 `YYYY-MM-DD`, 상시·미표기면 `상시`. `{회사명}`: JD 표기 그대로. `{직군명}`: 직군 이름만, 괄호·경력 조건 삭제. 공백은 `-`, `/` 삭제. 예 `2026-11-30-토스-백엔드-개발자`
 - JD를 받으면 JD 원문 먼저 읽기 → 공고 폴더 생성 → `jd.md`부터 작성
 - 같은 공고 재작업: 기존 공고 폴더. 다른 공고: 새 공고 폴더
@@ -84,7 +84,7 @@ Vault 미등록: 쓰기 전 사용자에게 Vault 절대 경로 요청 → 훅 �
 - 포트폴리오 아키텍처·흐름 그림: ThinkFlow 정지 그림, 실제 관계만. 장식 금지
 - 가로 배치, 기본 캔버스, 짧은 선 이름. `width wide` 금지(A4에서 글자 축소). 세로 전환은 배치 폭 기준(repo-docs-figures 그림 작성): 생성 뒤 PNG 확인, 세로로 돌았으면 이름 축약·그림 분리
 - 생성: `python3 <이 스킬 폴더>/scripts/figures.py <공고 폴더>/figures --thinkflow <ThinkFlow 경로>`. SVG·PNG는 원본 옆(`<공고 폴더>/figures/`)에 생성. Python 3.9+·Node.js·ThinkFlow 체크아웃·playwright-core Chrome 필요(`CHROME_PATH` 선택). 원본마다 SVG와 2배 PNG, 실패 종료 1
-- 삽입: 문서 폴더 기준 `#diagram("../figures/{사례}-{그림}.png", [{결론 한 문장}])`. SVG 직접 삽입 금지(Typst CSS 변수 미지원)
+- 삽입: `#diagram("/figures/{사례}-{그림}.png", [{결론 한 문장}])`. SVG 직접 삽입 금지(Typst CSS 변수 미지원)
 
 ## 방향 제안
 
@@ -103,7 +103,7 @@ Vault 미등록: 쓰기 전 사용자에게 Vault 절대 경로 요청 → 훅 �
 문서 폴더마다 작업 파일 하나만 유지. 이력서·포트폴리오 번호는 각각 독립
 
 - 첫 작성: 작업 파일만 생성, 변경 표시 없음
-- 수정 요청: 새 번호 파일 없이 작업 파일 갱신. 마지막 확정 버전 대비 바뀐 곳만 `added`·`changed`·`removed`로 표시, 첫 쪽에 `changes-legend` 포함
+- 수정 요청: 새 번호 파일 없이 작업 파일 갱신. 마지막 확정 버전 대비 바뀐 곳만 `added`·`changed`·`removed`로 표시. `#show:` 줄 바로 다음에 `#changes-legend([{문서} 작업본], [{문서}-{NNNN}])` 범례 블록
 - 변경 표시: `#added[새 문장]` 초록 배경, `#changed[이전 문장][새 문장]` 파랑 배경과 아래 줄 회색 이전 문장, `#removed[지운 문장]` 빨간 취소선. 항목 배열 안에서는 `#` 없이 `added[...]`. 끄기: `--input changes=off`
 - 확정: 사용자가 명시할 때만("킵하자", "버전 올려" 등). `python3 <이 스킬 폴더>/scripts/versions.py confirm <문서 폴더>` → 표시 반영 본문으로 정리, `{문서}-{NNNN}.typ`·`.pdf`(0001부터, 표시 끔) 저장, 작업 파일도 같은 깨끗한 상태로. 이후 수정은 이 번호 대비 표시
 - 바뀐 곳 개수: `python3 <이 스킬 폴더>/scripts/versions.py marks <작업 파일>`

@@ -1,5 +1,5 @@
 // 이력서 내용 틀. 중괄호 자리와 항목 수만 변경, 근거 없는 칸과 줄은 삭제. 절 순서는 구성 계획에 따름
-#import "../career.typ": *
+#import "/career.typ": *
 
 #let profile = (
   name: "{이름}",

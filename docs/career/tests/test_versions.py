@@ -25,7 +25,7 @@ except ImportError:
     HAS_TYPST = shutil.which("typst") is not None
 
 STRATEGY = "# 공고 분석\n\n- 필수 5개\n\n# 구성 계획\n\n- 방향 A\n\n# 작성\n\n- 이력서\n\n# 확인\n\n- 화면 1쪽\n"
-FIRST = """#import "../career.typ": *
+FIRST = """#import "/career.typ": *
 
 #let profile = (name: "김합성", contacts: (link("mailto:a@example.com")[a\\@example.com],))
 
@@ -36,7 +36,7 @@ FIRST = """#import "../career.typ": *
   items: ([결제 이벤트 중복 처리 제거], [주문 조회 응답 개선]),
 )
 
-#diagram("../figures/order-flow.png", [주문 이벤트가 한 번만 처리됨])
+#diagram("/figures/order-flow.png", [주문 이벤트가 한 번만 처리됨])
 """
 
 
@@ -109,14 +109,14 @@ class FlowTest(unittest.TestCase):
         self.assertEqual(self.files(), ["이력서-0001.typ", "이력서-0002.typ", "이력서.typ"])
 
     def test_check_finds_structure_problems(self) -> None:
-        self.work.write_text(FIRST.replace('#import "../career.typ"', '#import "career.typ"'), encoding="utf-8")
+        self.work.write_text(FIRST.replace('#import "/career.typ"', '#import "../career.typ"'), encoding="utf-8")
         (self.posting / "이력서" / "이력서-1.typ").write_text("x", encoding="utf-8")
         (self.posting / "이력서" / "이력서-0001.typ").write_text("#added[남은 표시]", encoding="utf-8")
         (self.posting / "포트폴리오.typ").write_text("x", encoding="utf-8")
         (self.posting / "career.typ").write_text("// 고친 양식", encoding="utf-8")
         (self.posting / "전략.md").write_text("# SPEC\n\n# PLAN\n\n# IMPLEMENT\n\n# VERIFY\n", encoding="utf-8")
         problems = "\n".join(VERSIONS.check(self.posting))
-        for expected in ["career.typ가 스킬 양식과 다름", "전략.md 절", "옛 절 이름", "문서 폴더 안에: 포트폴리오.typ", "이력서-1.typ", "../career.typ", "확정 버전에 변경 표시"]:
+        for expected in ["career.typ가 스킬 양식과 다름", "전략.md 절", "옛 절 이름", "문서 폴더 안에: 포트폴리오.typ", "이력서-1.typ", "/career.typ", "확정 버전에 변경 표시"]:
             self.assertIn(expected, problems)
 
     def test_confirm_requires_document_folder(self) -> None:

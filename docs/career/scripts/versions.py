@@ -104,7 +104,7 @@ def numbered(folder: Path) -> list[int]:
 # vars: c = 원문 글자 수
 # basis: estimate
 def compile_pdf(source: Path, root: Path) -> Path:
-    """표시 끈 PDF. 공고 폴더를 root로 두어 ../career.typ, ../figures 참조 허용"""
+    """표시 끈 PDF. 공고 폴더를 root로 두어 /career.typ, /figures 참조 허용"""
     pdf = source.with_suffix(".pdf")
     if shutil.which("typst"):
         subprocess.run(["typst", "compile", "--root", str(root), "--input", "changes=off", str(source), str(pdf)], check=True)
@@ -177,8 +177,8 @@ def check(posting: Path) -> list[str]:
             problems.append(f"{document}/{document}.typ 작업 파일 없음")
         else:
             text = work.read_text(encoding="utf-8")
-            if '#import "../career.typ"' not in text:
-                problems.append(f'{document}/{document}.typ: #import "../career.typ": * 필요')
+            if '#import "/career.typ"' not in text:
+                problems.append(f'{document}/{document}.typ: #import "/career.typ": * 필요')
         for number in numbered(folder):
             text = (folder / f"{document}-{number:04d}.typ").read_text(encoding="utf-8")
             if MARK.search(text) or "changes-legend" in text:
