@@ -48,7 +48,7 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 - `fix/{번호}-ui-panel-height` → 해당 이슈, ui 영역 높이 오류
 - `docs/{번호}-readme-install` → 해당 이슈, README 설치 방법
 - `docs/{번호}-repo-comment-cleanup` → 기존 이슈의 후속 주석 정리
-- `release/v0.1` → 릴리스 브랜치 (예외 형식)
+- `v1` → 지난 메이저 수정 브랜치 (예외 형식, 릴리스 절)
 
 ## 시작 전 확인
 
@@ -81,7 +81,7 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 ## 머지
 
 - squash merge만
-- squash 메시지: 첫 줄은 PR 제목, 본문과 꼬리말은 커밋 규칙, 이슈 연결이 있으면 PR 본문과 같은 `Closes: #{번호}` 또는 `Refs: #{번호}`
+- squash 메시지: 첫 줄은 PR 제목 + ` (#{PR 번호})`, 본문은 PR의 `왜 필요한가`(비우기 금지), 꼬리말은 PR 본문과 같은 `Closes:`·`Refs:`
 - GitHub의 자동 커밋 목록 삭제. 작성 표시: (git-commit 금지)
 - AI 몫: PR 생성까지. 머지는 요청이 있을 때만
 - 머지 후 자기 브랜치 삭제: 원격, 로컬, worktree. 정리 스크립트로 한 번에(정리 절)
@@ -96,7 +96,7 @@ description: "Git 브랜치 생성·PR 생성·머지·릴리스·머지 후 정
 
 ## 금지
 
-- 기본 브랜치·`release/*` 직접 commit·push
+- 기본 브랜치·`v{major}` 직접 commit·push
 - 같은 이슈 브랜치 중복 생성, 다른 이슈 작업 섞기
 - 다른 주체의 브랜치 작업(commit, push 포함)
 - 요청 없는 rebase·force push
