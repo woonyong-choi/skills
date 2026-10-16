@@ -402,6 +402,7 @@ def merge_notice(payload: dict[str, Any]) -> str:
             script = shlex.quote(str(record))
             parts.append(
                 f"1. career-record(모드 {_mode('career-record.json')}): 머지 뒤 기록 절 적용. "
+                f"`gh pr view <번호> --json author,title,files,url | python3 {script} screen - --user <내 계정>`가 skip이면 묻지 않고 다음. "
                 "기록 조건 세 가지(사용자 계정 PR, 동작·결과 변화, 검증 있음) 중 하나라도 아니면 묻지 않고 다음. "
                 f"해당하면 `python3 {script} locate --remote <저장소 원격> --author <PR 작성자>`로 위치 → 같은 상황·행동 줄이면 merge, 아니면 add(--pr <PR 주소>). "
                 f"끝나면 `python3 {script} stamp`."
@@ -411,7 +412,7 @@ def merge_notice(payload: dict[str, Any]) -> str:
             script = shlex.quote(str(journal))
             parts.append(
                 f"{len(parts) + 1}. repo-docs-journal(모드 {_mode('journal.json')}): PR 본문·연결 이슈·PR 댓글·이 PR로 이어진 대화에서 기록 기준 세 칸(대안 인용, 가정 인용, 구조 목록 이름) 확인 → "
-                f"`python3 {script} screen --source <근거 파일> --alternative <인용> --assumption <인용> --structure <목록 이름>`. 미충족이면 이유 한 줄로 끝."
+                f"근거 원문을 표준 입력으로 `python3 {script} screen --source - --alternative <인용> --assumption <인용> --structure <목록 이름>`. 미충족이면 이유 한 줄로 끝."
             )
     except (OSError, ValueError):
         return ""

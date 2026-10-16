@@ -40,7 +40,7 @@ TOOL_HOMES = {"codex": INSTALL_HOME / ".codex", "antigravity": INSTALL_HOME / ".
 MANIFEST = ".repo-skills.json"
 POINTER = INSTALL_HOME / ".config" / "skills" / "source"
 TRASH = INSTALL_HOME / ".skill-trash"
-SKIP = {".claude-plugin", ".codex-plugin", "tests", ".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__"}
+SKIP = {".claude-plugin", ".codex-plugin", "tests", ".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__", "node_modules"}
 CATEGORIES = ("git", "code", "docs", "design", "tools")
 
 
@@ -106,6 +106,16 @@ def source_skills(source: Path) -> list[Path]:
 
 # cost: time O(b), heap O(f), stack O(d), io f
 # vars: b = 스킬 폴더 바이트 수, f = 파일 수, d = 폴더 깊이
+# basis: estimate
+def has_symlink(skill: Path) -> bool:
+    """배포에 들어가는 경로 중 symlink 존재 여부. SKIP 폴더(node_modules 등 설치 결과물)는 제외"""
+    return skill.is_symlink() or any(
+        path.is_symlink() for path in skill.rglob("*") if not SKIP.intersection(path.relative_to(skill).parts)
+    )
+
+
+# cost: time O(b), heap O(f), stack O(d), io O(f)
+# vars: b = skill bytes, f = file count, d = folder depth
 # basis: estimate
 def tree_hash(folder: Path) -> str:
     digest = hashlib.sha256()
@@ -215,7 +225,7 @@ def _restore_hook_entry(skill: Path) -> None:
 # basis: estimate
 def _replace_skill_locked(root: Path, skill: Path, digest: str, installed: dict[str, str]) -> None:
     target = _skill_path(root, skill.name)
-    if skill.is_symlink() or any(path.is_symlink() for path in skill.rglob("*")):
+    if has_symlink(skill):
         raise ValueError(f"source symlink: {skill}")
     suffix = uuid.uuid4().hex
     stage = root / f".{skill.name}.stage-{suffix}"
@@ -406,7 +416,7 @@ def main(argv: list[str]) -> int:
         skills = source_skills(source)
         for skill in skills:
             _skill_path(skill.parent, skill.name)
-            if any(path.is_symlink() for path in skill.rglob("*")):
+            if has_symlink(skill):
                 raise ValueError(f"source symlink: {skill}")
         for root in roots:
             if root.is_symlink():
