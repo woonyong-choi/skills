@@ -50,7 +50,7 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 - `docs/assets/**` → 해당 없음 → 해당 없음 → 문서에 그림이 있을 때 → figures
 - `.local/journal/**`, `.local/stories/**`, `.local/principles.md` → 본인 → 무엇을 왜 판단했나 → 기록할 판단, 큰 작업, 교훈이 있을 때 → journal
 - `.local/promo/**` → 본인 → 무엇을 어떻게 찍나 → 홍보 영상 촬영 준비 때 → promo
-- `.local/reports/{YYYY-MM-DD}-{주제}/` → 본인 → 그림으로 무엇을 결정하거나 확인했나 → 프로젝트 보고서가 있을 때 → html-report
+- `<Vault>/worktree/<프로젝트>/docs/reports/{YYYY-MM-DD}-{주제}/`, 프로젝트 무관은 `<Vault>/legacy/reports/{YYYY-MM-DD}-{주제}/` → 본인 → 그림으로 무엇을 결정하거나 확인했나 → 보고서가 있을 때 → html-report
 
 - `docs/README.md` 목록 분류와 순서: (repo-docs-design references/index.md)
 - 비공개 경로: 저장소 정책 우선, 기본 `.local/`·`archive/` 폴더. 저장 전 `git check-ignore {비공개 경로}`로 git 제외를 확인. 제외되지 않으면 저장 금지, 보고

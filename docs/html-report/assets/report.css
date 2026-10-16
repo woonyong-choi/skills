@@ -5,15 +5,14 @@
 .report-bar-start { grid-area: start; }
 .report-bar-judge { grid-area: judge; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--spacing-gap-sm); min-width: 0; }
 .report-bar-scroll { min-width: 0; overflow-x: auto; scrollbar-width: thin; }
+/* 정본 분할 버튼의 max-width: 100%가 묶음을 스크롤 칸 폭에 가둬 첫 버튼이 왼쪽 밖으로 밀리는 문제 방지 */
+.report-bar-scroll .app-tablist.is-segmented { max-width: none; }
 .report-bar-theme { grid-area: theme; display: flex; justify-content: flex-end; min-width: 0; overflow-x: auto; }
 .report-progress { flex: none; font-size: var(--text-small-text); color: var(--color-ui-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-/* ---- 버튼 묶음: 테마·필터·판정 공통 ---- */
-.report-segmented, .report-judge-choices { display: flex; flex: none; flex-wrap: nowrap; gap: var(--spacing-gap-xs); }
-:is(.report-segmented, .report-judge-choices, .report-bar) button { flex: none; padding: var(--spacing-control-inset-block) var(--spacing-control-inset-inline); font: inherit; font-size: var(--text-small-text); white-space: nowrap; color: var(--color-ink); background: var(--color-ui-card); border: var(--border-width-thin) solid var(--color-ui-line); border-radius: var(--radius-button-radius); cursor: pointer; }
-:is(.report-segmented, .report-judge-choices, .report-bar) button:hover { background: var(--color-help-hover); }
-:is(.report-segmented, .report-judge-choices) button[aria-pressed="true"] { color: var(--color-state-on-active); background: var(--color-state-active-fill); border-color: var(--color-state-active); }
-:is(.report-segmented, .report-judge-choices, .report-bar) button:focus-visible { outline: var(--outline-width-focus) solid var(--color-ui-focus); outline-offset: var(--spacing-focus-offset); }
+/* ---- 버튼: 디자인 저장소 분할 버튼(app-tablist is-segmented)을 그대로 쓰고 배치만 정한다 ---- */
+.report-bar .app-tablist.is-segmented, .report-judge .app-tablist.is-segmented { flex-wrap: nowrap; margin-inline: 0; }
+.report-judge .app-tablist.is-segmented { max-width: 100%; overflow-x: auto; scrollbar-width: thin; }
 
 /* ---- 보고서 배치: 왼쪽 목록 열 없이 본문 + 오른쪽 목차. 좁은 화면은 목차가 위 ---- */
 .report-main { padding: 0 var(--spacing-gap); }
@@ -30,14 +29,16 @@
 .app-report .app-figure-grid-item > .app-figure > :is(img, a > img), .app-report .app-figure-grid-item > .app-figure > a { display: block; width: -webkit-fill-available; width: stretch; height: auto; }
 .app-report .app-figure-grid-item > .app-figure :is(img) { border-radius: var(--radius-prose-pre-radius); box-shadow: var(--shadow-diagram); }
 
-/* ---- 순서 표시: 이미지 왼쪽 위 모서리 바깥에 걸친 원 ---- */
+/* ---- 순서 표시: 이미지 왼쪽 위 모서리 바깥에 걸친 원. 밖으로 나간 만큼 격자에 위·왼쪽 여백 ---- */
+.app-report .app-figure-grid { padding: calc(0.6 * var(--spacing-gap)) 0 0 calc(0.6 * var(--spacing-gap)); }
 .app-report .app-figure-grid-item[data-mark] { position: relative; }
-.app-report .app-figure-grid-item[data-mark]::before { content: attr(data-mark); position: absolute; z-index: 1; top: calc(-1 * var(--spacing-gap-sm)); left: calc(-1 * var(--spacing-gap-sm)); display: grid; place-items: center; inline-size: var(--spacing-gap-lg); block-size: var(--spacing-gap-lg); font-size: var(--text-small-text); font-weight: var(--font-weight-bold); line-height: 1; color: var(--color-state-on-active); background: var(--color-accent); border-radius: var(--radius-full); }
+.app-report .app-figure-grid-item[data-mark]::before { content: attr(data-mark); position: absolute; z-index: 1; top: calc(-0.6 * var(--spacing-gap)); left: calc(-0.6 * var(--spacing-gap)); display: grid; place-items: center; inline-size: var(--spacing-gap-lg); block-size: var(--spacing-gap-lg); font-size: var(--text-small-text); font-weight: var(--font-weight-semibold); line-height: 1; color: var(--color-canvas); background: var(--color-accent); border-radius: var(--radius-full); box-shadow: var(--shadow-diagram); }
+.app-report .app-figure-grid-item.is-chosen > .app-figure :is(img) { outline: var(--outline-width-focus) solid var(--color-accent); outline-offset: var(--spacing-0-5); }
 
 /* ---- 판정 조작부: 버튼 한 줄, 그 아래 의견 칸 ---- */
 .report-judge { display: grid; gap: var(--spacing-gap-xs); margin-top: var(--spacing-gap); }
-.report-judge-choices { overflow-x: auto; scrollbar-width: thin; }
-.report-judge-note, .report-result { display: block; box-sizing: border-box; width: -webkit-fill-available; width: stretch; min-block-size: calc(3 * var(--text-body-text) * var(--leading-line-body)); padding: var(--spacing-gap-xs) var(--spacing-gap-sm); font: inherit; color: var(--color-ink); background: var(--color-ui-card); border: var(--border-width-thin) solid var(--color-ui-line); border-radius: var(--radius-button-radius); resize: vertical; }
+.report-judge-note, .report-result { display: block; box-sizing: border-box; width: -webkit-fill-available; width: stretch; min-block-size: calc(3 * var(--text-body-text) * var(--leading-line-body)); padding: var(--spacing-gap-xs) var(--spacing-gap-sm); font: inherit; color: var(--color-body); background: var(--color-feature-tab-background); border: 0; border-radius: var(--radius-feature-tab-radius); resize: vertical; }
+.report-judge-note::placeholder { color: var(--color-ui-muted); }
 .report-result { margin-top: var(--spacing-gap); font-family: var(--font-mono); font-size: var(--text-small-text); }
 .report-section[hidden] { display: none; }
 
