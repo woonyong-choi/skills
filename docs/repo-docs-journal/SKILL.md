@@ -1,30 +1,68 @@
 ---
 name: repo-docs-journal
-description: "비공개 판단·판단 변경·작업 서사·원칙을 기록하거나 갱신할 때 사용."
+description: "비공개 판단·판단 변경·작업 일지·원칙을 기록·갱신하거나 PR 머지 뒤 판단 기록 여부를 정할 때 사용."
 ---
 
 # Repo Docs Journal
 
 - 우선순위: 사용자 지시 → 저장소 규칙 → 이 스킬. 범위 밖은 명시한 소유 스킬 적용
-- 기반: repo-docs 먼저 적용. 이 스킬 범위: 비공개 판단, 서사, 원칙 템플릿, 표시, 놓친 것 분류, 작성 시점
+- 기반: repo-docs 먼저 적용. 이 스킬 범위: 비공개 판단·판단 변경·작업 일지·원칙 양식, 기록 기준, 저장 위치, 표시, 놓친 것 분류, PR 머지 뒤 기록 판단
 - 필요할 때만 읽기: 판단이 공개 설계를 정했을 때 → repo-docs-decision
 
-- 저장·공개 전환: repo-docs 문서 목록의 위치·비공개 규칙. 진행·결정 상태는 이슈·Continuity 기록(git-issue), 이 스킬은 사용자가 요청한 회고 기록만
-- repo-docs-decision 대상 판정을 통과한 판단: 공개 결정 기록 작성 필요를 보고, 사용자 승인 시 작성 후 이 기록 `관련` 칸에 그 경로 추가
+- 진행·결정 상태는 이슈·Continuity 기록(git-issue). 이 스킬은 기록 기준을 통과한 판단과 사용자가 요청한 회고만
+- 형식: 일반 Markdown과 Obsidian 속성(YAML)만. html-report 사용 금지(html-report는 설명·선택 비교·전후 확인 3종의 브라우저 확인 전용)
+- 문장: 쉬운 설명 규칙(repo-docs `references/plain-language.md`)
+- repo-docs-decision 대상 판정을 통과한 판단: 공개 결정 기록 작성 필요를 보고, 사용자 승인 시 작성 후 이 기록 `관련` 속성에 그 경로 추가
 
-## 종류
+## 저장 위치
 
-아래 경로는 기본값(repo-docs 문서 목록)
+종류 → 쓰는 때 → 위치:
 
-종류 → 쓰는 때 → 파일:
+- 판단 → 기록 기준 통과 → 등록 프로젝트 `<Vault>/worktree/<프로젝트>/docs/판단/`, 프로젝트 무관 `<Vault>/legacy/판단/`
+- 판단 변경 → 기록된 판단을 뒤집을 때 → 판단과 같은 폴더
+- 작업 일지 → 사용자가 지정한 작업이나 여러 판단 변경을 잇는 작업의 처음부터 끝까지 → `docs/작업일지/`, 프로젝트 무관 `legacy/작업일지/`
+- 원칙 → 같은 원인의 놓친 것이 두 번째 나올 때 → `<Vault>/principles.md` 하나
 
-- 판단 → 선택지 중 하나 결정 → `.local/journal/{YYYY-MM-DD}-{주제}.md`
-- 판단 변경 → 이전 판단 변경 → `.local/journal/{YYYY-MM-DD}-{주제}.md`
-- 서사 → 사용자가 지정한 작업이나 여러 판단 변경을 연결해야 하는 작업의 처음부터 끝까지 → `.local/stories/{작업}.md`
-- 원칙 → 판단 변경에서 얻은 교훈 → `.local/principles.md`
+- 파일 이름: `{YYYY-MM-DD}-{주제}.md`, 주제는 한국어 2~5단어, 공백은 `-`
+- 목록: 속성(날짜, 종류, 이전 판단, 관련)으로 Obsidian이 생성. 손으로 관리하는 목록 파일 금지
+- 쓰기 전: `python3 <이 스킬 폴더>/scripts/journal.py path --kind {종류} --topic "{주제}"` → 출력 `path`에만 Write. 등록 Vault 해석·쓰기 검사를 git-issue `project_context.py` 함수 직접 호출로 수행, 실패(Vault 미등록·영역 밖)면 종료 1, 파일 0개로 중단
+- 쓴 뒤: `journal.py check` 출력 0건까지 수정. Python 3.9+, git-issue 스킬 필요
 
-- `{주제}`, `{작업}`: 영어 소문자 kebab-case 2~5단어
-- 목록: `.local/journal/README.md` 표 하나
+## 기록 기준
+
+판단은 세 칸 모두 충족 시만 기록. 각 칸은 인용 또는 목록 이름을 대야 통과, 못 대면 탈락
+
+1. 대안: 버린 대안과 이유가 PR·이슈·대화에 문장으로 존재 → 그 문장 인용
+2. 가정: 확인하지 못한 전제 문장 존재("아마 ~일 것", "~라고 보고", "확인 안 했지만" 등) → 그 문장 인용
+3. 구조: 저장 위치 / 폴더·파일 구조 / 데이터 형식 / 저장소·스킬 사이 경계와 역할 / 외부 계약(명령·설정·API) / 작업 흐름(언제 무엇이 자동으로 도는지) 중 하나 → 이름 기재
+
+- 제외 예: 화면 값(색·여백), 문구, 함수 안 구현, 실행으로 확인 끝난 설정 값
+- 판정: 근거 원문(PR 본문, 연결 이슈, PR 댓글, 그 PR로 이어진 세션 대화)을 파일로 저장 → `journal.py screen --source {파일} ... --alternative "{인용}" --assumption "{인용}" --structure "{목록 이름}"`. 인용은 원문 그대로
+- 탈락: 이유 한 줄(`기록 기준 미충족: 가정 문장 없음`)
+- 판단 변경: 기록된 판단을 뒤집을 때만. 기록 없는 판단의 변경은 대상 제외
+- 원칙: 판단 변경의 `놓친 것` 분류와 원인이 같은 것이 두 번째 나올 때. `journal.py misses`로 기존 행 대조
+
+## PR 머지 뒤
+
+세션 안 PR 머지 성공 뒤 Developer Thinking 훅 하나가 career-record 안내 다음 이 스킬 안내 출력. career-record 처리 뒤 진행
+
+1. 근거 수집: 머지된 PR 본문·연결 이슈·PR 댓글(`gh pr view {번호} --json body,comments,closingIssuesReferences`), 세션 대화에서 그 PR로 이어진 결정
+2. 기록 기준 판정(위 절)
+3. 모드: `journal.py mode`(설정 `<설정 폴더>/journal.json`, `vault.json`과 같은 폴더, 기본 normal)
+   - normal: 기준 세 칸 인용문을 보여 주고 질문 뒤 저장
+   - bypass: 통과 시 바로 저장, 작업 보고 끝에 한 줄 `판단 기록: {경로} "{제목}"`
+4. 이전 판단을 뒤집으면 판단 변경 양식
+
+직접 요청("이거 기록해 줘")도 같은 기준. 미충족이면 이유를 말하고, 사용자가 그래도 원하면 저장
+
+## 양식
+
+작성·갱신·검토 전 해당 양식 필수 확인
+
+- 판단 → [decision.md](references/decision.md)
+- 판단 변경 → [revision.md](references/revision.md)
+- 작업 일지 → [work-log.md](references/work-log.md)
+- 원칙 → [principles.md](references/principles.md)
 
 ## 표시
 
@@ -40,26 +78,6 @@ description: "비공개 판단·판단 변경·작업 서사·원칙을 기록�
 - 사용자의 판단과 이유: 사용자가 말한 것만 표시 없이, 나머지는 `[추정]`
 - `[추정]`: 사용자가 확인하면 삭제
 
-## journal/README.md
-
-`journal/README.md` 작성·갱신·검토 전 [index.md](references/index.md) 필수 확인
-
-## 판단
-
-`판단` 작성·갱신·검토 전 [decision.md](references/decision.md) 필수 확인
-
-## 판단 변경
-
-`판단 변경` 작성·갱신·검토 전 [revision.md](references/revision.md) 필수 확인
-
-## 서사
-
-`서사` 작성·갱신·검토 전 [story.md](references/story.md) 필수 확인
-
-## principles.md
-
-`principles.md` 작성·갱신·검토 전 [principles.md](references/principles.md) 필수 확인
-
 ## 문장
 
 - 당시 판단은 당시 알던 것으로. 나중에 안 근거를 당시 이유로 사용 금지
@@ -68,8 +86,8 @@ description: "비공개 판단·판단 변경·작업 서사·원칙을 기록�
 
 ## 작성 시점
 
-- 기록 요청 범위에서 판단이 확정되거나 변경 근거가 확보되면 작성
-- 작성 전 `journal/README.md`로 이전 판단 변경 여부 확인. 바꾸면 판단 변경 템플릿
+- 기록 기준 통과 또는 변경 근거 확보 시 작성
+- 작성 전 같은 폴더 기록의 속성·제목으로 이전 판단 변경 여부 확인. 바꾸면 판단 변경 양식
 - 기간을 받으면 저장소 추적기의 해당 기간 결정·오류 원인·변경 근거 수집. GitHub 사용 시 `gh`로 닫힌 `design`·`bug` 이슈와 PR 조회, 추적기가 없으면 문서 내부 결정 기록 사용
-- 서사에 속한 기록이면 서사의 진행 기록에 한 행 추가
+- 작업 일지에 속한 기록이면 작업 일지의 진행 기록에 한 행 추가
 - 보고: 저장한 경로와 남은 `[추정]` 수만

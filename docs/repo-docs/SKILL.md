@@ -25,6 +25,14 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 - 영어 작업 언어 저장소: 각 틀의 `영어 작업 언어의 절 이름` 줄 사용
 - `LICENSE`: 공식 원문 그대로. `.local/**`: 한국어
 
+## 파일·폴더 이름
+
+- 공개 Git 저장소의 파일·폴더(코드, `docs/`, 그림), Vault 안 홈페이지 발행 원고 → 영어 소문자 kebab-case
+- 여러 기록이 한곳에 모이는 시스템 파일(색인, 설정, 모아 두는 정본) → 영어. 예: `principles.md`, `master.md`, 설정 파일
+- 그 밖 각 문서·폴더 → 한국어 가능, 공백은 `-`
+
+- 기존 Vault 상위 폴더(`worktree/`, `docs/`, `legacy/`, `inbox/` 등)는 Vault 규칙 소유라 유지. 새로 만드는 하위 이름부터 적용
+
 ## 문서 목록
 
 등록 Vault 프로젝트: [프로젝트 맥락과 문서 위치](references/project-context.md) 필수 적용. 신규 문서는 아래 경로의 `docs/`·`.local/` 아래 구조를 같은 영역 `docs/`에 두고 git 제외 확인 대신 쓰기 경로 검사. 등록 판정: git-issue `scripts/project_context.py --project .` 종료 0. 루트·`.github/` 파일, 실행 필수 소스·설정은 index 메타데이터 `approved_documents`·`source_document_roots`에 사용자 승인으로 기록된 경로만 저장소 위치 유지. `--register-project`는 승인 미추가, 승인 기록 명령 없음 → 승인 안 된 경로(`check_doc.py --project` 종료 2)는 보고 후 사용자에게 승인 요청. repo-docs-llms는 저장소 안에 `docs/`를 둔 저장소만 적용
@@ -48,9 +56,9 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 - `docs/experiments/README.md`, `docs/experiments/**` → 기여자 → 설계 값을 어떻게 확인했나 → 실험이 하나 이상 → experiment
 - `docs/notes/**` → 기여자 → 개발 중 무엇을 알게 됐나 → 기록할 insight나 reference가 있을 때 → note
 - `docs/assets/**` → 해당 없음 → 해당 없음 → 문서에 그림이 있을 때 → figures
-- `.local/journal/**`, `.local/stories/**`, `.local/principles.md` → 본인 → 무엇을 왜 판단했나 → 기록할 판단, 큰 작업, 교훈이 있을 때 → journal
+- `<Vault>/worktree/<프로젝트>/docs/판단/`, `docs/작업일지/`, 프로젝트 무관은 `<Vault>/legacy/판단/`, `legacy/작업일지/`, 원칙은 `<Vault>/principles.md` → 본인 → 무엇을 왜 판단했나 → 기록 기준을 통과한 판단, 큰 작업, 교훈이 있을 때 → journal
 - `.local/promo/**` → 본인 → 무엇을 어떻게 찍나 → 홍보 영상 촬영 준비 때 → promo
-- `<Vault>/worktree/<프로젝트>/docs/reports/{YYYY-MM-DD}-{주제}/`, 프로젝트 무관은 `<Vault>/legacy/reports/{YYYY-MM-DD}-{주제}/` → 본인 → 그림으로 무엇을 결정하거나 확인했나 → 보고서가 있을 때 → html-report
+- `<Vault>/worktree/<프로젝트>/docs/보고서/{YYYY-MM-DD}-{주제}/`, 프로젝트 무관은 `<Vault>/legacy/보고서/{YYYY-MM-DD}-{주제}/` → 본인 → 그림으로 무엇을 결정하거나 확인했나 → 보고서가 있을 때 → html-report
 
 - `docs/README.md` 목록 분류와 순서: (repo-docs-design references/index.md)
 - 비공개 경로: 저장소 정책 우선, 기본 `.local/`·`archive/` 폴더. 저장 전 `git check-ignore {비공개 경로}`로 git 제외를 확인. 제외되지 않으면 저장 금지, 보고
@@ -65,6 +73,8 @@ description: "저장소 문서 공통의 언어·문체·위치·사실 상태�
 - 사용자가 삭제한 선택적 보고서·기록은 해당 생성 요청이나 필수 소비 조건 없이 재생성 금지. 삭제 전 들어오는 링크·생성 명령·사용처 확인, 참조도 같은 범위에서 수정
 
 문서 문장·언어·절 구성·용어·서식을 작성하거나 교정하기 전 [writing.md](references/writing.md) 필수 확인
+
+사람이 읽는 설명(보고서, 작업 보고, 질문, 비공개 기록)을 쓰기 전 [쉬운 설명](references/plain-language.md) 필수 확인
 
 - 새 문서 전체 작성 시 해당 종류의 템플릿 필수 확인. 필수 절을 채울 사실이 없으면 저장 금지, 빠진 사실 보고
 

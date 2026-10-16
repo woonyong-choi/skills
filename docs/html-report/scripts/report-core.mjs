@@ -155,7 +155,7 @@ const SENTENCE_LIMIT = 80;
 // cost: time O(w), heap O(w), stack O(1)
 // vars: w = 목록 파일 글자 수
 // basis: estimate
-/** 낯선 말 목록 파일(references/unfamiliar-words.md)의 `- 말` 줄 */
+/** 낯선 말 목록 파일(repo-docs references/unfamiliar-words.md)의 `- 말` 줄 */
 export function readWords(text) {
   return [...text.matchAll(/^-\s+(\S+)\s*$/gm)].map((match) => match[1].replace(/[`:]/g, ''));
 }

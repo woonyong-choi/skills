@@ -11,10 +11,11 @@
 - 지침·프로젝트 맥락 → `worktree/<프로젝트>/agent/`
 - 필수 진입·조건별 읽기 목록 → 같은 영역의 `agent/index.md`
 - 프로젝트 문서 → 같은 영역의 `docs/`
-- html-report 보고서 → 등록 프로젝트는 같은 영역의 `docs/reports/{YYYY-MM-DD}-{주제}/`, 프로젝트 무관은 `legacy/reports/{YYYY-MM-DD}-{주제}/`
+- html-report 보고서 → 등록 프로젝트는 같은 영역의 `docs/보고서/{YYYY-MM-DD}-{주제}/`, 프로젝트 무관은 `legacy/보고서/{YYYY-MM-DD}-{주제}/`
+- 판단·작업 일지(repo-docs-journal) → 등록 프로젝트는 같은 영역의 `docs/판단/`·`docs/작업일지/`, 프로젝트 무관은 `legacy/판단/`·`legacy/작업일지/`. 원칙은 Vault 하나 `principles.md`
 - 실제 문서 첨부 → Vault의 `assets/<확장자>/`
 - 일반 대화 산출물·정리 전 입력·공개 지정 원고 → 각각 `legacy/`, `inbox/`, `publish/`
-- 진행·결정·다음 행동·실행 근거 → 기존 이슈·Continuity 기록(git-issue) 재사용, Vault에 상태 사본 생성 금지. 요청한 회고 기록만 repo-docs-journal
+- 진행·결정·다음 행동·실행 근거 → 기존 이슈·Continuity 기록(git-issue) 재사용, Vault에 상태 사본 생성 금지. 기록 기준을 통과한 판단·회고 기록만 repo-docs-journal
 
 ## 진입과 이전
 

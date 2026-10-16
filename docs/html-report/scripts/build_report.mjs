@@ -13,7 +13,8 @@ import { judgedSections, lintSource, readWords, splitSource } from './report-cor
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ASSETS = join(HERE, '..', 'assets');
-const WORDS = join(HERE, '..', 'references', 'unfamiliar-words.md');
+// 낯선 말 목록은 repo-docs 공통. 설치본·원본 저장소 모두 html-report와 repo-docs가 나란히
+const WORDS = join(HERE, '..', '..', 'repo-docs', 'references', 'unfamiliar-words.md');
 const ASSET_PREFIX = '/__report__/assets/';
 // 설치본(스킬 폴더 나란히)과 원본 저장소(docs/·git/) 두 배치의 git-issue 위치
 const CONTEXT_SCRIPTS = [join(HERE, '..', '..', 'git-issue', 'scripts'), join(HERE, '..', '..', '..', 'git', 'git-issue', 'scripts')];
@@ -31,7 +32,7 @@ try:
     vault = pc.resolve_vault()
 except Exception as error:
     done(ok=False, error=str(error))
-legacy = (vault / "legacy" / "reports").resolve()
+legacy = (vault / "legacy" / "보고서").resolve()
 try:
     project = pc.check_project(cwd)
 except Exception:
@@ -41,12 +42,12 @@ if project:
         pc.check_write(project, target)
     except Exception as error:
         done(ok=False, error=str(error))
-    reports = (Path(project["area"]) / "docs" / "reports").resolve()
+    reports = (Path(project["area"]) / "docs" / "보고서").resolve()
     if target.parent.parent == reports:
         done(ok=True, kind="project", root=str(reports))
 if target.parent.parent == legacy:
     done(ok=True, kind="legacy", root=str(legacy))
-expected = str((Path(project["area"]) / "docs" / "reports").resolve()) + "/{YYYY-MM-DD}-{주제}/ 또는 " if project else ""
+expected = str((Path(project["area"]) / "docs" / "보고서").resolve()) + "/{YYYY-MM-DD}-{주제}/ 또는 " if project else ""
 done(ok=False, error=f"보고서 폴더는 {expected}{legacy}/{{YYYY-MM-DD}}-{{주제}}/ 아래만")
 `;
 
@@ -54,7 +55,7 @@ done(ok=False, error=f"보고서 폴더는 {expected}{legacy}/{{YYYY-MM-DD}}-{{�
 // vars: p = 등록 프로젝트 수
 // basis: estimate
 /**
- * 보고서 폴더 위치 검사. 등록 프로젝트는 <Vault>/worktree/<프로젝트>/docs/reports/, 프로젝트 무관은 <Vault>/legacy/reports/.
+ * 보고서 폴더 위치 검사. 등록 프로젝트는 <Vault>/worktree/<프로젝트>/docs/보고서/, 프로젝트 무관은 <Vault>/legacy/보고서/.
  * Vault 미등록·저장소 안·그 밖의 위치는 이유와 함께 실패. 파일을 쓰기 전에만 부른다
  */
 export function checkDestination(outDir, { cwd = process.cwd(), env = process.env } = {}) {

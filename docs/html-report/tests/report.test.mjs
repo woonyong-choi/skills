@@ -7,7 +7,7 @@ import { dirname, join, relative } from 'node:path';
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 
-import { cssViolations, judgedSections, splitSource } from '../scripts/report-core.mjs';
+import { cssViolations, judgedSections, readWords, splitSource } from '../scripts/report-core.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const EXAMPLES = join(ROOT, 'tests', 'examples');
@@ -102,7 +102,7 @@ test('세 종류 원문으로 생성하고 출력 폴더 파일 목록이 맞다
   const { buildReport } = await import('../scripts/build_report.mjs');
   for (const kind of ['explain', 'decision', 'result']) {
     const synthetic = syntheticVault();
-    const work = join(synthetic.vault, 'legacy', 'reports', `2026-10-16-${kind}`);
+    const work = join(synthetic.vault, 'legacy', '보고서', `2026-10-16-${kind}`);
     try {
       cpSync(join(EXAMPLES, kind), work, { recursive: true });
       const out = work;
@@ -124,7 +124,7 @@ test('세 종류 원문으로 생성하고 출력 폴더 파일 목록이 맞다
 test('도표 실패면 생성 실패, 기존 출력 보존', { skip: NEEDS_DEPS }, async () => {
   const { buildReport } = await import('../scripts/build_report.mjs');
   const synthetic = syntheticVault();
-  const work = join(synthetic.vault, 'legacy', 'reports', '2026-10-16-explain');
+  const work = join(synthetic.vault, 'legacy', '보고서', '2026-10-16-explain');
   try {
     cpSync(join(EXAMPLES, 'explain'), work, { recursive: true });
     await buildReport(join(work, 'report.md'), undefined, synthetic.context);
@@ -291,12 +291,12 @@ function cli(source, out, synthetic, cwd) {
   return spawnSync('node', [join(ROOT, 'scripts', 'build_report.mjs'), source, ...(out ? [out] : [])], { cwd, env: synthetic.env, encoding: 'utf8' });
 }
 
-test('등록 프로젝트 보고서는 Vault의 프로젝트 docs/reports 아래만 허용', async () => {
+test('등록 프로젝트 보고서는 Vault의 프로젝트 docs/보고서 아래만 허용', async () => {
   const { checkDestination } = await import('../scripts/build_report.mjs');
   const synthetic = syntheticVault();
   try {
     const { project, area } = registerProject(synthetic);
-    const folder = join(area, 'docs', 'reports', '2026-10-16-lag-table');
+    const folder = join(area, 'docs', '보고서', '2026-10-16-lag-table');
     assert.equal(checkDestination(folder, { cwd: project, env: synthetic.env }).kind, 'project');
     assert.throws(() => checkDestination(join(area, 'docs', '2026-10-16-lag-table'), { cwd: project, env: synthetic.env }), /보고서 위치 거부/);
   } finally {
@@ -304,11 +304,11 @@ test('등록 프로젝트 보고서는 Vault의 프로젝트 docs/reports 아래
   }
 });
 
-test('프로젝트 무관 보고서는 Vault의 legacy/reports 아래 허용', async () => {
+test('프로젝트 무관 보고서는 Vault의 legacy/보고서 아래 허용', async () => {
   const { checkDestination } = await import('../scripts/build_report.mjs');
   const synthetic = syntheticVault();
   try {
-    assert.equal(checkDestination(join(synthetic.vault, 'legacy', 'reports', '2026-10-16-memo'), synthetic.context).kind, 'legacy');
+    assert.equal(checkDestination(join(synthetic.vault, 'legacy', '보고서', '2026-10-16-memo'), synthetic.context).kind, 'legacy');
     assert.throws(() => checkDestination(join(synthetic.vault, 'legacy', '2026-10-16-memo'), synthetic.context), /보고서 위치 거부/);
   } finally {
     synthetic.cleanup();
@@ -351,4 +351,10 @@ test('좁은 화면 필터 묶음은 스크롤 칸 폭에 갇히지 않는다', 
   const rule = STYLE.match(/\.report-bar-scroll \.app-tablist\.is-segmented\s*\{([^}]*)\}/);
   assert.ok(rule, '필터 묶음 규칙 없음');
   assert.match(rule[1], /max-width:\s*none/);
+});
+
+test('낯선 말 목록은 repo-docs 공통 문서에서 읽음', () => {
+  const words = readWords(readFileSync(new URL('../../repo-docs/references/unfamiliar-words.md', import.meta.url), 'utf8'));
+  assert.ok(words.includes('정본') && words.includes('토큰'));
+  assert.ok(!existsSync(new URL('../references/unfamiliar-words.md', import.meta.url)));
 });

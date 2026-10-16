@@ -60,6 +60,14 @@ python3 ~/.claude/skills/career-record/scripts/record.py mode bypass
 
 설정은 `vault.json`과 같은 폴더(기본 `~/.config/skills`)의 `career-record.json`에 `{"mode": "bypass"}`로 저장됩니다.
 
+같은 훅은 career-record 다음 [repo-docs-journal](docs/repo-docs-journal/SKILL.md)의 판단 기록 여부도 안내합니다. 버린 대안 문장, 확인하지 못한 가정 문장, 구조 항목(저장 위치, 데이터 형식 등) 세 가지를 모두 댈 수 있는 판단만 기록합니다. 기본 normal은 세 가지 인용문을 보여 주고 묻습니다. 바로 저장하려면 bypass로 바꿉니다.
+
+```sh
+python3 ~/.claude/skills/repo-docs-journal/scripts/journal.py mode bypass
+```
+
+설정은 같은 폴더의 `journal.json`에 저장됩니다.
+
 ## 스킬 목록
 
 ### Git과 GitHub
@@ -99,7 +107,7 @@ python3 ~/.claude/skills/career-record/scripts/record.py mode bypass
 | [repo-docs-figures](docs/repo-docs-figures/SKILL.md) | 그림, 차트, 대체 글, 데모 GIF |
 | [repo-docs-root](docs/repo-docs-root/SKILL.md) | AGENTS.md와 저장소 루트 문서 |
 | [repo-docs-llms](docs/repo-docs-llms/SKILL.md) | 문서 색인 생성 |
-| [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | 비공개 판단 기록 |
+| [repo-docs-journal](docs/repo-docs-journal/SKILL.md) | Vault 비공개 판단·작업 일지·원칙과 PR 머지 뒤 기록 기준 판정 |
 | [repo-docs-promo](docs/repo-docs-promo/SKILL.md) | 홍보용 촬영 순서와 데모 준비 |
 | [html-report](docs/html-report/SKILL.md) | 홈페이지 문서 디자인의 설명 페이지와 선택 비교·전후 확인 보고서 |
 | [career](docs/career/SKILL.md) | JD 맞춤 이력서·포트폴리오와 Vault 지원 폴더 |
@@ -208,7 +216,7 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 
 ```sh
 python3 tools/skill-sync/scripts/skill_check.py .
-python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests docs/career-record/tests
+python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests docs/career-record/tests docs/repo-docs-journal/tests
 (cd docs/html-report/scripts && npm ci) && node --test docs/html-report/tests/*.test.mjs
 ```
 

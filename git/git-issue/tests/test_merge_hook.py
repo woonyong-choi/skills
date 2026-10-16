@@ -1,4 +1,4 @@
-"""career-record 연결: 세션 안 PR 머지 성공 뒤 PostToolUse 훅의 기록 판단 안내.
+"""PR 머지 뒤 훅 하나: career-record → repo-docs-journal 순서 안내.
 
 합성 Vault·합성 설정 폴더만 사용
 """
@@ -20,7 +20,7 @@ sys.path.insert(0, str(PLUGIN / "scripts"))
 import continuity_hook  # noqa: E402
 
 
-class CareerHookTest(unittest.TestCase):
+class MergeHookTest(unittest.TestCase):
     def setUp(self) -> None:
         self.root = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.root)
@@ -42,18 +42,32 @@ class CareerHookTest(unittest.TestCase):
             "tool_response": {"stdout": "✓ Squashed and merged", "stderr": "", "interrupted": False} if response is None else response,
         }
 
-    def test_successful_merge_adds_notice_with_mode(self) -> None:
+    def test_successful_merge_adds_one_notice_in_order(self) -> None:
         for command in ("gh pr merge 12 --squash", "gh api -X PUT repos/me/x/pulls/12/merge --input body.json"):
-            notice = continuity_hook.career_notice(self.payload(command))
-            self.assertIn("career-record", notice, command)
-            self.assertIn("모드 normal", notice)
-            self.assertIn("record.py", notice)
+            notice = continuity_hook.merge_notice(self.payload(command))
+            self.assertIn("record.py", notice, command)
+            self.assertIn("journal.py", notice, command)
+            self.assertLess(notice.index("1. career-record(모드 normal)"), notice.index("2. repo-docs-journal(모드 normal)"))
         (self.config / "career-record.json").write_text(json.dumps({"mode": "bypass"}), encoding="utf-8")
-        self.assertIn("모드 bypass", continuity_hook.career_notice(self.payload("gh pr merge 12")))
+        (self.config / "journal.json").write_text(json.dumps({"mode": "bypass"}), encoding="utf-8")
+        notice = continuity_hook.merge_notice(self.payload("gh pr merge 12"))
+        self.assertIn("career-record(모드 bypass)", notice)
+        self.assertIn("repo-docs-journal(모드 bypass)", notice)
+
+    def test_journal_only_without_career_folder(self) -> None:
+        shutil.rmtree(self.vault / "career")
+        notice = continuity_hook.merge_notice(self.payload("gh pr merge 12"))
+        self.assertNotIn("career-record", notice)
+        self.assertIn("1. repo-docs-journal", notice)
+
+    def test_hook_json_has_one_post_tool_use_entry(self) -> None:
+        for host in ("claude", "codex"):
+            hooks = json.loads((PLUGIN / "hooks" / f"{host}.json").read_text(encoding="utf-8"))["hooks"]["PostToolUse"]
+            self.assertEqual(sum(len(group["hooks"]) for group in hooks), 1, host)
 
     def test_handle_returns_notice_without_task(self) -> None:
         result = continuity_hook.handle("claude", self.payload("gh pr merge 12 --squash"), self.root / "state")
-        self.assertIn("career-record", result["hookSpecificOutput"]["additionalContext"])
+        self.assertIn("1. career-record", result["hookSpecificOutput"]["additionalContext"])
 
     def test_no_notice_for_failed_or_other_commands(self) -> None:
         cases = [
@@ -64,13 +78,11 @@ class CareerHookTest(unittest.TestCase):
             {**self.payload("gh pr merge 12"), "hook_event_name": "PreToolUse"},
         ]
         for payload in cases:
-            self.assertEqual(continuity_hook.career_notice(payload), "", payload)
+            self.assertEqual(continuity_hook.merge_notice(payload), "", payload)
 
-    def test_no_notice_without_career_folder_or_vault(self) -> None:
-        shutil.rmtree(self.vault / "career")
-        self.assertEqual(continuity_hook.career_notice(self.payload("gh pr merge 12")), "")
+    def test_no_notice_without_vault(self) -> None:
         with mock.patch.dict(os.environ, {"WOON_KNOWLEDGE_ROOT": ""}):
-            self.assertEqual(continuity_hook.career_notice(self.payload("gh pr merge 12")), "")
+            self.assertEqual(continuity_hook.merge_notice(self.payload("gh pr merge 12")), "")
 
 
 if __name__ == "__main__":
