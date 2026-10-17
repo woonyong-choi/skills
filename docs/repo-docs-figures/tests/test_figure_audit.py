@@ -82,6 +82,12 @@ class WarningTest(unittest.TestCase):
         cards = "".join(f'box n{i} "카{i}" badge="S" tone=blue appearance=filled\n' for i in range(3))
         self.assertEqual(codes(f"thinkflow\n{cards}n0 -> n1\nn0 -> n2\n"), ["focal"])
 
+    def test_too_many_edges_warn(self) -> None:
+        cards = "".join(f'box n{i} "카{i}" badge="APP"\n' for i in range(5))
+        lines = "".join([f"n{a} -> n{b}\n" for a in range(5) for b in range(5) if a != b][:13])
+        source = f"thinkflow\n{cards}{lines}"
+        self.assertIn("edges", codes(source))
+
     def test_too_many_series_warns(self) -> None:
         series = "".join(f'  series s{i} "계열{i}"\n' for i in range(8))
         self.assertEqual(codes(f'thinkflow\nchart c "차트" bar {{\n{series}  row "가" s0=1\n}}\n'), ["series"])

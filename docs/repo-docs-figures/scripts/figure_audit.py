@@ -17,8 +17,9 @@ CARD_WORDS = {"person", "box", "external", "store", "decision", "queue", "state"
 NAME_UNITS = 11  # 카드 최소 폭(100px 안팎)에 드는 이름 폭. 한글 5자와 띄어쓰기 하나, 영문 10자
 EDGE_UNITS = 20  # 선과 메시지 글 폭. 한글 10자
 CARDS_MAX = 12
+EDGES_MAX = 12
 FOCAL_MAX = 2
-TAGGED = {"box", "external", "store"}  # badge=를 받는 카드. person은 아이콘이 종류를 대신한다
+TAGGED = {"box", "external", "store"}  # 꼬리표를 다는 카드. person은 받지만 사람 아이콘이 종류를 대신해 달지 않는다
 FLAT_MIN = 4
 CHAIN_MIN = 5
 SERIES_MAX = 7
@@ -162,6 +163,8 @@ def warnings(fig: Figure) -> list[str]:
             found.append(f"label: 선 글 \"{label}\"이 한글 10자를 넘는다. 짧게 줄이고 설명은 본문에 쓴다")
     if len(fig.cards) > CARDS_MAX:
         found.append(f"cards: 카드가 {len(fig.cards)}개다. {CARDS_MAX}개 이하로 묶거나 그림을 나눈다")
+    if len(fig.edges) > EDGES_MAX:
+        found.append(f"edges: 선이 {len(fig.edges)}개다. {EDGES_MAX}개 이하로 줄이거나 그림을 나눈다")
     chain = chain_length(fig)
     if chain >= CHAIN_MIN and not fig.aspect and not fig.groups:
         found.append(f"chain: 카드 {chain}개가 한 줄로 이어져 세로 한 줄로 그려진다. aspect 1.6을 머리에 적는다")

@@ -1,6 +1,6 @@
 ---
 name: repo-docs-figures
-description: "README, docs, PR, 블로그, Obsidian 노트, 포트폴리오에 넣는 아키텍처 구성도, 순서도, 시퀀스, 상태도, 데이터 관계도, 차트를 Torso(thinkflow)로 그리거나, 스크린샷, 데모 GIF, 대체 글을 만들거나 고칠 때 쓴다."
+description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아키텍처 구성도, 순서도, 시퀀스, 상태도, 데이터 관계도, 차트를 Torso(thinkflow)로 그리거나, 스크린샷, 데모 GIF, 대체 글을 만들거나 고칠 때 쓴다."
 ---
 
 # 문서 그림
@@ -71,6 +71,7 @@ description: "README, docs, PR, 블로그, Obsidian 노트, 포트폴리오에 �
 
 - 만들거나 고친 원본과 산출물 경로를 적는다.
 - 실행한 검사와 결과, 실제 삽입 환경에서 직접 확인한 범위를 나눠 적는다.
+- Torso 그림이면 [그림 품질](references/torso-quality.md) 1절 7번의 계획 줄, 뺀 항목과 그 자리(본문, 다른 그림), 확인한 쓰임과 폭을 적는다.
 
 ## 구분
 
