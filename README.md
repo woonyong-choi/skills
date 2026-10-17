@@ -1,22 +1,34 @@
 <h1 align="center">Skills</h1>
 
 <p align="center">
-  Claude Code와 Codex의 작업 순서, Git 작업, 코드 스타일, 저장소 문서를 위한 스킬 모음<br>
-  <a href="#설치">설치</a> · <a href="#사용법">사용법</a> · <a href="#스킬-목록">스킬 목록</a> · <a href="#측정-결과">측정 결과</a>
+  Claude Code와 Codex의 작업 순서, Git 작업, 코드 스타일, 저장소 문서를 위한 스킬 모음
 </p>
 
-코드를 바꾸는 개발 작업은 입구 스킬 [just-mode](just/just-mode/SKILL.md)에서 시작합니다. just-mode가 맞는 작업 순서표를 고르고, 각 단계는 그 규칙을 맡은 스킬을 읽습니다. 작업 중 판단은 저장소의 결정 기록(`.local/decisions/<과업>.tsv`)에 남깁니다. 원본은 역할별 폴더에 두고, Claude Code와 Codex에는 같은 이름과 내용으로 설치합니다.
+> [!NOTE]
+> 개발 중입니다. 배포판은 없고 저장소 원본에서 설치합니다.
 
-## 작동 방식
+## 목차
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/skill-exposure-dark.svg">
-  <img src="docs/assets/skill-exposure-light.svg" alt="분류별 원본을 평평한 목록으로 설치하고 선택한 스킬의 본문과 참조를 읽는 구조">
-</picture>
+- [빠른 시작](#빠른-시작)
+- [해결하는 문제](#해결하는-문제)
+- [작동 방식](#작동-방식)
+  - [사용법](#사용법)
+    - [Claude Code에서 README 작성](#claude-code에서-readme-작성)
+    - [Codex에서 PR 본문 작성](#codex에서-pr-본문-작성)
+  - [작업 기록과 훅](#작업-기록과-훅)
+  - [스킬 목록](#스킬-목록)
+    - [Git과 GitHub](#git과-github)
+    - [코드와 폴더](#코드와-폴더)
+    - [저장소 문서](#저장소-문서)
+    - [디자인](#디자인)
+    - [스킬 관리](#스킬-관리)
+    - [just](#just)
+- [상태](#상태)
+  - [측정 결과](#측정-결과)
+- [개발](#개발)
+- [라이선스](#라이선스)
 
-설치 폴더에는 스킬 이름과 짧은 description을 노출합니다. just-mode는 실행 순서와 스킬 고르기를, 하위 스킬은 주제별 규칙을 소유합니다. 하위 스킬은 상황별 내용을 `references/`에 두고, 그 조건이 맞을 때만 해당 파일을 읽습니다.
-
-## 설치
+## 빠른 시작
 
 Python 3.9 이상이 필요합니다. 설치 스크립트는 표준 라이브러리만 사용합니다. 저장소를 내려받은 뒤 루트에서 아래 명령을 실행합니다. 설치 절차, 충돌 처리와 제거 방법의 정본은 [skill-sync](tools/skill-sync/SKILL.md#설치)입니다.
 
@@ -26,23 +38,47 @@ mkdir -p "$skills_target/.claude" "$skills_target/.codex"
 python3 tools/skill-sync/scripts/install.py --source . --target-home "$skills_target"
 ```
 
-Claude Code와 Codex의 사용자 스킬 폴더에 설치하고, 대상 홈에 Antigravity 폴더(`.gemini`)가 있으면 거기에도 설치합니다. 기본 대상은 현재 사용자 홈입니다. 별도 홈에서 확인하려면 실행 전에 `SKILLS_TARGET_HOME`을 그 경로로 지정합니다. 성공 시 `설치 성공` 또는 `일치`와 배포 zip 목록을 출력하고 종료 코드 0을 반환합니다. 스킬별 보조 도구의 요구 조건은 각 SKILL.md에 있습니다. 사람이 직접 커밋할 때 같은 형식을 쓰려면 `git config --global commit.template ~/.claude/skills/git-commit/references/commit-template.txt`를 실행합니다.
+Claude Code와 Codex의 사용자 스킬 폴더에 설치하고, 대상 홈에 Antigravity 폴더(`.gemini`)가 있으면 거기에도 설치합니다. 기본 대상은 현재 사용자 홈입니다.
 
-## 사용법
+별도 홈에서 확인하려면 실행 전에 `SKILLS_TARGET_HOME`을 그 경로로 지정합니다. 성공 시 `설치 성공` 또는 `일치`와 배포 zip 목록을 출력하고 종료 코드 0을 반환합니다. zip 출력 위치를 바꾸려면 설치 명령에 `--dist 경로`를 붙이세요. 스킬별 보조 도구의 요구 조건은 각 `SKILL.md`에 있습니다.
 
-### Claude Code에서 README 작성
+## 해결하는 문제
+
+Claude Code와 Codex로 작업할 때 커밋 형식, 코드 규칙, 문서 기준을 요청마다 다시 설명해야 합니다. 이 저장소는 그 규칙을 주제별 스킬로 나누고 두 도구에 같은 내용으로 설치합니다. 스킬은 적용할 조건과 작업 방법을 적은 `SKILL.md`와 필요한 참조 파일의 묶음입니다.
+
+개발 작업의 순서가 필요하면 just-mode가 작업 종류에 맞는 순서표와 스킬을 연결합니다. 한 저장소에서만 쓰는 짧은 규칙은 그 저장소의 `AGENTS.md`에 두는 편이 관리하기 좋습니다.
+
+## 작동 방식
+
+1. 설치 스크립트가 역할별 폴더의 스킬을 읽고, 분류 폴더 없이 각 도구의 사용자 스킬 폴더에 같은 이름과 내용으로 설치합니다. 도구에는 스킬 이름과 짧은 `description`의 전체 목록을 노출합니다.
+2. 사용자가 스킬을 지정하거나 도구가 요청에 맞는 스킬을 고릅니다. 코드를 바꾸는 개발 작업은 [just-mode](just/just-mode/SKILL.md)에서 시작하고, just-mode가 작업 순서표를 고릅니다.
+3. 각 단계는 규칙을 맡은 스킬 본문을 읽습니다. 상황별 내용은 `references/`에 두고, 해당 조건이 맞을 때 읽습니다.
+4. just-mode를 따른 작업은 판단과 실행 결과를 결정 기록에 남깁니다. 훅을 설치하고 도구에서 활성화하면 세션 시작 안내와 편집 전 규칙 확인을 받습니다. 활성화 조건은 [작업 기록과 훅](#작업-기록과-훅)에 있습니다.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/skill-exposure-dark.svg">
+  <img src="docs/assets/skill-exposure-light.svg" alt="분류별 원본을 평평한 목록으로 설치하고 선택한 스킬의 본문과 참조를 읽는 구조">
+</picture>
+
+설치 구조와 충돌 처리는 [skill-sync](tools/skill-sync/SKILL.md#설치), 실행 순서와 스킬 선택은 [just-mode](just/just-mode/SKILL.md)에 있습니다.
+
+### 사용법
+
+#### Claude Code에서 README 작성
 
 ```text
 /repo-docs-readme 현재 코드와 실행 결과를 근거로 README의 설치와 사용법을 갱신해 줘.
 ```
 
-### Codex에서 PR 본문 작성
+#### Codex에서 PR 본문 작성
 
 ```text
 $git-pull-request 현재 diff와 테스트 결과로 PR 본문을 작성해 줘.
 ```
 
 요청과 스킬 설명이 맞으면 도구가 자동으로 선택할 수도 있습니다. 명시 호출은 원하는 규칙을 지정하는 방법입니다. 파일 수정, Git 실행, 게시 범위는 함께 적은 요청에 따릅니다.
+
+사람이 직접 커밋할 때도 같은 형식을 쓰려면 `git config --global commit.template ~/.claude/skills/git-commit/references/commit-template.txt`로 템플릿을 지정하세요.
 
 ### 작업 기록과 훅
 
@@ -61,9 +97,9 @@ codex plugin add just-do@woon-skills
 
 PR 머지 뒤 경력 기록은 [hanger](docs/hanger/SKILL.md)로 남깁니다. 세션 안에서 PR 머지(`gh pr merge`, `gh api` PUT 머지)가 성공하면 같은 훅이 경력 원본에 남길 성과인지 판단하라고 한 줄로 안내합니다. hanger 스킬이 설치돼 있을 때만 안내합니다. hanger는 Hanger MCP 서버로 노트와 경력 원본을 다루고, [career](docs/career/SKILL.md)는 그 원본을 읽어 JD에 맞춘 이력서와 포트폴리오 PDF를 만듭니다.
 
-## 스킬 목록
+### 스킬 목록
 
-### Git과 GitHub
+#### Git과 GitHub
 
 | 스킬 | 용도 |
 |---|---|
@@ -72,7 +108,7 @@ PR 머지 뒤 경력 기록은 [hanger](docs/hanger/SKILL.md)로 남깁니다. �
 | [git-issue](git/git-issue/SKILL.md) | 이슈의 계약·완료 조건, 우선순위, 프로젝트 판 |
 | [git-pull-request](git/git-pull-request/SKILL.md) | PR 본문, 계약·문서·검증 검토 |
 
-### 코드와 폴더
+#### 코드와 폴더
 
 | 스킬 | 용도 |
 |---|---|
@@ -85,7 +121,7 @@ PR 머지 뒤 경력 기록은 [hanger](docs/hanger/SKILL.md)로 남깁니다. �
 | [code-style-rust](code/code-style-rust/SKILL.md) | Rust 코드와 rustfmt·Clippy |
 | [folder-naming](code/folder-naming/SKILL.md) | 소스 폴더 구조와 이름 |
 
-### 저장소 문서
+#### 저장소 문서
 
 | 스킬 | 용도 |
 |---|---|
@@ -102,19 +138,19 @@ PR 머지 뒤 경력 기록은 [hanger](docs/hanger/SKILL.md)로 남깁니다. �
 | [career](docs/career/SKILL.md) | JD 맞춤 이력서·포트폴리오와 지원 폴더 |
 | [hanger](docs/hanger/SKILL.md) | Hanger closet 노트 검색·작성·정리와 경력 원본 기록 |
 
-### 디자인
+#### 디자인
 
 | 스킬 | 용도 |
 |---|---|
 | [design-tokens](design/design-tokens/SKILL.md) | 색·글꼴·간격 값의 토큰 정의와 사용 검사 |
 
-### 스킬 관리
+#### 스킬 관리
 
 | 스킬 | 용도 |
 |---|---|
 | [skill-sync](tools/skill-sync/SKILL.md) | 원본 검사, 도구별 설치, Claude 계정용 zip |
 
-### just
+#### just
 
 작업 순서표(플레이북)·검토·검증 스킬 묶음입니다. Claude Code CLI, Codex CLI, OpenCode에서 같이 씁니다.
 
@@ -128,7 +164,15 @@ PR 머지 뒤 경력 기록은 [hanger](docs/hanger/SKILL.md)로 남깁니다. �
 - just 스킬도 다른 스킬과 같은 문체 기준([스킬 작성 형식](tools/skill-sync/references/authoring.md))과 같은 검사를 받습니다.
 - 라이선스는 [MIT](just/LICENSE)입니다.
 
-## 측정 결과
+## 상태
+
+스킬 원본, 설치 스크립트, 일관성 검사와 CI를 제공합니다. 릴리스 배포판은 없으며 저장소 원본에서 설치합니다. 설치 스크립트가 만드는 Claude 계정용 zip은 로컬 파일이며 계정 업로드 완료를 뜻하지 않습니다.
+
+남은 작업 범위는 [작업 맥락 복구 구현 #43](https://github.com/woonyong-choi/skills/issues/43)과 [PR 교차 리뷰 세션 구현 #91](https://github.com/woonyong-choi/skills/issues/91)에서 추적합니다. 착수 여부와 진행 상태는 프로젝트 판에서 확인하세요.
+
+규칙과 명령은 변경될 수 있습니다. 업데이트할 때는 설치 결과와 사용하는 스킬의 변경 내용을 확인하세요.
+
+### 측정 결과
 
 스킬 27개(당시 기준)의 노출 구조를 비교한 2차 실험에서 H-flat을 채택했습니다. 주 모델은 gpt-5.6-luna이며 128개 요청을 구조마다 3회 평가했습니다. gpt-6-astra는 같은 요청 중 16개를 3회씩 확인했습니다. 표의 값은 선택한 스킬 집합의 정밀도와 재현율이며, 괄호는 요청 군집 bootstrap 95% 신뢰구간입니다.
 
@@ -148,11 +192,11 @@ H-flat의 초기 목록은 5,547바이트에서 3,336바이트로 줄었습니�
 
 보류는 열등함을 입증한 결과가 아닙니다. 두 모델의 정답 합의는 인간 검증이 아니며, 불일치 요청을 제외한 표본에는 선택 편향이 남습니다. 이 수치는 제한된 스킬 선택 실험의 결과이며 실제 작업 완성도나 전체 도구 환경의 성능을 뜻하지 않습니다. 확인 모델의 결과, 판정 기준과 공개 집계의 범위는 [2차 실험 결과](experiments/skill-exposure/report.md)에 있습니다. 앞선 형식 통일·조건부 읽기 실험과 #25 변경 때의 본문 크기·읽기 연결 표는 [1차 실험 결과](experiments/skill-format-unification/report.md)에 있습니다.
 
-## 상태
-
-스킬 원본, 설치 스크립트, 일관성 검사와 CI를 제공합니다. 릴리스 배포판은 없으며 저장소 원본에서 설치합니다. 규칙과 명령은 변경될 수 있으므로 업데이트할 때 설치 결과를 확인합니다.
-
 ## 개발
+
+개발 검사에는 Python 3.10 이상을 사용하세요. CI는 Python 3.12로 실행합니다. 설치 스크립트만 실행할 때는 Python 3.9 이상이면 됩니다.
+
+시험에는 pytest 8.4.2, Node.js 22, Bun 1.4.2가 필요합니다. career PDF 컴파일 시험은 `typst`(명령 또는 Python 패키지)가 있을 때만 돕니다.
 
 [스킬 작성 형식](tools/skill-sync/references/authoring.md)과 [일관성 검사 기준](tools/skill-sync/references/consistency.md)을 따릅니다. CI([skills.yml](.github/workflows/skills.yml))와 같은 검사를 저장소 루트에서 아래 순서로 실행합니다. 설치 명령은 훅 통합 시험이 읽을 설치본을 홈 폴더에 만듭니다. 마지막 블록은 Torso를 `.runtime/torso`에 받아 둔 뒤 README 그림을 다시 만들고, 커밋된 그림과 실험 집계가 바뀌지 않았는지 확인합니다. Torso를 받는 명령은 [그림 재현 안내](docs/assets/README.md)에 있습니다.
 
@@ -169,8 +213,6 @@ git diff --exit-code -- docs/assets experiments/skill-exposure/results
 
 CI는 macOS의 링크된 임시 폴더 경로를 흉내 내려고 `TMPDIR`을 심볼릭 링크로 바꿔 훅 시험(`just/just-mode/scripts/hooks/tests`)을 한 번 더 돌립니다. 플러그인 매니페스트를 바꾸면 `claude plugin validate --strict .`과 `claude plugin validate --strict just`도 실행합니다.
 
-시험에는 pytest, Node.js 22, Bun 1.4.2가 필요합니다. career PDF 컴파일 시험은 `typst`(명령 또는 Python 패키지)가 있을 때만 돕니다.
-
 ## 라이선스
 
-[MIT](LICENSE).
+[MIT](LICENSE)
