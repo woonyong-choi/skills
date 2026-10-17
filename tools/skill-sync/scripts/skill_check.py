@@ -3,6 +3,8 @@
 인자: root 원본 저장소, --json 집계 JSON 출력
 출력: 스킬별 위반과 total N 또는 JSON, 종료 0 통과·1 위반·2 입력 오류
 """
+from __future__ import annotations
+
 import argparse
 import json
 import re
