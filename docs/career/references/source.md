@@ -6,7 +6,7 @@
 
 - 경력 원본은 Hanger closet의 `career/` 아래 Markdown이다. `search_documents`(`folders: ["career"]`)로 찾고, 목록에만 나온 문서는 `read_document`로 읽는다. closet 고르기와 오류 메시지 전달은 hanger 규칙을 따른다.
 - 원본 파일에 직접 쓰거나 Hanger 변경 요청(`request_change`, `collect`)을 하지 않는다. 이 스킬은 읽기만 한다.
-- 그림 원본(`.thinkflow`)은 Hanger가 색인하지 않는다. `list_closets`가 알려 준 closet 경로 아래 파일을 공고 폴더로 복사한다(읽기만 한다).
+- 그림 원본(`.torso`)은 Hanger가 색인하지 않는다. `list_closets`가 알려 준 closet 경로 아래 파일을 공고 폴더로 복사한다(읽기만 한다).
 - 원본이 비었거나 필요한 칸이 `미확인`이면 그대로 빈 곳으로 보고한다. 원본을 채우는 일은 사용자에게 hanger 요청으로 안내한다.
 
 ## 읽기 범위
@@ -32,7 +32,7 @@ career/
     {프로젝트}/
       이력서.md
       포트폴리오.md
-      figures/{그림}.thinkflow
+      figures/{그림}.torso
   개인/{프로젝트}/...
 ```
 
@@ -63,4 +63,4 @@ career/
 | 기술적 의사결정 및 아키텍처 | 설계 결정 |
 | 구현 및 해결 과정 | 구현 |
 | 성과 및 배운 점 | 줄의 결과와 묶음의 결과, 남은 과제 |
-| 그림 | 프로젝트 `figures/{그림}.thinkflow`를 공고 폴더 `figures/{프로젝트}-{그림}.thinkflow`로 복사한다. 문서 경로는 `/figures/{프로젝트}-{그림}.png`다 |
+| 그림 | 프로젝트 `figures/{그림}.torso`를 공고 폴더 `figures/{프로젝트}-{그림}.torso`로 복사한다. 문서 경로는 `/figures/{프로젝트}-{그림}.png`다 |

@@ -1,8 +1,8 @@
-"""Torso 원본(.thinkflow)의 항목 누락과 품질 위험 배치를 찾는다.
+"""Torso 원본(.torso)의 항목 누락과 품질 위험 배치를 찾는다.
 
-인자: 원본 경로 하나, --items 요구 항목 파일(한 줄에 항목 하나, `#` 주석, `|`로 같은 뜻의 다른 이름), --svg 렌더한 SVG(크기와 본문 단 축소 비율 보고)
+인자: 원본 경로 하나, --items 요구 항목 파일(한 줄에 항목 하나, `#` 주석, `|`로 같은 뜻의 다른 이름), --svg 렌더한 SVG(크기와 세로형 판정), --print 인쇄용 그림(width wide를 요구하지 않음)
 출력: stdout `누락:`, `경고 <코드>:`, `크기:` 줄, 종료 0 문제 없음·1 누락이나 경고 있음·2 인자 오류나 읽기 실패
-실행 조건: Python 3.9 이상, 표준 라이브러리만. Torso 문법 검사는 대신하지 않으므로 `thinkflow check --strict`를 따로 돌린다
+실행 조건: Python 3.9 이상, 표준 라이브러리만. Torso 문법 검사는 대신하지 않으므로 `torso check --strict`를 따로 돌린다
 """
 from __future__ import annotations
 
@@ -24,7 +24,6 @@ FLAT_MIN = 4
 CHAIN_MIN = 5
 SERIES_MAX = 7
 BODY = 680
-MOBILE = 358
 TOKEN = re.compile(r'"(?:[^"\\]|\\.)*"|\S+')
 EDGE = re.compile(r"^([\w.-]+)\s*->\s*([\w.-]+)(.*)$")
 
@@ -44,6 +43,8 @@ class Figure:
     sequence: bool = False
     aspect: bool = False
     flowchart: bool = False
+    participants: int = 0
+    scene_messages: list[int] = field(default_factory=list)
     wide: bool = False
 
 
@@ -69,6 +70,7 @@ def parse(source: str) -> Figure:
     fig = Figure()
     stack: list[str] = []
     in_scene = False
+    in_sequence_view = False
     for raw in source.splitlines():
         line = strip_comment(raw).strip()
         if not line:
@@ -79,10 +81,15 @@ def parse(source: str) -> Figure:
         if word == "}":
             if stack:
                 stack.pop()
+            in_sequence_view = False
+            continue
+        if in_sequence_view:
+            fig.participants += len(tokens)
             continue
         if word == "scene":
             in_scene = True
             fig.scenes += 1
+            fig.scene_messages.append(0)
             continue
         if word in ("title", "subtitle"):
             continue  # 그래프 SVG에 그리지 않는 글이라 항목 대조에서 뺀다
@@ -92,12 +99,15 @@ def parse(source: str) -> Figure:
             fig.wide = True
         elif word == "view" and len(tokens) > 1 and tokens[1] == "sequence":
             fig.sequence = True
+            in_sequence_view = line.endswith("{")
         fig.texts.extend(quoted)
         fig.texts.extend(t[5:] for t in tokens if t.startswith("from="))
         match = EDGE.match(line)
         if match:
             if not in_scene:
                 fig.edges.append((match.group(1).split(".")[0], match.group(2).split(".")[0]))
+            elif fig.scene_messages:
+                fig.scene_messages[-1] += 1
             fig.edge_labels.extend(quoted)
         elif word in CARD_WORDS and len(tokens) > 1 and not in_scene:
             if word in ("decision", "state"):
@@ -188,6 +198,11 @@ def warnings(fig: Figure) -> list[str]:
         found.append("flat: 카드가 모두 같은 모양이라 종류와 초점이 보이지 않는다. 종류 꼬리표(badge=)와 초점 색 1~2개를 단다")
     if len(fig.focal) > FOCAL_MAX:
         found.append(f"focal: 색을 칠한 카드가 {len(fig.focal)}개다. 초점은 {FOCAL_MAX}개 이하로 둔다")
+    if fig.cards and not fig.series and not fig.wide:
+        found.append("wide: 머리에 width wide가 없어 680px을 넘는 배치가 세로로 돌아간다. 머리에 width wide를 적는다(인쇄용 포트폴리오는 --print)")
+    limit = 2 * fig.participants - 1
+    if fig.sequence and fig.participants and any(n > limit for n in fig.scene_messages):
+        found.append(f"messages: 참여자 {fig.participants}명 순서 그림의 한 장면 메시지가 {max(fig.scene_messages)}개라 세로형이 된다. 장면마다 {limit}개 이하로 그림을 나눈다")
     if fig.sequence and fig.scenes > 1:
         found.append(f"scenes: 순서 그림에 장면이 {fig.scenes}개다. 정지 SVG는 첫 장면 메시지만 보이므로 한 장에 다 보이려면 fragment로 한 장면에 담는다")
     linked = {n for edge in fig.edges for n in edge}
@@ -208,15 +223,12 @@ def svg_size(path: Path) -> tuple[float, float]:
     return float(match.group(1)), float(match.group(2))
 
 
-def size_lines(width: float, height: float, wide: bool) -> tuple[list[str], list[str]]:
+def size_lines(width: float, height: float) -> tuple[list[str], list[str]]:
     body = min(1.0, BODY / width)
-    mobile = min(1.0, MOBILE / width)
-    info = [f"크기: {width:g}x{height:g}, 본문 단 {BODY}px 배율 {body:.2f}, 모바일 단 {MOBILE}px 배율 {mobile:.2f}"]
+    info = [f"크기: {width:g}x{height:g}, 본문 단 {BODY}px 칸에서 {body:.2f}배"]
     found = []
-    if body < 0.8 and not wide:
-        found.append(f"width: 본문 단에서 {body:.2f}배로 줄어 11px 글이 {11 * body:.1f}px가 된다. 그룹 방향이나 aspect로 폭을 줄인다")
-    if height > 2 * max(width, BODY):
-        found.append(f"tall: 높이 {height:g}가 본문 폭의 두 배를 넘어 한 화면에 들지 않는다. 그림이나 장면을 나눈다")
+    if height > width:
+        found.append(f"portrait: 높이 {height:g}가 폭 {width:g}보다 커 세로형이다. 가로형 원칙의 한도대로 줄이거나 그림을 나눈다")
     return info, found
 
 
@@ -225,16 +237,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("source", type=Path)
     parser.add_argument("--items", type=Path)
     parser.add_argument("--svg", type=Path)
+    parser.add_argument("--print", action="store_true", dest="for_print", help="인쇄용 그림이라 width wide를 요구하지 않는다")
     args = parser.parse_args(argv)
     try:
         fig = parse(args.source.read_text(encoding="utf-8"))
         items = read_items(args.items) if args.items else []
-        info, size_found = size_lines(*svg_size(args.svg), fig.wide) if args.svg else ([], [])
+        info, size_found = size_lines(*svg_size(args.svg)) if args.svg else ([], [])
     except (OSError, ValueError) as error:
         print(error, file=sys.stderr)
         return 2
     lost = missing(fig, items)
-    found = warnings(fig) + size_found
+    found = [w for w in warnings(fig) if not (args.for_print and w.startswith("wide:"))] + size_found
     for line in info:
         print(line)
     for item in lost:

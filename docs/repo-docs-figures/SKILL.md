@@ -1,6 +1,6 @@
 ---
 name: repo-docs-figures
-description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아키텍처 구성도, 순서도, 시퀀스, 상태도, 데이터 관계도, 차트를 Torso(thinkflow)로 그리거나, 스크린샷, 데모 GIF, 대체 글을 만들거나 고칠 때 쓴다."
+description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아키텍처 구성도, 순서도, 시퀀스, 상태도, 데이터 관계도, 차트를 Torso로 그리거나, 스크린샷, 데모 GIF, 대체 글을 만들거나 고칠 때 쓴다."
 ---
 
 # 문서 그림
@@ -52,11 +52,11 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 
 ## 선택 어댑터
 
-기존 변환 스크립트가 지원하는 형식과 의존 도구다. 그림 도구 Torso(명령 `thinkflow`, 원본 `.thinkflow`, 저장소 https://github.com/woonyong-choi/torso)와 VHS, Playwright를 쓴다. 다른 렌더러를 쓰는 저장소는 위 공통 조건을 채우는 대응 명령을 쓴다. 해당 작업을 시작하기 전에 아래 하위 문서를 반드시 읽는다.
+기존 변환 스크립트가 지원하는 형식과 의존 도구다. 그림 도구 Torso(명령 `torso`, 원본 `.torso`, 저장소 https://github.com/woonyong-choi/torso)와 VHS, Playwright를 쓴다. 다른 렌더러를 쓰는 저장소는 위 공통 조건을 채우는 대응 명령을 쓴다. 해당 작업을 시작하기 전에 아래 하위 문서를 반드시 읽는다.
 
 | 조건 | 하위 문서 |
 |---|---|
-| Torso 작업을 시작하기 전 | [references/thinkflow.md](references/thinkflow.md) |
+| Torso 작업을 시작하기 전 | [references/torso.md](references/torso.md) |
 | Torso를 설치하거나 직접 실행하기 전 | [references/execution.md](references/execution.md) |
 | Torso Markdown 그림이나 CI 연결을 바꾸기 전 | [references/markdown.md](references/markdown.md) |
 | Torso 그림 원본을 쓰거나 바꾸기 전 | [references/syntax.md](references/syntax.md) |

@@ -114,7 +114,7 @@ description: "예시 작업을 할 때 쓴다."
 
 - 낱말 선택은 repo-docs `references/writing.md`의 용어 절을 따른다.
 - `.local/decisions/<과업>.tsv`는 결정 기록이라 부른다. repo-docs-decision이 저장소에 남기는 ADR은 공개 결정 기록이라 부른다. 작업 일지나 진행 로그라고 부르지 않는다.
-- 그림 도구의 제품 이름은 Torso다. `ThinkFlow`, `띵스플로우`라고 쓰지 않는다. 명령 `thinkflow`, 확장자 `.thinkflow`, 마크다운 코드 블록의 언어 이름 `thinkflow`, 환경 변수 `THINKFLOW_PATH`는 실제 도구 이름이라 그대로 쓴다. 저장소 링크는 `https://github.com/woonyong-choi/torso`를 쓴다.
+- 그림 도구의 제품 이름은 Torso다. `ThinkFlow`, `띵스플로우`라고 쓰지 않는다. 명령은 `torso`, 원본 확장자는 `.torso`, 마크다운 코드 블록의 언어 이름은 `torso`, 원본 첫 줄은 `torso`다. 저장소 링크는 `https://github.com/woonyong-choi/torso`를 쓴다.
 - 범용 규칙에 특정 프로젝트, 제품, 회사, 글꼴 이름을 넣지 않는다. 실제 도구에 기대는 내용은 선택 어댑터 절에 두고, 실제 명령의 이름과 인자는 그대로 쓴다.
 
 ## 간결성

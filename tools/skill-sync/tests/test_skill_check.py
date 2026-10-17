@@ -101,7 +101,7 @@ def test_markdown_violations(text: str, kind: str) -> None:
     '# 제목\n\n나쁜 예 "**성능:** 좋다"는 인용이다.\n',
     '# 제목\n\n- **검증.** 결과를 직접 확인한다.\n',
     '# 제목\n\n| 종류 | 뜻 |\n|---|---|\n| a | b |\n',
-    '# 제목\n\n명령은 `thinkflow`, 확장자는 `.thinkflow`, 변수는 `THINKFLOW_PATH`다.\n',
+    '# 제목\n\n명령은 `torso`, 확장자는 `.torso`, 변수는 `TORSO_PATH`다.\n',
     '# 제목\n\n[Torso](https://github.com/woonyong-choi/thinkflow)를 쓴다.\n',
     '## 절\n\n참조 문서는 둘째 단계 절로 시작해도 된다.\n',
     '# 제목\n\n예: `a`와 `b`.\n',

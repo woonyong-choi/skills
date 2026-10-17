@@ -12,13 +12,14 @@ node <Torso 경로>/src/cli.js --help
 ```
 
 ```sh
-node <Torso 경로>/src/cli.js check docs/assets/architecture.thinkflow --strict
-node <Torso 경로>/src/cli.js render docs/assets/architecture.thinkflow --strict
-node <Torso 경로>/src/cli.js render docs/assets/architecture.thinkflow --strict --static
+node <Torso 경로>/src/cli.js check docs/assets/architecture.torso --strict
+node <Torso 경로>/src/cli.js render docs/assets/architecture.torso --strict
+node <Torso 경로>/src/cli.js render docs/assets/architecture.torso --strict --static
+node <Torso 경로>/src/cli.js render docs/assets/architecture.torso --strict --html --out <폴더>
 ```
 
 ## 확인
 
 - 실행 전에 쓸 버전의 도움말에서 명령 형식과 성공, 실패 때의 종료 코드를 확인하고 남긴다.
 - 같은 원본과 같은 도구 커밋으로 재현한다. 확인한 커밋과 Node 버전을 남긴다.
-- 두 render 명령은 같은 SVG 경로에 쓴다. 전할 순서, 전이, 시간 정보가 있는지로 하나를 고른다. 비교 검증할 때만 `--out`으로 폴더를 나눈다.
+- `--html`은 `<폴더>/<원본>.html`에 재생기 문서를 쓴다. 앞의 두 render 명령은 같은 SVG 경로에 쓴다. 전할 순서, 전이, 시간 정보가 있는지로 하나를 고른다. 비교 검증할 때만 `--out`으로 폴더를 나눈다.

@@ -1,0 +1,10 @@
+torso
+width wide
+title "분류별 원본과 평평한 스킬 목록"
+
+box source "분류별 원본" "6개 분류 폴더"
+box catalog "설치 목록" "이름과 설명"
+box body "스킬 본문" "선택한 것만"
+
+source -> catalog "설치"
+catalog -> body "선택"

@@ -20,7 +20,7 @@
   --color-state-active-text: var(--color-category-blue-light-ink);
   --color-ui-focus: var(--color-action-link);
   --color-data-main: var(--color-category-blue-light-border);
-  --color-data-heat-low: var(--color-category-blue-light-tint-3);
+  --color-data-heat-low: var(--primitive-figure-heat-low);
   --color-data-heat-high: var(--color-category-blue-light-border);
   --color-data-heat-ink: var(--color-gray-1000);
   --color-data-heat-ink-on: var(--color-gray-0);
@@ -76,6 +76,8 @@
   --primitive-figure-dark-bg: #26272b;
   --primitive-figure-dark-node: #303136;
   --primitive-figure-dark-edge: #50535b;
+  --primitive-figure-heat-low: #eaf3c0;
+  --primitive-figure-dark-heat-low: #1f3b3e;
   --primitive-figure-dark-separator: #454850;
   --primitive-figure-dark-hover: #343e50;
   --primitive-figure-dark-selection: #274174;
@@ -110,7 +112,7 @@
   --color-state-active: var(--color-category-blue-dark-border);
   --color-state-active-text: var(--color-category-blue-dark-ink);
   --color-data-main: var(--color-category-blue-dark-border);
-  --color-data-heat-low: var(--color-category-blue-dark-tint-3);
+  --color-data-heat-low: var(--primitive-figure-dark-heat-low);
   --color-data-heat-high: var(--color-category-blue-anchor);
   --color-data-heat-ink: var(--color-gray-0);
   --color-data-grid: var(--primitive-figure-dark-edge);
@@ -137,7 +139,7 @@
   --color-state-active: var(--color-category-blue-dark-border);
   --color-state-active-text: var(--color-category-blue-dark-ink);
   --color-data-main: var(--color-category-blue-dark-border);
-  --color-data-heat-low: var(--color-category-blue-dark-tint-3);
+  --color-data-heat-low: var(--primitive-figure-dark-heat-low);
   --color-data-heat-high: var(--color-category-blue-anchor);
   --color-data-heat-ink: var(--color-gray-0);
   --color-data-grid: var(--primitive-figure-dark-edge);
@@ -163,7 +165,7 @@
   --color-state-active: var(--color-category-blue-light-border);
   --color-state-active-text: var(--color-category-blue-light-ink);
   --color-data-main: var(--color-category-blue-light-border);
-  --color-data-heat-low: var(--color-category-blue-light-tint-3);
+  --color-data-heat-low: var(--primitive-figure-heat-low);
   --color-data-heat-high: var(--color-category-blue-light-border);
   --color-data-heat-ink: var(--color-gray-1000);
   --color-data-grid: var(--color-gray-212);
@@ -745,9 +747,9 @@
   text-anchor: start;
 }
 
-/* 칸 색은 변수로 계산해 다크 모드 heat-low를 따라간다. --s는 칸 강도(0~1)다. 보간은 OKLab이고 fill 속성의 대체 색(chart/oklab.js)과 같다. */
+/* 칸 색은 변수로 계산해 다크 모드 heat-low를 따라간다. --s는 칸 강도(0~1)다. 보간은 OKLCH라 두 끝 색 사이의 색상환을 따라 돌아(라이트: 연노랑 → 민트 → 청록 → 파랑) 두 색 그라데이션으로 읽힌다. fill 속성의 대체 색(ThinkFlow chart/oklab.js)도 같은 OKLCH 보간이다. */
 .fl .chart-heat {
-  fill: color-mix(in oklab, var(--color-data-heat-high) calc(var(--s) * 100%), var(--color-data-heat-low));
+  fill: color-mix(in oklch, var(--color-data-heat-high) calc(var(--s) * 100%), var(--color-data-heat-low));
 }
 
 /* 누적 조각 안의 계열 번호 키. 글자색과 가장자리 색은 조각의 범주 값을 속성으로 받는다. */
@@ -836,6 +838,18 @@
 
 .fl .chart-band {
   fill-opacity: var(--opacity-band);
+}
+
+/* 면적 차트의 면은 계열 색을 띠 불투명도만큼 차트 바탕(currentColor, .fl-chart가 싣는 바탕 색)에 미리 섞은 불투명 면이다. 면끼리 겹친 곳에서 반투명 색이 다시 섞여 제3의 탁한 색(노랑 위 파랑의 올리브 등)이 생기지 않고, 겹친 곳은 앞에 그린 면의 색 하나로 읽힌다. 계열 색은 --chart-area로 받는다. color-mix를 모르는 뷰어는 띠와 같은 반투명 면이다. */
+.fl .chart-area {
+  fill-opacity: var(--opacity-band);
+}
+
+@supports (fill: color-mix(in srgb, currentColor 50%, currentColor)) {
+  .fl .chart-area {
+    fill: color-mix(in srgb, var(--chart-area) calc(var(--opacity-band) * 100%), currentColor);
+    fill-opacity: 1;
+  }
 }
 
 .fl .chart-range {
@@ -964,6 +978,7 @@
 <text x="34" y="71" class="chart-legend">재현율</text>
 <rect x="79.6" y="63" width="12" height="12" rx="4" fill="var(--color-data-category-2)"/>
 <text x="97.6" y="71" class="chart-legend">정밀도</text>
+<line x1="252" x2="252" y1="95" y2="271" class="chart-grid"/><line x1="348.1" x2="348.1" y1="95" y2="271" class="chart-grid"/><line x1="444.1" x2="444.1" y1="95" y2="271" class="chart-grid"/><line x1="540.2" x2="540.2" y1="95" y2="271" class="chart-grid"/><line x1="636.2" x2="636.2" y1="95" y2="271" class="chart-grid"/>
 <g class="cr-0 ink"><text x="144" text-anchor="end" y="114.7" class="chart-label">대조</text></g>
 <g class="cr-0"><g class="cs-0"><rect x="156" y="95" width="473" height="12" rx="4" fill="var(--color-data-category-1)" class="grow"/><line x1="622.4" x2="634.3" y1="101" y2="101" stroke="var(--color-ui-muted)" stroke-width="1.5" fill="none" class="late"/><path d="M622.4 95v12M634.3 95v12" stroke="var(--color-ui-muted)" stroke-width="1.5" fill="none" class="late"/></g></g>
 <g class="cr-0"><g class="cs-1"><rect x="156" y="113" width="448.7" height="12" rx="4" fill="var(--color-data-category-2)" class="grow"/><line x1="589.9" x2="617.6" y1="119" y2="119" stroke="var(--color-ui-muted)" stroke-width="1.5" fill="none" class="late"/><path d="M589.9 113v12M617.6 113v12" stroke="var(--color-ui-muted)" stroke-width="1.5" fill="none" class="late"/></g></g>
