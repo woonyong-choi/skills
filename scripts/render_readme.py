@@ -16,7 +16,7 @@ STRICT = '--strict'
 
 
 def source_path(name: str) -> Path:
-    return ROOT / 'docs/assets' / (name + '.thinkflow')
+    return ROOT / 'docs/assets' / (name + '.torso')
 
 
 def main() -> None:

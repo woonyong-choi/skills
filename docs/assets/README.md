@@ -8,14 +8,14 @@ Python 3.9 이상, Node.js 22와 Torso 작업본이 필요하다. 저장소 루�
 
 ```sh
 git clone https://github.com/woonyong-choi/torso .runtime/torso
-git -C .runtime/torso fetch origin fcfc1c116e8842a7516ab68b43c098d9726172cd
-git -C .runtime/torso checkout fcfc1c116e8842a7516ab68b43c098d9726172cd
+git -C .runtime/torso fetch origin 3d2d6afe488eb1bdfc9f1d33434e572ee9daf93a
+git -C .runtime/torso checkout 3d2d6afe488eb1bdfc9f1d33434e572ee9daf93a
 npm --prefix .runtime/torso ci && (cd .runtime/torso && npx playwright-core install chromium)
 python3 experiments/skill-exposure/scripts/03-analyze.py
 python3 scripts/render_readme.py .runtime/torso/src/cli.js
 ```
 
-확인한 도구는 Torso `fcfc1c116e8842a7516ab68b43c098d9726172cd`, Node.js 22다. CI는 같은 커밋을 `.runtime/torso`에 받아 쓰고, 다시 만든 SVG가 커밋된 파일과 같지 않으면 실패한다. `check --strict` 통과 뒤 `render --strict --static`으로 생성한다. 정상 종료 코드는 0이며 검사 실패 시 렌더를 시작하지 않는다.
+확인한 도구는 Torso `3d2d6afe488eb1bdfc9f1d33434e572ee9daf93a`, Node.js 22다. CI는 같은 커밋을 `.runtime/torso`에 받아 쓰고, 다시 만든 SVG가 커밋된 파일과 같지 않으면 실패한다. `check --strict` 통과 뒤 `render --strict --static`으로 생성한다. 정상 종료 코드는 0이며 검사 실패 시 렌더를 시작하지 않는다.
 
 렌더 스크립트는 SVG 루트의 `data-theme`만 light 또는 dark로 고정한다. 색·글꼴·배치는 Torso 산출물을 유지한다. 생성 파일을 손으로 수정하지 않는다. 같은 원본과 집계, 도구 커밋으로 두 번 생성한 바이트가 같은지 확인한다.
 
@@ -23,5 +23,5 @@ python3 scripts/render_readme.py .runtime/torso/src/cli.js
 
 | 원본 | 산출물 | 입력 |
 |---|---|---|
-| [skill-exposure.thinkflow](skill-exposure.thinkflow) | [밝은 화면](skill-exposure-light.svg), [어두운 화면](skill-exposure-dark.svg) | README 작동 방식 |
-| [skill-quality.thinkflow](skill-quality.thinkflow) | [밝은 화면](skill-quality-light.svg), [어두운 화면](skill-quality-dark.svg) | [실험 집계](../../experiments/skill-exposure/results/summary.json)의 chart 배열 |
+| [skill-exposure.torso](skill-exposure.torso) | [밝은 화면](skill-exposure-light.svg), [어두운 화면](skill-exposure-dark.svg) | README 작동 방식 |
+| [skill-quality.torso](skill-quality.torso) | [밝은 화면](skill-quality-light.svg), [어두운 화면](skill-quality-dark.svg) | [실험 집계](../../experiments/skill-exposure/results/summary.json)의 chart 배열 |
