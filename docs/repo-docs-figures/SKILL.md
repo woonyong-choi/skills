@@ -60,6 +60,7 @@ description: "README, docs, PR에 넣는 구조도, 차트, 스크린샷, 데모
 | Torso를 설치하거나 직접 실행하기 전 | [references/execution.md](references/execution.md) |
 | Torso Markdown 그림이나 CI 연결을 바꾸기 전 | [references/markdown.md](references/markdown.md) |
 | Torso 그림 원본을 쓰거나 바꾸기 전 | [references/syntax.md](references/syntax.md) |
+| Torso 그림에 담을 항목, 그림 종류, 배치를 정하기 전, 렌더 결과의 품질을 확인하기 전 | [references/torso-quality.md](references/torso-quality.md) |
 | Torso 실험 차트를 쓰거나 바꾸기 전 | [references/charts.md](references/charts.md) |
 | 스크린샷을 찍거나 합치기 전, `screens.json`을 쓰거나 바꾸기 전 | [references/screenshots.md](references/screenshots.md) |
 | VHS 녹화 원본을 쓰거나 실행하기 전 | [references/vhs.md](references/vhs.md) |
