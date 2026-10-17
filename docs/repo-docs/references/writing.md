@@ -102,7 +102,7 @@
 7. 코드 블록은 백틱 세 개와 언어 태그 `sh`, `text`, 또는 코드 언어 이름(`rust`, `toml`, `json`, `python`)으로 쓴다. 명령 앞에 `$`를 붙이지 않는다.
 8. 그림은 이미지 한 줄 `![{대체 글}]({상대 경로})`로 넣는다. 다크 모드 그림이 따로 있으면 `<picture>` 블록을 쓴다. 그림 파일이 없으면 그 줄을 지운다(repo-docs-figures). mermaid와 텍스트 그림을 쓰지 않는다. 예외는 `docs/ui.md`와 `docs/design/`의 화면 배치 그림, repo-docs-figures의 `thinkflow` 원본 블록이다.
 9. 저장소 안 링크는 상대 경로로 쓴다. 링크 글자는 문서 제목, 파일 이름, 문서 종류 이름(`결정 기록`) 중 하나로 쓴다. `여기`, `이 링크`, `here`를 쓰지 않는다.
-10. 굵게와 이모지는 문체 절을 따른다. 기울임과 각주를 쓰지 않는다. 배지는 README 머리에만 둔다(repo-docs-readme). HTML은 `<picture>`, `<source>`, `<img>`, `<details>`, `<summary>`, PR 본문 캡처 표의 `<table>`, `<tr>`, `<th>`, `<td>`(git-pull-request 틀), README 머리의 `<p align="center">`, `<h1 align="center">`, `<a>`, `<br>`만 쓴다.
+10. 굵게와 이모지는 문체 절을 따른다. 기울임과 각주를 쓰지 않는다. 배지는 README 머리에만 둔다(repo-docs-readme). HTML은 `<picture>`, `<source>`, `<img>`, `<details>`, `<summary>`, PR 본문 캡처 표의 `<table>`, `<tr>`, `<th>`, `<td>`(git-pull-request 틀), README 머리의 `<p align="center">`, `<h1 align="center">`, `<a>`, `<br>`만 쓴다. `torso md`가 남기는 생성 이미지 소유 마커 `<!-- torso -->`는 보존한다. 다른 HTML 주석은 허용하지 않는다.
 11. 인용 블록은 GitHub 알림 두 가지만 쓴다. `> [!NOTE]`는 알아 둘 사실, `> [!WARNING]`은 어기면 데이터나 동작을 잃는 규칙에 쓴다. 다음 줄에 `> {문장}` 한 줄을 둔다.
 12. 숫자와 단위는 한국어에서 붙여 쓰고(`5초`, `2GB`) 영어에서 띄어 쓴다(`5 s`, `2 GB`). 날짜는 `YYYY-MM-DD`로 쓴다.
 13. 조사는 영문과 코드 바로 뒤에 공백 없이 붙인다(`API를`, `store에`).

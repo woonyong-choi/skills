@@ -188,7 +188,7 @@ def english_errors(text: str) -> list[str]:
 
 def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str, tags_allowed: set[str]) -> list[str]:
     errors = []
-    line = re.sub(r"`[^`]*`", "", raw)
+    line = re.sub(r"`[^`]*`", "", raw).replace("<!-- torso -->", "")
     text = re.sub(r"^> ", "", line, count=1)
     text = re.sub(r" +$", "", text, count=1)
     text = re.sub(r"\(\[[^\]]*\]\([^)]*\)\)\.$", ".", text, count=1)
