@@ -27,6 +27,8 @@ description: "스킬 원본의 형식과 참조를 검사할 때, 요청한 도�
 - 행동 규칙을 바꿀 때는 [행동 검토](references/authoring.md#행동-검토)를 반드시 읽는다. 형식 검사 통과와 실제 작업 효과를 구분한다.
 - 스크립트를 실행하기 전에 [references/execution.md](references/execution.md)를 반드시 읽는다.
 
+설치와 형식 검사 명령은 Python 3.9 이상과 표준 라이브러리로 실행한다. 저장소 개발 시험의 요구 조건은 루트 README의 개발 절을 따른다.
+
 ```sh
 python3 <이 스킬 폴더>/scripts/skill_check.py <원본 저장소>
 python3 <이 스킬 폴더>/scripts/install.py
