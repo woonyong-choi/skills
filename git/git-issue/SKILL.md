@@ -111,6 +111,7 @@ printf '%s\n' '<제목>' | python3 <이 스킬 폴더>/scripts/issue_title.py --
 | PR로 이슈 완료 조건을 모두 채우고 체크했다 | PR과 커밋에 `Closes #번호`를 쓴다 |
 | 관련 작업이거나 일부만 끝냈다 | PR과 커밋에 `Refs #번호`를 쓴다 |
 | 다른 PR로 이미 끝났다 | `완료 근거: #{PR 번호}`, `닫는 이유: {조건 충족 이유}` 댓글을 단 뒤 직접 닫는다 |
+| 저장소 추적 파일 변경 없이 GitHub 메타데이터만 고쳤다 | [프로젝트 판 닫는 기준](references/project-status.md#닫는-기준)의 재조회 근거와 닫는 이유 댓글을 남긴 뒤 직접 닫는다 |
 | design 이슈 | [references/decision.md](references/decision.md) 결정 댓글을 단 뒤 반영 PR로 닫는다. 결정으로 생긴 구현 조건은 후속 build 이슈의 완료 조건이 된다 |
 
 - 완료와 안 함의 닫는 기준은 [references/project-status.md](references/project-status.md#닫는-기준)를 따른다.
