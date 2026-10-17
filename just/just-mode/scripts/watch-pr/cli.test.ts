@@ -154,6 +154,26 @@ describe("rendering", () => {
 });
 
 describe("main", () => {
+  it("prints status once for a PR with no checks and no query retry", async () => {
+    const harness = testRuntime(
+      fakeReader({
+        fastPath: { kind: "checks", checks: [] },
+        commitRollups: [{ oid: "head", state: null }],
+      })
+    );
+    const code = await main(
+      ["--owner", "owner", "--repo", "repo", "--pr", "1", "--status-only"],
+      harness.runtime
+    );
+    expect(code).toBe(0);
+    expect(harness.stderr).toEqual([]);
+    expect(harness.stdout).toHaveLength(1);
+    expect(JSON.parse(harness.stdout[0])).toMatchObject({
+      kind: "STATUS",
+      rows: [{ kind: "open", ci: { all: [], kind: "ci-clean" } }],
+    });
+  });
+
   it("returns EX_USAGE 64 and writes usage errors only to stderr", async () => {
     const harness = testRuntime(fakeReader());
     expect(await main(["--interval", "0"], harness.runtime)).toBe(64);
