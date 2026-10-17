@@ -41,6 +41,41 @@ class DocumentStyleTest(unittest.TestCase):
                 self.assertEqual(messages, expected)
                 self.assertEqual(code, 1 if expected else 0)
 
+    def test_generated_boundaries_and_noun_cells(self) -> None:
+        accepted = [
+            "<!-- torso scenes v1 name=state -->",
+            "<!-- /torso scenes v1 name=state -->",
+            "  <!-- torso fold v1 n=12 -->",
+            "  <!-- /torso fold v1 n=12 -->",
+            "<!-- torso scenes v1 name=flow-2 -->",
+            *[f"<!-- {table}-table:{edge} -->" for table in ("check", "grammar") for edge in ("start", "end")],
+            "| 값 묶음 | 차트 행의 숫자 자리에 값 이름을 써서, 그 값이 바뀔 때 차트가 바뀌게 하는 연결이다. | `value`, `timeline.charts` |",
+        ]
+        rejected = [
+            "<!-- torso scenes v2 name=state -->",
+            "<!-- torso fold v1 name=State -->",
+            "<!-- torso scenes v1 name=-state -->",
+            "<!-- torso fold v1 n=0 -->",
+            "<!-- torso fold v1 n=state -->",
+            "<!-- torso scenes v1 name=state extra -->",
+            "<!--torso scenes v1 name=state-->",
+            "<!-- check-table:other -->",
+            "<!-- torso fold v1 name=`ignored`state -->",
+            "> <!-- check-table:start -->",
+            "<!-- grammar-table:start extra -->",
+            "글<!-- check-table:start -->",
+            "<!-- torso fold v1 name=state --><div>글</div>",
+            "<!-- 설명 -->",
+            "| 동작 | 저장함 |",
+            "| 동작 | 기록했음 |",
+        ]
+        for source in accepted + rejected:
+            with self.subTest(source=source):
+                output = io.StringIO()
+                with patch("builtins.open", mock_open(read_data=source + "\n")), contextlib.redirect_stdout(output):
+                    result = check_doc.main(["guide.md"])
+                self.assertEqual(result, int(source in rejected), output.getvalue())
+
     # 파일 대신 메모리 표본으로 공개 CLI 진입점 실행
     def test_main_style_signals_and_preserved_sources(self) -> None:
         cases = [
