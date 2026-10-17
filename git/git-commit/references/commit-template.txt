@@ -14,7 +14,7 @@
 # - 실행한 확인과 결과 숫자
 #
 # 꼬리말 (빈 줄 다음. 이슈 생략 조건이면 Closes·Refs 생략)
-# Closes: #번호 이 커밋으로 이슈 완료 / Refs: #번호 관련 이슈
+# Closes #번호 이 커밋으로 이슈 완료 / Refs #번호 관련 이슈
 # BREAKING CHANGE: 쓰는 쪽이 바꿀 것 (! 를 붙였을 때)
 #
 # 금지: 작성 표시(Co-Authored-By, Generated with, 로봇 이모지, 모델 이름 표시, 세션 링크), 작성자 변경

@@ -59,6 +59,12 @@ class DocumentStyleTest(unittest.TestCase):
             ("**가나** **다라** **마바** 사아자차카타파하가나다라마바\n", {"굵게"}),
             ("**가나** **다라** **마바** 사아자차카타파하가나다라마바사아자차카타파하가나다라\n", {"굵게"}),
             ("**가나** **다라**\n", {"굵게"}),
+            ("**검증.** 결과를 직접 확인한다.\n", set()),
+            ("- **검증.** 결과를 직접 확인한다.\n", set()),
+            ("1. **검증.** 결과를 직접 확인한다.\n", set()),
+            ("**검증:** 결과를 직접 확인한다.\n", {"굵게"}),
+            ("**검증.** 결과를 **직접** 확인한다.\n", {"굵게"}),
+            ("결과를 **검증.** 확인한다.\n", {"굵게"}),
         ]
         signals = ("줄표 문장 연결", "이모지", "안내 말", "굵게")
         for source, expected in cases:
@@ -80,6 +86,19 @@ class DocumentStyleTest(unittest.TestCase):
             with patch("builtins.open", mock_open(read_data=source)), contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(check_doc.main([name]), expected)
 
+
+    # 비공개 폴더는 repo-docs 비공개 작업 파일 절의 `.local/` 하나
+    def test_private_links_follow_local_folder_rule(self) -> None:
+        for source, expected in (
+            ("[기록](.local/decisions/a.tsv)\n", True),
+            ("[기록](%2Elocal/a.md)\n", True),
+            ("[보관](archive/a.md)\n", False),
+        ):
+            with self.subTest(source=source):
+                output = io.StringIO()
+                with patch("builtins.open", mock_open(read_data=source)), contextlib.redirect_stdout(output):
+                    check_doc.main(["guide.md"])
+                self.assertEqual("비공개 경로" in output.getvalue(), expected)
 
     # 목록 항목 문장의 종결 검사 누락 회귀
     def test_list_item_sentences_use_paragraph_endings(self) -> None:

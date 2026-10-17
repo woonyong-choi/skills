@@ -7,7 +7,7 @@
 1. **skill-creator** 스킬이 있으면 그것으로 SKILL.md를 쓴다. 없으면 SKILL.md 형식(frontmatter의 `name`, `description`)을 직접 작성한다.
 2. 스킬을 검증한다. frontmatter에 `name`과 `description`이 있는지, 참조한 파일이 있는지, 다른 스킬로 가는 링크가 열리는지 확인한다.
 3. 구조적인 스킬이면 테스트 케이스를 만든다. 주관적인 스킬이면 건너뛴다.
-4. **PR 열기**를 실행한다.
+4. [끝 고리](../SKILL.md#끝-고리)로 넘어간다.
 
 ## 쓰는 법
 

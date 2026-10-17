@@ -4,7 +4,7 @@ description: "Comment Sicko를 띄워 받아들인 지적을 고치고, 주석�
 disable-model-invocation: true
 ---
 
-# No comments
+# 주석 정리
 
 Comment Sicko를 띄운다. 받아들인 지적을 처리한다.
 

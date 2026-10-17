@@ -1,6 +1,6 @@
 ---
 name: just-setup
-description: "just가 역할마다 쓸 모델과 추론 예산, 자율 실행의 동시 작업 수를 정한다. 현재 호스트(Claude Code, Codex, OpenCode)와 쓸 수 있는 모델을 알아내고, 스킬 기본값보다 우선하는 ~/.config/skills/models.json과 ~/.config/skills/just.json을 쓴다. /just-setup, 'just 모델 설정', 'just 예산', '동시 작업 수', just 모델 선택 변경에 쓴다."
+description: "just가 역할마다 쓸 모델과 추론 예산, 자율 실행의 동시 작업 수를 정한다. 현재 호스트(Claude Code, Codex, OpenCode)와 쓸 수 있는 모델을 알아내고, 스킬 기본값보다 우선하는 ~/.config/skills/models.json과 ~/.config/skills/just.json을 쓴다. 역할별 모델, 추론 예산, models.json, 동시 작업 수를 정하거나 바꿀 때 쓴다. '모델 설정 바꿔 줘', '리뷰 모델 바꿔', '추론 수준 올려', /just-setup 같은 요청에 쓴다."
 ---
 
 # just 설정

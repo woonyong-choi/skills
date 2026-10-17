@@ -1,6 +1,6 @@
 # 결정 기록에서 옮기기
 
-비공개 결정 기록(저장소 `.local/decisions/<과업>.tsv`, 열 `ts phase decision why evidence result`)의 줄을 공개 결정 기록으로 옮긴다. 옮기기 전에 읽는다.
+비공개 결정 기록(저장소 `.local/decisions/<과업>.tsv`, 형식은 **show-me-your-work** 스킬)의 줄을 공개 결정 기록으로 옮긴다. 옮기기 전에 읽는다.
 
 ## 대응
 

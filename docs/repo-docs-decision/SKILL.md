@@ -3,7 +3,7 @@ name: repo-docs-decision
 description: "공개 ADR이나 설계 결정 기록을 쓰거나 갱신할 때, 결정 기록의 판단을 공개 기록으로 다시 쓸 때 쓴다."
 ---
 
-# Repo Docs Decision
+# 공개 결정 기록
 
 설계 선택지 중 하나를 고른 이유를 공개 결정 기록(`docs/decisions/`)으로 남긴다. 공통 규칙은 [repo-docs](../repo-docs/SKILL.md)를 먼저 따르고, 이 스킬은 기록 대상, 파일, 템플릿, 결정 기록에서 옮기기, 절차를 맡는다.
 

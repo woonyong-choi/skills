@@ -4,7 +4,7 @@ description: "사용자의 작업 방식을 에이전트가 따르게 하고 싶
 disable-model-invocation: true
 ---
 
-# Automate me
+# 내 작업 방식 자동화
 
 사용자의 작업 관례를 에이전트가 따를 스킬로 만드는 단계별 흐름이다. 결과물은 사용자에게 맞춘 `-mode` 스킬 하나다(예: `jay-mode`, `priya-mode`).
 

@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import hashlib
 import json
 import os
@@ -40,7 +41,8 @@ TOOL_HOMES = {"codex": INSTALL_HOME / ".codex", "antigravity": INSTALL_HOME / ".
 MANIFEST = ".repo-skills.json"
 POINTER = INSTALL_HOME / ".config" / "skills" / "source"
 TRASH = INSTALL_HOME / ".skill-trash"
-SKIP = {".claude-plugin", ".codex-plugin", "tests", ".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__", "node_modules"}
+TEST_FILES = {"tests", "*.test.ts", "*.test-helper.ts"}
+SKIP = {".claude-plugin", ".codex-plugin", ".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__", "node_modules"} | TEST_FILES
 CATEGORIES = ("git", "code", "docs", "design", "tools", "just")
 # just do 플러그인 훅의 런타임을 담은 스킬과 안정된 진입점(~/.config/skills 아래 이름)
 HOOK_SKILL = "just-mode"
@@ -99,17 +101,31 @@ def source_skills(source: Path) -> list[Path]:
     return skills
 
 
+def skipped(relative: Path, patterns: set[str] = SKIP) -> bool:
+    """경로의 한 부분이 patterns의 이름이나 glob(`*.test.ts`)과 맞는지"""
+    return any(fnmatch.fnmatchcase(part, pattern) for part in relative.parts for pattern in patterns)
+
+
+def _has_test_files(target: Path) -> bool:
+    """예전 설치기가 남긴 시험 파일이 설치본에 있는지. 설치본에서 따로 받은 node_modules 안은 보지 않는다"""
+    return any(
+        skipped(relative, TEST_FILES)
+        for relative in (path.relative_to(target) for path in target.rglob("*"))
+        if "node_modules" not in relative.parts
+    )
+
+
 def has_symlink(skill: Path) -> bool:
     """배포에 들어가는 경로 중 symlink 존재 여부. SKIP 폴더(node_modules 등 설치 결과물)는 제외"""
     return skill.is_symlink() or any(
-        path.is_symlink() for path in skill.rglob("*") if not SKIP.intersection(path.relative_to(skill).parts)
+        path.is_symlink() for path in skill.rglob("*") if not skipped(path.relative_to(skill))
     )
 
 
 def tree_hash(folder: Path) -> str:
     digest = hashlib.sha256()
     for path in sorted(folder.rglob("*")):
-        if path.is_file() and not SKIP.intersection(path.relative_to(folder).parts):
+        if path.is_file() and not skipped(path.relative_to(folder)):
             digest.update(path.relative_to(folder).as_posix().encode() + b"\0" + path.read_bytes())
     return digest.hexdigest()
 
@@ -249,7 +265,7 @@ def sync(root: Path, skills: list[Path], dry_run: bool) -> bool:
     success = True
     for skill in skills:
         target = _skill_path(root, skill.name)
-        if installed.get(skill.name) == current[skill.name] and target.is_dir() and tree_hash(target) == current[skill.name] and not any(target.rglob("tests")):
+        if installed.get(skill.name) == current[skill.name] and target.is_dir() and tree_hash(target) == current[skill.name] and not _has_test_files(target):
             if not dry_run:
                 if skill.name == HOOK_SKILL:
                     try:
@@ -313,7 +329,7 @@ def build_claude_zips(source: Path, skills: list[Path], dry_run: bool, output: P
         files = {
             f"{skill.name}/{path.relative_to(skill).as_posix()}": path
             for path in sorted(skill.rglob("*"))
-            if path.is_file() and not SKIP.intersection(path.relative_to(skill).parts) and not nested_skills.intersection(path.parents)
+            if path.is_file() and not skipped(path.relative_to(skill)) and not nested_skills.intersection(path.parents)
         }
         if record.get(skill.name) == digest and archive.is_file() and is_valid_archive(archive, skill.name, files):
             continue

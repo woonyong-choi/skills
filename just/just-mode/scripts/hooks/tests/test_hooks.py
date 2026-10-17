@@ -60,7 +60,8 @@ class HookCase(unittest.TestCase):
         return result.get("hookSpecificOutput", {}).get("additionalContext", "")
 
     def bind(self, name: str = "hooks-work", issue: str = "https://github.com/o/r/issues/7") -> dict:
-        done = subprocess.run([sys.executable, str(HOOKS / "task.py"), "bind", "--session-id", SESSION, "--task", name, "--issue", issue, "--cwd", str(self.repo)], capture_output=True, text=True, env=self.env, timeout=30)
+        named = ["--task", name] if name else []
+        done = subprocess.run([sys.executable, str(HOOKS / "task.py"), "bind", "--session-id", SESSION, *named, "--issue", issue, "--cwd", str(self.repo)], capture_output=True, text=True, env=self.env, timeout=30)
         self.assertEqual(done.returncode, 0, done.stderr)
         return json.loads(done.stdout)
 
@@ -115,6 +116,17 @@ class EntryNoticeTest(HookCase):
         self.log("이번 요청 결정")
         self.assertEqual(self.hook("PreCompact"), {})
 
+    def test_new_session_lists_recent_decision_logs(self) -> None:
+        for name in ("old", "mid", "new", "latest"):
+            self.log("결정", name=name)
+            time.sleep(0.02)
+        text = self.context(self.hook("SessionStart"))
+        lines = text.splitlines()
+        self.assertEqual(len(lines), 3)
+        self.assertIn(f"--task {task.branch_task(self.repo)} ", lines[1])
+        self.assertIn("latest, new, mid.", lines[2])
+        self.assertNotIn("old", lines[2])
+
     def test_local_folder_ignores_itself(self) -> None:
         self.hook("UserPromptSubmit", prompt="a")
         self.assertEqual((self.repo / ".local/.gitignore").read_text(encoding="utf-8"), "*\n")
@@ -133,6 +145,9 @@ class StopTest(HookCase):
                 blocked = self.hook("Stop")
                 self.assertEqual(blocked["decision"], "block")
                 self.assertIn("log.sh", blocked["reason"])
+                self.assertNotIn("이유를 답에 적고", blocked["reason"])
+                expected = "hooks-work" if bound else task.branch_task(self.repo)
+                self.assertIn(str(self.repo / f".local/decisions/{expected}.tsv"), blocked["reason"])
                 self.assertEqual(self.hook("Stop", stop_hook_active=True), {})
                 self.assertEqual(self.hook("Stop"), {})
 
@@ -147,6 +162,32 @@ class StopTest(HookCase):
         self.hook("UserPromptSubmit", prompt="계획 모드")
         (self.repo / "README.md").write_text("# plan\n", encoding="utf-8")
         self.assertEqual(self.hook("Stop", permission_mode="plan"), {})
+
+
+class WorktreeTest(HookCase):
+    def test_records_live_in_main_checkout_after_worktree_removed(self) -> None:
+        worktree = self.base / "wt"
+        git(self.repo, "worktree", "add", "-q", "-b", "feat/9-x", str(worktree))
+        self.repo, main = worktree, self.repo
+        bound = self.bind(name="")
+        self.assertEqual(bound["task"], "feat-9-x")
+        self.assertEqual(bound["decisions"], str(main / ".local/decisions/feat-9-x.tsv"))
+        logged = subprocess.run(["bash", str(LOGGER), ".local/decisions/feat-9-x.tsv", "구현", "워크트리 결정", "이유", "근거", "통과"], cwd=worktree, capture_output=True, text=True, timeout=15)
+        self.assertEqual(logged.returncode, 0, logged.stderr)
+        self.assertFalse((worktree / ".local/decisions").exists())
+        self.assertIn("워크트리 결정", self.context(self.hook("SessionStart")))
+        git(main, "worktree", "remove", str(worktree))
+        self.assertIn("워크트리 결정", (main / ".local/decisions/feat-9-x.tsv").read_text(encoding="utf-8"))
+        self.assertTrue((main / ".local/sessions").is_dir())
+        self.assertEqual((main / ".local/.gitignore").read_text(encoding="utf-8"), "*\n")
+        status = subprocess.run(["git", "-C", str(main), "status", "--porcelain"], capture_output=True, text=True, timeout=15)
+        self.assertEqual(status.stdout, "")
+
+    def test_log_creates_ignored_local_folder(self) -> None:
+        subprocess.run(["bash", str(LOGGER), ".local/decisions/a.tsv", "구현", "결정", "이유", "근거", "통과"], cwd=self.repo, check=True, capture_output=True, timeout=15)
+        self.assertEqual((self.repo / ".local/.gitignore").read_text(encoding="utf-8"), "*\n")
+        status = subprocess.run(["git", "-C", str(self.repo), "status", "--porcelain"], capture_output=True, text=True, timeout=15)
+        self.assertEqual(status.stdout, "")
 
 
 class RuleGateTest(HookCase):
@@ -182,7 +223,7 @@ class RuleGateTest(HookCase):
         denied = self.hook("PreToolUse", host="codex", tool_name="Bash", tool_input={"command": patch})
         self.assertEqual(denied["hookSpecificOutput"]["permissionDecision"], "deny")
         reader = task.skill_file(task.RULE_READER)
-        for arguments in ("app.py", "--ids CS-ERROR principle-fix-root-causes", "--ids=CS-ERROR"):
+        for arguments in ("app.py", "--ids CS-ERROR principle-prove-it-works", "--ids=CS-ERROR"):
             rewritten = self.hook("PreToolUse", tool_name="Bash", tool_input={"command": f"python3 {reader} {arguments}"})
             self.assertIn("--pending", rewritten["hookSpecificOutput"]["updatedInput"]["command"], arguments)
         for arguments in ("--ids CS-NAEM", "notes.md", "--check", "app.py; touch x.py"):
@@ -244,6 +285,15 @@ class RuleMapTest(HookCase):
         output = self.delivered("tests/test_tool.py", "def test_run():\n    assert run() == 1\n")
         self.assertIn("# 구현 말고 동작 테스트", output)
         self.assertIn("# 검증 가능한 단위로 순서 짓기", output)
+
+    def test_verification_comes_once_from_principle_and_failure_rule_follows_errors(self) -> None:
+        plain = self.delivered("plain.py", "x = 1\n")
+        self.assertEqual(plain.count("HEAD, 관련 미커밋 입력, 명령, 도구, 환경이 같으면"), 1)
+        self.assertNotIn("CS-VERIFY", plain)
+        self.assertNotIn("## 실패 처리", plain)
+        failing = self.delivered("loader.py", "def load(path):\n    raise ValueError(path)\n")
+        self.assertIn("<!-- CS-FAILURE | code-style/SKILL.md -->", failing)
+        self.assertNotIn("# 근본 원인 고치기", failing)
 
     def test_map_hashes_match_sources(self) -> None:
         reader = task.skill_file(task.RULE_READER)

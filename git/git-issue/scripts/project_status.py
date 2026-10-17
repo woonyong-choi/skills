@@ -1,6 +1,6 @@
 """저장소에 연결된 Projects v2의 이슈·PR 등록과 Status를 관리한다.
-인자: --repo owner/name, --project 번호 반복(colors 필수), --status-map 역할=이름 반복, set 번호 상태 | setup | colors | check [--fix]
-출력: stdout 프로젝트·상태·불일치·오류, 종료 0 성공·1 불일치·2 실패
+인자: --repo owner/name, --project 번호 반복(colors 필수), --status-map 역할=이름 반복, set 번호 상태 | setup | colors | check [--fix] | queue
+출력: stdout 프로젝트·상태·불일치·대기 이슈(판 순서)·오류, 종료 0 성공·1 불일치·2 실패
 """
 
 from __future__ import annotations
@@ -80,8 +80,14 @@ class ProjectStatus:
             ]
         if not projects:
             raise ProjectError(
-                f"{self.repo}: 연결된 프로젝트 없음; 생성은 사용자 요청 필요"
+                f"{self.repo}: 연결된 프로젝트 없음; project_bootstrap.py로 새 저장소 절차 실행 필요"
             )
+        if args.command == "queue":
+            for project in projects:
+                print(f"프로젝트 {project['number']} {project['title']} ({self.repo})")
+                for issue in self._waiting(project):
+                    print(f"#{issue['number']} {issue['title']}")
+            return 0
         content = self._issue_or_pull_request(args.number) if args.number else None
         if content and args.command == "set":
             if (content["state"] != "OPEN") != (args.status == "완료"):
@@ -257,6 +263,29 @@ class ProjectStatus:
             .casefold()
             == self.repo.casefold()
         }
+
+    def _waiting(self, project: dict[str, Any]) -> list[dict[str, Any]]:
+        """대기 상태인 이 저장소의 열린 이슈를 판의 수동 순서(POSITION)대로 돌려준다."""
+        items = self._pages(
+            "query($id:ID!,$cursor:String){node(id:$id){... on ProjectV2{"
+            "items(first:100,after:$cursor,orderBy:{field:POSITION,direction:ASC}){nodes{id "
+            "content{... on Issue{number title state repository{nameWithOwner}}} "
+            + ITEM_FIELDS
+            + "}"
+            + PAGE
+            + "}}}}",
+            {"id": project["id"]},
+            "node",
+            "items",
+        )
+        waiting = self.states["대기"]
+        return [
+            item["content"]
+            for item in items
+            if (item.get("content") or {}).get("state") == "OPEN"
+            and item["content"].get("repository", {}).get("nameWithOwner", "").casefold() == self.repo.casefold()
+            and self._status(item) == waiting
+        ]
 
     def _mismatches(
         self,
@@ -554,7 +583,7 @@ def main(argv: list[str] | None = None, gh: Gh = run_gh) -> int:
     )
     parser.add_argument("--repo", help="owner/name (기본: 현재 디렉터리 저장소)")
     sub = parser.add_subparsers(dest="command", required=True)
-    for command in ("set", "setup", "colors", "check"):
+    for command in ("set", "setup", "colors", "check", "queue"):
         command_parser = sub.add_parser(command)
         command_parser.add_argument("--repo", default=argparse.SUPPRESS)
         if command == "set":

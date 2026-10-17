@@ -3,7 +3,7 @@ name: code-style-kotlin
 description: "Kotlin JVM 서버와 CLI 코드(Android 제외)를 쓰거나 검토할 때, ktlint와 detekt 설정을 고칠 때 쓴다."
 ---
 
-# Code Style: Kotlin
+# Kotlin 코드 스타일
 
 [code-style](../code-style/SKILL.md)을 먼저 적용하고, 이 스킬은 code-style이 언어에 맡긴 항목의 Kotlin(JVM 서버, CLI) 규칙만 정한다. Android는 다루지 않는다. 그 밖에서 code-style과 다르면 code-style을 따른다.
 
@@ -78,8 +78,8 @@ description: "Kotlin JVM 서버와 CLI 코드(Android 제외)를 쓰거나 검�
 - 기본값이 `public`이므로 공개 범위를 늘 적는다. 비공개, `internal`, `public` 순서로 필요한 만큼만 넓힌다. `protected`는 상속용에만 쓴다.
 - 라이브러리 모듈은 `kotlin { explicitApi() }`로 공개 범위와 반환 타입 표기를 강제한다.
 - 필드는 프로퍼티로 다룬다. 검증 규칙이 없는 단순 데이터 묶음은 `data class`의 공개 `val`로 둔다.
-- KDoc(`/** */`)은 필요할 때만 한 줄 요약으로 쓴다. 매개변수와 반환값은 `@param`, `@return` 대신 본문에서 `[이름]`으로 언급한다.
-- 던지는 예외는 `@throws`로 적는다.
+- 주석을 남기는 경우는 [code-style 공개 범위와 주석](../code-style/references/structure.md#공개-범위와-주석)을 따른다. KDoc(`/** */`)은 공개 API 계약을 정의할 때만 한 줄 요약으로 쓴다. 매개변수와 반환값은 `@param`, `@return` 대신 본문에서 `[이름]`으로 언급한다.
+- 공개 API가 던지는 예외는 `@throws`로 적는다.
 
 ## 테스트
 

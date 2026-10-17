@@ -82,6 +82,7 @@ def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
         assert not list(installed.parent.glob('*/tests'))
         assert not list(installed.parent.glob('*/.claude-plugin'))
         assert not list(installed.parent.glob('*/.codex-plugin'))
+        assert not [path for path in (installed.parent / 'just-mode').rglob('*') if path.name.endswith(('.test.ts', '.test-helper.ts'))]
         # #25: 평탄한 설치본의 검사기가 하위 문서·앵커·용어 정본을 원본과 똑같이 조회. 위반 수는 원본 검사와 같아야 한다.
         checked = subprocess.run([sys.executable, str(installed / 'scripts/skill_check.py'), '--json', str(installed.parent)], capture_output=True, text=True)
         assert checked.returncode in (0, 1), checked.stderr
@@ -93,6 +94,8 @@ def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
         assert [name for name in archive.namelist() if Path(name).name == 'SKILL.md'] == ['skill-sync/SKILL.md']
         expected = {f'skill-sync/{name}': content for name, content in files.items() if not name.startswith('tests/fixtures/valid/')}
         assert {name: archive.read(name) for name in archive.namelist()} == expected
+    with zipfile.ZipFile(install_home / 'dist/just-mode.zip') as archive:
+        assert not [name for name in archive.namelist() if name.endswith(('.test.ts', '.test-helper.ts'))]
     # #25: 모든 스킬 zip에 하위 문서 원문과 SKILL.md 하나 보존.
     for archive_path in (install_home / 'dist').glob('*.zip'):
         with zipfile.ZipFile(archive_path) as archive:
@@ -244,11 +247,11 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str, w
     query = {'command': f'{sys.executable} {reader} --ids CS-CORE'}
     rewritten = invoke('PreToolUse', tool_input=query, **fresh)['hookSpecificOutput']['updatedInput']
     prior = subprocess.run(shlex.split(rewritten['command']), capture_output=True, text=True, env=env)
-    assert prior.returncode == 0 and '# Code Style' in prior.stdout
+    assert prior.returncode == 0 and '# 코드 스타일' in prior.stdout
     invoke('PostToolUse', tool_input=rewritten, tool_response={'stdout': prior.stdout}, **fresh)
     blocked = invoke('PreToolUse', **fresh)['hookSpecificOutput']['permissionDecisionReason']
     remaining = subprocess.run(shlex.split(blocked.split('`')[1]), capture_output=True, text=True, env=env)
-    assert remaining.returncode == 0 and '# Code Style\n' not in remaining.stdout
+    assert remaining.returncode == 0 and '# 코드 스타일\n' not in remaining.stdout
     read_session = {'session_id': session + '-read', 'tool_name': 'Read', 'tool_input': {'file_path': target}}
     invoke('PostToolUse', tool_response='source inspected', **read_session)
     assert not invoke('Stop', **read_session)
@@ -345,3 +348,18 @@ def test_dependency_folder_symlink_does_not_block_install(tmp_path: Path) -> Non
     assert result.returncode == 0, result.stderr
     assert list(home.rglob('SKILL.md')), 'installed'
     assert not list(home.rglob('node_modules'))
+
+
+# 예전 설치본에 남은 TypeScript 시험 파일은 해시가 같아도 다시 설치해 지운다.
+def test_install_removes_leftover_typescript_tests(install_home: Path) -> None:
+    command = [sys.executable, str(INSTALL), '--source', str(SOURCE), '--target-home', str(install_home), '--dist', str(install_home / 'dist')]
+    assert subprocess.run(command, capture_output=True, text=True).returncode == 0
+    leftovers = [install_home / '.codex/skills/alpha/scripts/a.test.ts', install_home / '.codex/skills/alpha/b.test-helper.ts']
+    for leftover in leftovers:
+        leftover.parent.mkdir(parents=True, exist_ok=True)
+        leftover.write_text('test', encoding='utf-8')
+
+    result = subprocess.run(command, capture_output=True, text=True)
+
+    assert result.returncode == 0, result.stderr
+    assert not [leftover for leftover in leftovers if leftover.exists()]
