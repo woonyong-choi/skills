@@ -24,6 +24,14 @@ just 스킬이 공통으로 쓰는 동작을 Claude Code CLI, Codex CLI, OpenCod
 | 항상 적용 규칙 | `CLAUDE.md` | `AGENTS.md` | `AGENTS.md` |
 | 대화 기록 위치 | `~/.claude/projects/<프로젝트 경로를 -로 바꾼 이름>/*.jsonl` | `~/.codex/sessions/**/rollout-*.jsonl` | `~/.local/share/opencode/` 아래 세션 저장소 |
 
+just의 TypeScript CLI는 Bun 런타임을 쓴다. 검증한 버전은 1.4.2다(2026-10-17 확인). Bun을 전역 설치하지 않고 실행하려면 Node.js와 npm이 있는 환경에서 다음 명령을 쓴다. 경로는 스킬 원본 저장소 루트 기준이다.
+
+```sh
+npm exec --yes --package bun@1.4.2 -- bun just/just-mode/scripts/watch-pr/watch-pr --owner <소유자> --repo <저장소 이름> --pr <PR 번호> --pretty
+```
+
+`--repo`에는 저장소 이름만 넣고 소유자는 `--owner`로 넘긴다. 다른 just TypeScript CLI도 같은 Bun 런타임으로 실행한다.
+
 ## 무한 자율 실행
 
 멈추라고 할 때까지 도는 [자율 실행](../playbooks/autonomous-run.md)은 세션이 스스로 다시 깨어날 수 있는 호스트에서만 한다.
