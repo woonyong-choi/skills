@@ -76,7 +76,7 @@ class EntryNoticeTest(HookCase):
             payload = json.dumps({"hook_event_name": "SessionStart", "session_id": SESSION, "cwd": str(self.base)})
             done = subprocess.run([sys.executable, str(HOOKS / "hook.py"), host], input=payload, capture_output=True, text=True, env=self.env, timeout=30)
             text = json.loads(done.stdout)["hookSpecificOutput"]["additionalContext"]
-            self.assertEqual(text, f"코드를 바꾸는 개발 일이면 {HOOKS.parents[1] / 'SKILL.md'}를 읽고 그 순서로 진행한다.")
+            self.assertEqual(text, f"코드를 바꾸는 개발 일(버그 수정, 기능, 리팩터링, 여러 파일 변경)이면 {HOOKS.parents[1] / 'SKILL.md'}를 읽고 그 순서로 진행한다.")
             self.assertNotIn("\n", text)
 
     def test_unbound_session_gets_bind_command_without_skill_body(self) -> None:
@@ -123,9 +123,18 @@ class EntryNoticeTest(HookCase):
         text = self.context(self.hook("SessionStart"))
         lines = text.splitlines()
         self.assertEqual(len(lines), 3)
-        self.assertIn(f"--task {task.branch_task(self.repo)} ", lines[1])
         self.assertIn("latest, new, mid.", lines[2])
         self.assertNotIn("old", lines[2])
+
+    def test_bind_hint_waits_for_work_branch(self) -> None:
+        # 기본 브랜치에서는 과업 자리표시와 "브랜치를 만든 뒤", 작업 브랜치에서는 그 브랜치 이름
+        first = self.context(self.hook("SessionStart")).splitlines()[1]
+        self.assertIn("--task <과업> ", first)
+        self.assertTrue(first.endswith("브랜치를 만든 뒤 연결한다."), first)
+        git(self.repo, "switch", "-q", "-c", "fix/12-hooks-bind")
+        second = self.context(self.hook("SessionStart")).splitlines()[1]
+        self.assertIn("--task fix-12-hooks-bind ", second)
+        self.assertNotIn("브랜치를 만든 뒤", second)
 
     def test_local_folder_ignores_itself(self) -> None:
         self.hook("UserPromptSubmit", prompt="a")
@@ -136,6 +145,7 @@ class EntryNoticeTest(HookCase):
 
 class StopTest(HookCase):
     def test_changed_files_without_decision_block_once(self) -> None:
+        git(self.repo, "switch", "-q", "-c", "feat/3-hooks-gate")
         for bound in (False, True):
             with self.subTest(bound=bound):
                 if bound:
@@ -146,10 +156,20 @@ class StopTest(HookCase):
                 self.assertEqual(blocked["decision"], "block")
                 self.assertIn("log.sh", blocked["reason"])
                 self.assertNotIn("이유를 답에 적고", blocked["reason"])
-                expected = "hooks-work" if bound else task.branch_task(self.repo)
+                expected = "hooks-work" if bound else "feat-3-hooks-gate"
                 self.assertIn(str(self.repo / f".local/decisions/{expected}.tsv"), blocked["reason"])
                 self.assertEqual(self.hook("Stop", stop_hook_active=True), {})
                 self.assertEqual(self.hook("Stop"), {})
+
+    def test_default_branch_without_task_is_not_gated(self) -> None:
+        # 기본 브랜치의 연결 없는 변경(한 줄 수정)은 막지 않고, 과업을 연결하면 막는다
+        self.hook("UserPromptSubmit", prompt="오타")
+        (self.repo / "README.md").write_text("# typo\n", encoding="utf-8")
+        self.assertEqual(self.hook("Stop"), {})
+        self.bind()
+        self.hook("UserPromptSubmit", prompt="고친다")
+        (self.repo / "README.md").write_text("# bound\n", encoding="utf-8")
+        self.assertEqual(self.hook("Stop")["decision"], "block")
 
     def test_decision_line_or_no_change_passes(self) -> None:
         self.bind()
@@ -182,6 +202,20 @@ class WorktreeTest(HookCase):
         self.assertEqual((main / ".local/.gitignore").read_text(encoding="utf-8"), "*\n")
         status = subprocess.run(["git", "-C", str(main), "status", "--porcelain"], capture_output=True, text=True, timeout=15)
         self.assertEqual(status.stdout, "")
+
+    def test_sibling_worktree_edit_is_gated_from_main_checkout(self) -> None:
+        # 세션은 기본 체크아웃, 편집은 ../{저장소}.wt/ 형제 워크트리: 규칙 거부와 결정 기록 확인이 그 경로의 작업본으로 판정한다
+        worktree = self.base / "work.wt" / "fix-5-sibling"
+        git(self.repo, "worktree", "add", "-q", "-b", "fix/5-sibling", str(worktree))
+        edit = {"tool_name": "Write", "tool_input": {"file_path": str(worktree / "app.py"), "content": "x = 1\n"}}
+        self.assertEqual(self.hook("PreToolUse", **edit)["hookSpecificOutput"]["permissionDecision"], "deny")
+        self.hook("UserPromptSubmit", prompt="고친다")
+        (worktree / "app.py").write_text("x = 1\n", encoding="utf-8")
+        self.hook("PostToolUse", **edit, tool_response="written")
+        self.assertIn("필수 규칙 원문", self.hook("Stop")["reason"])
+        blocked = self.hook("Stop")
+        self.assertEqual(blocked["decision"], "block")
+        self.assertIn(str(self.repo / ".local/decisions/fix-5-sibling.tsv"), blocked["reason"])
 
     def test_log_creates_ignored_local_folder(self) -> None:
         subprocess.run(["bash", str(LOGGER), ".local/decisions/a.tsv", "구현", "결정", "이유", "근거", "통과"], cwd=self.repo, check=True, capture_output=True, timeout=15)
@@ -285,6 +319,15 @@ class RuleMapTest(HookCase):
         output = self.delivered("tests/test_tool.py", "def test_run():\n    assert run() == 1\n")
         self.assertIn("# 구현 말고 동작 테스트", output)
         self.assertIn("# 검증 가능한 단위로 순서 짓기", output)
+
+    def test_content_conditions_read_edit_input_and_test_rules_need_test_path(self) -> None:
+        # 기존 파일의 오류 처리 낱말이 아니라 편집 입력으로 고르고, 테스트 원문과 언어 스킬 작성 기준은 일반 파일에 넘기지 않는다
+        (self.repo / "loader.py").write_text("def load(path):\n    raise ValueError(path)\n", encoding="utf-8")
+        output = self.delivered("loader.py", "x = 1\n")
+        for text in ("<!-- CS-ERROR", "<!-- CS-TEST", "<!-- CS-LANGUAGE"):
+            self.assertNotIn(text, output)
+        self.assertIn("<!-- CS-TEST | code-style/references/testing.md -->", self.delivered("tests/test_loader.py", "x = 1\n"))
+        self.assertIn("## 수치 기준", self.delivered("later.py", "x = 1\ndef run():\n    return x\n"))
 
     def test_verification_comes_once_from_principle_and_failure_rule_follows_errors(self) -> None:
         plain = self.delivered("plain.py", "x = 1\n")

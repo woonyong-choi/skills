@@ -43,11 +43,9 @@ jobs:
           repository: woonyong-choi/torso
           ref: fcfc1c116e8842a7516ab68b43c098d9726172cd
           path: .runtime/torso
-      - name: Install figure renderer and browser
+      - name: Install figure renderer
         working-directory: .runtime/torso
-        run: |
-          npm ci
-          npx playwright-core install --with-deps chromium
+        run: npm ci
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.2

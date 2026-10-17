@@ -18,17 +18,17 @@ description: "언어 공통의 이름, 오류, 주석, 테스트 규칙으로 �
 |---|---|---|
 | CS-CORE | 모든 코드 작성과 검토 | 이 문서의 머리와 원칙 절 |
 | CS-FAILURE | 실패할 수 있는 입력, 외부 경계, 오류 변경(결함과 장애 복구 포함) | 이 문서의 실패 처리 절 |
-| CS-LANGUAGE | 모든 코드 작성과 검토 | [언어별 스킬](references/language.md) |
+| CS-LANGUAGE | 언어별 스킬을 만들거나 고칠 때 | [언어별 스킬](references/language.md) |
 | CS-SIZE | 함수, 타입, 분기, 매개변수, 파일 크기 변경 | [수치 기준](references/structure.md#수치-기준) |
 | CS-NAME | 이름 추가와 변경 | [이름](references/structure.md#이름) |
 | CS-CONDITION | 조건식과 분기 변경 | [조건식](references/structure.md#조건식) |
 | CS-ORDER | 선언 추가와 이동 | [선언 순서](references/structure.md#선언-순서) |
 | CS-VISIBILITY | 공개 범위, 필드, 주석 추가와 변경 | [공개 범위와 주석](references/structure.md#공개-범위와-주석) |
 | CS-ERROR | 실패할 수 있는 입력, 외부 경계, 오류, 로그 변경 | [오류와 로그](references/errors.md) |
-| CS-TEST | 테스트 선택, 추가, 변경 | [테스트](references/testing.md) |
+| CS-TEST | 테스트 선택, 추가, 변경(훅은 테스트 경로의 파일에 넘긴다) | [테스트](references/testing.md) |
 | CS-DATA | 데이터, 공유 상태, 비동기 변경 | [데이터와 동시성](references/data-and-concurrency.md) |
 | CS-RESOURCES | 성능, 자원, 캐시, 큐 변경 | [자원과 성능](references/resources.md) |
-| CS-INTERFACES | 화면과 API 변경 | [화면과 API](references/interfaces.md) |
+| CS-INTERFACES | 화면과 API 변경(훅은 CSS, JSX, TSX 파일에만 넘기므로 API 변경이면 직접 읽는다) | [화면과 API](references/interfaces.md) |
 | CS-OPERATIONS | 신뢰 경계, 외부 입력, 권한, 의존성, 배포, 복구 변경 | [보안과 운영](references/operations.md) |
 
 ## 원칙

@@ -12,7 +12,7 @@
 
 from __future__ import annotations
 
-__all__ = ["collect_tool_output", "main", "pending_rules", "select_for_tool", "select_query"]
+__all__ = ["collect_tool_output", "edit_targets", "main", "pending_rules", "select_for_tool", "select_query"]
 
 import argparse
 import hashlib
@@ -21,11 +21,11 @@ import re
 import shlex
 import sys
 from pathlib import Path
+from typing import Callable
 
 MAP = Path(__file__).resolve().with_name("rule-map.json")
 CATEGORIES = ("just", "code", "docs", "git", "design", "tools")
 BATCH_BYTES = 12000
-EDIT_TOOLS = {"Write", "Edit", "MultiEdit", "apply_patch"}
 DONE = "필수 원문 전달 완료. 같은 원문 재조회 없이 적용."
 MORE = "\n\n미전달 원문이 남아 있습니다. 같은 --pending 명령으로 이어서 조회하세요.\n"
 
@@ -133,17 +133,17 @@ def check(catalog: dict) -> int:
     return 1 if failures else 0
 
 
-def select_files(paths: list[Path], working: Path, extra: str) -> list[str]:
-    """편집할 파일의 확장자·경로·내용(기존 파일 + 편집 입력)으로 대응표의 선택 조건을 맞춰 규칙 이름을 고른다."""
+def select_files(paths: list[Path], working: Path, edited: str) -> list[str]:
+    """편집할 파일의 확장자·경로와 내용으로 대응표의 선택 조건을 맞춰 규칙 이름을 고른다. 내용은 편집 입력이 있으면 그것만, 없으면 기존 파일을 본다."""
     catalog = read_catalog()
     selected: list[str] = []
     for path in paths:
         source = path if path.is_absolute() else working / path
         if not any(source.suffix in row.get("suffixes", ()) for row in catalog["select"]):
             continue
-        text = extra
-        if source.is_file():
-            text = source.read_text(encoding="utf-8", errors="replace") + "\n" + extra
+        text = edited
+        if not edited and source.is_file():
+            text = source.read_text(encoding="utf-8", errors="replace")
         for row in catalog["select"]:
             if row.get("suffixes") and source.suffix not in row["suffixes"]:
                 continue
@@ -155,23 +155,24 @@ def select_files(paths: list[Path], working: Path, extra: str) -> list[str]:
     return list(dict.fromkeys(selected))
 
 
-def select_for_tool(payload: dict, repo: Path, scope: dict) -> None:
-    """편집 도구 입력에 명시된 저장소 안 코드 파일로 필요한 규칙을 골라 scope["ids"]에 더한다."""
+def edit_targets(payload: dict) -> list[Path]:
+    """편집 도구 입력에 명시된 파일의 절대 경로."""
     value = payload.get("tool_input", {})
-    tool = payload.get("tool_name", "")
-    working = Path(value.get("workdir") or payload.get("cwd") or repo) if isinstance(value, dict) else repo
-    raw = json.dumps(value, ensure_ascii=False)
-    if tool in {"Write", "Edit", "MultiEdit"} and isinstance(value, dict):
-        names = [str(value.get("file_path", ""))]
+    working = Path(value.get("workdir") or payload.get("cwd") or ".") if isinstance(value, dict) else Path(".")
+    if payload.get("tool_name") in {"Write", "Edit", "MultiEdit"} and isinstance(value, dict):
+        names = [str(value.get("file_path") or "")]
     else:
         command = "\n".join(str(value.get(key) or "") for key in ("command", "cmd", "patch")) if isinstance(value, dict) else str(value)
         names = re.findall(r"^\*\*\* (?:Add File|Update File|Delete File|Move to): (.+)$", command, re.MULTILINE)
-    inside = []
-    for name in dict.fromkeys(names):
-        source = (working / name).resolve()
-        if source.is_relative_to(repo.resolve()) and (source.is_file() or tool in EDIT_TOOLS):
-            inside.append(source)
-    ids = select_files(inside, working, raw)
+    return [(working / name).resolve() for name in dict.fromkeys(names) if name]
+
+
+def select_for_tool(payload: dict, scope: dict, in_git: Callable[[Path], bool]) -> None:
+    """편집 도구 입력에 명시된 코드 파일 가운데 git 작업본 안의 것(`in_git`)으로 규칙을 골라 scope["ids"]에 더한다. 내용 조건은 편집 입력에만 맞춘다."""
+    value = payload.get("tool_input", {})
+    edited = {key: item for key, item in value.items() if key not in {"file_path", "workdir"}} if isinstance(value, dict) else value
+    inside = [source for source in edit_targets(payload) if in_git(source)]
+    ids = select_files(inside, Path("/"), _joined_strings(edited))
     scope["ids"] = list(dict.fromkeys([*scope.get("ids", []), *ids]))
 
 
@@ -246,16 +247,21 @@ def pending_text(state: dict) -> str:
 
 
 def collect_tool_output(payload: dict) -> str:
-    def strings(item: object) -> list[str]:
-        if isinstance(item, str):
-            return [item]
-        if isinstance(item, dict):
-            return [text for child in item.values() for text in strings(child)]
-        if isinstance(item, list):
-            return [text for child in item for text in strings(child)]
+    return _joined_strings(payload.get("tool_response", ""))
+
+
+def _joined_strings(item: object) -> str:
+    """JSON 값 안의 모든 문자열을 줄바꿈으로 이은 글. 이스케이프 없이 원문 그대로라 낱말 경계 조건이 맞는다."""
+    def strings(value: object) -> list[str]:
+        if isinstance(value, str):
+            return [value]
+        if isinstance(value, dict):
+            return [text for child in value.values() for text in strings(child)]
+        if isinstance(value, list):
+            return [text for child in value for text in strings(child)]
         return []
 
-    return "\n".join(strings(payload.get("tool_response", "")))
+    return "\n".join(strings(item))
 
 
 def _query_args(payload: dict) -> list[str] | None:

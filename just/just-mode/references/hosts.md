@@ -15,6 +15,7 @@ just 스킬이 공통으로 쓰는 동작을 Claude Code CLI, Codex CLI, OpenCod
 |---|---|---|---|
 | 스킬 부르기 | `/이름` | `$이름` | `/이름`(`opencode/slash` 메타데이터가 있을 때) 또는 `skill` 도구 |
 | 서브에이전트 실행 | `Agent` 도구. 같은 프롬프트를 여러 개 동시에 보내면 병렬 | 같은 세션 서브에이전트가 없으면 셸에서 `codex exec --cd <작업 폴더> "<프롬프트>"`를 백그라운드로 실행하고 출력 파일을 읽는다 | `task` 도구(`general`, `explore` 서브에이전트) |
+| 서브에이전트 추론 수준 | `Agent` 도구에는 지정 칸이 없어 건너뛴다 | `codex exec -c model_reasoning_effort=<값>` | 에이전트 설정 `reasoningEffort` |
 | 읽기 전용 서브에이전트 | `Agent` 도구의 탐색용 에이전트를 쓰거나 프롬프트에 "파일 수정 금지"를 넣는다 | `codex exec --sandbox read-only` | `explore` 서브에이전트 |
 | 다른 회사 모델로 검토 | 셸에서 `codex exec "<프롬프트>"` | 셸에서 `claude -p "<프롬프트>"` | 설정한 다른 제공자 모델로 `task`를 실행하고, 없으면 셸에서 `claude -p`나 `codex exec`를 쓴다 |
 | 주기적으로 다시 깨우기 | `/loop <간격> <프롬프트>` | 내장 기능이 없다. 같은 세션 안에서 대기 명령(`sleep`)과 확인을 반복한다. 셸 반복문으로 `codex exec`를 새로 띄우지 않는다([무한 자율 실행](#무한-자율-실행)) | 내장 기능이 없다. 셸 반복문으로 `opencode run`을 다시 실행한다 |
@@ -40,7 +41,7 @@ just 스킬이 공통으로 쓰는 동작을 Claude Code CLI, Codex CLI, OpenCod
 - 프롬프트에 파일 내용을 붙이지 않고 파일 경로를 넘긴다.
 - 쓰기 작업 서브에이전트마다 별도 git 워크트리(`git worktree add`)를 주어 같은 파일을 동시에 고치지 않게 한다.
 - 모델은 [역할별 모델](models.md)에서 고른다.
-- 서브에이전트 정의 파일(`just-agent`, `comment-sicko`)이 설치돼 있으면 그 이름을 쓰고, 없으면 같은 지시를 프롬프트 첫머리에 넣는다.
+- 서브에이전트 정의(`just-agent`, `comment-sicko`)가 호스트에 설치돼 있으면 그 이름을 쓰고, 없으면 [agents](agents/just-agent.md) 폴더의 같은 이름 파일 지시를 프롬프트 첫머리에 넣는다.
 - 결과는 그대로 전달하지 않고 부모가 diff를 직접 확인한 뒤 요약한다.
 
 ## 없는 기능을 만날 때

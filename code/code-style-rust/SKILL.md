@@ -47,7 +47,7 @@ description: "Rust 코드를 쓰거나 검토하거나 리팩터링할 때, rust
 - 테스트 밖에서 `unwrap`, `panic!`, `todo!`, `unimplemented!`를 쓰지 않는다.
 - `expect` 메시지는 성립해야 하는 이유를 `should`로 쓴다(`expect("config should be loaded before start")`).
 - 오류와 로그 메시지는 소문자로 시작하고 마침표를 찍지 않는다(`invalid digit found in string`).
-- 오류를 무시할 때는 이유를 단다(`let _ = tx.send(event); // 받는 쪽이 이미 종료됨`).
+- 오류를 무시할 때는 무시하는 이유를 오류 종류와 감싼 범위로 드러낸다. 이유 주석은 외부 의존성이 강제하는 동작처럼 [code-style 공개 범위와 주석](../code-style/references/structure.md#공개-범위와-주석)의 범위에 들 때만 단다.
 - `println!`은 프로그램 결과에만 쓴다. 진단은 `eprintln!` 대신 `tracing`으로 남긴다.
 
 라이브러리는 다음과 같이 쓴다. 저장소가 이미 다른 라이브러리를 정했으면 그것을 쓴다.

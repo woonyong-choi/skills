@@ -37,10 +37,6 @@ description: "Git 커밋 메시지를 쓰거나 검토할 때, 변경을 나눠 
 - `disable-model-invocation: true`인 스킬은 `agents/openai.yaml`에 `policy` 아래 `allow_implicit_invocation: false`를 둔다. 그래야 Claude Code와 Codex가 같은 방식으로 부른다. 자동 호출형은 이 줄을 두지 않는다.
 - `agents/openai.yaml`에는 `interface` 아래 `display_name`, `short_description`, `default_prompt`를 두고, `default_prompt`는 `$이름`으로 스킬을 부른다.
 
-### description 끝말을 `쓴다.`로 정한 근거
-
-병합 전 just 스킬 52개 중 23개가 `쓴다.`로 끝났고, 원칙 스킬 24개는 `적용한다.`, 나머지는 다른 서술형으로 끝났다. 우리 스킬 26개는 모두 `사용.`으로 끝났다. 본문을 서술문으로 쓰기로 했으므로 명사 끝 `사용.`은 버린다. `쓴다.`는 just에서 가장 많이 쓴 끝이고 원칙 스킬도 같은 틀(`디버깅할 때 쓴다.`)에 들어간다. 그래서 하나만 남긴다. `적용한다.`와 `사용.`은 쓰지 않는다.
-
 ## 본문 구조
 
 본문은 다음 순서로 쓴다. 3번과 5번, 6번은 필요할 때만 둔다.

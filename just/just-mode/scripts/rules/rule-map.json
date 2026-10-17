@@ -1,5 +1,5 @@
 {
-  "_": "편집할 파일 → 규칙. select의 suffixes·path·content가 모두 맞으면 rules 추가. sha256은 read_rules.py --check가 원문과 대조",
+  "_": "편집할 파일 → 규칙. select의 suffixes·path·content가 모두 맞으면 rules 추가. content는 편집 입력(없으면 기존 파일)에 맞춘다. sha256은 read_rules.py --check가 원문과 대조",
   "rules": {
     "principle-prove-it-works": {
       "skill": "principle-prove-it-works",
@@ -121,12 +121,12 @@
       "sections": [
         "공개 범위와 주석"
       ],
-      "sha256": "36a90c282a68cf756d97c8457673087fd177070b7753b2f2faa2a341862b87c7"
+      "sha256": "0a112860e07e536b0333d7424b75f935aae68f117e909356432bc352b8c0d003"
     },
     "CS-ERROR": {
       "skill": "code-style",
       "path": "references/errors.md",
-      "sha256": "03c940cf6dc96dfe086a11991a9cded52201817e6b5c14c11182a2cb6605fb64"
+      "sha256": "b309901f29a29c4028cd0740982a7953d82b3d92b2fc98cf3cdcbd9e1e8c15d0"
     },
     "CS-TEST": {
       "skill": "code-style",
@@ -156,12 +156,12 @@
     "code-style-python": {
       "skill": "code-style-python",
       "path": "SKILL.md",
-      "sha256": "6f488596e240599b6c3a5af0b42ff861c0f6846858bbb7ccd8a2a9732a800a54"
+      "sha256": "1b87c057f7006b822ba0d43fae00357eac2f7062bd54ae9226a6904f7a82fea9"
     },
     "code-style-typescript": {
       "skill": "code-style-typescript",
       "path": "SKILL.md",
-      "sha256": "1ad6aa0c4b5aee750f899e78562a8721878991bd5e91fdadb4c68eb4f632c672"
+      "sha256": "6fdb715a8670b305abc3f9acc9cd28e522e02095982bf5329918034d6c16e15d"
     },
     "code-style-typescript-common": {
       "skill": "code-style-typescript",
@@ -169,12 +169,12 @@
       "drop": [
         "TypeScript 전용"
       ],
-      "sha256": "5d3fd1b58470d6d640df7f955749a5ed4bdcf60106306178739625b72ed9655c"
+      "sha256": "930becdf2989ca27318b6ee71a33b8dbc6738c5d89a7e2da0c8d08c997fd5784"
     },
     "code-style-rust": {
       "skill": "code-style-rust",
       "path": "SKILL.md",
-      "sha256": "6e42aded4e78fe7e51e8d354e91cb561a34742fc6ea027b4f15e0b2c290de051"
+      "sha256": "9831e12e91fc2a9620c90be9bcf07fb28b7e7d918e0636de7b87b5a3eee20a07"
     },
     "code-style-kotlin": {
       "skill": "code-style-kotlin",
@@ -205,9 +205,7 @@
       ],
       "rules": [
         "principle-prove-it-works",
-        "CS-CORE",
-        "CS-LANGUAGE",
-        "CS-TEST"
+        "CS-CORE"
       ]
     },
     {
@@ -320,6 +318,7 @@
       ],
       "path": "(^|/)(tests?|__tests__|spec)/|(^|/)test_[^/]*\\.py$|_test\\.(py|rs|kt)$|\\.(test|spec)\\.[cm]?[jt]sx?$",
       "rules": [
+        "CS-TEST",
         "principle-test-behavior-not-implementation",
         "principle-sequence-verifiable-units"
       ]

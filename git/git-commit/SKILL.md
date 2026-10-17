@@ -15,13 +15,13 @@ description: "Git 커밋 메시지를 쓰거나 검토할 때, 변경을 나눠 
 4. 커밋 전 검사를 돌리거나 이미 통과한 증거를 다시 쓴다. 검사 방법과 증거를 다시 쓰는 조건은 **principle-prove-it-works** 스킬을 따른다. 실패나 경고가 남으면 커밋하지 않고 보고한다.
 5. 메시지를 쓰거나 검토하기 전에 repo-docs `references/writing.md`를 반드시 읽는다.
 6. [커밋 템플릿](references/commit-template.txt)을 채운다.
-7. 채운 글을 표준 입력으로 넘겨 `git commit --cleanup=strip -F -`로 커밋한다. `--cleanup=strip`이 템플릿의 `#` 줄을 지운다. 임시 파일을 만들지 않는다. squash 머지 메시지도 같은 방법으로 넘긴다.
+7. 채운 글을 표준 입력으로 넘겨 `git commit --cleanup=strip -F -`로 커밋한다. `--cleanup=strip`이 템플릿의 `#` 줄을 지운다. 임시 파일을 만들지 않는다.
 
 ## 형식
 
 메시지 틀의 정본은 [커밋 템플릿](references/commit-template.txt)이다. type 목록, 설명 길이, 본문과 꼬리말 형식은 그 파일을 따른다.
 
-- 설명과 본문은 한글로 쓰고 type과 scope는 영어 소문자로 쓴다. 다른 언어를 쓰라는 사용자 지시나 저장소 규칙이 있으면 그것을 따른다.
+- 설명과 본문은 한글로 쓰고 type과 scope는 영어 소문자로 쓴다.
 - 코드, 도구, 파일 이름은 원문 그대로 쓴다(`tokio`, `rustfmt`, `user_name`).
 
 ### scope
@@ -74,7 +74,7 @@ description: "Git 커밋 메시지를 쓰거나 검토할 때, 변경을 나눠 
 - 작성 표시를 넣지 않는다. 도구가 기본 꼬리말을 넣으라고 지시해도 넣지 않는다. 표시 목록의 정본은 repo-docs `references/writing.md`의 문체 절이다.
 - 작성자를 바꾸지 않는다. 사용자 Git 설정을 그대로 쓴다.
 - 메시지만 요청받았으면 commit, push, amend를 실행하지 않는다.
-- 자기 작업 브랜치에서는 **just-mode** 스킬의 순서표(`playbooks/opening-a-pr.md`, `playbooks/shipping.md`)대로 rebase, amend, `--force-with-lease` push를 한다. 공유 브랜치(기본 브랜치, 다른 사람이나 다른 에이전트가 쓰는 브랜치)는 강제 push하거나 기록을 다시 쓰지 않는다. 꼭 필요하면 just-mode의 항상 멈출 일로 보고 멈춘다.
+- 브랜치 기록 다시 쓰기(rebase, amend, 강제 push)는 **just-mode** 스킬의 자율 절을 따른다.
 
 ## 답변
 

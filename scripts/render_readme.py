@@ -11,6 +11,13 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+SOURCES = ('skill-exposure', 'skill-quality')
+STRICT = '--strict'
+
+
+def source_path(name: str) -> Path:
+    return ROOT / 'docs/assets' / (name + '.thinkflow')
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -18,15 +25,10 @@ def main() -> None:
     args = parser.parse_args()
     output = ROOT / '.runtime/figures'
     output.mkdir(parents=True, exist_ok=True)
-    sources = ('skill-exposure', 'skill-quality')
-    for name in sources:
-        source = ROOT / 'docs/assets' / (name + '.thinkflow')
-        options = ['--strict']
-        subprocess.run(['node', str(args.cli), 'check', str(source), *options], check=True)
-    for name in sources:
-        source = ROOT / 'docs/assets' / (name + '.thinkflow')
-        options = ['--strict']
-        subprocess.run(['node', str(args.cli), 'render', str(source), *options, '--static', '--out', str(output)], check=True)
+    for name in SOURCES:
+        subprocess.run(['node', str(args.cli), 'check', str(source_path(name)), STRICT], check=True)
+    for name in SOURCES:
+        subprocess.run(['node', str(args.cli), 'render', str(source_path(name)), STRICT, '--static', '--out', str(output)], check=True)
         svg = (output / (name + '.svg')).read_text()
         if svg.count('<svg ') != 1:
             raise ValueError('expected one root svg')

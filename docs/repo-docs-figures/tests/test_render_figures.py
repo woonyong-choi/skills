@@ -73,7 +73,7 @@ class ThinkflowCliTest(unittest.TestCase):
                 self.assertEqual(FIGURES.main([*options, "sample.thinkflow"]), 0)
                 self.assertEqual(Path(run.call_args_list[-1].args[0][1]).name, selected)
 
-    # PATH의 thinkflow와 git 추적 원본 탐색. 다른 확장자는 이전 안내로 실패한다.
+    # PATH의 thinkflow와 git 추적 원본 탐색. 다른 확장자는 렌더 전에 실패한다.
     def test_tracked_sources_use_thinkflow_on_path(self) -> None:
         with (
             patch.dict(os.environ, {}, clear=True),
@@ -84,7 +84,7 @@ class ThinkflowCliTest(unittest.TestCase):
                 self.assertEqual(FIGURES.main([]), 0)
         self.assertEqual(
             git.call_args_list[1].args[4:],
-            ("--", "docs/assets/*.thinkflow", "docs/assets/*.tape", "docs/assets/*.dap"),
+            ("--", "docs/assets/*.thinkflow", "docs/assets/*.tape"),
         )
         self.assertEqual(
             run.call_args_list[0].args[0],
@@ -96,26 +96,19 @@ class ThinkflowCliTest(unittest.TestCase):
         )
         with contextlib.redirect_stderr(io.StringIO()) as stderr:
             self.assertEqual(FIGURES.main(["old.svg"]), 1)
-        self.assertIn("migrate to .thinkflow", stderr.getvalue())
+        self.assertIn("old.svg: unsupported source", stderr.getvalue())
 
-    # 인자 생략: docs/assets/ 밖 원본 제외, 추적된 옛 형식은 렌더 전 실패.
-    def test_no_argument_run_reads_docs_assets_and_rejects_old_format(self) -> None:
+    # 인자 생략: docs/assets/ 밖 원본과 다른 확장자는 찾지 않는다.
+    def test_no_argument_run_reads_docs_assets_only(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             repo = Path(folder)
             subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-            for path in ("docs/assets/a.thinkflow", "docs/assets/old.dap", "tests/b.thinkflow", "docs/notes/demo.tape"):
+            for path in ("docs/assets/a.thinkflow", "docs/assets/old.svg", "tests/b.thinkflow", "docs/notes/demo.tape"):
                 (repo / path).parent.mkdir(parents=True, exist_ok=True)
                 (repo / path).write_text("thinkflow\n", encoding="utf-8")
             subprocess.run(["git", "add", "."], cwd=repo, check=True)
             with contextlib.chdir(repo):
-                self.assertEqual(FIGURES._tracked_sources(), ["docs/assets/a.thinkflow", "docs/assets/old.dap"])
-                with (
-                    patch.object(FIGURES.subprocess, "run", wraps=subprocess.run) as run,
-                    contextlib.redirect_stderr(io.StringIO()) as stderr,
-                ):
-                    self.assertEqual(FIGURES.main([]), 1)
-        self.assertIn("docs/assets/old.dap: migrate to .thinkflow", stderr.getvalue())
-        self.assertEqual(run.call_count, 2)
+                self.assertEqual(FIGURES._tracked_sources(), ["docs/assets/a.thinkflow"])
 
     # 하위 폴더 실행은 루트 기준 탐색, 원본 없음·git 밖은 메시지와 종료 1.
     def test_no_argument_run_from_subfolder_empty_and_outside_git(self) -> None:

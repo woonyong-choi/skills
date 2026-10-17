@@ -22,7 +22,7 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 | 데모 GIF | GIF | `docs/assets/demo.gif` | 폭 960px 이하 | 15초 이하, 10MB 이하 |
 | 스크린샷 | PNG | `docs/assets/{이름}-light.png`, `{이름}-dark.png` | 파일 폭 1920px | 1장 1MB 이하 |
 | 구조도와 차트 | SVG와 원본 | `docs/assets/{이름}.svg` | 제한 없음 | 해당 없음 |
-| PR 화면 비교 | PNG | `pr-assets` 브랜치 | 창 폭 1280px, 390px(**git-pull-request** 스킬의 화면과 움직임 변경 절) | 스크린샷과 같다 |
+| PR 화면 비교 | PNG | `pr-assets` 브랜치 | 창 폭 1280px, 390px(**git-pull-request** 스킬의 화면·움직임 변경 절) | 스크린샷과 같다 |
 
 - 이름은 보여 주는 것을 영어 소문자 kebab-case로 짓는다(`lag-table-growing-light.png`). `image1`, 날짜, 한글 이름을 쓰지 않는다.
 

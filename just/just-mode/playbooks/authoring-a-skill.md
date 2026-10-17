@@ -4,8 +4,8 @@
 
 ## 단계
 
-1. **skill-creator** 스킬이 있으면 그것으로 SKILL.md를 쓴다. 없으면 SKILL.md 형식(frontmatter의 `name`, `description`)을 직접 작성한다.
-2. 스킬을 검증한다. frontmatter에 `name`과 `description`이 있는지, 참조한 파일이 있는지, 다른 스킬로 가는 링크가 열리는지 확인한다.
+1. **skill-sync** 스킬 `references/authoring.md`의 형식으로 SKILL.md를 쓴다.
+2. **skill-sync** 스킬의 `scripts/skill_check.py`로 스킬 저장소를 검사해 `total 0`을 확인한다. 검사가 보지 않는 문체와 뜻의 충돌은 그 문서의 바꾼 뒤 확인 절대로 읽어서 확인한다.
 3. 구조적인 스킬이면 테스트 케이스를 만든다. 주관적인 스킬이면 건너뛴다.
 4. [끝 고리](../SKILL.md#끝-고리)로 넘어간다.
 
