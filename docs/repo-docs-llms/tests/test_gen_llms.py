@@ -13,7 +13,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-import gen_llms  # noqa: E402
+import gen_llms
 
 RAW = "https://example.com/raw/"
 
@@ -26,7 +26,10 @@ class GenerateIndexTest(unittest.TestCase):
         os.chdir(self.directory.name)
         subprocess.run(["git", "init", "-q"], check=True)
         Path("docs").mkdir()
-        Path("docs/README.md").write_text("# Docs\n\n## Start\n\n- [Architecture](architecture.md): Code map\n", encoding="utf-8")
+        Path("docs/README.md").write_text(
+            "# Docs\n\n## Start\n\n- [Architecture](architecture.md): Code map\n",
+            encoding="utf-8",
+        )
         Path("docs/architecture.md").write_text("# Architecture\n", encoding="utf-8")
 
     def tearDown(self) -> None:
@@ -38,7 +41,7 @@ class GenerateIndexTest(unittest.TestCase):
         stderr = io.StringIO()
         with contextlib.redirect_stderr(stderr):
             try:
-                code = gen_llms.main(False, raw_url=RAW)
+                code: int | str | None = gen_llms.main(False, raw_url=RAW)
             except SystemExit as error:
                 code = error.code
         return code, stderr.getvalue()
@@ -66,14 +69,20 @@ class GenerateIndexTest(unittest.TestCase):
         ]
         for navigation in cases:
             with self.subTest(navigation=navigation):
-                code, _ = self.run_main(f"# Tool\n\n{navigation}\n\nShort tagline.\n\nIntro paragraph.\n")
+                code, _ = self.run_main(
+                    f"# Tool\n\n{navigation}\n\nShort tagline.\n\nIntro paragraph.\n"
+                )
                 self.assertEqual(code, 0)
                 text = Path("llms.txt").read_text(encoding="utf-8")
                 self.assertIn("> Short tagline.\n\nIntro paragraph.\n", text)
                 self.assertNotIn("Status", text)
 
     def test_missing_intro_exits_with_reason(self) -> None:
-        for readme in ["# Tool\n\nOnly tagline.\n", "# Tool\n\n[Status](#status)\n\nOnly tagline.\n", "No title.\n\nIntro.\n"]:
+        for readme in [
+            "# Tool\n\nOnly tagline.\n",
+            "# Tool\n\n[Status](#status)\n\nOnly tagline.\n",
+            "No title.\n\nIntro.\n",
+        ]:
             with self.subTest(readme=readme):
                 Path("llms.txt").unlink(missing_ok=True)
                 code, _ = self.run_main(readme)
@@ -104,7 +113,9 @@ class GenerateIndexTest(unittest.TestCase):
         ]
         for line in navigation:
             with self.subTest(navigation=line):
-                code, _ = self.run_main(f"# Tool\n\n{line}\n\nLine counter · CLI\n\nIntro paragraph.\n\n## Usage\n\nRun it.\n")
+                code, _ = self.run_main(
+                    f"# Tool\n\n{line}\n\nLine counter · CLI\n\nIntro paragraph.\n\n## Usage\n\nRun it.\n"
+                )
                 self.assertEqual(code, 0)
                 text = Path("llms.txt").read_text(encoding="utf-8")
                 self.assertIn("> Line counter · CLI\n\nIntro paragraph.\n", text)
@@ -116,25 +127,42 @@ class GenerateIndexTest(unittest.TestCase):
             ("# Widget\nShort tagline.\n\nIntro paragraph.\n", "Widget"),
             ("<h1>Widget</h1>\n<p>Short tagline.</p>\n\nIntro paragraph.\n", "Widget"),
             ("# Widget\n\n> Short tagline.\n\nIntro paragraph.\n", "Widget"),
-            ("# Widget\n\nShort tagline.\n\n```sh\nwidget run\n```\n\nIntro paragraph.\n\n## Usage\n", "Widget"),
-            ('<h1><img src="logo.svg" alt=""><br>Widget</h1>\n\nShort tagline.\n\nIntro paragraph.\n', "Widget"),
+            (
+                "# Widget\n\nShort tagline.\n\n```sh\nwidget run\n```\n\nIntro paragraph.\n\n## Usage\n",
+                "Widget",
+            ),
+            (
+                '<h1><img src="logo.svg" alt=""><br>Widget</h1>\n\nShort tagline.\n\nIntro paragraph.\n',
+                "Widget",
+            ),
         ]
         for readme, name in cases:
             with self.subTest(readme=readme):
                 code, _ = self.run_main(readme)
                 self.assertEqual(code, 0)
                 text = Path("llms.txt").read_text(encoding="utf-8")
-                self.assertTrue(text.startswith(f"# {name}\n\n> Short tagline.\n\nIntro paragraph.\n"), text)
+                self.assertTrue(
+                    text.startswith(
+                        f"# {name}\n\n> Short tagline.\n\nIntro paragraph.\n"
+                    ),
+                    text,
+                )
                 self.assertNotIn("widget run", text)
 
     def test_remote_head_failure_names_branch_option(self) -> None:
         responses = [
-            subprocess.CompletedProcess([], 0, "https://github.com/owner/repo.git\n", ""),
-            subprocess.CompletedProcess([], 128, "", "fatal: could not read from remote"),
+            subprocess.CompletedProcess(
+                [], 0, "https://github.com/owner/repo.git\n", ""
+            ),
+            subprocess.CompletedProcess(
+                [], 128, "", "fatal: could not read from remote"
+            ),
         ]
-        with patch.object(gen_llms.subprocess, "run", side_effect=responses):
-            with self.assertRaises(SystemExit) as raised:
-                gen_llms.raw_base_url()
+        with (
+            patch.object(gen_llms.subprocess, "run", side_effect=responses),
+            self.assertRaises(SystemExit) as raised,
+        ):
+            gen_llms.raw_base_url()
         self.assertIn("use --branch", str(raised.exception.code))
 
 
@@ -153,7 +181,13 @@ class DocumentListTest(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory()
         os.chdir(self.directory.name)
         subprocess.run(["git", "init", "-q"], check=True)
-        for path in ("architecture.md", "design/input.md", "design/input-retry.md", "design/output.md", "decisions/README.md"):
+        for path in (
+            "architecture.md",
+            "design/input.md",
+            "design/input-retry.md",
+            "design/output.md",
+            "decisions/README.md",
+        ):
             Path("docs", path).parent.mkdir(parents=True, exist_ok=True)
             Path("docs", path).write_text("# 문서\n", encoding="utf-8")
 
@@ -161,7 +195,9 @@ class DocumentListTest(unittest.TestCase):
         os.chdir(self.previous)
         self.directory.cleanup()
 
-    def run_main(self, index: str, readme: str | None = None, english: str | None = None) -> int | str | None:
+    def run_main(
+        self, index: str, readme: str | None = None, english: str | None = None
+    ) -> int | str | None:
         Path("docs/README.md").write_text(index, encoding="utf-8")
         Path("README.md").write_text(readme or self.KOREAN, encoding="utf-8")
         if english is not None:
@@ -183,32 +219,63 @@ class DocumentListTest(unittest.TestCase):
             f"- [출력]({RAW}docs/design/output.md): 결과 형식\n",
             docs,
         )
-        self.assertIn(f"- [결정 기록]({RAW}docs/decisions/README.md): 고른 이유", optional)
+        self.assertIn(
+            f"- [결정 기록]({RAW}docs/decisions/README.md): 고른 이유", optional
+        )
         self.assertNotIn("시작", text)
         self.assertNotIn("  - [", text)
 
-    def test_header_from_english_readme_when_present(self) -> None:
-        english = (
-            "# Tool\n\n[한국어](README.md) | English\n\nFast index tool\n\nEnglish intro paragraph.\n"
+    def test_keyword_tree_generates_links_without_descriptions(self) -> None:
+        index = (
+            "# 문서\n\n- 시작\n  - [아키텍처](architecture.md)\n"
+            "- 설계\n  - 입력\n    - [입력](design/input.md)\n"
+            "- 기록\n  - [결정 기록](decisions/README.md)\n"
         )
+        self.assertEqual(self.run_main(index), 0)
+        text = Path("llms.txt").read_text(encoding="utf-8")
+        self.assertIn(f"- [아키텍처]({RAW}docs/architecture.md)\n", text)
+        self.assertIn(f"- [입력]({RAW}docs/design/input.md)\n", text)
+        self.assertIn(
+            f"## Optional\n\n- [결정 기록]({RAW}docs/decisions/README.md)\n", text
+        )
+        self.assertNotIn("): ", text)
+        self.assertNotIn("- 시작", text)
+
+    def test_header_from_english_readme_when_present(self) -> None:
+        english = "# Tool\n\n[한국어](README.md) | English\n\nFast index tool\n\nEnglish intro paragraph.\n"
         readme = '# 도구\n\n한국어 | <a href="README.en.md">English</a>\n\n빠른 색인 도구\n\n한국어 소개 문단.\n'
         self.assertEqual(self.run_main(self.LIST, readme, english), 0)
         text = Path("llms.txt").read_text(encoding="utf-8")
-        self.assertTrue(text.startswith("# Tool\n\n> Fast index tool\n\nEnglish intro paragraph.\n"), text)
+        self.assertTrue(
+            text.startswith(
+                "# Tool\n\n> Fast index tool\n\nEnglish intro paragraph.\n"
+            ),
+            text,
+        )
         self.assertNotIn("한국어 소개", text)
 
     def test_header_from_readme_without_english(self) -> None:
         readme = '# 도구\n\n한국어 | <a href="README.en.md">English</a>\n\n빠른 색인 도구\n\n한국어 소개 문단.\n'
         self.assertEqual(self.run_main(self.LIST, readme), 0)
-        self.assertTrue(Path("llms.txt").read_text(encoding="utf-8").startswith("# 도구\n\n> 빠른 색인 도구\n\n한국어 소개 문단.\n"))
+        self.assertTrue(
+            Path("llms.txt")
+            .read_text(encoding="utf-8")
+            .startswith("# 도구\n\n> 빠른 색인 도구\n\n한국어 소개 문단.\n")
+        )
 
     def test_table_only_index_fails_without_writing(self) -> None:
-        code = self.run_main("# 문서\n\n| 문서 | 설명 |\n|---|---|\n| [아키텍처](architecture.md) | 구성 요소 |\n")
+        code = self.run_main(
+            "# 문서\n\n| 문서 | 설명 |\n|---|---|\n| [아키텍처](architecture.md) | 구성 요소 |\n"
+        )
         self.assertIn("docs/README.md가 목록 형식이 아님", str(code))
         self.assertFalse(Path("llms.txt").exists())
 
     def test_malformed_list_line_names_line_number(self) -> None:
-        for line in ("- 아키텍처: 구성 요소", "- [아키텍처](architecture.md)", "- [아키텍처](architecture.md):"):
+        for line in (
+            "- 아키텍처: 구성 요소",
+            "- [아키텍처](architecture.md):",
+            "- [아키텍처](architecture.md",
+        ):
             with self.subTest(line=line):
                 code = self.run_main("# 문서\n\n## 시작\n\n" + line + "\n")
                 self.assertIn("docs/README.md 5번째 줄", str(code))
