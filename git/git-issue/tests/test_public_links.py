@@ -46,6 +46,8 @@ def checker(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
             "user-attachments/private",
             "user-attachments/assets",
             "advisories/private",
+            "users/example",
+            "orgs/example",
         }:
             visibility = "PRIVATE"
         else:
@@ -70,6 +72,11 @@ def checker(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
         '<img src="https://github.com/user-attachments/assets/11111111-1111-1111-1111-111111111111">',
         "[첨부]: https://github.com/user-attachments/files/123/report.txt",
         "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+        "https://github.com/users/example/projects/123",
+        "[프로젝트](https://www.github.com/orgs/example/projects/123)",
+        "`https://github.com/users/example/projects/123/views/1`",
+        '<a href="https://github.com/orgs/example/projects/123?pane=info">프로젝트</a>',
+        "[프로젝트]: https://github.com/users/example/projects/123/",
         "[보안 권고](https://www.github.com/advisories/GHSA-rj75-hqrm-r3gf)",
         "`GET /query/x`",
         "`POST /query`",
@@ -188,6 +195,29 @@ def test_main_preserves_public_references(
         ("`POST /project.wt/private`", "private path"),
         ("`GET /query/x`와 `/tmp/db`", "private path"),
         ("https://github.com/user-attachments/assets/.local/secret", "private path"),
+        ("https://github.com/users/example/projects/123/.local/secret", "private path"),
+        (
+            "https://github.com/orgs/example/projects/123/%2Elocal/secret",
+            "private path",
+        ),
+        ("https://github.com/users/example/projects", "private repository"),
+        ("https://github.com/users/example/projects/abc", "private repository"),
+        ("https://github.com/users/example/projects/123abc", "private repository"),
+        ("https://github.com/users/example/projects/123%0A", "private repository"),
+        ("https://github.com/orgs/example/projects/123%0A", "private repository"),
+        ("https://github.com/users/example/projects/１２３", "private repository"),
+        ("https://github.com/orgs/example/projects/-123", "private repository"),
+        ("https://github.com/orgs/example/projects123", "private repository"),
+        ("https://github.com/orgs/example/blob/main/secret.md", "private repository"),
+        ("https://github.com/users/example/blob/main/secret.md", "private repository"),
+        (
+            "https://raw.githubusercontent.com/users/example/projects/123",
+            "private repository",
+        ),
+        (
+            "https://raw.githubusercontent.com/orgs/example/projects/123",
+            "private repository",
+        ),
         (
             "https://github.com/example/private/blob/main/secret.md",
             "private repository",
@@ -235,6 +265,39 @@ def test_main_rejects_private_or_ambiguous_locations(
     assert status == 1
     assert reason in (captured.err if fix else captured.out)
     assert (captured.out if fix else captured.err) == (body if fix else "")
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "https://github.com/users//projects/123",
+        "https://github.com/orgs//projects/123",
+    ],
+)
+@pytest.mark.parametrize("fix", [False, True])
+def test_main_reports_lookup_failure_for_malformed_project_routes(
+    checker: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    body: str,
+    *,
+    fix: bool,
+) -> None:
+    monkeypatch.setattr(sys, "stdin", io.StringIO(body))
+
+    status = checker.main(
+        [
+            "--repo",
+            str(Path(__file__).resolve().parents[3]),
+            *(["--fix"] if fix else []),
+            "-",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert status == 2
+    assert "public links check failed" in captured.err
+    assert captured.out == ""
 
 
 @pytest.mark.parametrize(

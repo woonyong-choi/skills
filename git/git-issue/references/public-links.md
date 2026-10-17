@@ -15,6 +15,7 @@ GitHub에 게시하는 글의 파일과 코드 위치는 공개 웹 링크로 �
 - 비공개 저장소 링크는 같은 저장소의 이슈, PR, 리뷰, 댓글에서만 쓴다. 다른 저장소에서는 참조하지 않는다.
 - `github.com`과 `www.github.com`의 `user-attachments/assets/`와 `user-attachments/files/` 아래 첨부 주소는 저장소 주소로 조회하지 않고 보존한다. 첨부의 존재나 접근 권한을 확인하는 검사는 아니다.
 - 같은 호스트의 `advisories/GHSA-xxxx-xxxx-xxxx` 보안 권고 주소도 저장소로 조회하지 않는다. 권고 내용이나 영향 버전을 확인하는 검사는 아니다.
+- 같은 호스트에서 `users/{소유자}/projects/{번호}` 또는 `orgs/{소유자}/projects/{번호}`로 시작하는 GitHub Projects 웹 주소도 저장소로 조회하지 않는다. 소유자는 비어 있지 않고 번호는 ASCII 숫자로만 이루어진 경로 마디다. 이는 정규 웹 경로를 분류하는 규칙이며 프로젝트의 공개 여부나 접근 권한은 별도로 확인한다. 비공개 프로젝트 주소와 민감한 내용은 공개 글에 적지 않는다. 다른 GitHub 경로와 `raw.githubusercontent.com` 주소의 비공개 저장소 검사는 계속 적용한다.
 
 ## 경로 판정
 
