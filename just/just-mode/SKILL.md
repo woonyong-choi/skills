@@ -68,12 +68,12 @@ disable-model-invocation: true
 
 ### 끝 고리
 
-1. **PR 열기.** `playbooks/opening-a-pr.md`를 따른다. 판에서 이슈를 "검토"로 옮긴다. 이슈를 잇는 표기는 **git-issue** 스킬의 닫기 절을 따른다. 완료 조건을 모두 채우면 `Closes #<이슈번호>`, 일부만 채우면 `Refs #<이슈번호>`다.
+1. **PR 열기.** `playbooks/opening-a-pr.md`를 따른다. 이슈를 잇는 표기는 **git-issue** 스킬의 닫기 절을 따른다. 완료 조건을 모두 채우면 `Closes #<이슈번호>`, 일부만 채우면 `Refs #<이슈번호>`다. `Closes`로 이은 PR이면 판에서 이슈를 "검토"로 옮기고, `Refs`면 이슈를 "진행"에 둔다(**git-issue** 스킬 `references/project-status.md`의 상태표).
 2. **리뷰.** **interrogate**로 다른 회사 모델 둘 이상이 검토하고 지적마다 `P1`~`P5`를 붙인다. 반영 확인은 그 코드를 쓴 에이전트가 아닌 다른 에이전트가 한다.
 3. **검증 판정.** PR이 하나여도 코드를 쓰지 않은 검증자가 PR head에서 변경을 사용자처럼 실행하고 그 PR에 `PASS`, `PASS+NOTES`, `FAIL`을 남긴다. 방법은 `playbooks/shipping.md` 1단계를 따른다.
-4. **머지 조건.** 조건의 정본은 **git-pull-request** 스킬의 머지 조건 절이다. `READY` 판정은 `watch-pr`를 drive 모드로 돌려 기다린다(`playbooks/babysit.md`). 끝 고리에서는 요청이 없어도 이렇게 돌린다. 막히면 결정 기록에 phase `결정 필요`로 적고, 판에서 이슈를 "보류"로 옮기고, 다음 일로 간다.
-5. **squash 머지.** `gh pr merge <번호> --squash`로 머지한다. 판에서 이슈를 "완료"로 옮긴다.
-6. **정리.** 이 작업에서 만든 워크트리와 브랜치만 지운다(`git worktree remove <경로>`, `git branch -d <브랜치>`). 다른 워크트리는 건드리지 않는다. `playbooks/worktree-cleanup.md`는 사용자가 공간 확보나 대청소를 요청할 때만 쓴다.
+4. **머지 조건.** 조건의 정본은 **git-pull-request** 스킬의 머지 조건 절이다. `READY` 판정은 `watch-pr`를 drive 모드로 돌려 기다린다(`playbooks/babysit.md`). 끝 고리에서는 요청이 없어도 이렇게 돌린다. 머지 조건이 막혀 사용자 결정이 필요하면 결정 기록에 phase `결정 필요`로 적고, 판에서 이슈를 "보류"로 옮기고, 다음 일로 간다.
+5. **squash 머지.** squash 메시지와 머지 명령은 **git-branch** 스킬의 머지 절을 따른다. 그 절의 규칙으로 쓴 첫 줄과 본문을 `gh pr merge <번호> --squash --delete-branch --subject <첫 줄> --body-file -`로 넘긴다. `Closes`로 이은 PR이면 판에서 이슈를 "완료"로 옮기고, `Refs`면 이슈를 "진행"에 둔다.
+6. **정리.** 이 작업에서 만든 워크트리와 브랜치만 **git-branch** 스킬의 정리 절을 따라 지운다. squash 머지한 브랜치는 `git branch -d`가 거부하므로 그 절의 `git branch -D`를 쓴다.
 7. **성과 확인.** "경력 원본에 남길 성과인가"를 한 줄로 판단한다. 남길 성과면 사실과 근거(PR 링크, 바뀐 동작, 검증)를 정리해 **hanger** 스킬에 기록을 요청한다.
 
 ## 주석

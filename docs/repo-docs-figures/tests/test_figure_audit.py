@@ -18,11 +18,11 @@ sys.modules["figure_audit"] = AUDIT
 _SPEC.loader.exec_module(AUDIT)
 
 CHAIN = """thinkflow
-box a "가"
-box b "나"
-box c "다"
-box d "라"
-box e "마"
+box a "가" badge="S"
+box b "나" badge="S"
+box c "다" badge="S"
+box d "라" badge="S"
+box e "마" badge="S"
 a -> b
 b -> c
 c -> d
@@ -57,13 +57,44 @@ class WarningTest(unittest.TestCase):
         self.assertEqual(codes(source), ["scenes"])
 
     def test_loose_cards_warn(self) -> None:
-        source = 'thinkflow\nbox a "가"\nbox b "나"\nbox m1 "지표1"\nbox m2 "지표2"\na -> b\n'
+        source = 'thinkflow\nperson a "가"\nperson b "나"\nperson m1 "지표1"\nperson m2 "지표2"\na -> b\n'
         self.assertEqual(codes(source), ["loose"])
 
     def test_chained_groups_warn_as_staircase(self) -> None:
-        source = "thinkflow\n" + "".join(f'group g{i} "묶음{i}" direction=down {{\n  box n{i} "카{i}"\n  box m{i} "드{i}"\n}}\n' for i in range(3))
+        source = "thinkflow\n" + "".join(f'group g{i} "묶음{i}" direction=down {{\n  box n{i} "카{i}" badge="S"\n  box m{i} "드{i}" badge="S"\n}}\n' for i in range(3))
         source += "n0 -> m0\nm0 -> n1\nn1 -> m1\nm1 -> n2\nn2 -> m2\n"
         self.assertEqual(codes(source), ["staircase"])
+
+    def test_aspect_on_branching_graph_warns(self) -> None:
+        source = CHAIN.replace("thinkflow\n", "thinkflow\naspect 1.6\n") + "a -> e\n"
+        self.assertEqual(codes(source), ["aspect"])
+
+    def test_flat_cards_warn_until_tagged_or_focal(self) -> None:
+        flat = 'thinkflow\nbox a "가"\nbox b "나"\nbox c "다"\nstore d "라"\na -> b\na -> c\na -> d\n'
+        self.assertEqual(codes(flat), ["flat"])
+        self.assertEqual(codes(flat.replace('box a "가"', 'box a "가" tone=blue appearance=filled')), [])
+
+    def test_flowchart_with_decision_is_not_flat(self) -> None:
+        source = 'thinkflow\nbox a "가"\nbox b "나"\nbox c "다"\nbox d "라"\ndecision g "갈래"\na -> b\nb -> g\ng -> c "예"\ng -> d "아니오"\n'
+        self.assertEqual(codes(source), [])
+
+    def test_condition_and_metric_cards_are_exempt(self) -> None:
+        source = 'thinkflow\nbox a "가" badge="APP"\ndecision g "오류율 > 1% 인가?"\nbox k "성과" {\n  value p "지연" from=-85%\n}\na -> g\n'
+        self.assertEqual(codes(source), [])
+
+    def test_partial_badges_warn(self) -> None:
+        source = 'thinkflow\nbox a "가" badge="API"\nbox b "나"\na -> b\n'
+        self.assertEqual(codes(source), ["badge"])
+
+    def test_more_than_two_focal_cards_warn(self) -> None:
+        cards = "".join(f'box n{i} "카{i}" badge="S" tone=blue appearance=filled\n' for i in range(3))
+        self.assertEqual(codes(f"thinkflow\n{cards}n0 -> n1\nn0 -> n2\n"), ["focal"])
+
+    def test_too_many_edges_warn(self) -> None:
+        cards = "".join(f'box n{i} "카{i}" badge="APP"\n' for i in range(5))
+        lines = "".join([f"n{a} -> n{b}\n" for a in range(5) for b in range(5) if a != b][:13])
+        source = f"thinkflow\n{cards}{lines}"
+        self.assertIn("edges", codes(source))
 
     def test_too_many_series_warns(self) -> None:
         series = "".join(f'  series s{i} "계열{i}"\n' for i in range(8))

@@ -60,7 +60,7 @@ description: "Python 코드를 쓰거나 검토할 때, Ruff, mypy, pytest 설�
 - 라이브러리 패키지는 기준 예외 `class <패키지>Error(Exception)`를 두고 구체 예외가 이를 상속하게 한다. 예외 이름은 `...Error`로 짓는다.
 - 원인을 보존한다(`raise ConfigError("failed to read config") from err`).
 - `except Exception:`과 `except:`는 실행 스크립트 최상위 처리기에서만 쓴다.
-- 예외를 무시할 때는 `contextlib.suppress(<구체 예외>)`를 쓰고, 무시하는 이유가 코드로 드러나지 않으면 이유 주석을 단다. `except ...: pass`를 쓰지 않는다.
+- 예외를 무시할 때는 `contextlib.suppress(<구체 예외>)`를 쓰고 `except ...: pass`를 쓰지 않는다. 무시하는 이유는 예외 이름과 감싼 범위로 드러낸다. 이유 주석은 외부 의존성이 강제하는 동작처럼 [code-style 공개 범위와 주석](../code-style/references/structure.md#공개-범위와-주석)의 범위에 들 때만 단다.
 - 실행 스크립트의 `main()`에서 기준 예외를 한 번 잡아 로그를 남기고 종료 코드 1로 끝낸다.
 - 오류와 로그 메시지는 소문자로 시작하고 마침표를 찍지 않는다(`invalid literal for int()`).
 
