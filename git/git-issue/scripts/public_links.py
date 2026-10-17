@@ -21,6 +21,9 @@ _LINK = re.compile(
     re.MULTILINE,
 )
 _CODE = re.compile(r"(?<!`)(?P<ticks>`{1,2})(?!`)(?P<path>[^`\n]+)(?P=ticks)(?!`)")
+_HTTP_REQUEST = re.compile(
+    r"(?:GET|HEAD|POST|PUT|DELETE|OPTIONS|TRACE|PATCH) (?P<path>/(?!/)\S*)"
+)
 _URL = re.compile(r'https?://[^\s<>`"\'\])]+')
 _CLOSING_TAG = re.compile(r"</[A-Za-z][\w:-]*\s*>")
 _LOCAL = re.compile(
@@ -134,6 +137,18 @@ def _check_url(value: str, context: _Context) -> str | None:
     parts = unquote(parsed.path).strip("/").split("/")
     if len(parts) < 2:
         return None
+    if parsed.hostname in {"github.com", "www.github.com"}:
+        if len(parts) >= 3 and tuple(parts[:2]) in {
+            ("user-attachments", "assets"),
+            ("user-attachments", "files"),
+        }:
+            return None
+        if (
+            len(parts) == 2
+            and parts[0] == "advisories"
+            and re.fullmatch(r"GHSA-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}", parts[1])
+        ):
+            return None
     repository = context.lookup("/".join(parts[:2]))
     if (
         repository.visibility != "PUBLIC"
@@ -198,7 +213,7 @@ def _check_target(
 ) -> tuple[str | None, str | None]:
     if value.startswith(("https://", "http://")):
         return _check_url(value, context), None
-    if value.startswith("#") or value.startswith("mailto:"):
+    if value.startswith(("#", "mailto:")):
         return None, None
     return _check_path(value, context, is_link=is_link)
 
@@ -230,7 +245,11 @@ def _scan(text: str, context: _Context) -> list[_Finding]:
                 value = match[group].strip("<>")
             elif pattern is _CODE:
                 value = match["path"].strip()
-                if re.fullmatch(r"/[\w-]+", value):
+                request = _HTTP_REQUEST.fullmatch(value)
+                is_http_request = request is not None and not _is_local(
+                    urlsplit(request["path"]).path.removeprefix("/")
+                )
+                if re.fullmatch(r"/[\w-]+", value) or is_http_request:
                     ignored_local_spans.append((start, end))
                     continue
             reason, replacement = _check_target(
