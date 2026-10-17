@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ensureDependenciesInstalled } from "../bootstrap.ts";
 import {
@@ -176,16 +177,34 @@ function emit<T>(
   io.stdout(rendered.endsWith("\n") ? rendered : `${rendered}\n`);
 }
 
+function git(args: readonly string[]): string {
+  return execFileSync("git", args, {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+}
+
 function repositoryRoot(): string {
   try {
-    return execFileSync("git", ["rev-parse", "--show-toplevel"], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
-    }).trim();
+    return realpathSync(git(["rev-parse", "--show-toplevel"]));
   } catch {
     throw new UsageError(
       "--name은 git 저장소 안에서만 쓸 수 있음. 저장소 안에서 실행하거나 --store <dir>를 지정"
     );
+  }
+}
+
+function ignoredLocal(root: string): void {
+  const local = join(root, ".local");
+  mkdirSync(local, { recursive: true });
+  const marker = join(local, ".gitignore");
+  if (existsSync(marker)) {
+    return;
+  }
+  try {
+    git(["-C", root, "check-ignore", "-q", ".local/orch/probe"]);
+  } catch {
+    writeFileSync(marker, "*\n");
   }
 }
 
@@ -202,7 +221,9 @@ function storeDirectory(program: Command): string {
   if (!/^[^/\\]+$/.test(name) || name === "." || name === "..") {
     throw new UsageError(`--name에는 폴더 이름 하나만 씀: ${name}`);
   }
-  return join(repositoryRoot(), ".local", "orch", name);
+  const root = repositoryRoot();
+  ignoredLocal(root);
+  return join(root, ".local", "orch", name);
 }
 
 function frontierRepo(options: FrontierSetOptions): string {

@@ -3,7 +3,7 @@ name: code-style-python
 description: "Python 코드를 쓰거나 검토할 때, Ruff, mypy, pytest 설정을 고칠 때 쓴다."
 ---
 
-# Code Style: Python
+# Python 코드 스타일
 
 [code-style](../code-style/SKILL.md)을 먼저 적용하고, 이 스킬은 code-style이 언어에 맡긴 항목의 Python 규칙만 정한다. 그 밖에서 code-style과 다르면 code-style을 따른다.
 
@@ -60,7 +60,7 @@ description: "Python 코드를 쓰거나 검토할 때, Ruff, mypy, pytest 설�
 - 라이브러리 패키지는 기준 예외 `class <패키지>Error(Exception)`를 두고 구체 예외가 이를 상속하게 한다. 예외 이름은 `...Error`로 짓는다.
 - 원인을 보존한다(`raise ConfigError("failed to read config") from err`).
 - `except Exception:`과 `except:`는 실행 스크립트 최상위 처리기에서만 쓴다.
-- 예외를 무시할 때는 `contextlib.suppress(<구체 예외>)`와 이유 주석을 쓴다. `except ...: pass`를 쓰지 않는다.
+- 예외를 무시할 때는 `contextlib.suppress(<구체 예외>)`를 쓰고, 무시하는 이유가 코드로 드러나지 않으면 이유 주석을 단다. `except ...: pass`를 쓰지 않는다.
 - 실행 스크립트의 `main()`에서 기준 예외를 한 번 잡아 로그를 남기고 종료 코드 1로 끝낸다.
 - 오류와 로그 메시지는 소문자로 시작하고 마침표를 찍지 않는다(`invalid literal for int()`).
 
@@ -78,7 +78,7 @@ description: "Python 코드를 쓰거나 검토할 때, Ruff, mypy, pytest 설�
 
 - 비공개가 기본이다. 모듈 밖에서 쓸 것만 `_` 없이 이름 짓고 `__all__`에 적는다.
 - 필드는 공개 속성과 `@property`로 다룬다(PEP 8).
-- docstring은 필요할 때만 한 줄 요약으로 쓰고(PEP 257) Google 스타일을 따른다. 던지는 예외는 `Raises:` 절에 적는다.
+- 주석을 남기는 경우는 [code-style 공개 범위와 주석](../code-style/references/structure.md#공개-범위와-주석)을 따른다. docstring은 공개 API 계약을 정의할 때만 한 줄 요약으로 쓰고(PEP 257) Google 스타일을 따른다. 던지는 예외는 `Raises:` 절에 적는다.
 
 ## 테스트
 

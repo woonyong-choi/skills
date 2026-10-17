@@ -3,7 +3,7 @@ name: repo-docs-readme
 description: "저장소 루트 README.md와 영어판 README.en.md를 쓰거나 갱신할 때 쓴다."
 ---
 
-# Repo Docs Readme
+# README 작성
 
 처음 온 사람이 무엇인지, 왜 필요한지, 지금 쓸 수 있는지 바로 알도록 루트 `README.md`와 `README.en.md`를 쓴다. 공통 규칙은 [repo-docs](../repo-docs/SKILL.md)를 먼저 따르고, 이 스킬은 README의 종류, 절 구성과 절 규칙, 이미지를 맡는다.
 

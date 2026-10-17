@@ -3,7 +3,7 @@ name: repo-docs-figures
 description: "README, docs, PR에 넣는 구조도, 차트, 스크린샷, 데모 GIF와 대체 글을 만들거나 고칠 때 쓴다."
 ---
 
-# Repo Docs Figures
+# 문서 그림
 
 문서 그림을 원본에서 다시 만들 수 있게 만들고, 규격과 대체 글을 맞추고, 실제 문서에서 보이는 모습을 검사한다. 공통 규칙은 [repo-docs](../repo-docs/SKILL.md)를 먼저 따르고, 이 스킬은 이미지 규격, 그림 원본 형식, 촬영, 변환, 검사, 대체 글을 맡는다. 그림을 넣는 자리는 종류별 스킬이 정한다.
 

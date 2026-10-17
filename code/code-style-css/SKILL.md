@@ -3,7 +3,7 @@ name: code-style-css
 description: "CSS와 인라인 style을 쓰거나 검토할 때, 선택자, 배치, 반응형, 접근성을 검사할 때 쓴다."
 ---
 
-# Code Style: CSS
+# CSS 코드 스타일
 
 [code-style](../code-style/SKILL.md)과 **design-tokens** 스킬을 먼저 적용하고, 이 스킬은 code-style이 언어에 맡긴 항목의 CSS 규칙만 정한다. 대상은 `.css`, `<style>`, 인라인 `style`, JavaScript 문자열 안의 CSS다. 그 밖에서 부딪히면 화면 값과 토큰은 design-tokens를, 나머지는 code-style을 따른다.
 
@@ -27,7 +27,7 @@ description: "CSS와 인라인 style을 쓰거나 검토할 때, 선택자, 배�
 
 파일은 다음 순서로 쓴다.
 
-1. 파일 설명 주석
+1. 라이선스 머리말
 2. `@import`(생성된 `tokens.css` 포함)와 `@layer` 순서 선언. 토큰 정의를 직접 쓰지 않는다.
 3. 기본 요소 스타일(`html`, `body`, 태그 선택자)
 4. 배치(페이지 틀, grid와 flex 컨테이너)
@@ -78,8 +78,7 @@ description: "CSS와 인라인 style을 쓰거나 검토할 때, 선택자, 배�
 ## 공개 범위와 주석
 
 - 다른 구성 요소의 class를 밖에서 덮어쓰지 않는다. 바꿀 값은 그 구성 요소의 사용자 정의 속성으로 연다.
-- 주석의 언어와 쓰는 때는 [code-style 공개 범위와 주석](../code-style/references/structure.md#공개-범위와-주석)을 따른다.
-- 구획 주석(`/* ---- 버튼 ---- */`)은 선언 순서 절의 파일 항목 경계에만 쓴다.
+- 주석의 언어와 쓰는 때는 [code-style 공개 범위와 주석](../code-style/references/structure.md#공개-범위와-주석)을 따른다. 구획 주석(`/* ---- 버튼 ---- */`)을 쓰지 않는다. 구성 요소 경계는 선언 순서와 파일 나누기로 드러낸다.
 
 ## 테스트
 

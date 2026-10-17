@@ -1,6 +1,6 @@
 # 변환
 
-`render_figures.py`로 그림 원본을 SVG와 GIF로 바꾼다. 기존 호출 경로를 그대로 두고, `.thinkflow`는 Torso를, `.tape`는 VHS를 부른다.
+`render_figures.py`가 그림 원본을 SVG와 GIF로 바꾼다. 원본 확장자로 도구를 고른다. `.thinkflow`는 Torso로 SVG를, `.tape`는 VHS로 GIF를 만든다.
 
 ```sh
 python3 <이 스킬 폴더>/scripts/render_figures.py --thinkflow <Torso 경로> docs/assets/architecture.thinkflow

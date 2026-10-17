@@ -3,7 +3,7 @@ name: repo-docs-root
 description: "AGENTS.md, CLAUDE.md 링크, CHANGELOG, CONTRIBUTING, SECURITY, LICENSE를 쓰거나 갱신할 때 쓴다."
 ---
 
-# Repo Docs Root
+# 저장소 루트 문서
 
 저장소 루트와 `.github/`의 문서 파일을 README 단계에 맞춰 만들고 저장소의 사실로 채운다. 공통 규칙은 [repo-docs](../repo-docs/SKILL.md)를 먼저 따른다.
 

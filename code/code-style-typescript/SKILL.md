@@ -3,7 +3,7 @@ name: code-style-typescript
 description: "JavaScript와 TypeScript 코드를 쓰거나 검토할 때, ESLint, Prettier, node:test, tsc 설정을 고칠 때 쓴다."
 ---
 
-# Code Style: TypeScript
+# TypeScript 코드 스타일
 
 [code-style](../code-style/SKILL.md)을 먼저 적용하고, 이 스킬은 code-style이 언어에 맡긴 항목의 JavaScript와 TypeScript 규칙만 정한다. 그 밖에서 code-style과 다르면 code-style을 따른다.
 
@@ -40,7 +40,7 @@ description: "JavaScript와 TypeScript 코드를 쓰거나 검토할 때, ESLint
 
 파일은 다음 순서로 쓴다.
 
-1. 파일 설명 주석
+1. 라이선스 머리말과 공개 모듈의 문서 주석
 2. import
 3. 모듈 상수
 4. 클래스. export하는 클래스를 먼저 둔다.
@@ -80,7 +80,8 @@ description: "JavaScript와 TypeScript 코드를 쓰거나 검토할 때, ESLint
 
 ## 공개 범위와 주석
 
-- 문서 주석은 필요할 때만 JSDoc `/** */`으로 쓴다. 실패 조건은 `@throws`, 타입은 `@param`과 `@returns`로 적는다.
+- 주석을 남기는 경우는 [code-style 공개 범위와 주석](../code-style/references/structure.md#공개-범위와-주석)을 따른다. 문서 주석은 공개 API 계약을 정의할 때만 JSDoc `/** */`으로 쓰고, 실패 조건은 `@throws`로 적는다.
+- 매개변수와 반환값의 타입은 `.js` 파일에서만 JSDoc `@param`과 `@returns`로 적는다. `.ts` 파일에서는 TypeScript 타입으로 쓰고 JSDoc에 타입을 되풀이하지 않는다([TypeScript 전용](#typescript-전용)).
 - checkJs를 쓰는 저장소이거나 공개 JSDoc 타입을 바꾸면 `// @ts-check`를 달고 `tsc --noEmit --checkJs`로 검사한다.
 
 ## 테스트
@@ -113,7 +114,7 @@ node --test
 ## TypeScript 전용
 
 - 바탕 원칙은 **principle-type-system-discipline** 스킬과 **principle-boundary-discipline** 스킬이다. 규칙별 코드 예는 [TypeScript 타입 예](references/types.md)에 있다.
-- 타입은 JSDoc 타입 대신 TypeScript 타입으로 쓴다. JSDoc은 실패 조건 `@throws`처럼 타입 밖의 설명에만 쓴다.
+- 타입은 JSDoc 타입 대신 TypeScript 타입으로 쓴다. JSDoc은 공개 API의 실패 조건 `@throws`처럼 타입 밖의 계약에만 쓴다.
 - 변형은 `kind` 리터럴 판별자로 모델링한다(판별 유니온). 불가능한 상태를 표현할 수 있는 모양과 선택적 필드 묶음을 쓰지 않는다.
 - 원시 타입은 `& { readonly __brand: 'X' }`로 구분한다(브랜드 타입). 경계에서 한 번 검증한다.
 - 잘못된 값을 만들 수 없는 모양으로 모델링한다(구성적 모델링). 비어 있지 않음은 `[T, ...T[]]`, 짝수 길이는 `[T, T][]`, 범위는 `start`와 `duration`으로 쓴다. 런타임 방어 코드로 대신하지 않는다.

@@ -17,7 +17,7 @@ just 스킬이 공통으로 쓰는 동작을 Claude Code CLI, Codex CLI, OpenCod
 | 서브에이전트 실행 | `Agent` 도구. 같은 프롬프트를 여러 개 동시에 보내면 병렬 | 같은 세션 서브에이전트가 없으면 셸에서 `codex exec --cd <작업 폴더> "<프롬프트>"`를 백그라운드로 실행하고 출력 파일을 읽는다 | `task` 도구(`general`, `explore` 서브에이전트) |
 | 읽기 전용 서브에이전트 | `Agent` 도구의 탐색용 에이전트를 쓰거나 프롬프트에 "파일 수정 금지"를 넣는다 | `codex exec --sandbox read-only` | `explore` 서브에이전트 |
 | 다른 회사 모델로 검토 | 셸에서 `codex exec "<프롬프트>"` | 셸에서 `claude -p "<프롬프트>"` | 설정한 다른 제공자 모델로 `task`를 실행하고, 없으면 셸에서 `claude -p`나 `codex exec`를 쓴다 |
-| 주기적으로 다시 깨우기 | `/loop <간격> <프롬프트>` | 내장 기능이 없다. 세션 안에서 대기 명령(`sleep`)과 확인을 반복하거나 셸 반복문으로 `codex exec`를 다시 실행한다 | 내장 기능이 없다. 셸 반복문으로 `opencode run`을 다시 실행한다 |
+| 주기적으로 다시 깨우기 | `/loop <간격> <프롬프트>` | 내장 기능이 없다. 같은 세션 안에서 대기 명령(`sleep`)과 확인을 반복한다. 셸 반복문으로 `codex exec`를 새로 띄우지 않는다([무한 자율 실행](#무한-자율-실행)) | 내장 기능이 없다. 셸 반복문으로 `opencode run`을 다시 실행한다 |
 | 사람에게 묻기 | 질문 도구가 있으면 쓰고, 없으면 답변으로 묻는다 | 답변으로 질문 | 답변으로 질문 |
 | 프로젝트 전용 스킬 위치 | `.claude/skills/<이름>/` | `.agents/skills/<이름>/` | `.claude/skills/`, `.agents/skills/`, `.opencode/skills/`를 모두 읽는다 |
 | 항상 적용 규칙 | `CLAUDE.md` | `AGENTS.md` | `AGENTS.md` |
@@ -30,10 +30,10 @@ just 스킬이 공통으로 쓰는 동작을 Claude Code CLI, Codex CLI, OpenCod
 | 호스트 | 지원 | 방법 |
 |---|---|---|
 | Claude Code | 됨 | `/loop <간격> <프롬프트>`로 다시 깨우기를 건다 |
-| Codex | 됨 | 같은 세션 안에서 대기 명령(`sleep`)과 확인을 반복한다. 셸 반복문으로 `codex exec`를 새로 띄우면 세션 맥락이 끊기므로 쓰지 않는다 |
+| Codex | 됨 | 같은 세션 안에서 대기 명령(`sleep`)과 확인을 반복한다. 셸 반복문으로 `codex exec`를 새로 띄우면 세션 맥락이 끊기므로 다시 깨우기에는 쓰지 않는다. 서브에이전트 실행과 다른 회사 모델 검토에 `codex exec`를 쓰는 것은 그대로 된다 |
 | OpenCode | 안 됨 | 한 번 실행용이다. 종료 조건까지 한 번 돌고 끝내며, 끝낼 때 결정 기록에 phase `다음`으로 이어 할 일을 남긴다 |
 
-- 잠자기 방지는 macOS에서 `caffeinate -dimsu &`로 하고 PID를 결정 기록에 남긴다. 멈출 때 그 PID를 `kill`한다. 다른 운영체제는 건너뛰고 보고에 적는다.
+- 잠자기 방지의 정본은 이 줄이다. 자율 실행을 시작할 때 macOS에서 `caffeinate -dimsu &`를 실행하고 PID를 결정 기록에 남긴다. 멈출 때 그 PID를 `kill`한다. 다른 운영체제는 건너뛰고 보고에 적는다.
 
 ## 서브에이전트 공통 규칙
 

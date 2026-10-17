@@ -162,6 +162,21 @@ class FlowTest(unittest.TestCase):
         os.environ["CAREER_ROOT"] = str(Path(self.directory.name) / "elsewhere")
         self.assertEqual(VERSIONS.career_root(), (Path(self.directory.name) / "elsewhere").resolve())
 
+    def test_root_set_rejects_missing_folder_without_writing(self) -> None:
+        import contextlib
+        import io
+        import os
+
+        del os.environ["CAREER_ROOT"]
+        config = Path(os.environ["SKILLS_CONFIG_DIR"]) / "career.json"
+        missing = Path(self.directory.name) / "없는-폴더"
+        error = io.StringIO()
+        with contextlib.redirect_stderr(error):
+            self.assertEqual(VERSIONS.main(["root", "--set", str(missing)]), 1)
+        self.assertIn("없는 폴더", error.getvalue())
+        self.assertFalse(config.exists())
+        self.assertFalse(missing.exists())
+
     def test_root_rejects_broken_config_and_stray_arguments(self) -> None:
         import contextlib
         import io

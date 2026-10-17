@@ -3,7 +3,7 @@ name: repo-docs-note
 description: "개발 중 한 번의 실행에서 관측한 것이나 자료 요약을 짧은 기록으로 남길 때 쓴다."
 ---
 
-# Repo Docs Note
+# 개발 노트
 
 개발 중에 알게 된 것을 `docs/notes/` 아래 짧은 기록 하나로 남긴다. 공통 규칙은 [repo-docs](../repo-docs/SKILL.md)를 먼저 따르고, 이 스킬은 짧은 개발 기록만 맡는다.
 

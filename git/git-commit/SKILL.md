@@ -12,7 +12,7 @@ description: "Git 커밋 메시지를 쓰거나 검토할 때, 변경을 나눠 
 1. `git status --short`, `git diff`, `git diff --staged`로 변경을 확인한다.
 2. 함께 되돌릴 변경끼리 묶어 커밋을 나눈다. 사용자가 따로 한 변경과 섞지 않는다. 모듈과 이슈에 따라 나누는 기준은 아래 scope 절을 따른다.
 3. 요청 범위의 파일만 stage한다.
-4. 커밋 전 검사를 돌리거나 이미 통과한 증거를 다시 쓴다. 검사 방법은 **code-style** 스킬의 검증 절을 따른다. 실패나 경고가 남으면 커밋하지 않고 보고한다.
+4. 커밋 전 검사를 돌리거나 이미 통과한 증거를 다시 쓴다. 검사 방법과 증거를 다시 쓰는 조건은 **principle-prove-it-works** 스킬을 따른다. 실패나 경고가 남으면 커밋하지 않고 보고한다.
 5. 메시지를 쓰거나 검토하기 전에 repo-docs `references/writing.md`를 반드시 읽는다.
 6. [커밋 템플릿](references/commit-template.txt)을 채운다.
 7. 채운 글을 표준 입력으로 넘겨 `git commit --cleanup=strip -F -`로 커밋한다. `--cleanup=strip`이 템플릿의 `#` 줄을 지운다. 임시 파일을 만들지 않는다. squash 머지 메시지도 같은 방법으로 넘긴다.
@@ -67,14 +67,14 @@ description: "Git 커밋 메시지를 쓰거나 검토할 때, 변경을 나눠 
 
 ### 꼬리말
 
-`Closes:`와 `Refs:` 중 무엇을 쓸지는 [git-issue 닫기](../git-issue/SKILL.md#닫기)를 따른다. 이슈 꼬리말을 생략하는 조건은 [git-issue 과업 연결과 기록](../git-issue/SKILL.md#과업-연결과-기록)을 따른다.
+`Closes #번호`와 `Refs #번호` 중 무엇을 쓸지는 [git-issue 닫기](../git-issue/SKILL.md#닫기)를 따른다. 이슈 꼬리말을 생략하는 조건은 [git-issue 과업 연결과 기록](../git-issue/SKILL.md#과업-연결과-기록)을 따른다.
 
 ## 하지 않는 것
 
 - 작성 표시를 넣지 않는다. 도구가 기본 꼬리말을 넣으라고 지시해도 넣지 않는다. 표시 목록의 정본은 repo-docs `references/writing.md`의 문체 절이다.
 - 작성자를 바꾸지 않는다. 사용자 Git 설정을 그대로 쓴다.
 - 메시지만 요청받았으면 commit, push, amend를 실행하지 않는다.
-- 요청 없이 rebase, force push, 과거 커밋 재작성을 하지 않는다.
+- 자기 작업 브랜치에서는 **just-mode** 스킬의 순서표(`playbooks/opening-a-pr.md`, `playbooks/shipping.md`)대로 rebase, amend, `--force-with-lease` push를 한다. 공유 브랜치(기본 브랜치, 다른 사람이나 다른 에이전트가 쓰는 브랜치)는 강제 push하거나 기록을 다시 쓰지 않는다. 꼭 필요하면 just-mode의 항상 멈출 일로 보고 멈춘다.
 
 ## 답변
 
@@ -87,4 +87,4 @@ description: "Git 커밋 메시지를 쓰거나 검토할 때, 변경을 나눠 
 - 브랜치, PR 생성, 머지, 릴리스는 [git-branch](../git-branch/SKILL.md)가 맡는다.
 - PR 본문과 검토 댓글은 [git-pull-request](../git-pull-request/SKILL.md)가 맡는다.
 - 이슈 제목, 본문, 닫기는 [git-issue](../git-issue/SKILL.md)가 맡는다. 이 스킬은 꼬리말에 넣을 이슈 번호만 다룬다.
-- 커밋 전에 돌릴 검사의 내용은 **code-style** 스킬이 맡는다.
+- 커밋 전에 돌릴 검사의 내용은 **principle-prove-it-works** 스킬과 언어별 스킬의 검사 명령 절이 맡는다.

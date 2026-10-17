@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # show-me-your-work 결정 기록(TSV)에 올바른 형식의 행 하나를 덧붙인다.
 # 사용법: log.sh <logfile> <phase> <decision> <why> <evidence> <result>
+# 워크트리의 `.local/` 아래 경로는 기본 체크아웃(공통 git 디렉터리의 상위)의 `.local/`로 옮겨 쓴다.
+# 워크트리를 지워도 기록이 남게 하려는 것이다. 실제로 쓴 경로는 stderr에 한 줄로 알린다.
 set -euo pipefail
 
 if [ "$#" -ne 6 ]; then
@@ -11,8 +13,48 @@ fi
 logfile="$1"
 shift
 
+# 없는 끝부분은 그대로 두고, 있는 가장 가까운 상위 폴더를 실제 경로로 푼다.
+canonical() {
+	local path="$1" rest=""
+	case "$path" in
+		/*) ;;
+		*) path="$PWD/$path" ;;
+	esac
+	while [ ! -d "$path" ]; do
+		rest="/$(basename "$path")$rest"
+		path="$(dirname "$path")"
+	done
+	printf '%s%s' "$(cd "$path" && pwd -P)" "$rest"
+}
+
+target="$(canonical "$logfile")"
+probe="$target"
+while [ ! -d "$probe" ]; do probe="$(dirname "$probe")"; done
+if top="$(git -C "$probe" rev-parse --show-toplevel 2>/dev/null)" \
+	&& common="$(git -C "$probe" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)"; then
+	top="$(cd "$top" && pwd -P)"
+	shared="$top"
+	if [ "$(basename "$common")" = ".git" ] && [ -d "$common" ]; then
+		shared="$(cd "$(dirname "$common")" && pwd -P)"
+	fi
+	case "$target" in
+		"$top/.local/"*)
+			target="$shared/.local/${target#"$top/.local/"}"
+			mkdir -p "$shared/.local"
+			if [ ! -e "$shared/.local/.gitignore" ] \
+				&& ! git -C "$shared" check-ignore -q .local/decisions/probe 2>/dev/null; then
+				printf '*\n' > "$shared/.local/.gitignore"
+			fi
+			if [ "$shared" != "$top" ]; then
+				printf 'log.sh: %s\n' "$target" >&2
+			fi
+			;;
+	esac
+fi
+logfile="$target"
+
 logdir="$(dirname "$logfile")"
-if [ -n "$logdir" ] && [ "$logdir" != "." ] && [ ! -d "$logdir" ]; then
+if [ ! -d "$logdir" ]; then
 	mkdir -p "$logdir"
 fi
 

@@ -3,7 +3,7 @@ name: repo-docs-spec
 description: "구현된 protocol, CLI, UI, data, configuration, errors의 형식과 값을 문서로 남길 때 쓴다."
 ---
 
-# Repo Docs Spec
+# 구현 명세
 
 사용자와 연동 개발자가 찾아보는 인터페이스 문서에 구현된 형식과 값을 코드와 같은 글자로 적는다. 공통 규칙은 [repo-docs](../repo-docs/SKILL.md)를 먼저 따르고, 이 스킬은 인터페이스 문서의 템플릿과 항목 규칙을 맡는다.
 
