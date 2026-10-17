@@ -74,6 +74,14 @@ class WarningTest(unittest.TestCase):
         self.assertEqual(codes(flat), ["flat"])
         self.assertEqual(codes(flat.replace('box a "가"', 'box a "가" tone=blue appearance=filled')), [])
 
+    def test_flowchart_with_decision_is_not_flat(self) -> None:
+        source = 'thinkflow\nbox a "가"\nbox b "나"\nbox c "다"\nbox d "라"\ndecision g "갈래"\na -> b\nb -> g\ng -> c "예"\ng -> d "아니오"\n'
+        self.assertEqual(codes(source), [])
+
+    def test_condition_and_metric_cards_are_exempt(self) -> None:
+        source = 'thinkflow\nbox a "가" badge="APP"\ndecision g "오류율 > 1% 인가?"\nbox k "성과" {\n  value p "지연" from=-85%\n}\na -> g\n'
+        self.assertEqual(codes(source), [])
+
     def test_partial_badges_warn(self) -> None:
         source = 'thinkflow\nbox a "가" badge="API"\nbox b "나"\na -> b\n'
         self.assertEqual(codes(source), ["badge"])

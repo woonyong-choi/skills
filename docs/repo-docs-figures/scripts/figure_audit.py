@@ -38,10 +38,12 @@ class Figure:
     edge_labels: list[str] = field(default_factory=list)
     series: dict[str, int] = field(default_factory=dict)
     badges: dict[str, bool] = field(default_factory=dict)
+    conditions: set[str] = field(default_factory=set)
     focal: list[str] = field(default_factory=list)
     scenes: int = 0
     sequence: bool = False
     aspect: bool = False
+    flowchart: bool = False
     wide: bool = False
 
 
@@ -98,6 +100,10 @@ def parse(source: str) -> Figure:
                 fig.edges.append((match.group(1).split(".")[0], match.group(2).split(".")[0]))
             fig.edge_labels.extend(quoted)
         elif word in CARD_WORDS and len(tokens) > 1 and not in_scene:
+            if word in ("decision", "state"):
+                fig.flowchart = True
+            if word == "decision":
+                fig.conditions.add(tokens[1])
             fig.cards[tokens[1]] = quoted[0] if quoted else tokens[1]
             if word in TAGGED:
                 fig.badges[tokens[1]] = any(t.startswith("badge=") for t in tokens)
@@ -108,6 +114,8 @@ def parse(source: str) -> Figure:
                     fig.groups[group].append(tokens[1])
         elif word == "group" and len(tokens) > 1:
             fig.groups[tokens[1]] = []
+        elif word == "value" and stack and stack[-1] in fig.badges:
+            del fig.badges[stack[-1]]  # 값 줄 카드는 구성 요소가 아니라 수치 묶음이라 꼬리표를 요구하지 않는다
         elif word == "series" and stack:
             fig.series[stack[-1]] = fig.series.get(stack[-1], 0) + 1
         if line.endswith("{"):
@@ -156,7 +164,7 @@ def group_chain(fig: Figure) -> int:
 def warnings(fig: Figure) -> list[str]:
     found = []
     for card, name in fig.cards.items():
-        if units(name) > NAME_UNITS:
+        if card not in fig.conditions and units(name) > NAME_UNITS:
             found.append(f"name: 카드 {card}의 이름 \"{name}\"이 한글 5자(영문 10자)를 넘어 카드 폭이 달라진다. 설명은 부제나 text로 옮긴다")
     for label in fig.edge_labels:
         if units(label) > EDGE_UNITS:
@@ -169,14 +177,14 @@ def warnings(fig: Figure) -> list[str]:
     if chain >= CHAIN_MIN and not fig.aspect and not fig.groups:
         found.append(f"chain: 카드 {chain}개가 한 줄로 이어져 세로 한 줄로 그려진다. aspect 1.6을 머리에 적는다")
     if group_chain(fig) >= 3 and not fig.aspect:
-        found.append("staircase: 그룹 세 개 이상을 차례로 이어 계단처럼 대각선으로 늘어진다. 그룹을 한 출발점에서 갈라지게 묶거나 aspect 1.6을 쓴다")
+        found.append("staircase: 그룹 세 개 이상을 차례로 이어 계단처럼 대각선으로 늘어진다. 그룹을 한 출발점에서 갈라지게 묶거나, 단계 그룹이면 단계 카드 안 text 줄로 바꾸거나, aspect 1.6을 쓴다")
     if fig.aspect and fig.edges and (fig.groups or not chain_length(fig)):
         found.append("aspect: 갈래나 그룹이 있는 그림을 aspect로 접으면 되돌아오는 선이 그림을 가로지른다. aspect를 지우고 기본 배치에 맡긴다")
     tagged = [c for c, has in fig.badges.items() if has]
     if tagged and len(tagged) < len(fig.badges):
         bare = [c for c, has in fig.badges.items() if not has]
         found.append(f"badge: 꼬리표가 일부 카드에만 있다. {', '.join(bare)}에도 종류 꼬리표를 단다")
-    if len(fig.badges) >= FLAT_MIN and not tagged and not fig.focal and not fig.sequence and not chain_length(fig):
+    if len(fig.badges) >= FLAT_MIN and not tagged and not fig.focal and not fig.sequence and not fig.flowchart and not chain_length(fig):
         found.append("flat: 카드가 모두 같은 모양이라 종류와 초점이 보이지 않는다. 종류 꼬리표(badge=)와 초점 색 1~2개를 단다")
     if len(fig.focal) > FOCAL_MAX:
         found.append(f"focal: 색을 칠한 카드가 {len(fig.focal)}개다. 초점은 {FOCAL_MAX}개 이하로 둔다")
