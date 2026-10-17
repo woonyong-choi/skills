@@ -85,8 +85,16 @@ description: "Git 브랜치를 만들거나 PR 생성, 머지, 릴리스, 머지
 ## 머지
 
 - squash 머지만 쓴다.
-- squash 메시지는 [git-commit 형식](../git-commit/SKILL.md#형식)을 따른다. 첫 줄은 PR 제목이고 번호를 직접 적지 않는다. ` (#{PR 번호})`는 GitHub가 기본으로 붙인다. 본문은 PR의 `왜 필요한가`이며 비우지 않는다. 꼬리말은 PR 본문과 같은 `Closes #번호`나 `Refs #번호`다.
-- GitHub가 자동으로 넣는 커밋 목록은 지운다. 작성 표시는 [git-commit 하지 않는 것](../git-commit/SKILL.md#하지-않는-것)을 따른다.
+- squash 메시지의 정본은 이 절이다. PR 본문 전체를 squash 본문으로 쓰지 않는다. 형식은 [git-commit 형식](../git-commit/SKILL.md#형식)을 따른다.
+  - 첫 줄은 `{PR 제목} (#{PR 번호})`다. git-commit 템플릿의 "번호는 꼬리말에만"에서 squash 첫 줄만 예외다. PR 제목에는 번호를 적지 않는다. `--subject`로 넘기면 GitHub가 번호를 붙이지 않으므로 squash 첫 줄에만 직접 붙인다.
+  - 본문은 PR의 `왜 필요한가`이며 비우지 않는다. 꼬리말은 PR 본문과 같은 `Closes #번호`나 `Refs #번호`다.
+  - GitHub가 자동으로 넣는 커밋 목록은 넣지 않는다. 작성 표시는 [git-commit 하지 않는 것](../git-commit/SKILL.md#하지-않는-것)을 따른다.
+- 머지는 첫 줄과 본문을 지정해 실행한다. 본문은 표준 입력으로 넘기고 임시 파일을 만들지 않는다.
+
+  ```sh
+  gh pr merge {PR 번호} --squash --delete-branch --subject '{첫 줄}' --body-file -
+  ```
+
 - 머지 조건의 정본은 [git-pull-request 머지 조건](../git-pull-request/SKILL.md#머지-조건)이다. 조건을 채우면 squash 머지와 정리까지 직접 한다. 사용자가 보류하라고 한 PR만 기다린다. 도구 권한에 막히면 막힌 단계, 이유, 사용자가 실행할 한 줄 명령을 보고한다.
 - 머지 뒤 훅이 "경력 원본에 남길 성과인가" 확인을 한 줄로 안내한다. 남길 성과면 **hanger** 스킬로 기록한다. 훅이 보지 못하는 머지(웹 화면, MCP 도구)는 머지한 에이전트가 같은 확인을 직접 한다.
 - 머지한 뒤 자기 브랜치를 원격, 로컬, worktree에서 지운다([정리](#정리) 절).
