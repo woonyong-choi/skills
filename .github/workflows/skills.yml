@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: woonyong-choi/torso
-          ref: 3d2d6afe488eb1bdfc9f1d33434e572ee9daf93a
+          ref: a9c287d0bbe8e5929b369c1ea25c46d2248ef4d9
           path: .runtime/torso
       - name: Install figure renderer
         working-directory: .runtime/torso

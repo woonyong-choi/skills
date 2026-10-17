@@ -96,7 +96,7 @@ JD를 분석하고 경력 원본에서 사실을 골라 고정 양식의 이력�
 ## 그림
 
 - 포트폴리오의 아키텍처와 흐름 그림은 Torso 정지 그림으로 실제 관계만 그린다. 장식을 넣지 않는다.
-- 그림 원본을 쓰기 전에 **repo-docs-figures** 스킬 `references/torso-quality.md`의 가로형 원칙, 쓰임별 기준의 포트폴리오 행, 완료 전 확인을 읽는다. A4에서는 넓은 그림의 글자가 읽히지 않으므로 `width wide`를 쓰지 않고, 가로형을 지키도록 그림을 나눈다. 점검 스크립트는 `--print`로 돌린다.
+- 그림 원본을 쓰기 전에 **repo-docs-figures** 스킬 `references/torso-quality.md`의 가로형 원칙, 쓰임별 기준의 포트폴리오 행, 완료 전 확인을 읽는다. A4 폭에서 가장 작은 글이 읽히도록 카드를 줄이거나 그림을 나눈다.
 - `python3 <이 스킬 폴더>/scripts/figures.py <공고 폴더>/figures --torso <Torso 경로>`로 만든다. SVG와 PNG는 원본 옆(`<공고 폴더>/figures/`)에 생긴다. Python 3.9 이상, Node.js, Torso 체크아웃, playwright-core Chrome이 필요하다(`CHROME_PATH`는 선택). 원본마다 SVG와 2배 PNG를 만들고 실패하면 종료 코드 1로 끝난다.
 - 경력 원본 프로젝트의 `figures/{그림}.torso`를 공고 폴더 `figures/{프로젝트}-{그림}.torso`로 복사한 뒤 만든다. 복사 방법은 [references/source.md](references/source.md)를 따른다.
 - `#diagram("/figures/{프로젝트}-{그림}.png", [{결론 한 문장}])`로 넣는다. Typst가 CSS 변수를 지원하지 않으므로 SVG를 직접 넣지 않는다.
