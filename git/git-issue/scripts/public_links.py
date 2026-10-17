@@ -20,7 +20,7 @@ _LINK = re.compile(
     r'|\b(?:href|src)=["\'](?P<html>[^"\']+)["\']',
     re.MULTILINE,
 )
-_CODE = re.compile(r"(?<!`)(?P<ticks>`{1,2})(?!`)(?P<path>[^`\n]+)(?P=ticks)(?!`)")
+_CODE = re.compile(r"(?<!`)(?P<ticks>`+)(?!`)(?P<path>[^\n]*?)(?<!`)(?P=ticks)(?!`)")
 _REGEXP_CONTEXT = re.compile(r"(?:정규식|\bregexp\b)[ \t:]*$", re.IGNORECASE)
 _HTTP_REQUEST = re.compile(
     r"(?:GET|HEAD|POST|PUT|DELETE|OPTIONS|TRACE|PATCH) (?P<path>/(?!/)\S*)"

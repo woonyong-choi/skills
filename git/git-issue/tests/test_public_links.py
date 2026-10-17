@@ -86,6 +86,14 @@ def checker(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
         "testcontrast regexp `/palette/`",
         "regexp: ``/palette/``",
         "인라인 문법 예시 `![title](svg)<!-- muto -->`",
+        (
+            "문서의 ` ```muto ` 블록(`name=` 선택)을 SVG로 만들고 "
+            "이미지 줄(`![title](svg)<!-- muto -->`)을 넣거나 고친다."
+        ),
+        "` ```muto ![title](svg) `",
+        "`` `code` ![title](svg) ``` 내용 ``",
+        "``` `code` ``code`` ![title](svg) ```` 내용 ```",
+        "`` ![title](svg) ``` ![other](svg) ``",
         "인라인 주석 접두사 `// 근거:`",
         "다른 Markdown 예시 `![image](svg)`",
         "다른 주석 접두사 `// 설명:`",
@@ -135,6 +143,24 @@ def test_main_preserves_public_references(
             "private repository",
         ),
         ("![title](svg)<!-- muto -->", "relative link has no published file"),
+        ("`` ![title](svg) ```", "relative link has no published file"),
+        ("``` ![title](svg) ``", "relative link has no published file"),
+        (
+            "` ```muto `과 `![title](svg)<!-- muto -->`와 `/tmp/db`",
+            "private path",
+        ),
+        (
+            (
+                "` ```muto `과 `![title](svg)<!-- muto -->`와 "
+                "`https://github.com/example/private/blob/main/secret.md`"
+            ),
+            "private repository",
+        ),
+        ("`` `code` ![title](/tmp/db) ``", "private path"),
+        (
+            "``` ``code`` ![title](https://github.com/example/private/blob/main/secret.md) ```",
+            "private repository",
+        ),
         ("`![title](/tmp/db)<!-- muto -->`", "private path"),
         ("`![title](.local/secret)<!-- muto -->`", "private path"),
         (
