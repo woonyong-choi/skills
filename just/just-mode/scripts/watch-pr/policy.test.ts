@@ -90,6 +90,66 @@ describe("readiness truth table", () => {
   });
 });
 
+describe("empty check lists", () => {
+  it("uses the existing readiness policy without inventing a passing check", async () => {
+    const snapshot = await readSnapshot({
+      reader: fakeReader({
+        fastPath: { kind: "checks", checks: [] },
+        commitRollups: [{ oid: "head", state: null }],
+      }),
+      context: context(1),
+      pendingHistory: "include",
+      allowDraft: false,
+    });
+    expect(snapshot).toMatchObject({
+      kind: "open",
+      ci: { kind: "ci-clean", all: [], hadPreviousPassingCi: false },
+    });
+    expect(classifyPr(snapshot).kind).toBe("ready");
+  });
+
+  it("still blocks an empty list when GitHub reports a failing head rollup", async () => {
+    const snapshot = await readSnapshot({
+      reader: fakeReader({
+        facts: { mergeStateStatus: "BLOCKED" },
+        fastPath: { kind: "checks", checks: [] },
+        commitRollups: [{ oid: "head", state: "FAILURE" }],
+      }),
+      context: context(1),
+      pendingHistory: "include",
+      allowDraft: false,
+    });
+    expect(classifyPr(snapshot)).toMatchObject({
+      kind: "blocker",
+      blocker: { kind: "failing-checks" },
+    });
+  });
+
+  it("still blocks an unresolved review thread without checks", async () => {
+    const snapshot = await readSnapshot({
+      reader: fakeReader({
+        fastPath: { kind: "checks", checks: [] },
+        commitRollups: [{ oid: "head", state: null }],
+        threads: [
+          {
+            id: "unresolved",
+            firstComment: null,
+            isBugbot: false,
+            bugbotReviewPasses: 0,
+          },
+        ],
+      }),
+      context: context(1),
+      pendingHistory: "include",
+      allowDraft: false,
+    });
+    expect(classifyPr(snapshot)).toMatchObject({
+      kind: "blocker",
+      blocker: { kind: "review-threads" },
+    });
+  });
+});
+
 describe("snapshot query planning", () => {
   it("does not query commit rollups while queued checks are pending", async () => {
     const reader = fakeReader({

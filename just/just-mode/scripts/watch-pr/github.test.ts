@@ -66,7 +66,35 @@ describe("checks fallback chain", () => {
     expect(reader.calls).toEqual(["checksFastPath", "checkRollupPage:null"]);
   });
 
-  it("fails closed when both paths are empty", async () => {
+  it("returns an empty list when both check queries confirm no checks", async () => {
+    const reader = fakeReader({ fastPath: { kind: "checks", checks: [] } });
+    expect(await resolveChecks(reader, context)).toEqual({
+      source: "graphql-rollup",
+      checks: [],
+    });
+  });
+
+  it("propagates a failed GraphQL query after an empty fast-path result", async () => {
+    const reader = fakeReader({ fastPath: { kind: "checks", checks: [] } });
+    const failure = new WatcherQueryError({
+      kind: "checks-unavailable",
+      retryable: true,
+      detail: "GraphQL checks query failed",
+    });
+    await expect(
+      resolveChecks(
+        {
+          ...reader,
+          async checkRollupPage() {
+            throw failure;
+          },
+        },
+        context
+      )
+    ).rejects.toBe(failure);
+  });
+
+  it("fails closed when the fast path failed and the rollup is empty", async () => {
     const reader = fakeReader({
       fastPath: {
         kind: "unusable",
