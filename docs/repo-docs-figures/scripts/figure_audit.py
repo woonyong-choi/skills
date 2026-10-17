@@ -17,6 +17,9 @@ CARD_WORDS = {"person", "box", "external", "store", "decision", "queue", "state"
 NAME_UNITS = 11  # 카드 최소 폭(100px 안팎)에 드는 이름 폭. 한글 5자와 띄어쓰기 하나, 영문 10자
 EDGE_UNITS = 20  # 선과 메시지 글 폭. 한글 10자
 CARDS_MAX = 12
+FOCAL_MAX = 2
+TAGGED = {"box", "external", "store"}  # badge=를 받는 카드. person은 아이콘이 종류를 대신한다
+FLAT_MIN = 4
 CHAIN_MIN = 5
 SERIES_MAX = 7
 BODY = 680
@@ -33,6 +36,8 @@ class Figure:
     texts: list[str] = field(default_factory=list)
     edge_labels: list[str] = field(default_factory=list)
     series: dict[str, int] = field(default_factory=dict)
+    badges: dict[str, bool] = field(default_factory=dict)
+    focal: list[str] = field(default_factory=list)
     scenes: int = 0
     sequence: bool = False
     aspect: bool = False
@@ -93,6 +98,10 @@ def parse(source: str) -> Figure:
             fig.edge_labels.extend(quoted)
         elif word in CARD_WORDS and len(tokens) > 1 and not in_scene:
             fig.cards[tokens[1]] = quoted[0] if quoted else tokens[1]
+            if word in TAGGED:
+                fig.badges[tokens[1]] = any(t.startswith("badge=") for t in tokens)
+            if "appearance=filled" in tokens or "appearance=outline" in tokens:
+                fig.focal.append(tokens[1])
             for group in stack:
                 if group in fig.groups:
                     fig.groups[group].append(tokens[1])
@@ -158,6 +167,16 @@ def warnings(fig: Figure) -> list[str]:
         found.append(f"chain: 카드 {chain}개가 한 줄로 이어져 세로 한 줄로 그려진다. aspect 1.6을 머리에 적는다")
     if group_chain(fig) >= 3 and not fig.aspect:
         found.append("staircase: 그룹 세 개 이상을 차례로 이어 계단처럼 대각선으로 늘어진다. 그룹을 한 출발점에서 갈라지게 묶거나 aspect 1.6을 쓴다")
+    if fig.aspect and fig.edges and (fig.groups or not chain_length(fig)):
+        found.append("aspect: 갈래나 그룹이 있는 그림을 aspect로 접으면 되돌아오는 선이 그림을 가로지른다. aspect를 지우고 기본 배치에 맡긴다")
+    tagged = [c for c, has in fig.badges.items() if has]
+    if tagged and len(tagged) < len(fig.badges):
+        bare = [c for c, has in fig.badges.items() if not has]
+        found.append(f"badge: 꼬리표가 일부 카드에만 있다. {', '.join(bare)}에도 종류 꼬리표를 단다")
+    if len(fig.badges) >= FLAT_MIN and not tagged and not fig.focal and not fig.sequence and not chain_length(fig):
+        found.append("flat: 카드가 모두 같은 모양이라 종류와 초점이 보이지 않는다. 종류 꼬리표(badge=)와 초점 색 1~2개를 단다")
+    if len(fig.focal) > FOCAL_MAX:
+        found.append(f"focal: 색을 칠한 카드가 {len(fig.focal)}개다. 초점은 {FOCAL_MAX}개 이하로 둔다")
     if fig.sequence and fig.scenes > 1:
         found.append(f"scenes: 순서 그림에 장면이 {fig.scenes}개다. 정지 SVG는 첫 장면 메시지만 보이므로 한 장에 다 보이려면 fragment로 한 장면에 담는다")
     linked = {n for edge in fig.edges for n in edge}

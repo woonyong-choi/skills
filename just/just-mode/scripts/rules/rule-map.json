@@ -121,7 +121,7 @@
       "sections": [
         "공개 범위와 주석"
       ],
-      "sha256": "d6cde41f35c8b54f51d0a0f7656f214f805b091c801603710a7263866da1cc8f"
+      "sha256": "36a90c282a68cf756d97c8457673087fd177070b7753b2f2faa2a341862b87c7"
     },
     "CS-ERROR": {
       "skill": "code-style",
@@ -156,7 +156,7 @@
     "code-style-python": {
       "skill": "code-style-python",
       "path": "SKILL.md",
-      "sha256": "06986f2ea3bd394c204db9afaa2016b6c0fe47ba4e62a73f8ca6367b4f062d25"
+      "sha256": "6f488596e240599b6c3a5af0b42ff861c0f6846858bbb7ccd8a2a9732a800a54"
     },
     "code-style-typescript": {
       "skill": "code-style-typescript",
