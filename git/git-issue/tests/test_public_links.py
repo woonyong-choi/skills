@@ -82,6 +82,23 @@ def checker(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
         "`GET /`",
         "`/query`",
         "<details>공개 본문</details>",
+        "정규식 `/palette/`",
+        "testcontrast regexp `/palette/`",
+        "regexp: ``/palette/``",
+        "인라인 문법 예시 `![title](svg)<!-- muto -->`",
+        (
+            "문서의 ` ```muto ` 블록(`name=` 선택)을 SVG로 만들고 "
+            "이미지 줄(`![title](svg)<!-- muto -->`)을 넣거나 고친다."
+        ),
+        "` ```muto ![title](svg) `",
+        "`` `code` ![title](svg) ``` 내용 ``",
+        "``` `code` ``code`` ![title](svg) ```` 내용 ```",
+        "`` ![title](svg) ``` ![other](svg) ``",
+        "인라인 주석 접두사 `// 근거:`",
+        "다른 Markdown 예시 `![image](svg)`",
+        "다른 주석 접두사 `// 설명:`",
+        "`// 문법 예시: ![title](svg)`",
+        "정규식 `/palette/`, `![title](svg)<!-- muto -->`, `// 근거:`",
     ],
 )
 @pytest.mark.parametrize("fix", [False, True])
@@ -112,6 +129,52 @@ def test_main_preserves_public_references(
     "body, reason",
     [
         ("`/Users/name/secret`", "private path"),
+        ("`/palette/`", "private path"),
+        ("regexp\n`/palette/`", "private path"),
+        ("정규식 `/.local/`", "private path"),
+        ("regexp `/%2Elocal/`", "private path"),
+        ("정규식 `/Users/name/`", "private path"),
+        ("정규식 `/project.wt/`", "private path"),
+        ("`//server/private`", "private path"),
+        ("`// 근거: /tmp/db`", "private path"),
+        ("`// 근거: .local/secret`", "private path"),
+        (
+            "`// 근거: https://github.com/example/private/blob/main/secret.md`",
+            "private repository",
+        ),
+        ("![title](svg)<!-- muto -->", "relative link has no published file"),
+        ("`` ![title](svg) ```", "relative link has no published file"),
+        ("``` ![title](svg) ``", "relative link has no published file"),
+        (
+            "` ```muto `과 `![title](svg)<!-- muto -->`와 `/tmp/db`",
+            "private path",
+        ),
+        (
+            (
+                "` ```muto `과 `![title](svg)<!-- muto -->`와 "
+                "`https://github.com/example/private/blob/main/secret.md`"
+            ),
+            "private repository",
+        ),
+        ("`` `code` ![title](/tmp/db) ``", "private path"),
+        (
+            "``` ``code`` ![title](https://github.com/example/private/blob/main/secret.md) ```",
+            "private repository",
+        ),
+        ("`![title](/tmp/db)<!-- muto -->`", "private path"),
+        ("`![title](.local/secret)<!-- muto -->`", "private path"),
+        (
+            "`![title](https://github.com/example/private/blob/main/secret.md)<!-- muto -->`",
+            "private repository",
+        ),
+        (
+            "정규식 `/palette/`와 `// 근거:`와 `![title](svg)<!-- muto -->`와 `/tmp/db`",
+            "private path",
+        ),
+        (
+            "정규식 `/palette/`와 https://github.com/example/private/blob/main/secret.md",
+            "private repository",
+        ),
         ("`/tmp/db`", "private path"),
         ("`/query/x`", "private path"),
         ("/query/x", "private path"),
@@ -174,12 +237,31 @@ def test_main_rejects_private_or_ambiguous_locations(
     assert (captured.out if fix else captured.err) == (body if fix else "")
 
 
+@pytest.mark.parametrize(
+    "body, expected",
+    [
+        (
+            "[안내](README.md)",
+            "[안내](https://github.com/woonyong-choi/skills/blob/main/README.md)",
+        ),
+        (
+            "`![안내](README.md)<!-- muto -->`",
+            "`![안내](https://github.com/woonyong-choi/skills/blob/main/README.md)<!-- muto -->`",
+        ),
+        (
+            "`README.md`",
+            "[README.md](https://github.com/woonyong-choi/skills/blob/main/README.md)",
+        ),
+    ],
+)
 def test_main_fix_publishes_repository_file_link(
     checker: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
+    body: str,
+    expected: str,
 ) -> None:
-    monkeypatch.setattr(sys, "stdin", io.StringIO("[안내](README.md)"))
+    monkeypatch.setattr(sys, "stdin", io.StringIO(body))
 
     status = checker.main(
         ["--repo", str(Path(__file__).resolve().parents[3]), "--fix", "-"]
@@ -188,6 +270,6 @@ def test_main_fix_publishes_repository_file_link(
     captured = capsys.readouterr()
     assert (status, captured.out, captured.err) == (
         0,
-        "[안내](https://github.com/woonyong-choi/skills/blob/main/README.md)",
+        expected,
         "",
     )

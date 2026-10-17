@@ -20,7 +20,8 @@ _LINK = re.compile(
     r'|\b(?:href|src)=["\'](?P<html>[^"\']+)["\']',
     re.MULTILINE,
 )
-_CODE = re.compile(r"(?<!`)(?P<ticks>`{1,2})(?!`)(?P<path>[^`\n]+)(?P=ticks)(?!`)")
+_CODE = re.compile(r"(?<!`)(?P<ticks>`+)(?!`)(?P<path>[^\n]*?)(?<!`)(?P=ticks)(?!`)")
+_REGEXP_CONTEXT = re.compile(r"(?:정규식|\bregexp\b)[ \t:]*$", re.IGNORECASE)
 _HTTP_REQUEST = re.compile(
     r"(?:GET|HEAD|POST|PUT|DELETE|OPTIONS|TRACE|PATCH) (?P<path>/(?!/)\S*)"
 )
@@ -220,12 +221,20 @@ def _check_target(
 
 def _scan(text: str, context: _Context) -> list[_Finding]:
     findings: list[_Finding] = []
+    code_matches = list(_CODE.finditer(text))
+    code_spans = [match.span() for match in code_matches]
     covered: list[tuple[int, int]] = []
     ignored_local_spans = [
         match.span()
         for pattern in (_URL, _CLOSING_TAG)
         for match in pattern.finditer(text)
     ]
+    for match in code_matches:
+        if re.match(r"//[ \t]", match["path"].lstrip()):
+            prefix_start = (
+                match.start("path") + len(match["path"]) - len(match["path"].lstrip())
+            )
+            ignored_local_spans.append((prefix_start, prefix_start + 2))
     for pattern in (_LINK, _CODE, _URL):
         for match in pattern.finditer(text):
             if any(
@@ -235,6 +244,10 @@ def _scan(text: str, context: _Context) -> list[_Finding]:
             start, end = match.span()
             covered.append((start, end))
             value = match[0]
+            is_link = pattern is _LINK and not any(
+                code_start <= start and end <= code_end
+                for code_start, code_end in code_spans
+            )
             if pattern is _LINK:
                 group = next(
                     name
@@ -245,16 +258,22 @@ def _scan(text: str, context: _Context) -> list[_Finding]:
                 value = match[group].strip("<>")
             elif pattern is _CODE:
                 value = match["path"].strip()
+                if re.match(r"//[ \t]", value):
+                    covered.pop()
+                    continue
+                line_start = text.rfind("\n", 0, start) + 1
+                is_regexp = (
+                    re.fullmatch(r"/[A-Za-z0-9_-]+/", value) is not None
+                    and _REGEXP_CONTEXT.search(text[line_start:start]) is not None
+                )
                 request = _HTTP_REQUEST.fullmatch(value)
                 is_http_request = request is not None and not _is_local(
                     urlsplit(request["path"]).path.removeprefix("/")
                 )
-                if re.fullmatch(r"/[\w-]+", value) or is_http_request:
+                if re.fullmatch(r"/[\w-]+", value) or is_http_request or is_regexp:
                     ignored_local_spans.append((start, end))
                     continue
-            reason, replacement = _check_target(
-                value, context, is_link=pattern is _LINK
-            )
+            reason, replacement = _check_target(value, context, is_link=is_link)
             if pattern is _CODE and replacement:
                 replacement = f"[{value}]({replacement})"
             if reason:
