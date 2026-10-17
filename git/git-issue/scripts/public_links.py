@@ -139,6 +139,10 @@ def _check_url(value: str, context: _Context) -> str | None:
     if len(parts) < 2:
         return None
     if parsed.hostname in {"github.com", "www.github.com"}:
+        if re.match(
+            r"^/(?:users|orgs)/[^/]+/projects/[0-9]+(?:/|\Z)", unquote(parsed.path)
+        ):
+            return None
         if len(parts) >= 3 and tuple(parts[:2]) in {
             ("user-attachments", "assets"),
             ("user-attachments", "files"),
