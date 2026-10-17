@@ -31,20 +31,16 @@ d -> e
 
 
 def codes(source: str) -> list[str]:
-    """wide 경고는 따로 시험하므로 뺀 경고 코드."""
-    return [c for c in all_codes(source) if c != "wide"]
-
-
-def all_codes(source: str) -> list[str]:
     return [line.split(":", 1)[0] for line in AUDIT.warnings(AUDIT.parse(source))]
 
 
 class WarningTest(unittest.TestCase):
-    def test_chain_without_aspect_warns(self) -> None:
-        self.assertEqual(codes(CHAIN), ["chain"])
+    def test_chain_is_clean(self) -> None:
+        self.assertEqual(codes(CHAIN), [])
 
-    def test_chain_with_aspect_is_clean(self) -> None:
-        self.assertEqual(codes(CHAIN.replace("torso\n", "torso\naspect 1.6\n")), [])
+    def test_aspect_and_width_wide_warn(self) -> None:
+        self.assertEqual(codes(CHAIN.replace("torso\n", "torso\naspect 1.6\n")), ["aspect"])
+        self.assertEqual(codes(CHAIN.replace("torso\n", "torso\nwidth wide\n")), ["wide"])
 
     def test_branching_graph_is_not_a_chain(self) -> None:
         self.assertEqual(codes(CHAIN + "a -> e\n"), [])
@@ -69,10 +65,6 @@ class WarningTest(unittest.TestCase):
         source = "torso\n" + "".join(f'group g{i} "묶음{i}" direction=down {{\n  box n{i} "카{i}" badge="S"\n  box m{i} "드{i}" badge="S"\n}}\n' for i in range(3))
         source += "n0 -> m0\nm0 -> n1\nn1 -> m1\nm1 -> n2\nn2 -> m2\n"
         self.assertEqual(codes(source), ["staircase"])
-
-    def test_aspect_on_branching_graph_warns(self) -> None:
-        source = CHAIN.replace("torso\n", "torso\naspect 1.6\n") + "a -> e\n"
-        self.assertEqual(codes(source), ["aspect"])
 
     def test_flat_cards_warn_until_tagged_or_focal(self) -> None:
         flat = 'torso\nbox a "가"\nbox b "나"\nbox c "다"\nstore d "라"\na -> b\na -> c\na -> d\n'
@@ -101,16 +93,11 @@ class WarningTest(unittest.TestCase):
         source = f"torso\n{cards}{lines}"
         self.assertIn("edges", codes(source))
 
-    def test_missing_width_wide_warns_except_charts(self) -> None:
-        self.assertIn("wide", all_codes(CHAIN))
-        self.assertNotIn("wide", all_codes(CHAIN.replace("torso\n", "torso\nwidth wide\n")))
-        self.assertNotIn("wide", all_codes('torso\nchart c "차트" bar {\n  series s "계열"\n  row "가" s=1\n}\n'))
-
     def test_sequence_with_too_many_messages_warns(self) -> None:
-        moves = "".join(f'  a -> b "요청{i}"\n' for i in range(6))
-        source = f'torso\nwidth wide\nbox a "가"\nbox b "나"\nbox c "다"\nview sequence {{\n  a b c\n}}\nscene "하나"\n{moves}'
+        moves = "".join(f'  a -> b "요청{i}"\n' for i in range(5))
+        source = f'torso\nbox a "가"\nbox b "나"\nbox c "다"\nview sequence {{\n  a b c\n}}\nscene "하나"\n{moves}'
         self.assertEqual(codes(source), ["messages"])
-        self.assertEqual(codes(source.replace('  a -> b "요청5"\n', '')), [])
+        self.assertEqual(codes(source.replace('  a -> b "요청4"\n', '')), [])
 
     def test_too_many_series_warns(self) -> None:
         series = "".join(f'  series s{i} "계열{i}"\n' for i in range(8))
@@ -146,20 +133,19 @@ class CliTest(unittest.TestCase):
     def test_exit_codes_and_svg_report(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "a.torso").write_text(CHAIN.replace("torso\n", "torso\nwidth wide\naspect 1.6\n"), encoding="utf-8")
+            (root / "a.torso").write_text(CHAIN, encoding="utf-8")
             (root / "items.txt").write_text("# 요구 항목\n가\n마\n", encoding="utf-8")
-            (root / "a.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" width="1020" height="300"></svg>', encoding="utf-8")
+            (root / "a.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 1020 300"></svg>', encoding="utf-8")
             code, out = self.run_cli(str(root / "a.torso"), "--items", str(root / "items.txt"))
             self.assertEqual((code, out), (0, ""))
             code, out = self.run_cli(str(root / "a.torso"), "--svg", str(root / "a.svg"))
             self.assertEqual(code, 0)
             self.assertIn("크기: 1020x300", out)
-            (root / "tall.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="900"></svg>', encoding="utf-8")
+            (root / "tall.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 300 900"></svg>', encoding="utf-8")
             (root / "b.torso").write_text(CHAIN, encoding="utf-8")
-            code, out = self.run_cli(str(root / "b.torso"), "--svg", str(root / "tall.svg"), "--print")
+            code, out = self.run_cli(str(root / "b.torso"), "--svg", str(root / "tall.svg"))
             self.assertEqual(code, 1)
             self.assertIn("경고 portrait", out)
-            self.assertNotIn("경고 wide", out)
             (root / "items.txt").write_text("바\n", encoding="utf-8")
             code, out = self.run_cli(str(root / "a.torso"), "--items", str(root / "items.txt"))
             self.assertEqual((code, out), (1, "누락: 바\n"))
