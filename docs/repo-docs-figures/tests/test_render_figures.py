@@ -57,12 +57,12 @@ class TapeWorkingDirectoryTest(unittest.TestCase):
 
 
 
-class ThinkflowCliTest(unittest.TestCase):
+class TorsoCliTest(unittest.TestCase):
     # 명시 옵션이 환경 변수보다 우선한다.
     def test_option_precedes_environment(self) -> None:
         for options, environment, selected in (
-            (["--thinkflow", "new.js"], {"THINKFLOW_PATH": "env.js"}, "new.js"),
-            ([], {"THINKFLOW_PATH": "env.js"}, "env.js"),
+            (["--torso", "new.js"], {"TORSO_PATH": "env.js"}, "new.js"),
+            ([], {"TORSO_PATH": "env.js"}, "env.js"),
         ):
             with (
                 self.subTest(options=options),
@@ -70,29 +70,29 @@ class ThinkflowCliTest(unittest.TestCase):
                 patch.object(FIGURES.subprocess, "run") as run,
                 patch.object(Path, "is_dir", return_value=False),
             ):
-                self.assertEqual(FIGURES.main([*options, "sample.thinkflow"]), 0)
+                self.assertEqual(FIGURES.main([*options, "sample.torso"]), 0)
                 self.assertEqual(Path(run.call_args_list[-1].args[0][1]).name, selected)
 
-    # PATH의 thinkflow와 git 추적 원본 탐색. 다른 확장자는 렌더 전에 실패한다.
-    def test_tracked_sources_use_thinkflow_on_path(self) -> None:
+    # PATH의 torso와 git 추적 원본 탐색. 다른 확장자는 렌더 전에 실패한다.
+    def test_tracked_sources_use_torso_on_path(self) -> None:
         with (
             patch.dict(os.environ, {}, clear=True),
             patch.object(FIGURES.subprocess, "run") as run,
         ):
-            run.return_value.stdout = b"diagram with spaces.thinkflow\0"
+            run.return_value.stdout = b"diagram with spaces.torso\0"
             with patch.object(FIGURES, "_git", side_effect=[os.getcwd().encode() + b"\n", run.return_value.stdout]) as git:
                 self.assertEqual(FIGURES.main([]), 0)
         self.assertEqual(
             git.call_args_list[1].args[4:],
-            ("--", "docs/assets/*.thinkflow", "docs/assets/*.tape"),
+            ("--", "docs/assets/*.torso", "docs/assets/*.tape"),
         )
         self.assertEqual(
             run.call_args_list[0].args[0],
-            ["thinkflow", "check", "diagram with spaces.thinkflow", "--strict"],
+            ["torso", "check", "diagram with spaces.torso", "--strict"],
         )
         self.assertEqual(
             run.call_args_list[1].args[0],
-            ["thinkflow", "render", "diagram with spaces.thinkflow", "--strict"],
+            ["torso", "render", "diagram with spaces.torso", "--strict"],
         )
         with contextlib.redirect_stderr(io.StringIO()) as stderr:
             self.assertEqual(FIGURES.main(["old.svg"]), 1)
@@ -103,12 +103,12 @@ class ThinkflowCliTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             repo = Path(folder)
             subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-            for path in ("docs/assets/a.thinkflow", "docs/assets/old.svg", "tests/b.thinkflow", "docs/notes/demo.tape"):
+            for path in ("docs/assets/a.torso", "docs/assets/old.svg", "tests/b.torso", "docs/notes/demo.tape"):
                 (repo / path).parent.mkdir(parents=True, exist_ok=True)
-                (repo / path).write_text("thinkflow\n", encoding="utf-8")
+                (repo / path).write_text("torso\n", encoding="utf-8")
             subprocess.run(["git", "add", "."], cwd=repo, check=True)
             with contextlib.chdir(repo):
-                self.assertEqual(FIGURES._tracked_sources(), ["docs/assets/a.thinkflow"])
+                self.assertEqual(FIGURES._tracked_sources(), ["docs/assets/a.torso"])
 
     # 하위 폴더 실행은 루트 기준 탐색, 원본 없음·git 밖은 메시지와 종료 1.
     def test_no_argument_run_from_subfolder_empty_and_outside_git(self) -> None:
@@ -119,10 +119,10 @@ class ThinkflowCliTest(unittest.TestCase):
             with contextlib.chdir(repo / "docs"), contextlib.redirect_stderr(io.StringIO()) as stderr:
                 self.assertEqual(FIGURES.main([]), 1)
             self.assertIn("no tracked sources under docs/assets/", stderr.getvalue())
-            (repo / "docs" / "assets" / "a.thinkflow").write_text("x\n", encoding="utf-8")
+            (repo / "docs" / "assets" / "a.torso").write_text("x\n", encoding="utf-8")
             subprocess.run(["git", "add", "."], cwd=repo, check=True)
             with contextlib.chdir(repo / "docs"):
-                self.assertEqual(FIGURES._tracked_sources(), ["assets/a.thinkflow"])
+                self.assertEqual(FIGURES._tracked_sources(), ["assets/a.torso"])
             outside = Path(folder) / "outside"
             outside.mkdir()
             with (
@@ -141,7 +141,7 @@ class ThinkflowCliTest(unittest.TestCase):
             patch.object(FIGURES.subprocess, "run") as run,
             contextlib.redirect_stderr(io.StringIO()) as stderr,
         ):
-            self.assertEqual(FIGURES.main(["a.thinkflow", "demo.tape"]), 1)
+            self.assertEqual(FIGURES.main(["a.torso", "demo.tape"]), 1)
         self.assertIn("vhs not found", stderr.getvalue())
         run.assert_not_called()
 
@@ -155,7 +155,7 @@ class ThinkflowCliTest(unittest.TestCase):
                 side_effect=subprocess.CalledProcessError(1, "check"),
             ) as run,
         ):
-            self.assertEqual(FIGURES.main(["invalid.thinkflow"]), 1)
+            self.assertEqual(FIGURES.main(["invalid.torso"]), 1)
         self.assertEqual(run.call_count, 1)
 
 

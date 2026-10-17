@@ -1,10 +1,10 @@
 # Markdown과 CI
 
-Markdown 문서 안의 `thinkflow` 코드 블록으로 그림을 관리하거나 CI에 연결할 때 따른다.
+Markdown 문서 안의 `torso` 코드 블록으로 그림을 관리하거나 CI에 연결할 때 따른다.
 
 ## 문서 안 그림
 
-- `thinkflow md`로 `thinkflow` 코드 블록에서 SVG를 만들고 이미지 줄을 갱신한다. 블록, 파일 이름, 출력 위치, 오래된 SVG 정리 규칙은 [markdown](https://github.com/woonyong-choi/torso/blob/main/docs/design/markdown.md)이 정본이다. 문법과 기본값을 옮겨 적지 않는다.
+- `torso md`로 `torso` 코드 블록에서 SVG를 만들고 이미지 줄을 갱신한다. 블록, 파일 이름, 출력 위치, 오래된 SVG 정리 규칙은 [markdown](https://github.com/woonyong-choi/torso/blob/main/docs/design/markdown.md)이 정본이다. 문법과 기본값을 옮겨 적지 않는다.
 - 원본 문서와 생성 SVG를 함께 커밋한다. 생성 이미지 줄의 대체 글은 블록의 `title`에서 오므로 `title`에도 대체 글 규칙을 적용한다.
 
 ## 최신성 검사
