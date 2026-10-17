@@ -168,6 +168,8 @@ Claude Code에서는 `/just-mode`, Codex에서는 `$just-mode` 뒤에 목표와 
 - 그림
   - [README 그림](docs/assets/README.md)
 
+[전체 문서 목록](docs/README.md)
+
 ## 개발
 
 설치 스크립트는 Python 3.9 이상, 개발 시험은 Python 3.10 이상을 사용합니다. CI는 Python 3.12, pytest 8.4.2, Node.js 22, Bun 1.4.2로 실행합니다. career PDF 컴파일 시험은 `typst` 명령 또는 Python 패키지가 있을 때 실행합니다.
