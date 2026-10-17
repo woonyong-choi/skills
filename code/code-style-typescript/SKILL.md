@@ -91,11 +91,13 @@ description: "JavaScript와 TypeScript 코드를 쓰거나 검토할 때, ESLint
 - 이름은 code-style 형식을 따르고 대상은 함수 이름을 그대로 쓴다(`parseFlow_empty_input_throws`).
 - 외부 명령이나 브라우저가 없으면 `{ skip: '<이유>' }`로 건너뛰고 미검증 범위를 보고한다. 바뀐 요구사항의 필수 검증이면 완료 판정을 미룬다.
 - 브라우저 동작은 Playwright(`playwright-core`)로 실제 페이지를 열어 확인한다.
+- 로컬에서 돌릴 수 있는 것은 목을 쓰지 않고 진짜로 테스트한다. 누수와 해제 검사가 있는 실제 테스트 도구를 쓰고, UI는 실행 중인 빌드에서 확인한다.
 
 ## 린트 설정
 
 - ESLint와 Prettier 설정을 만들거나 바꾸거나 감사하기 전에 반드시 [린트 설정](references/lint.md)을 읽는다.
-- 이름, 비교 순서, `&&`와 `||`의 개수와 섞기, 선언 순서, bool 매개변수 수는 ESLint가 잡지 못하므로 직접 확인한다.
+- 이름, `yoda`가 보지 않는 비교 순서, `&&`와 `||`의 개수와 섞기, 선언 순서, bool 매개변수 수는 이 설정이 잡지 않으므로 직접 확인한다.
+- 이 ESLint 설정은 `.js`, `.mjs`, `.cjs`만 검사한다. `.jsx`, `.ts`, `.tsx`를 넣는 방법과 한계는 [린트 설정](references/lint.md)에 있다.
 
 ## 검사 명령
 
@@ -113,7 +115,7 @@ node --test
 
 ## TypeScript 전용
 
-- 바탕 원칙은 **principle-type-system-discipline** 스킬과 **principle-boundary-discipline** 스킬이다. 규칙별 코드 예는 [TypeScript 타입 예](references/types.md)에 있다.
+- 바탕 원칙은 **principle-type-system-discipline** 스킬과 **principle-boundary-discipline** 스킬이다. 타입 코드를 규칙의 예와 대조할 때 [TypeScript 타입 예](references/types.md)를 읽는다.
 - 타입은 JSDoc 타입 대신 TypeScript 타입으로 쓴다. JSDoc은 공개 API의 실패 조건 `@throws`처럼 타입 밖의 계약에만 쓴다.
 - 변형은 `kind` 리터럴 판별자로 모델링한다(판별 유니온). 불가능한 상태를 표현할 수 있는 모양과 선택적 필드 묶음을 쓰지 않는다.
 - 원시 타입은 `& { readonly __brand: 'X' }`로 구분한다(브랜드 타입). 경계에서 한 번 검증한다.
@@ -129,7 +131,6 @@ node --test
 - 경계에서 검증한다. 들어오는 곳에서 이름 붙은 도메인 타입으로 파싱한다. `Record<string, unknown>`은 어떤 표기든 파싱 지점 밖으로 넘기지 않는다. 전송 형식은 `ignoreUnknownFields`로 파싱하고, 저장된 JSON은 버전 정보와 파싱 실패 처리를 둔다.
 - 스키마에서 타입을 도출한다. 새 인터페이스를 선언하기 전에 `Pick`, `Omit`, `Parameters`, `ReturnType`, `Awaited`, `typeof`를 쓴다.
 - 인자 순서는 위치 인자 대신 객체 인자로 드러낸다. 핫 패스(프레임마다 렌더, 토크나이저, 파서)는 예외다.
-- 로컬에서 돌릴 수 있는 것은 목을 쓰지 않고 진짜로 테스트한다. 누수와 해제 검사가 있는 실제 테스트 도구를 쓰고, UI는 실행 중인 빌드에서 확인한다.
 
 TypeScript 파일에는 검사 명령을 하나 더 돌린다.
 

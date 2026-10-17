@@ -101,14 +101,32 @@ def shared_root(repo: Path) -> Path:
     return common.parent if common is not None and common.name == ".git" else repo
 
 
-def branch_task(repo: Path) -> str | None:
-    """연결 과업이 없을 때 쓰는 과업 이름. 현재 브랜치 이름의 `/`를 `-`로 바꾼다. 분리된 HEAD면 없음."""
+def current_branch(repo: Path) -> str | None:
+    """현재 브랜치 이름. 분리된 HEAD면 없음."""
     done = subprocess.run(
         ["git", "-C", str(repo), "symbolic-ref", "--short", "-q", "HEAD"],
         capture_output=True, text=True, timeout=time_budget(2),
     )
-    name = done.stdout.strip().replace("/", "-")
-    return name if done.returncode == 0 and TASK_NAME.fullmatch(name) else None
+    return done.stdout.strip() if done.returncode == 0 and done.stdout.strip() else None
+
+
+def on_work_branch(repo: Path) -> bool:
+    """기본 브랜치가 아닌 브랜치에 있는가. 기본 브랜치는 `origin/HEAD`, 없으면 `main`이나 `master`다."""
+    branch = current_branch(repo)
+    if branch is None:
+        return False
+    done = subprocess.run(
+        ["git", "-C", str(repo), "symbolic-ref", "--short", "-q", "refs/remotes/origin/HEAD"],
+        capture_output=True, text=True, timeout=time_budget(2),
+    )
+    remote = done.stdout.strip().split("/", 1)[-1] if done.returncode == 0 else ""
+    return branch != remote if remote else branch not in {"main", "master"}
+
+
+def branch_task(repo: Path) -> str | None:
+    """연결 과업이 없을 때 쓰는 과업 이름. 현재 브랜치 이름의 `/`를 `-`로 바꾼다. 분리된 HEAD면 없음."""
+    name = (current_branch(repo) or "").replace("/", "-")
+    return name if TASK_NAME.fullmatch(name) else None
 
 
 def local_folder(repo: Path, *parts: str) -> Path:

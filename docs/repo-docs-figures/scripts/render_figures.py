@@ -11,8 +11,6 @@ import sys
 from pathlib import Path
 
 SOURCE_SUFFIXES = (".thinkflow", ".tape")
-# 이전 그림 도구의 원본 확장자. 문법이 달라 이름만 바꿔서는 변환되지 않는다.
-OLD_SUFFIXES = (".dap",)
 
 
 class SourceError(Exception):
@@ -36,7 +34,7 @@ def main(argv: list[str]) -> int:
         invalid = [p for p in sources if not p.endswith(SOURCE_SUFFIXES)]
         if invalid:
             for source in invalid:
-                print(f"{source}: migrate to .thinkflow before rendering", file=sys.stderr)
+                print(f"{source}: unsupported source; use .thinkflow or .tape", file=sys.stderr)
             return 1
         figures = [p for p in sources if p.endswith(".thinkflow")]
         tapes = [p for p in sources if p.endswith(".tape")]
@@ -74,10 +72,10 @@ def main(argv: list[str]) -> int:
 
 
 def _tracked_sources() -> list[str]:
-    """저장소 루트의 docs/assets/ 아래 추적 원본. 옛 형식도 넣어 변환 전 실패시킨다.
+    """저장소 루트의 docs/assets/ 아래 추적 원본.
     하위 폴더에서 실행해도 루트 기준으로 찾고, 경로는 현재 위치 기준으로 돌려준다."""
     root = _repository_root()
-    patterns = [f"docs/assets/*{suffix}" for suffix in SOURCE_SUFFIXES + OLD_SUFFIXES]
+    patterns = [f"docs/assets/*{suffix}" for suffix in SOURCE_SUFFIXES]
     listed = _git("-C", str(root), "ls-files", "-z", "--", *patterns)
     return [
         os.path.relpath(root / p.decode("utf-8")) for p in listed.split(b"\0") if p

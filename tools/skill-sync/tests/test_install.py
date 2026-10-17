@@ -173,7 +173,7 @@ def test_install_changed_zip_payload_rebuilt(install_home: Path, damage: str) ->
 def _check_installed_rule_hooks(skills: Path, work: Path) -> None:
     # 설치본 just-mode 훅: 세션 시작·압축 뒤 한 줄 안내(본문 주입 없음), 연결 과업이면 결정 기록 꼬리
     hook = skills / 'just-mode/scripts/hooks/hook.py'
-    entry_line = f"코드를 바꾸는 개발 일이면 {skills / 'just-mode/SKILL.md'}를 읽고 그 순서로 진행한다."
+    entry_line = f"코드를 바꾸는 개발 일(버그 수정, 기능, 리팩터링, 여러 파일 변경)이면 {skills / 'just-mode/SKILL.md'}를 읽고 그 순서로 진행한다."
     body = (skills / 'just-mode/SKILL.md').read_text()
     work.mkdir(parents=True, exist_ok=True)
     subprocess.run(['git', 'init', '-q', str(work)], check=True)
@@ -201,7 +201,7 @@ def _check_installed_rule_hooks(skills: Path, work: Path) -> None:
 def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str, work: Path) -> None:
     # #58: 실제 설치 훅 → 누락 차단 → 원문 조회 → 출력 대조 → 원래 도구 재개. #62: 편집만 차단 대상
     target = str(work / 'tool.py')
-    payload = {'cwd': str(work), 'session_id': session, 'tool_name': 'Edit', 'tool_input': {'file_path': target, 'old_string': 'a', 'new_string': 'a'}}
+    payload = {'cwd': str(work), 'session_id': session, 'tool_name': 'Edit', 'tool_input': {'file_path': target, 'old_string': 'a', 'new_string': "import subprocess\n\ndef run():\n    raise ValueError('x')\n"}}
     def invoke(event: str, **extra: object) -> dict:
         done = subprocess.run([sys.executable, str(hook), host], input=json.dumps({**payload, 'hook_event_name': event, **extra}), capture_output=True, text=True, env=env)
         assert done.returncode == 0 and not done.stderr, done.stderr
@@ -228,7 +228,7 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str, w
     assert '전달 완료' in repeated.stdout
     assert not invoke('PreToolUse')
     reader = hook.parents[1] / 'rules/read_rules.py'
-    for arguments in ('tool.py', '--ids CS-ERROR CS-TEST', '--ids=CS-ERROR'):
+    for arguments in ('tool.py', '--ids CS-ERROR CS-CORE', '--ids=CS-ERROR'):
         rewritten = invoke('PreToolUse', tool_input={'command': f'{sys.executable} {reader} {arguments}'})['hookSpecificOutput']['updatedInput']
         reused = subprocess.run(shlex.split(rewritten['command']), capture_output=True, text=True, env=env, cwd=work)
         assert reused.returncode == 0 and '전달 완료' in reused.stdout, arguments

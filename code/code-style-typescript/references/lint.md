@@ -41,6 +41,8 @@ export default [
 ];
 ```
 
+- ESLint 기본 대상은 `.js`, `.mjs`, `.cjs`다. `.jsx`가 있으면 `{ files: ['**/*.jsx'], languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } }`를 더한다.
+- 이 설정은 `.ts`, `.tsx`를 검사하지 않는다. 타입은 `npx tsc --noEmit`이 검사하고, 크기와 복잡도 기준은 직접 확인한다.
 - `defaultExportConfigs`에는 도구가 default export를 요구한다고 확인한 실제 설정 파일 경로를 모두 적는다.
 - CLI와 브라우저 override 경로는 실제 진입점과 브라우저 코드 경로로 바꾼다. 라이브러리는 console 금지를 유지한다.
 - 생성물은 확인한 실제 생성 파일 경로로만 뺀다. 이름 패턴으로 추정하지 않는다.

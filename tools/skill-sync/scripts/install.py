@@ -7,7 +7,7 @@
 
 원본 저장소 찾는 순서: --source, 환경 변수 SKILLS_SOURCE, 이 스크립트가 든 git 저장소, 마지막으로 쓴 원본(~/.config/skills/source)
 
-인자: --target-home 대상 홈, --source 원본, --dist zip 폴더, --dry-run, --remove 이름 목록
+인자: --target-home 대상 홈, --source 원본, --dist zip 폴더, --dry-run, --remove 이름 목록, --tool 설치 대상(codex, antigravity, claude-code, 여러 번 지정 가능)
 출력: stdout 설치·zip 결과, stderr 충돌·실패, 종료 0 성공·1 실패
 """
 from __future__ import annotations

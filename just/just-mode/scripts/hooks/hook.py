@@ -6,10 +6,10 @@
 이벤트별 동작:
   SessionStart·PostCompact 뒤 첫 UserPromptSubmit: just-mode 진입 안내 한 줄, 연결 과업이면 결정 기록 꼬리와 이슈 URL
   UserPromptSubmit: 요청 시작 시점의 작업본·결정 기록 지문 저장
-  PreToolUse: git 저장소 안 코드 편집 전 필수 규칙 원문 전달 확인(미전달이면 거부), 규칙 조회 명령을 미전달분 조회로 바꿈
-  PostToolUse: 규칙 원문 전달 기록, 문맥 사용량 80% 안내, PR 머지 뒤 경력 기록 확인 안내
+  PreToolUse: git 작업본 안 코드 편집 전 필수 규칙 원문 전달 확인(미전달이면 거부), 규칙 조회 명령을 미전달분 조회로 바꿈
+  PostToolUse: 규칙 원문 전달 기록, 편집한 작업본 기록, 문맥 사용량 80% 안내, PR 머지 뒤 경력 기록 확인 안내
   PreCompact: 이번 요청 이후 결정 기록 갱신 여부 안내
-  Stop: 규칙 미전달 편집 또는 파일 변경 뒤 결정 기록 누락이면 한 번 막음
+  Stop: 규칙 미전달 편집, 또는 연결 과업·작업 브랜치의 파일 변경 뒤 결정 기록 누락이면 한 번 막음
 """
 
 from __future__ import annotations
@@ -68,15 +68,16 @@ def edit_request(payload: dict[str, Any]) -> dict[str, Any] | None:
 
 def entry_notice(repo: Path | None, session: str) -> str:
     """세션 시작·압축 뒤 안내. 한 줄 안내 + 연결 과업이면 이슈 URL과 결정 기록 마지막 줄들, 아니면 연결 명령과 최근 결정 기록 이름."""
-    lines = [f"코드를 바꾸는 개발 일이면 {store.entry_skill()}를 읽고 그 순서로 진행한다."]
+    lines = [f"코드를 바꾸는 개발 일(버그 수정, 기능, 리팩터링, 여러 파일 변경)이면 {store.entry_skill()}를 읽고 그 순서로 진행한다."]
     if repo is None or not session:
         return lines[0]
     bound = store.binding(repo, session)
     if not bound:
         script = shlex.quote(str(Path(__file__).with_name("task.py")))
-        branch = store.branch_task(repo)
+        branch = store.branch_task(repo) if store.on_work_branch(repo) else None
         task = shlex.quote(branch) if branch else "<과업>"
-        lines.append(f"과업 연결: `python3 {script} bind --session-id {session} --task {task} --issue <이슈 URL>`")
+        later = "" if branch else " 브랜치를 만든 뒤 연결한다."
+        lines.append(f"과업 연결: `python3 {script} bind --session-id {session} --task {task} --issue <이슈 URL>`{later}")
         recent = store.recent_tasks(repo)
         if recent:
             lines.append(f"최근 결정 기록({store.decisions_folder(repo)}): {', '.join(recent)}. 이어받을 일이면 그 과업 이름으로 연결한다.")
@@ -90,6 +91,12 @@ def entry_notice(repo: Path | None, session: str) -> str:
     else:
         lines.append(f"결정 기록 {log} 없음. 단계 경계마다 한 줄씩 남긴다.")
     return "\n".join(lines)
+
+
+def path_root(source: Path) -> Path | None:
+    """편집 대상 경로의 git 작업본 루트. 아직 없는 파일은 가장 가까운 있는 상위 폴더로 판정한다."""
+    folder = next((parent for parent in (source, *source.parents) if parent.is_dir()), None)
+    return store.git_root(str(folder)) if folder is not None else None
 
 
 def tool_failed(value: Any) -> bool:
@@ -146,6 +153,7 @@ def handle(host: str, payload: dict[str, Any]) -> dict[str, Any]:
         return rule_gate(payload, repo, session)
     if event == "PostToolUse":
         rule_gate(payload, repo, session)
+        record_edit(payload, repo, session)
         return response(event, "\n".join(text for text in (usage_notice(repo, session), merge_notice(payload)) if text))
     if event == "UserPromptSubmit":
         return response(event, prompt_started(repo, session))
@@ -183,6 +191,7 @@ def prompt_started(repo: Path, session: str) -> str:
             "prompt_at": time.time(),
             "tree": store.tree_mark(repo),
             "decisions": store.decision_mark(repo, state.get("task")),
+            "edited": [],
             "stop_blocked": False,
         })
         reinject = state.pop("reinject", False)
@@ -224,8 +233,23 @@ def compact_check(repo: Path, session: str) -> dict[str, Any]:
     return {"systemMessage": "이번 요청 이후 결정 기록에 새 줄이 없다. 압축 뒤 첫 요청에서 결정 기록을 먼저 갱신하도록 안내한다."}
 
 
+def record_edit(payload: dict[str, Any], repo: Path, session: str) -> None:
+    """성공한 편집의 대상 작업본 루트를 이번 요청 상태에 더한다. 세션 폴더 밖의 형제 워크트리도 Stop 판정에 들어간다."""
+    edit = edit_request(payload)
+    if edit is None or tool_failed(payload.get("tool_response")):
+        return
+    roots = {str(root) for root in map(path_root, rule_reader().edit_targets(edit)) if root is not None}
+    if not roots:
+        return
+    path = store.session_path(repo, session)
+    with store.locked(repo):
+        state = store.read(path)
+        state["edited"] = sorted({*state.get("edited", []), *roots})
+        store.save(path, state)
+
+
 def decision_gate(payload: dict[str, Any], repo: Path, session: str) -> dict[str, Any]:
-    """이번 요청에서 파일이 바뀌었는데 결정 기록에 새 줄이 없으면 한 번 막는다."""
+    """이번 요청에서 파일이 바뀌었는데 결정 기록에 새 줄이 없으면 한 번 막는다. 과업을 연결했거나 바뀐 작업본이 작업 브랜치일 때만 본다."""
     if payload.get("stop_hook_active"):
         return {}
     path = store.session_path(repo, session)
@@ -233,14 +257,18 @@ def decision_gate(payload: dict[str, Any], repo: Path, session: str) -> dict[str
         state = store.read(path)
         if "tree" not in state or state.get("stop_blocked"):
             return {}
-        changed = store.tree_mark(repo) != state["tree"]
         task = state.get("task")
+        edited = [Path(root) for root in state.get("edited", [])]
+        changed = bool(edited) or store.tree_mark(repo) != state["tree"]
         if not changed or store.decision_mark(repo, task) > state.get("decisions", 0):
+            return {}
+        work = next((root for root in (repo, *edited) if store.on_work_branch(root)), None)
+        if not task and work is None:
             return {}
         state["stop_blocked"] = True
         store.save(path, state)
     logger = store.skill_file(store.DECISION_LOGGER)
-    target = store.decision_log(repo, task or store.branch_task(repo) or "<과업>")
+    target = store.decision_log(repo, task or (work and store.branch_task(work)) or "<과업>")
     command = f"bash {shlex.quote(str(logger))} {shlex.quote(str(target))} <phase> <decision> <why> <evidence> <result>" if logger else str(target)
     return {
         "decision": "block",
@@ -256,7 +284,7 @@ def rule_reader() -> ModuleType:
 
 
 def rule_gate(payload: dict[str, Any], repo: Path, session: str) -> dict[str, Any]:
-    """git 저장소 안 편집 전 필수 규칙 원문 전달 확인. 상태는 세션·서브에이전트마다 따로 둔다."""
+    """git 작업본 안 편집 전 필수 규칙 원문 전달 확인. 작업본은 편집 대상 경로마다 판정하고, 상태는 세션·서브에이전트마다 따로 둔다."""
     event = payload.get("hook_event_name")
     if event not in {"PreToolUse", "PostToolUse", "Stop"}:
         return {}
@@ -270,7 +298,7 @@ def rule_gate(payload: dict[str, Any], repo: Path, session: str) -> dict[str, An
             scope = state.setdefault("rule_scope", {})
             is_query = reader.select_query(payload, scope)
             if edit is not None:
-                reader.select_for_tool(edit, repo, scope)
+                reader.select_for_tool(edit, scope, lambda source: path_root(source) is not None)
         try:
             pending = reader.pending_rules(state)
         except (OSError, ValueError, TypeError) as error:
