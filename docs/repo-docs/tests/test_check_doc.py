@@ -14,6 +14,33 @@ import check_doc  # noqa: E402
 
 
 class DocumentStyleTest(unittest.TestCase):
+    def test_main_torso_marker_preserves_html_and_sentence_checks(self) -> None:
+        cases = [
+            ("guide.md", "![요청을 저장하는 경로](usage-request.svg)<!-- torso -->\n", []),
+            ("README.md", "![요청](usage-request.svg)<!-- torso -->\n", []),
+            ("guide.md", "> ![요청](usage-request.svg)<!-- torso -->\n", ["인용 블록"]),
+            ("guide.md", "![요청](usage-request.svg)<!-- Torso -->\n", ["HTML"]),
+            ("guide.md", "![요청](usage-request.svg)<!--torso-->\n", ["HTML"]),
+            ("guide.md", "![요청](usage-request.svg)<!-- torso extra -->\n", ["HTML"]),
+            ("guide.md", "![요청](usage-request.svg)<!-- torso md v2 x -->\n", ["HTML"]),
+            ("guide.md", "<!-- 설명 -->\n", ["HTML"]),
+            ("guide.md", "<div>그림</div><!-- torso -->\n", ["HTML"]),
+            ("guide.md", "![요청](usage-request.svg)<!-- torso --><!-- 설명 -->\n", ["HTML"]),
+            ("guide.md", "```text\n<!-- torso -->\n<!-- 설명 -->\n<div>그림</div>\n```\n", []),
+            ("guide.md", "입력을 저장해요.<!-- torso -->\n", ["문체"]),
+            ("guide.md", "입력을 저장합니다.<!-- torso -->\n", ["문체(평서)"]),
+            ("README.md", "입력을 저장한다.<!-- torso -->\n", ["문체(합쇼)"]),
+            ("guide.md", "입력을 저장한다.<!-- torso -->\n", []),
+        ]
+        for name, source, expected in cases:
+            with self.subTest(name=name, source=source):
+                output = io.StringIO()
+                with patch("builtins.open", mock_open(read_data=source)), contextlib.redirect_stdout(output):
+                    code = check_doc.main([name])
+                messages = [line.split(": ", 1)[1] for line in output.getvalue().splitlines()]
+                self.assertEqual(messages, expected)
+                self.assertEqual(code, 1 if expected else 0)
+
     # 파일 대신 메모리 표본으로 공개 CLI 진입점 실행
     def test_main_style_signals_and_preserved_sources(self) -> None:
         cases = [
