@@ -125,19 +125,16 @@ Claude Code에서는 `/just-mode`, Codex에서는 `$just-mode` 뒤에 목표와 
 
 ## 문서
 
-- 작업 진행
-  - [just-mode](just/just-mode/SKILL.md)
+- [작업 진행](just/just-mode/SKILL.md)
   - [just 도움말](just/just-help/SKILL.md)
   - [just do 훅](just/just-mode/references/hooks.md)
   - [호스트 대응표](just/just-mode/references/hosts.md)
   - [모델 설정](just/just-setup/SKILL.md)
-- Git과 GitHub
-  - [git-branch](git/git-branch/SKILL.md)
+- [Git과 GitHub](git/git-branch/SKILL.md)
   - [git-commit](git/git-commit/SKILL.md)
   - [git-issue](git/git-issue/SKILL.md)
   - [git-pull-request](git/git-pull-request/SKILL.md)
-- 코드와 폴더
-  - [code-style](code/code-style/SKILL.md)
+- [코드와 폴더](code/code-style/SKILL.md)
   - [code-refactoring](code/code-refactoring/SKILL.md)
   - [code-style-css](code/code-style-css/SKILL.md)
   - [code-style-typescript](code/code-style-typescript/SKILL.md)
@@ -145,8 +142,7 @@ Claude Code에서는 `/just-mode`, Codex에서는 `$just-mode` 뒤에 목표와 
   - [code-style-python](code/code-style-python/SKILL.md)
   - [code-style-rust](code/code-style-rust/SKILL.md)
   - [folder-naming](code/folder-naming/SKILL.md)
-- 저장소 문서
-  - [repo-docs](docs/repo-docs/SKILL.md)
+- [저장소 문서](docs/repo-docs/SKILL.md)
   - [repo-docs-readme](docs/repo-docs-readme/SKILL.md)
   - [repo-docs-design](docs/repo-docs-design/SKILL.md)
   - [repo-docs-spec](docs/repo-docs-spec/SKILL.md)
@@ -158,15 +154,11 @@ Claude Code에서는 `/just-mode`, Codex에서는 `$just-mode` 뒤에 목표와 
   - [repo-docs-llms](docs/repo-docs-llms/SKILL.md)
   - [career](docs/career/SKILL.md)
   - [hanger](docs/hanger/SKILL.md)
-- 디자인
-  - [design-tokens](design/design-tokens/SKILL.md)
-- 스킬 관리
-  - [skill-sync](tools/skill-sync/SKILL.md)
-- 실험
-  - [스킬 노출 구조](experiments/skill-exposure/report.md)
+- [디자인](design/design-tokens/SKILL.md)
+- [스킬 관리](tools/skill-sync/SKILL.md)
+- [실험](experiments/skill-exposure/report.md)
   - [형식 통일과 조건부 읽기](experiments/skill-format-unification/report.md)
-- 그림
-  - [README 그림](docs/assets/README.md)
+- [그림](docs/assets/README.md)
 
 [전체 문서 목록](docs/README.md)
 
