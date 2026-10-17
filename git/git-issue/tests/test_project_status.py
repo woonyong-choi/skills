@@ -1,4 +1,5 @@
-"""#90 상태표: 보류인데 재개 조건이 없거나 보류 30일 이상이면 check가 알리고 상태는 바꾸지 않는다."""
+"""#90 상태표: 보류인데 재개 조건이 없거나 보류 30일 이상이면 check가 알리고 상태는 바꾸지 않는다.
+queue: 대기 이슈를 판의 수동 순서대로 보여 준다."""
 
 from __future__ import annotations
 
@@ -59,6 +60,36 @@ class ProjectAttentionTest(unittest.TestCase):
         self.assertFalse(any("#1" in line for line in lines), lines)
         self.assertTrue(any("#2" in line and "재개 조건 없음" in line for line in lines), lines)
         self.assertTrue(any("#3" in line and "보류 30일" in line for line in lines), lines)
+
+
+class ProjectQueueTest(unittest.TestCase):
+    def test_queue_lists_waiting_issues_in_board_order(self) -> None:
+        page = {"hasNextPage": False, "endCursor": None}
+        queries: list[str] = []
+
+        def item(number: int, status: str, *, state: str = "OPEN", repo: str = "o/r") -> dict:
+            content = {"number": number, "title": f"이슈 {number}", "state": state, "repository": {"nameWithOwner": repo}}
+            return {"id": f"I{number}", "content": content, "fieldValueByName": {"name": status, "updatedAt": "2026-01-01T00:00:00Z"}, "hold": None}
+
+        items = [item(7, "대기"), item(3, "진행"), item(9, "대기", state="CLOSED"), item(4, "대기", repo="o/other"), {"id": "D", "content": {}, "fieldValueByName": {"name": "대기"}}, item(2, "대기")]
+
+        def fake(args: list[str], payload: str | None) -> dict:
+            query = json.loads(payload or "{}").get("query", "")
+            queries.append(query)
+            if "mutation" in query:
+                raise AssertionError("queue must not change status")
+            if "projectsV2" in query:
+                return {"data": {"repository": {"projectsV2": {"nodes": [{"id": "P", "number": 1, "title": "판"}], "pageInfo": page}}}}
+            if "items(" in query:
+                return {"data": {"node": {"items": {"nodes": items, "pageInfo": page}}}}
+            raise AssertionError(query)
+
+        with mock.patch("builtins.print") as printed:
+            code = project_status.main(["--repo", "o/r", "queue"], gh=fake)
+        lines = [call.args[0] for call in printed.call_args_list]
+        self.assertEqual(code, 0, lines)
+        self.assertEqual(lines[1:], ["#7 이슈 7", "#2 이슈 2"])
+        self.assertTrue(any("orderBy:{field:POSITION,direction:ASC}" in query for query in queries))
 
 
 if __name__ == "__main__":

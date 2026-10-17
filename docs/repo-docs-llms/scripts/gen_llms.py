@@ -2,7 +2,7 @@
 
 사용: python3 gen_llms.py [--full] (저장소 루트에서 실행)
 
-인자: --full, --remote(기본 origin), --branch(기본 원격 HEAD 조회), --raw-base-url, --private-dir 반복(기본 .local·archive 대체), 저장소 루트에서 실행
+인자: --full, --remote(기본 origin), --branch(기본 원격 HEAD 조회), --raw-base-url, --private-dir 반복(기본 .local 대체), 저장소 루트에서 실행
 실행 조건: Python 3.9 이상, 표준 라이브러리, Git. URL 자동 구성은 github.com 원격만 지원
 출력: llms.txt, --full이면 llms-full.txt, stdout 없음, stderr 실패 이유, 종료 0 성공·1 실행 실패·2 인자 오류
 """
@@ -94,7 +94,7 @@ def read_rows() -> list[tuple[str, str, str]]:
 
 
 # URL 파싱과 디코딩은 메모리에서만 수행
-def _private_path(value: str, private_dirs: tuple[str, ...] = (".local", "archive")) -> bool:
+def _private_path(value: str, private_dirs: tuple[str, ...] = (".local",)) -> bool:
     decoded = html.unescape(value)
     while True:
         unquoted = urllib.parse.unquote(decoded)
@@ -105,7 +105,7 @@ def _private_path(value: str, private_dirs: tuple[str, ...] = (".local", "archiv
     parts = [part.casefold() for part in path.split("/") if part not in ("", ".")]
     return bool({name.casefold() for name in private_dirs}.intersection(parts))
 
-def is_public(root: Path, relative: str, private_dirs: tuple[str, ...] = (".local", "archive")) -> bool:
+def is_public(root: Path, relative: str, private_dirs: tuple[str, ...] = (".local",)) -> bool:
     if _private_path(relative, private_dirs):
         return False
     real = (root / relative).resolve()
@@ -117,7 +117,7 @@ def is_public(root: Path, relative: str, private_dirs: tuple[str, ...] = (".loca
     return all(subprocess.run(["git", "check-ignore", "-q", "--", path]).returncode == 1 for path in (relative, real_relative))
 
 
-def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url: str | None = None, private_dirs: tuple[str, ...] = (".local", "archive")) -> int:
+def main(full: bool, remote: str = "origin", branch: str | None = None, raw_url: str | None = None, private_dirs: tuple[str, ...] = (".local",)) -> int:
     raw = raw_base_url(remote, branch, raw_url)
     rows = read_rows()
     root = Path.cwd().resolve()
@@ -181,11 +181,11 @@ if __name__ == "__main__":
     parser.add_argument("--remote", default="origin")
     parser.add_argument("--branch", help="default: remote HEAD; main only when explicitly selected")
     parser.add_argument("--raw-base-url", help="raw document root URL for other hosts")
-    parser.add_argument("--private-dir", action="append", help="private directory name; repeated options replace .local and archive defaults")
+    parser.add_argument("--private-dir", action="append", help="private directory name; repeated options replace the .local default")
     args = parser.parse_args()
     if args.private_dir and any(not name or "/" in name or "\\" in name or name in {".", ".."} for name in args.private_dir):
         parser.error("--private-dir requires one directory name")
     try:
-        sys.exit(main(args.full, args.remote, args.branch, args.raw_base_url, tuple(args.private_dir) if args.private_dir else (".local", "archive")))
+        sys.exit(main(args.full, args.remote, args.branch, args.raw_base_url, tuple(args.private_dir) if args.private_dir else (".local",)))
     except (OSError, subprocess.SubprocessError) as error:
         sys.exit(str(error))

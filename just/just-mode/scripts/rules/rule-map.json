@@ -4,7 +4,7 @@
     "principle-prove-it-works": {
       "skill": "principle-prove-it-works",
       "path": "SKILL.md",
-      "sha256": "ed939a27ba34dda02bdc63a82df6b41bd82f2ca5ff2ceb88749f6521c4015cc2"
+      "sha256": "ea898c6c0e449792e5046b20111d7fcc5631dd459c0fab7496fb7bb86349d521"
     },
     "principle-foundational-thinking": {
       "skill": "principle-foundational-thinking",
@@ -24,7 +24,7 @@
     "principle-sequence-verifiable-units": {
       "skill": "principle-sequence-verifiable-units",
       "path": "SKILL.md",
-      "sha256": "72216942ee1f20ccd922f9ec659fd4f0e985ebd03e1dac266b8be841310decfb"
+      "sha256": "aea3aa3f199b9c6eb22c298fcc1ba8d2ef8f9122c84f72981a3a65f10fa87a2e"
     },
     "principle-boundary-discipline": {
       "skill": "principle-boundary-discipline",
@@ -34,7 +34,7 @@
     "principle-type-system-discipline": {
       "skill": "principle-type-system-discipline",
       "path": "SKILL.md",
-      "sha256": "1f83a9f0918a65bc90ef7a2083c1922181aa42b7878803e3b38f2a28b815e81d"
+      "sha256": "0a46e9d414c72092345ce32acf86a097588204dafb2d36ed1db4c8e373d01e04"
     },
     "principle-model-the-domain": {
       "skill": "principle-model-the-domain",
@@ -61,16 +61,6 @@
       "path": "SKILL.md",
       "sha256": "68df9765c9aff3da96294e877ba7afce8bde6f9d3bacda2b73a19cb3e870d578"
     },
-    "principle-fix-root-causes": {
-      "skill": "principle-fix-root-causes",
-      "path": "SKILL.md",
-      "sha256": "7b6ebd0a36516bb0bc8c49921369b0abf2f985353395b82310a62058b9645a01"
-    },
-    "principle-attack-the-premise": {
-      "skill": "principle-attack-the-premise",
-      "path": "SKILL.md",
-      "sha256": "7309f9e4f303bc225df577aca5fd7fe46008b9cb5e93101cf08d907248d1fa0c"
-    },
     "CS-CORE": {
       "skill": "code-style",
       "path": "SKILL.md",
@@ -78,15 +68,7 @@
         "",
         "원칙"
       ],
-      "sha256": "2f5d8fd93db6eecb0e075d3ee7b2837fe7bd20bc2b392c79e7af223a80e2eb3e"
-    },
-    "CS-VERIFY": {
-      "skill": "code-style",
-      "path": "SKILL.md",
-      "sections": [
-        "검증"
-      ],
-      "sha256": "8b87f02d279c23afc785f3879ebac6a2d99b8ff32fc97f64ae8199e65c0a10d9"
+      "sha256": "7938aef536bf645bc15ad5f39179ddb1cd0544cfbdf21af8845242643bec44ad"
     },
     "CS-FAILURE": {
       "skill": "code-style",
@@ -131,7 +113,7 @@
       "sections": [
         "선언 순서"
       ],
-      "sha256": "7f9e8a0b75fc0de2cd2932edbb2eabf5dfc54586e922e977a0764ed00fb52044"
+      "sha256": "a54a69db257fccf427b36e4de946bc37dd6197e685bae6f7fb2efe231ac6269d"
     },
     "CS-VISIBILITY": {
       "skill": "code-style",
@@ -139,12 +121,12 @@
       "sections": [
         "공개 범위와 주석"
       ],
-      "sha256": "fced4469ec6a960de96188fa4833a635798162bd4de142be575f387702fa5872"
+      "sha256": "d6cde41f35c8b54f51d0a0f7656f214f805b091c801603710a7263866da1cc8f"
     },
     "CS-ERROR": {
       "skill": "code-style",
       "path": "references/errors.md",
-      "sha256": "f25cc951efa5268f1c55aa305af90c3ee351af10d0ee9c4de6fb00f33bb71518"
+      "sha256": "03c940cf6dc96dfe086a11991a9cded52201817e6b5c14c11182a2cb6605fb64"
     },
     "CS-TEST": {
       "skill": "code-style",
@@ -174,12 +156,12 @@
     "code-style-python": {
       "skill": "code-style-python",
       "path": "SKILL.md",
-      "sha256": "6e9f8de3fcecf96ab7385eda1a2c313033dd1ae5379caf100cbd5b2b9e708594"
+      "sha256": "06986f2ea3bd394c204db9afaa2016b6c0fe47ba4e62a73f8ca6367b4f062d25"
     },
     "code-style-typescript": {
       "skill": "code-style-typescript",
       "path": "SKILL.md",
-      "sha256": "2dbf57316258e85f6417cea3126dc528259e0ba8601b13ac7355932f01dff7e4"
+      "sha256": "1ad6aa0c4b5aee750f899e78562a8721878991bd5e91fdadb4c68eb4f632c672"
     },
     "code-style-typescript-common": {
       "skill": "code-style-typescript",
@@ -187,22 +169,22 @@
       "drop": [
         "TypeScript 전용"
       ],
-      "sha256": "296c3cf880e4c3b29e6f2c65b080be615eea0e8f1b678dc0b10498c15f6b6fc3"
+      "sha256": "5d3fd1b58470d6d640df7f955749a5ed4bdcf60106306178739625b72ed9655c"
     },
     "code-style-rust": {
       "skill": "code-style-rust",
       "path": "SKILL.md",
-      "sha256": "3d55b032e38ba90c86cef3337d9dc39a8322cf7ed9f54e666b05d8e54c92c774"
+      "sha256": "6e42aded4e78fe7e51e8d354e91cb561a34742fc6ea027b4f15e0b2c290de051"
     },
     "code-style-kotlin": {
       "skill": "code-style-kotlin",
       "path": "SKILL.md",
-      "sha256": "c5f55349c964e7cada923645d0f998e7ef006549e98ad04ceb179bfc2948f6b3"
+      "sha256": "781639a4e138f9796f1919e68f017f4f589d42a5fe631f0609a5f6c7c2acd2ff"
     },
     "code-style-css": {
       "skill": "code-style-css",
       "path": "SKILL.md",
-      "sha256": "381e3553699b9cc6ae555042eee10796ee7c85750ca5bc8589e8cb8eb72fda3b"
+      "sha256": "6c905720aacac59cf25918a72e37c30890a9a897be1efba79ecad7f0dcc58a74"
     }
   },
   "select": [
@@ -224,7 +206,6 @@
       "rules": [
         "principle-prove-it-works",
         "CS-CORE",
-        "CS-VERIFY",
         "CS-LANGUAGE",
         "CS-TEST"
       ]
@@ -437,6 +418,7 @@
       "content": "\\b(?:raise|try|except|throw|catch|Result|Error|open|fetch|parse|loads)\\b|read_|write_|subprocess|JSON\\.parse",
       "rules": [
         "CS-ERROR",
+        "CS-FAILURE",
         "principle-boundary-discipline"
       ]
     },

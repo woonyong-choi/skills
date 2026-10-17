@@ -780,5 +780,8 @@ describe("orch CLI", () => {
     const missing = runCli(["init"], env, repo);
     expect(missing.code).toBe(1);
     expect(missing.stderr).toContain("--name <이름>(.local/orch/<이름>) 또는 --store <dir>를 지정");
+
+    expect(await readFile(join(repo, ".local", ".gitignore"), "utf8")).toBe("*\n");
+    expect(git({ repo, args: ["status", "--porcelain"] })).toBe("");
   });
 });

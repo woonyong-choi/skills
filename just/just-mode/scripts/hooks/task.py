@@ -1,15 +1,16 @@
 """just do 훅의 과업 연결과 저장소 `.local/` 상태를 다룬다.
 
 사용:
-  python3 task.py bind --task <과업> [--issue <이슈 URL>] [--session-id <세션 ID>] [--cwd <경로>]
+  python3 task.py bind [--task <과업>] [--issue <이슈 URL>] [--session-id <세션 ID>] [--cwd <경로>]
   python3 task.py show [--session-id <세션 ID>] [--cwd <경로>]
   python3 task.py unbind [--session-id <세션 ID>] [--cwd <경로>]
 
-인자: bind|show|unbind, --task 과업 이름, --issue 이슈 URL, --session-id 세션 ID(생략하면 CODEX_THREAD_ID), --cwd 작업 경로(기본 현재 폴더)
+인자: bind|show|unbind, --task 과업 이름(생략하면 현재 브랜치 이름, `/`는 `-`), --issue 이슈 URL, --session-id 세션 ID(생략하면 CODEX_THREAD_ID), --cwd 작업 경로(기본 현재 폴더)
 출력: stdout JSON, 실패는 stderr와 종료 2
 
 연결은 "이 세션이 어느 과업·이슈인지"만 기록한다.
 결정 기록은 `.local/decisions/<과업>.tsv`(show-me-your-work log.sh 형식)이고 이 스크립트는 읽기만 한다.
+`.local/`은 워크트리가 아니라 기본 체크아웃(공통 git 디렉터리의 상위)에 둔다. 워크트리를 지워도 연결과 기록이 남는다.
 """
 
 from __future__ import annotations
@@ -90,8 +91,29 @@ def git_root(cwd: object) -> Path | None:
     return Path(done.stdout.strip()) if done.returncode == 0 and done.stdout.strip() else None
 
 
+def shared_root(repo: Path) -> Path:
+    """`.local/`을 둘 기본 체크아웃. 공통 git 디렉터리가 `.git`이 아니면(서브모듈 등) 작업본 자신."""
+    done = subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", "--path-format=absolute", "--git-common-dir"],
+        capture_output=True, text=True, timeout=time_budget(2),
+    )
+    common = Path(done.stdout.strip()).resolve() if done.returncode == 0 and done.stdout.strip() else None
+    return common.parent if common is not None and common.name == ".git" else repo
+
+
+def branch_task(repo: Path) -> str | None:
+    """연결 과업이 없을 때 쓰는 과업 이름. 현재 브랜치 이름의 `/`를 `-`로 바꾼다. 분리된 HEAD면 없음."""
+    done = subprocess.run(
+        ["git", "-C", str(repo), "symbolic-ref", "--short", "-q", "HEAD"],
+        capture_output=True, text=True, timeout=time_budget(2),
+    )
+    name = done.stdout.strip().replace("/", "-")
+    return name if done.returncode == 0 and TASK_NAME.fullmatch(name) else None
+
+
 def local_folder(repo: Path, *parts: str) -> Path:
-    """저장소 `.local/` 아래 폴더. `.local/`이 git 무시 대상이 아니면 `.local/.gitignore`로 스스로 무시한다."""
+    """기본 체크아웃 `.local/` 아래 폴더. `.local/`이 git 무시 대상이 아니면 `.local/.gitignore`로 스스로 무시한다."""
+    repo = shared_root(repo)
     local = repo / LOCAL
     if local.is_symlink():
         raise TaskError(f"{local} must not be a symlink")
@@ -144,8 +166,18 @@ def locked(repo: Path) -> Iterator[None]:
         yield
 
 
+def decisions_folder(repo: Path) -> Path:
+    return shared_root(repo) / LOCAL / DECISIONS
+
+
 def decision_log(repo: Path, task: str) -> Path:
-    return repo / LOCAL / DECISIONS / f"{task}.tsv"
+    return decisions_folder(repo) / f"{task}.tsv"
+
+
+def recent_tasks(repo: Path, limit: int = 3) -> list[str]:
+    """최근에 고친 결정 기록의 과업 이름. 새 세션이 이어받을 기록을 고르게 알려 준다."""
+    paths = sorted(decisions_folder(repo).glob("*.tsv"), key=lambda path: path.stat().st_mtime, reverse=True)
+    return [path.stem for path in paths[:limit]]
 
 
 def decision_rows(path: Path) -> list[str]:
@@ -160,7 +192,7 @@ def decision_mark(repo: Path, task: str | None) -> int:
     """결정 기록 줄 수. 연결 과업이 있으면 그 기록, 없으면 `.local/decisions/` 전체."""
     if task:
         return len(decision_rows(decision_log(repo, task)))
-    return sum(len(decision_rows(path)) for path in (repo / LOCAL / DECISIONS).glob("*.tsv"))
+    return sum(len(decision_rows(path)) for path in decisions_folder(repo).glob("*.tsv"))
 
 
 def tree_mark(repo: Path) -> str:
@@ -211,7 +243,7 @@ def main(argv: list[str] | None = None) -> int:
         command.add_argument("--session-id")
         command.add_argument("--cwd", default=os.getcwd())
         if name == "bind":
-            command.add_argument("--task", required=True)
+            command.add_argument("--task")
             command.add_argument("--issue", default="")
     args = parser.parse_args(argv)
     try:
@@ -221,9 +253,12 @@ def main(argv: list[str] | None = None) -> int:
         with locked(repo):
             state = read(path)
             if args.command == "bind":
-                if not TASK_NAME.fullmatch(args.task):
+                name = args.task or branch_task(repo)
+                if not name:
+                    raise TaskError("--task required (detached HEAD has no branch name)")
+                if not TASK_NAME.fullmatch(name):
                     raise TaskError("task name: 1-80 chars, no path separator or space, not starting with '.'")
-                state.update({"session_id": session, "task": args.task, "issue": args.issue})
+                state.update({"session_id": session, "task": name, "issue": args.issue})
                 save(path, state)
             elif args.command == "unbind":
                 for key in ("task", "issue"):

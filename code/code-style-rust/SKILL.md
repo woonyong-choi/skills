@@ -3,7 +3,7 @@ name: code-style-rust
 description: "Rust 코드를 쓰거나 검토하거나 리팩터링할 때, rustfmt와 Clippy 설정을 고칠 때 쓴다."
 ---
 
-# Code Style: Rust
+# Rust 코드 스타일
 
 [code-style](../code-style/SKILL.md)을 먼저 적용하고, 이 스킬은 code-style이 언어에 맡긴 항목의 Rust 규칙만 정한다. 그 밖에서 code-style과 다르면 code-style을 따른다.
 
@@ -90,7 +90,7 @@ description: "Rust 코드를 쓰거나 검토하거나 리팩터링할 때, rust
 
 - 비공개, `pub(crate)`, `pub` 순서로 필요한 만큼만 넓힌다.
 - 필드는 비공개로 두고 메서드로 다룬다. 검증 규칙이 없는 단순 데이터 묶음만 `pub` 필드를 허용한다.
-- 문서 주석은 `///`, 파일과 모듈 설명은 `//!`로 쓴다.
+- 주석을 남기는 경우는 [code-style 공개 범위와 주석](../code-style/references/structure.md#공개-범위와-주석)을 따른다. 공개 API의 문서 주석은 `///`, 공개 모듈의 문서는 `//!`로 쓴다.
 - 문서 주석에 실패 조건을 쓸 때는 `# Errors`, panic 조건은 `# Panics`, unsafe 제약은 `# Safety` 절을 쓴다.
 
 ## 테스트

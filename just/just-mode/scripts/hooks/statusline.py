@@ -2,7 +2,7 @@
 
 인자: --command-file 기존 statusLine 설정 JSON. stdin: Claude status line JSON
 출력: 원래 status line 명령의 출력과 종료 코드. 기록 실패는 stderr 진단만
-기록 위치: 작업 저장소 `.local/sessions/<세션 키>.json`의 meter(PostToolUse 훅이 80% 안내에 사용)
+기록 위치: 기본 체크아웃 `.local/sessions/<세션 키>.json`의 meter(PostToolUse 훅이 80% 안내에 사용)
 """
 
 from __future__ import annotations

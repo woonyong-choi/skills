@@ -1,7 +1,7 @@
 """공고 폴더의 이력서·포트폴리오 작업 파일 확정, 변경 표시 개수, 폴더 구조 검사.
 
 사용: python3 versions.py root [--set <폴더>] | place <공고 폴더> | confirm <문서 폴더> | marks <작업 파일> | check <공고 폴더>
-인자: root는 산출물 폴더 확인, --set은 <설정 폴더>/career.json의 root에 저장. place는 만들 공고 폴더(없어도 됨), confirm은 이력서/ 또는 포트폴리오/ 폴더, marks는 작업 .typ, check는 공고 폴더. confirm --no-compile은 PDF 생성 생략
+인자: root는 산출물 폴더 확인, --set은 있는 폴더만 <설정 폴더>/career.json의 root에 저장(없는 폴더면 종료 1). place는 만들 공고 폴더(없어도 됨), confirm은 이력서/ 또는 포트폴리오/ 폴더, marks는 작업 .typ, check는 공고 폴더. confirm --no-compile은 PDF 생성 생략
 출력: root는 stdout 산출물 폴더 절대 경로(미설정이면 종료 1), place는 stdout 검사한 절대 경로, confirm은 stdout 확정 .typ·.pdf 경로, marks는 stdout `추가 N 바뀜 N 삭제 N`, check는 stdout `ok`. stderr 실패 이유, 종료 0 성공·1 실패·2 인자 오류
 산출물 폴더: 환경 변수 CAREER_ROOT, 없으면 <설정 폴더>/career.json의 root. 설정 폴더는 SKILLS_CONFIG_DIR, 없으면 ~/.config/skills
 실행 조건: Python 3.9 이상. PDF 생성은 PATH의 typst 또는 Python typst 패키지
@@ -132,9 +132,12 @@ def career_root() -> Path:
 
 def save_root(folder: Path) -> Path:
     """career.json의 root만 바꾸고 다른 키는 보존. 임시 파일과 rename으로 한 번에 교체"""
+    target = folder.expanduser().resolve()
+    if not target.is_dir():
+        raise CareerError(f"없는 폴더: {target}. 폴더를 만들거나 있는 폴더 경로로 다시 root --set 실행")
     path = config_path()
     config = read_config(path)
-    config["root"] = str(folder.expanduser().resolve())
+    config["root"] = str(target)
     path.parent.mkdir(parents=True, exist_ok=True)
     staged = path.with_name(path.name + ".pending")
     try:

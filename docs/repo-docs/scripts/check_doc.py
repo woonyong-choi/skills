@@ -33,6 +33,7 @@ HANGUL = re.compile(r"[가-힣]")
 LETTER = re.compile(r"[A-Za-z가-힣]")
 INLINE_CODE = re.compile(r"(`+)(?!`)(.+?)(?<!`)\1(?!`)")
 BOLD = re.compile(r"(?<!\\)(?P<mark>\*\*|(?<!\w)__)(?=\S)(?P<body>.+?)(?<=\S)(?P=mark)")
+BOLD_LEAD = re.compile(r"^(\s*(?:- |[0-9]+\. )?)\*\*[^*]+\.\*\* ")  # 굵은 머리말 `**이름.**`은 unslop 16번이 허용
 GUIDE_PHRASES = re.compile(
     r"다음과\s+같습니다|살펴보겠습니다|\blet['’]s\b"
     r"|(?:^|[.!?]\s+|^\s*(?:[-*]|\d+\.)\s+|\|\s*)in\s+summary\b(?![./_-]\w)"
@@ -71,7 +72,7 @@ def _private_path(value: str) -> bool:
         decoded = unquoted
     path = urllib.parse.urlsplit(decoded.replace("\\", "/")).path
     parts = [part.casefold() for part in path.split("/") if part not in ("", ".")]
-    return ".local" in parts or "archive" in parts
+    return ".local" in parts
 
 def _private_links(raw: str) -> bool:
     links = re.findall(r"!?\[[^\]]*\]\(<?([^\s)>]+)", raw)
@@ -230,7 +231,7 @@ def _style_errors(text: str) -> list[str]:
         errors.append("이모지")
     if GUIDE_PHRASES.search(BOLD.sub(r"\g<body>", text)):
         errors.append("안내 말")
-    if BOLD.search(text):
+    if BOLD.search(BOLD_LEAD.sub(r"\1", text)):
         errors.append("굵게")
     return errors
 
@@ -259,7 +260,7 @@ def _without_comments(raw: str, in_comment: bool) -> tuple[str, bool]:
 # 줄마다 Markdown 표식 정규식 재탐색 가능
 def check(path: str) -> int:
     name = re.sub(r"^\./", "", path)
-    is_private = name.lower().startswith((".local/", "docs/archive/"))
+    is_private = name.lower().startswith(".local/")
     is_formal = name in FORMAL_FILES
     english = is_english(path)
     count = number = fence_length = previous_level = 0

@@ -3,7 +3,7 @@ name: repo-docs-experiment
 description: "모집단, 표본, 판정 기준을 정한 측정이나 비교 실험의 설계, 수집, 결과를 기록할 때 쓴다."
 ---
 
-# Repo Docs Experiment
+# 실험 기록
 
 설계 값을 정하는 실험 하나를 폴더 하나로 남긴다. 수집 전에 계획을 커밋으로 고정하고, 수집한 뒤 결과를 보고한다. 공통 규칙은 [repo-docs](../repo-docs/SKILL.md)를 먼저 따르고, 이 스킬은 실험 대상, 폴더, 흐름, 템플릿, 통계 규칙, 검사를 맡는다.
 

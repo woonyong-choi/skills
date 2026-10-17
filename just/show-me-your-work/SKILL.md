@@ -51,7 +51,7 @@ ts	phase	decision	why	evidence	result
 ## 규칙
 
 - 덧붙이기만 한다. 잘못된 결정은 그것을 대체하는 새 행으로 바로잡는다. 기존 기록을 고치거나 지우지 않는다.
-- 일회성 수작업보다 커밋된 스크립트가 만든 증거를 우선한다(**encode-lessons-in-structure** 원칙 스킬).
+- 일회성 수작업보다 커밋된 스크립트가 만든 증거를 우선한다(**principle-encode-lessons-in-structure** 원칙 스킬).
 
 ## 대화 기록과 대조해 결정 기록 점검하기
 

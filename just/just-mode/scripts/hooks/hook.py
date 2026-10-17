@@ -67,14 +67,19 @@ def edit_request(payload: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def entry_notice(repo: Path | None, session: str) -> str:
-    """세션 시작·압축 뒤 안내. 한 줄 안내 + 연결 과업이면 이슈 URL과 결정 기록 마지막 줄들."""
+    """세션 시작·압축 뒤 안내. 한 줄 안내 + 연결 과업이면 이슈 URL과 결정 기록 마지막 줄들, 아니면 연결 명령과 최근 결정 기록 이름."""
     lines = [f"코드를 바꾸는 개발 일이면 {store.entry_skill()}를 읽고 그 순서로 진행한다."]
     if repo is None or not session:
         return lines[0]
     bound = store.binding(repo, session)
     if not bound:
         script = shlex.quote(str(Path(__file__).with_name("task.py")))
-        lines.append(f"과업 연결: `python3 {script} bind --session-id {session} --task <과업> --issue <이슈 URL>`")
+        branch = store.branch_task(repo)
+        task = shlex.quote(branch) if branch else "<과업>"
+        lines.append(f"과업 연결: `python3 {script} bind --session-id {session} --task {task} --issue <이슈 URL>`")
+        recent = store.recent_tasks(repo)
+        if recent:
+            lines.append(f"최근 결정 기록({store.decisions_folder(repo)}): {', '.join(recent)}. 이어받을 일이면 그 과업 이름으로 연결한다.")
         return "\n".join(lines)
     log = store.decision_log(repo, bound["task"])
     lines.append(f"연결 과업: {bound['task']}" + (f", 이슈 {bound['issue']}" if bound.get("issue") else ""))
@@ -123,7 +128,7 @@ def merge_notice(payload: dict[str, Any]) -> str:
         return ""
     return (
         "PR 머지 성공. 경력 원본에 남길 성과(내 PR, 동작·결과 변화, 검증 근거 있음)인지 판단하고, "
-        f"남길 성과면 hanger 스킬({skill})로 경력 원본에 기록한다."
+        f"남길 성과면 사실과 근거(PR 링크, 바뀐 동작, 검증)를 정리해 hanger 스킬({skill})에 경력 원본 기록을 요청한다."
     )
 
 
@@ -235,11 +240,11 @@ def decision_gate(payload: dict[str, Any], repo: Path, session: str) -> dict[str
         state["stop_blocked"] = True
         store.save(path, state)
     logger = store.skill_file(store.DECISION_LOGGER)
-    target = store.decision_log(repo, task) if task else repo / store.LOCAL / store.DECISIONS / "<과업>.tsv"
+    target = store.decision_log(repo, task or store.branch_task(repo) or "<과업>")
     command = f"bash {shlex.quote(str(logger))} {shlex.quote(str(target))} <phase> <decision> <why> <evidence> <result>" if logger else str(target)
     return {
         "decision": "block",
-        "reason": f"이번 요청에서 파일이 바뀌었는데 결정 기록에 새 줄이 없다. `{command}`로 이번 단계의 결정을 한 줄 남긴 뒤 끝낸다. 기록할 결정이 없는 변경이면 그 이유를 답에 적고 끝낸다.",
+        "reason": f"이번 요청에서 파일이 바뀌었는데 결정 기록에 새 줄이 없다. `{command}`로 이번 단계의 결정을 한 줄 남긴 뒤 끝낸다.",
     }
 
 
