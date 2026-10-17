@@ -518,6 +518,12 @@ export class GhGitHubReader implements T.GitHubReader {
         if (!(error instanceof WatcherQueryError)) throw error;
       }
     }
+    if (
+      result.code === 1 &&
+      result.stdout.trim() === "" &&
+      /^no checks reported on the '.+' branch$/.test(result.stderr.trim())
+    )
+      return { kind: "checks", checks: [] };
     return { kind: "unusable", exitCode: result.code, stderr: result.stderr };
   }
   async checkRollupPage(
@@ -602,12 +608,9 @@ export async function resolveChecks(
     checks.push(...page.checks);
     after = page.endCursor;
   } while (after !== null);
-  const fallback = nonEmpty(checks);
-  if (fallback !== null) return { source: "graphql-rollup", checks: fallback };
-  const suffix =
-    fast.kind === "unusable"
-      ? `fast path exit=${fast.exitCode}; GraphQL rollup was empty${firstLine(fast.stderr) ? `; ${firstLine(fast.stderr)}` : ""}`
-      : "fast path and GraphQL rollup were empty";
+  if (checks.length > 0 || fast.kind === "checks")
+    return { source: "graphql-rollup", checks };
+  const suffix = `fast path exit=${fast.exitCode}; GraphQL rollup was empty${firstLine(fast.stderr) ? `; ${firstLine(fast.stderr)}` : ""}`;
   throw new ChecksUnavailable(`could not read PR checks: ${suffix}`);
 }
 export async function resolveReviewThreads(
