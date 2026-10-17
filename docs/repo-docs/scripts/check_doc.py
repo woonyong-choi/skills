@@ -26,6 +26,10 @@ EN_CONNECTIVES = re.compile(r"(^|[.] |^- |^[0-9]+[.] )(Additionally|Furthermore|
 EN_CONTRACTION = re.compile(r"\b\w+n't\b|\b(it|that|there|what|here|who)'s\b|\b\w+'(re|ll|ve|d)\b", re.IGNORECASE)
 PUNCTUATION = re.compile(r"[?!]$|\.\.\.|…")
 HEADING = re.compile(r"^#{1,6} ")
+GENERATED_BOUNDARY = re.compile(
+    r"^(?:(?:[ \t]*>[ \t]?)*[ \t]*<!-- /?torso (?:fold|scenes) v1 (?:name=[a-z0-9]+(?:-[a-z0-9]+)*|n=[1-9][0-9]*)"
+    r" -->|[ \t]*<!-- (?:check|grammar)-table:(?:start|end) -->)$"
+)
 HTML_TAG = re.compile(r"<(/?)([a-zA-Z][a-zA-Z0-9]*)[^>]*>|<!")
 ALLOWED_TAGS = {"picture", "source", "img", "details", "summary"}
 README_TAGS = ALLOWED_TAGS | {"p", "h1", "a", "br"}
@@ -146,7 +150,7 @@ def has_bad_cell_ending(cell: str) -> bool:
         (cell.endswith("니다") and not cell.endswith("아니다"))
         or cell.endswith(("해요", "세요", "십시오"))
         or (cell.endswith("함") and not cell.endswith(("포함", "결함")))
-        or (cell.endswith("음") and not cell.endswith(("없음", "다음", "처음", "마음")))
+        or (cell.endswith("음") and not cell.endswith(("없음", "다음", "처음", "마음", "묶음")))
         or cell.endswith((" 것이다", "게 된다"))
     )
 
@@ -188,7 +192,7 @@ def english_errors(text: str) -> list[str]:
 
 def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str, tags_allowed: set[str]) -> list[str]:
     errors = []
-    line = re.sub(r"`[^`]*`", "", raw).replace("<!-- torso -->", "")
+    line = re.sub(r"`[^`]*`", "", GENERATED_BOUNDARY.sub("", raw)).replace("<!-- torso -->", "")
     text = re.sub(r"^> ", "", line, count=1)
     text = re.sub(r" +$", "", text, count=1)
     text = re.sub(r"\(\[[^\]]*\]\([^)]*\)\)\.$", ".", text, count=1)
