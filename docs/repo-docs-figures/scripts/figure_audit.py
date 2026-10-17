@@ -1,6 +1,6 @@
 """Torso 원본(.torso)의 항목 누락과 품질 위험 배치를 찾는다.
 
-인자: 원본 경로 하나, --items 요구 항목 파일(한 줄에 항목 하나, `#` 주석, `|`로 같은 뜻의 다른 이름), --svg 렌더한 SVG(크기와 세로형 판정), --print 인쇄용 그림(width wide를 요구하지 않음)
+인자: 원본 경로 하나, --items 요구 항목 파일(한 줄에 항목 하나, `#` 주석, `|`로 같은 뜻의 다른 이름), --svg 렌더한 SVG(크기와 세로형 판정)
 출력: stdout `누락:`, `경고 <코드>:`, `크기:` 줄, 종료 0 문제 없음·1 누락이나 경고 있음·2 인자 오류나 읽기 실패
 실행 조건: Python 3.9 이상, 표준 라이브러리만. Torso 문법 검사는 대신하지 않으므로 `torso check --strict`를 따로 돌린다
 """
@@ -21,7 +21,6 @@ EDGES_MAX = 12
 FOCAL_MAX = 2
 TAGGED = {"box", "external", "store"}  # 꼬리표를 다는 카드. person은 받지만 사람 아이콘이 종류를 대신해 달지 않는다
 FLAT_MIN = 4
-CHAIN_MIN = 5
 SERIES_MAX = 7
 BODY = 680
 TOKEN = re.compile(r'"(?:[^"\\]|\\.)*"|\S+')
@@ -183,13 +182,12 @@ def warnings(fig: Figure) -> list[str]:
         found.append(f"cards: 카드가 {len(fig.cards)}개다. {CARDS_MAX}개 이하로 묶거나 그림을 나눈다")
     if len(fig.edges) > EDGES_MAX:
         found.append(f"edges: 선이 {len(fig.edges)}개다. {EDGES_MAX}개 이하로 줄이거나 그림을 나눈다")
-    chain = chain_length(fig)
-    if chain >= CHAIN_MIN and not fig.aspect and not fig.groups:
-        found.append(f"chain: 카드 {chain}개가 한 줄로 이어져 세로 한 줄로 그려진다. aspect 1.6을 머리에 적는다")
-    if group_chain(fig) >= 3 and not fig.aspect:
-        found.append("staircase: 그룹 세 개 이상을 차례로 이어 계단처럼 대각선으로 늘어진다. 그룹을 한 출발점에서 갈라지게 묶거나, 단계 그룹이면 단계 카드 안 text 줄로 바꾸거나, aspect 1.6을 쓴다")
-    if fig.aspect and fig.edges and (fig.groups or not chain_length(fig)):
-        found.append("aspect: 갈래나 그룹이 있는 그림을 aspect로 접으면 되돌아오는 선이 그림을 가로지른다. aspect를 지우고 기본 배치에 맡긴다")
+    if group_chain(fig) >= 3:
+        found.append("staircase: 그룹 세 개 이상을 차례로 이어 계단처럼 대각선으로 늘어진다. 그룹을 한 출발점에서 갈라지게 묶거나, 단계 그룹이면 단계 카드 안 text 줄로 바꾼다")
+    if fig.aspect:
+        found.append("aspect: 머리의 aspect는 Torso의 자동 맞춤을 끈다. 지우고 기본 배치에 맡긴다")
+    if fig.wide:
+        found.append("wide: width wide는 표시 상한을 1440px로 넓혀 본문 칸에서 그림과 글자가 작아진다. 지우고 기본 배치에 맡긴다")
     tagged = [c for c, has in fig.badges.items() if has]
     if tagged and len(tagged) < len(fig.badges):
         bare = [c for c, has in fig.badges.items() if not has]
@@ -198,9 +196,7 @@ def warnings(fig: Figure) -> list[str]:
         found.append("flat: 카드가 모두 같은 모양이라 종류와 초점이 보이지 않는다. 종류 꼬리표(badge=)와 초점 색 1~2개를 단다")
     if len(fig.focal) > FOCAL_MAX:
         found.append(f"focal: 색을 칠한 카드가 {len(fig.focal)}개다. 초점은 {FOCAL_MAX}개 이하로 둔다")
-    if fig.cards and not fig.series and not fig.wide:
-        found.append("wide: 머리에 width wide가 없어 680px을 넘는 배치가 세로로 돌아간다. 머리에 width wide를 적는다(인쇄용 포트폴리오는 --print)")
-    limit = 2 * fig.participants - 1
+    limit = 2 * fig.participants - 2
     if fig.sequence and fig.participants and any(n > limit for n in fig.scene_messages):
         found.append(f"messages: 참여자 {fig.participants}명 순서 그림의 한 장면 메시지가 {max(fig.scene_messages)}개라 세로형이 된다. 장면마다 {limit}개 이하로 그림을 나눈다")
     if fig.sequence and fig.scenes > 1:
@@ -217,15 +213,15 @@ def warnings(fig: Figure) -> list[str]:
 
 def svg_size(path: Path) -> tuple[float, float]:
     head = path.read_text(encoding="utf-8")[:2000]
-    match = re.search(r'<svg[^>]*?\swidth="([\d.]+)"[^>]*?\sheight="([\d.]+)"', head)
+    match = re.search(r'<svg[^>]*?\sviewBox="[\d.-]+ [\d.-]+ ([\d.]+) ([\d.]+)"', head)
     if not match:
-        raise ValueError(f"{path}: SVG 크기를 찾지 못했다")
+        raise ValueError(f"{path}: SVG viewBox를 찾지 못했다")
     return float(match.group(1)), float(match.group(2))
 
 
 def size_lines(width: float, height: float) -> tuple[list[str], list[str]]:
-    body = min(1.0, BODY / width)
-    info = [f"크기: {width:g}x{height:g}, 본문 단 {BODY}px 칸에서 {body:.2f}배"]
+    body = BODY / width  # SVG는 칸 폭을 꽉 채우므로 칸보다 좁은 그림은 커지고 넓은 그림은 줄어든다
+    info = [f"크기: {width:g}x{height:g}, 본문 단 {BODY}px 칸에서 {body:.2f}배, 가장 작은 글 {11 * body:.1f}px"]
     found = []
     if height > width:
         found.append(f"portrait: 높이 {height:g}가 폭 {width:g}보다 커 세로형이다. 가로형 원칙의 한도대로 줄이거나 그림을 나눈다")
@@ -237,7 +233,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("source", type=Path)
     parser.add_argument("--items", type=Path)
     parser.add_argument("--svg", type=Path)
-    parser.add_argument("--print", action="store_true", dest="for_print", help="인쇄용 그림이라 width wide를 요구하지 않는다")
     args = parser.parse_args(argv)
     try:
         fig = parse(args.source.read_text(encoding="utf-8"))
@@ -247,7 +242,7 @@ def main(argv: list[str] | None = None) -> int:
         print(error, file=sys.stderr)
         return 2
     lost = missing(fig, items)
-    found = [w for w in warnings(fig) if not (args.for_print and w.startswith("wide:"))] + size_found
+    found = warnings(fig) + size_found
     for line in info:
         print(line)
     for item in lost:
