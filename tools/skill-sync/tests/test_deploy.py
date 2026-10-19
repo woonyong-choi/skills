@@ -35,6 +35,9 @@ def skill(tmp_path: Path) -> Path:
         ("글자 \\" + "\t 보존", "글자 \t 보존"),
         (r"\0\a\b\t\n\v\f\r\e\ \"\/\\\N\_\L\P", '\0\a\b\t\n\v\f\r\x1b "/\\\x85\xa0\u2028\u2029'),
         (r"한글 \x41\uD55c\U0001F642\x00\uFFFF\U0010FFFF", "한글 A한🙂\0\uffff\U0010ffff"),
+        (r"이모지 \uD83D\uDE42를 쓴다.", "이모지 🙂를 쓴다."),
+        (r"경계 \uD800\uDC00\uDBFF\uDFFF", "경계 \U00010000\U0010ffff"),
+        (r"소문자 \ud83d\ude42", "소문자 🙂"),
         (r"\\uD800과 \\q는 문자다.", r"\uD800과 \q는 문자다."),
     ],
 )
@@ -61,7 +64,7 @@ def test_source_record_yaml_description_preserves_metadata(
     "encoded",
     [r"\q", "끝\\", r"\x", r"\x0", r"\xGG", r"\u123", r"\u12+3",
      r"\U0000000", r"\U00110000", r"\uD800", r"\uDFFF", r"\U0000D800",
-     r"\uD83D\uDE42"],
+     r"\uD83D\u0041", r"\uD83D\uDE4G", r"\uD83D\U0000DE42"],
 )
 def test_source_record_invalid_yaml_escape_raises_value_error(
     deploy: ModuleType, skill: Path, encoded: str
