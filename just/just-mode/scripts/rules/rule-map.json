@@ -4,7 +4,7 @@
     "principle-prove-it-works": {
       "skill": "principle-prove-it-works",
       "path": "SKILL.md",
-      "sha256": "ea898c6c0e449792e5046b20111d7fcc5631dd459c0fab7496fb7bb86349d521"
+      "sha256": "47c83ff5ecb4be8acd6ccd235f9ee6c07b49c74d59db9cf595ff9f349f11f256"
     },
     "principle-foundational-thinking": {
       "skill": "principle-foundational-thinking",
@@ -161,7 +161,7 @@
     "code-style-typescript": {
       "skill": "code-style-typescript",
       "path": "SKILL.md",
-      "sha256": "6fdb715a8670b305abc3f9acc9cd28e522e02095982bf5329918034d6c16e15d"
+      "sha256": "565702edf46471fbce48c8e05f191c140c50a726c6f47d7f89b7b27a4fbb88ff"
     },
     "code-style-typescript-common": {
       "skill": "code-style-typescript",

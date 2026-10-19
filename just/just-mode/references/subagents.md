@@ -10,7 +10,7 @@
 ## 누구를 띄우나
 
 1. 플레이북 단계 안에서 띄우는 서브에이전트는 모두 `just-agent`로 띄운다. 코드 작성 위임과 그때그때 필요한 도우미가 여기에 든다. 정의가 설치되지 않은 호스트에서는 [just-agent 지시](agents/just-agent.md)를 프롬프트 첫머리에 넣는다([호스트 대응표](hosts.md#서브에이전트-공통-규칙)).
-2. `just-agent`에게 주는 프롬프트에는 just-mode SKILL.md의 절대 경로를 넣는다. 함께 설치된 스킬은 그 파일 기준 `../<이름>/SKILL.md`에 있다.
+2. `just-agent`에게 주는 프롬프트에는 맡은 범위, 권한과 필요한 규칙의 경로를 넣는다. 함께 설치된 스킬은 just-mode SKILL.md 기준 `../<이름>/SKILL.md`에 있다. 좁은 위임에 전체 절차 재시작을 요구하지 않는다.
 3. 플레이북은 `/just-mode`를 받은 대화가 직접 실행한다. 플레이북 자체를 실행하라고 `just-agent`를 띄우지 않는다.
 4. `how`, `why`, `arena`, `swarm`, `architect`, `interrogate`, `reflect`는 여러 모델로 검토하려고 서브에이전트 종류와 역할을 직접 정한다. 그 스킬이 정한 대로 두고 `just-agent`로 바꾸지 않는다.
 

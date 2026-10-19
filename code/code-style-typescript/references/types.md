@@ -82,11 +82,11 @@ type Pairs<T> = [T, T][];
 // Don't: a comment holds the invariant
 type TimeRange = { start: Date; end: Date }; // start <= end
 
-// Do: a negative range can't be written; derive end when needed
+// Do: derive end from duration; number still permits negative values
 type TimeRange = { start: Date; durationMs: number };
 ```
 
-- `durationMs`는 평범한 숫자다. 길이 자리에 아무 숫자나 넘어올 수 있을 때만 브랜드를 붙이고, 습관으로 브랜드를 붙이지 않는다.
+- `durationMs`는 평범한 숫자라 음수도 허용한다. 비음수 보장은 별도 검증이 필요하다. 길이 자리에 아무 숫자나 넘어올 수 있을 때만 브랜드를 붙이고, 습관으로 브랜드를 붙이지 않는다.
 - 나쁜 상태를 만들 수 없는 표현을 고른 뒤 필요한 형태의 읽기 헬퍼를 준다(`pairs.flat()`, `rangeEnd()`).
 
 ## 모든 입력을 처리하는(total) 가장 단순한 타입
