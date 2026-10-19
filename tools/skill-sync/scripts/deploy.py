@@ -24,7 +24,42 @@ def source_record(skill: Path, dist: Path) -> dict[str, str]:
     description = re.search(r'^description: "(.*)"$', content.decode(), re.M)
     if description is None:
         raise ValueError(f"invalid description: {skill.name}")
-    return {"name": skill.name, "description": description[1], "sourceHash": install.tree_hash(skill),
+    escapes = {
+        "0": "\0", "a": "\a", "b": "\b", "t": "\t", "n": "\n", "v": "\v",
+        "f": "\f", "r": "\r", "e": "\x1b", " ": " ", '"': '"', "/": "/", "\\": "\\",
+        "N": "\x85", "_": "\xa0", "L": "\u2028", "P": "\u2029",
+    }
+    hex_widths = {"x": 2, "u": 4, "U": 8}
+    encoded = description[1]
+    decoded = []
+    index = 0
+    while index < len(encoded):
+        char = encoded[index]
+        index += 1
+        if char == '"':
+            raise ValueError(f"invalid description: {skill.name}: unescaped quote")
+        if char != "\\":
+            decoded.append(char)
+            continue
+        if index == len(encoded):
+            raise ValueError(f"invalid description: {skill.name}: truncated escape")
+        escape = encoded[index]
+        index += 1
+        if escape in escapes:
+            decoded.append(escapes[escape])
+            continue
+        if escape not in hex_widths:
+            raise ValueError(f"invalid description: {skill.name}: unknown escape {escape!r}")
+        width = hex_widths[escape]
+        digits = encoded[index:index + width]
+        if len(digits) != width or re.fullmatch(r"[0-9a-fA-F]+", digits) is None:
+            raise ValueError(f"invalid description: {skill.name}: invalid hex escape")
+        codepoint = int(digits, 16)
+        if codepoint > 0x10FFFF or 0xD800 <= codepoint <= 0xDFFF:
+            raise ValueError(f"invalid description: {skill.name}: invalid Unicode escape")
+        decoded.append(chr(codepoint))
+        index += width
+    return {"name": skill.name, "description": "".join(decoded), "sourceHash": install.tree_hash(skill),
             "skillHash": hashlib.sha256(content).hexdigest(), "path": str(dist / f"{skill.name}.zip")}
 
 
