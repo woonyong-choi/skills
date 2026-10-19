@@ -4,7 +4,7 @@
 출력: stdout 훅 응답 JSON. 실패는 stderr 진단과 `{}`(git 저장소 안 편집 도구 PreToolUse는 거부)로 끝내고 종료 0
 
 이벤트별 동작:
-  SessionStart·PostCompact 뒤 첫 UserPromptSubmit: just-mode 진입 안내 한 줄, 연결 과업이면 결정 기록 꼬리와 이슈 URL
+  SessionStart·PostCompact 뒤 첫 UserPromptSubmit: 이미 연결한 과업의 결정 기록 꼬리와 이슈 URL 복원
   UserPromptSubmit: 요청 시작 시점의 작업본·결정 기록 지문 저장
   PreToolUse: git 작업본 안 코드 편집 전 필수 규칙 원문 전달 확인(미전달이면 거부), 규칙 조회 명령을 미전달분 조회로 바꿈
   PostToolUse: 규칙 원문 전달 기록, 편집한 작업본 기록, 문맥 사용량 80% 안내, PR 머지 뒤 경력 기록 확인 안내
@@ -129,6 +129,7 @@ def merge_notice(payload: dict[str, Any]) -> str:
     )
 
 
+@store.event_paths()
 def handle(host: str, payload: dict[str, Any]) -> dict[str, Any]:
     event = payload.get("hook_event_name", "")
     session = payload.get("session_id") if isinstance(payload.get("session_id"), str) else ""

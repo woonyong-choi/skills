@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import contextvars
 import fcntl
 import hashlib
 import json
@@ -42,6 +43,7 @@ TAIL_LINES = 5
 DEADLINE_ENV = "JUST_DO_DEADLINE"
 CONFIG_ENV = "SKILLS_CONFIG_DIR"
 TASK_NAME = re.compile(r"[^/\\\s.][^/\\\s]{0,79}")
+_EVENT_PATHS: contextvars.ContextVar[dict[Path, Path] | None] = contextvars.ContextVar("event_paths", default=None)
 
 
 class TaskError(Exception):
@@ -91,14 +93,30 @@ def git_root(cwd: object) -> Path | None:
     return Path(done.stdout.strip()) if done.returncode == 0 and done.stdout.strip() else None
 
 
+@contextlib.contextmanager
+def event_paths() -> Iterator[None]:
+    """한 훅 이벤트 안에서만 작업본별 공통 경로의 성공한 조회를 재사용한다."""
+    token = _EVENT_PATHS.set({})
+    try:
+        yield
+    finally:
+        _EVENT_PATHS.reset(token)
+
+
 def shared_root(repo: Path) -> Path:
     """`.local/`을 둘 기본 체크아웃. 공통 git 디렉터리가 `.git`이 아니면(서브모듈 등) 작업본 자신."""
+    paths = _EVENT_PATHS.get()
+    if paths is not None and repo in paths:
+        return paths[repo]
     done = subprocess.run(
         ["git", "-C", str(repo), "rev-parse", "--path-format=absolute", "--git-common-dir"],
         capture_output=True, text=True, timeout=time_budget(2),
     )
     common = Path(done.stdout.strip()).resolve() if done.returncode == 0 and done.stdout.strip() else None
-    return common.parent if common is not None and common.name == ".git" else repo
+    root = common.parent if common is not None and common.name == ".git" else repo
+    if common is not None and paths is not None:
+        paths[repo] = root
+    return root
 
 
 def current_branch(repo: Path) -> str | None:
