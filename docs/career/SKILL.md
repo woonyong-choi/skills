@@ -17,7 +17,7 @@ JD를 분석하고 경력 원본에서 사실을 골라 고정 양식의 이력�
 
 ## 입력
 
-- JD(URL, 본문, 파일)와 경력 원본(Markdown Notes Agent closet의 `career/`)이 반드시 있어야 한다. 읽는 방법, 범위, 형식, 양식 대응은 [references/source.md](references/source.md)를 반드시 읽고 따른다. 비공개 원본 주소를 스킬에 적지 않는다.
+- JD(URL, 본문, 파일)와 경력 원본(Markdown Notes Agent vault의 `career/`)이 반드시 있어야 한다. 읽는 방법, 범위, 형식, 양식 대응은 [references/source.md](references/source.md)를 반드시 읽고 따른다. 비공개 원본 주소를 스킬에 적지 않는다.
 - 원본이 없으면 빈 원본으로 보고하고 멈춘다. 짧은 이력서나 요약으로 원본을 대신하지 않는다.
 - 원본이 덜 채워졌으면 있는 내용만 쓰고 빈 곳을 보고한다.
 - 기본값은 이력서와 포트폴리오 둘 다, 한국어, 고정 양식(`assets/typst/`)이다.

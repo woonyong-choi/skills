@@ -1,4 +1,4 @@
 interface:
   display_name: "Markdown Notes Agent"
-  short_description: "Markdown Notes Agent MCP로 closet 노트 검색, 작성, 정리와 경력 원본 기록"
+  short_description: "Markdown Notes Agent MCP로 vault 노트 검색, 작성, 정리와 경력 원본 기록"
   default_prompt: "$markdown-notes-agent 스킬로 처리해 줘: [노트 요청]"
