@@ -73,6 +73,8 @@ class _Context:
             if self.sha
             else set()
         )
+        self.default_files: set[str] | None = None
+        self.head_published = False
 
     def git(self, *args: str) -> str:
         return _run(["git", "-C", str(self.root), *args])
@@ -103,6 +105,35 @@ class _Context:
             self.repositories[key] = repository
             self.repositories[repository.name.lower()] = repository
         return self.repositories[key]
+
+    def published_ref(self, path: str, *, lines: bool) -> str:
+        if self.target.visibility != "PUBLIC":
+            raise ValueError("repository must be public to publish file links")
+        if not lines:
+            if not self.target.branch:
+                raise ValueError("default branch is unavailable")
+            if self.default_files is None:
+                tree = json.loads(
+                    _run([
+                        "gh", "api",
+                        f"repos/{self.target.name}/git/trees/{quote(self.target.branch, safe='')}?recursive=1",
+                    ])
+                )
+                if tree["truncated"]:
+                    raise ValueError("default branch tree is truncated")
+                self.default_files = {
+                    entry["path"] for entry in tree["tree"] if entry["type"] == "blob"
+                }
+            if path in self.default_files:
+                return self.target.branch
+        if not self.head_published:
+            commit = json.loads(
+                _run(["gh", "api", f"repos/{self.target.name}/commits/{self.sha}"])
+            )
+            if commit["sha"] != self.sha:
+                raise ValueError("HEAD is not a verified public commit")
+            self.head_published = True
+        return self.sha
 
 
 def _run(command: list[str]) -> str:
@@ -199,9 +230,7 @@ def _check_path(
         return (
             ("relative link has no published file", None) if is_link else (None, None)
         )
-    ref = context.sha if suffix else context.target.branch
-    if not ref:
-        raise ValueError("default branch is unavailable")
+    ref = context.published_ref(relative, lines=suffix is not None)
     url = f"https://github.com/{context.target.name}/blob/{quote(ref, safe='/')}/{quote(relative)}{fragment}"
     return (
         (
