@@ -14,6 +14,26 @@ import check_doc  # noqa: E402
 
 
 class DocumentStyleTest(unittest.TestCase):
+    def test_design_non_goals_uses_optional_plain_heading(self) -> None:
+        template = (Path(__file__).resolve().parents[2] / "repo-docs-design/references/design.md").read_text()
+        self.assertIn("### 하지 않는 것\n", template)
+        self.assertNotIn("**하지 않는 것**", template)
+        self.assertIn("해당이 없으면 소제목까지 뺀다", template)
+        for heading, expected in (("### 하지 않는 것", 0), ("**하지 않는 것**", 1)):
+            source = f"# 기능\n\n## 요약\n\n입력을 저장한다.\n\n{heading}\n\n- 외부 전송은 하지 않는다.\n"
+            output = io.StringIO()
+            with self.subTest(heading=heading), patch("builtins.open", mock_open(read_data=source)), contextlib.redirect_stdout(output):
+                self.assertEqual(check_doc.main(["design.md"]), expected, output.getvalue())
+
+    def test_shared_task_audit_does_not_end_at_another_start(self) -> None:
+        root = Path(__file__).resolve().parents[3]
+        source = (root / "just/show-me-your-work/SKILL.md").read_text()
+        self.assertIn("같은 과업의 결정 기록 전체", source)
+        self.assertIn("다른 실행의 다음 `start` 뒤에 있는 행도 점검에서 빼지 않는다", source)
+        self.assertIn("근거를 확인할 수 없는 행은 미검증", source)
+        self.assertIn("다른 프로젝트나 과업의 기록을 탐색하지 않는다", source)
+        self.assertNotIn("다른 실행의 다음 `start` 행 앞에서 끝난다", source)
+
     def test_main_diagramplay_marker_preserves_html_and_sentence_checks(self) -> None:
         cases = [
             ("guide.md", "![요청](usage-request.svg)<!-- torso -->\n", ["HTML"]),

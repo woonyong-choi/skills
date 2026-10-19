@@ -76,11 +76,11 @@ PR의 종류를 정하고, 틀에 맞춰 증거가 있는 본문을 쓰고, 검�
 
 1. `watch-pr` 판정이 `READY`다. CI와 리뷰 상태를 포함한다(**just-mode** 스킬 `scripts/watch-pr`).
 2. 남은 P1과 P2가 0개다([references/review.md](references/review.md)의 등급). 반영되거나 근거를 단 반박으로 해결된 것은 남은 것이 아니다.
-3. 검증 판정이 지금 patch에 유효하다. 판정한 커밋과 현재 head의 `git patch-id`를 비교한다(**just-mode** 스킬 `playbooks/shipping.md` 3단계).
-4. 계약 PR이면 `gh pr view <번호> --json reviewDecision`이 `APPROVED`다.
+3. 검증 판정이 현재 head에 유효하다. 결과 재사용은 **principle-prove-it-works** 스킬의 조건을 따른다.
+4. 저장소 지침, 실제 보호 규칙과 사용자 승인 조건을 채운다. 없는 승인 조건을 더하지 않고 필요한 승인을 우회하지 않는다.
 
 - PR 본문의 체크 항목은 기록용이고 머지 조건이 아니다.
-- `READY`는 `CHANGES_REQUESTED`만 막고 승인 여부는 보지 않는다. 계약 승인은 4번 조건으로 따로 본다.
+- `READY`는 `CHANGES_REQUESTED`만 막고 승인 여부는 보지 않는다. 필요한 승인은 4번 조건으로 따로 본다.
 
 ## 하지 않는 것
 

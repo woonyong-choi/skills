@@ -319,7 +319,7 @@ class RuleMapTest(HookCase):
 
     def test_verification_comes_once_from_principle_and_failure_rule_follows_errors(self) -> None:
         plain = self.delivered("plain.py", "x = 1\n")
-        self.assertEqual(plain.count("HEAD, 관련 미커밋 입력, 명령, 도구, 환경이 같으면"), 1)
+        self.assertEqual(plain.count("관련 코드와 미커밋 입력, 명령, 도구, 환경이 같다고 확인되면"), 1)
         self.assertNotIn("CS-VERIFY", plain)
         self.assertNotIn("## 실패 처리", plain)
         failing = self.delivered("loader.py", "def load(path):\n    raise ValueError(path)\n")

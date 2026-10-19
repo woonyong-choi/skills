@@ -13,15 +13,9 @@ description: "Git 브랜치를 만들거나 PR 생성, 머지, 릴리스, 머지
 - 영구 브랜치 하나와 짧은 작업 브랜치를 쓴다.
 - 기본 브랜치는 늘 빌드와 테스트가 통과하는 상태로 둔다. 기본 브랜치에는 PR로만 반영한다.
 
-## 혼자와 팀
+## 리뷰 승인
 
-저장소 쓰기 권한이 있는 사람이 1명이면 혼자, 2명 이상이면 팀이다. AI 에이전트는 세지 않는다.
-
-| 항목 | 혼자 | 팀 |
-|---|---|---|
-| PR | 반드시 연다 | 반드시 연다 |
-| 머지 전 리뷰 승인 | 일반 변경은 필요 없다. 계약 승인은 [git-pull-request 머지 조건](../git-pull-request/SKILL.md#머지-조건)을 따른다 | 작성자가 아닌 사람 1명의 승인이 필요하다. 계약 승인은 혼자와 같다 |
-| 머지 조건 | [git-pull-request 머지 조건](../git-pull-request/SKILL.md#머지-조건)을 따른다 | 혼자와 같다 |
+- PR은 반드시 연다. 리뷰 승인과 머지 조건은 [git-pull-request 머지 조건](../git-pull-request/SKILL.md#머지-조건)을 따른다.
 
 ## 작업 단위
 
@@ -92,17 +86,18 @@ description: "Git 브랜치를 만들거나 PR 생성, 머지, 릴리스, 머지
 - 머지는 첫 줄과 본문을 지정해 실행한다. 본문은 표준 입력으로 넘기고 임시 파일을 만들지 않는다.
 
   ```sh
-  gh pr merge {PR 번호} --squash --delete-branch --subject '{첫 줄}' --body-file -
+  gh pr merge {PR 번호} --repo {소유자}/{저장소} --squash --delete-branch --subject '{첫 줄}' --body-file -
   ```
 
 - 머지 조건의 정본은 [git-pull-request 머지 조건](../git-pull-request/SKILL.md#머지-조건)이다. 조건을 채우면 squash 머지와 정리까지 직접 한다. 사용자가 보류하라고 한 PR만 기다린다. 도구 권한에 막히면 막힌 단계, 이유, 사용자가 실행할 한 줄 명령을 보고한다.
 - 훅이 보지 못한 머지(웹 화면, MCP 도구)만 머지한 에이전트가 훅 안내와 같은 경력 원본 확인을 직접 한다.
-- 머지한 뒤 자기 브랜치를 원격, 로컬, worktree에서 지운다([정리](#정리) 절).
+- `--repo`를 명시해 머지 명령의 로컬 자동 checkout과 브랜치 정리를 피한다. 원격 머지와 삭제를 확인한 뒤 PC의 worktree와 로컬 브랜치는 [정리](#정리) 절에서 따로 처리한다.
+- 머지 큐가 요구되면 `--delete-branch`를 빼고 큐의 실제 머지 완료를 확인한 뒤 원격 브랜치를 지운다.
 
 ## 정리
 
-- 머지한 뒤에는 자기 worktree와 브랜치만 지운다. `git worktree remove {경로}`, `git branch -D {브랜치}`를 실행한다. 다른 작업의 worktree와 브랜치는 지우지 않는다.
-- 원격 작업 브랜치는 머지 뒤 `gh pr merge --squash --delete-branch`나 `git push {원격} --delete {브랜치}`로 지운다.
+- 머지한 뒤에는 미커밋 변경, 미전송 커밋과 실행 중인 작업을 확인하고 보존한다. 안전한 자기 worktree와 로컬 브랜치만 `git worktree remove {경로}`, `git branch -D {브랜치}`로 지운다. 다른 작업의 worktree와 브랜치는 지우지 않는다.
+- 원격 작업 브랜치는 위 머지 명령이나 `git push {원격} --delete {브랜치}`로 지우고 결과를 확인한다.
 - **just-mode** 스킬 `playbooks/worktree-cleanup.md`의 점검(`worktree-audit.sh`)과 지우는 순서는 사용자가 공간 확보나 대청소를 요청할 때만 쓴다.
 - 이슈를 취소하면 PR을 닫고 브랜치를 직접 지운다.
 
