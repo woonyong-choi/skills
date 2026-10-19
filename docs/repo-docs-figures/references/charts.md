@@ -1,6 +1,6 @@
 # 실험 차트
 
-Torso로 실험 결과 차트를 쓰거나 바꿀 때 값을 결과 파일에서 읽어 오게 한다.
+DiagramPlay로 실험 결과 차트를 쓰거나 바꿀 때 값을 결과 파일에서 읽어 오게 한다.
 
 ## 값
 
@@ -19,4 +19,4 @@ Torso로 실험 결과 차트를 쓰거나 바꿀 때 값을 결과 파일에서
 ## 구분
 
 - 통계와 신뢰구간이 필요한지는 실험 계획과 repo-docs-experiment 통계 규칙이 정한다.
-- 계열 역할과 색은 Torso docs-integration 정본이 정한다.
+- 계열 역할과 색은 DiagramPlay docs-integration 정본이 정한다.

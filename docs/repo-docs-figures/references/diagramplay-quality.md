@@ -1,10 +1,10 @@
-# Torso 그림 품질
+# DiagramPlay 그림 품질
 
-요청한 항목을 빠짐없이 담고, 가로형으로 읽히고, 무엇이 중요한지 바로 보이는 Torso 그림을 만든다. 문법과 정본 고르기는 [그림 작성](syntax.md), 명령은 [설치와 실행](execution.md)과 [검사](validation.md)가 맡는다. 편집 규칙은 [Diagram Design](https://github.com/cathrynlavery/diagram-design)(MIT)의 "더 뺄 것이 없을 때 끝난다", 종류 꼬리표, 초점 1~2개, 기술 글만 고정폭, 복잡도 상한을 Torso 문법으로 옮긴 것이다. 아래 수치는 Torso `a9c287d`에서 쟀다.
+요청한 항목을 빠짐없이 담고, 가로형으로 읽히고, 무엇이 중요한지 바로 보이는 DiagramPlay 그림을 만든다. 문법과 정본 고르기는 [그림 작성](syntax.md), 명령은 [설치와 실행](execution.md)과 [검사](validation.md)가 맡는다. 편집 규칙은 [Diagram Design](https://github.com/cathrynlavery/diagram-design)(MIT)의 "더 뺄 것이 없을 때 끝난다", 종류 꼬리표, 초점 1~2개, 기술 글만 고정폭, 복잡도 상한을 DiagramPlay 문법으로 옮긴 것이다. 아래 수치는 이름 변경 전 `Torso a9c287d`에서 쟀다. DiagramPlay 후보에서 다시 잰 값은 아니다.
 
 ## 가로형 원칙
 
-모든 그림은 가로형이고 넣는 칸의 폭을 꽉 채운다. Torso는 정지 SVG를 `width="100%"`로 내고 HTML 그림도 틀 폭에 맞추므로 어느 화면에서도 가로로 스크롤하지 않는다. 칸보다 넓은 그림은 글자와 함께 줄고 좁은 그림은 커진다. 본문 단(680px)에 한 줄로 들지 않는 구조, 상태 그림은 Torso가 세로로 돌리지 않고 960px 안에서 여러 줄로 접는다. 그래서 머리에 `width wide`, `aspect`, 방향을 적지 않는다. 정지 SVG의 높이가 폭보다 크면 오류로 보고 원본을 고친다. 실측한 한도는 이렇다.
+모든 그림은 가로형이고 넣는 칸의 폭을 꽉 채운다. DiagramPlay는 정지 SVG를 `width="100%"`로 내고 HTML 그림도 틀 폭에 맞추므로 어느 화면에서도 가로로 스크롤하지 않는다. 칸보다 넓은 그림은 글자와 함께 줄고 좁은 그림은 커진다. 본문 단(680px)에 한 줄로 들지 않는 구조, 상태 그림은 DiagramPlay가 세로로 돌리지 않고 960px 안에서 여러 줄로 접는다. 그래서 머리에 `width wide`, `aspect`, 방향을 적지 않는다. 정지 SVG의 높이가 폭보다 크면 오류로 보고 원본을 고친다. 실측한 한도는 이렇다.
 
 | 그림 | 가로형이 되는 한도 | 넘으면 |
 |---|---|---|
@@ -51,11 +51,11 @@ Markdown 이미지와 HTML 그림 틀 모두 칸 폭을 채우므로 가장 작�
 - **경로 번호와 선 모양.** 주 경로의 선에 `no=1`부터 차례로 번호를 단다. 정지 이미지에서도 순서가 읽힌다. 응답, 비동기, 선택, 실패 경로는 `dashed`로 두고 번호를 달지 않는다. 배치만으로 뻔한 관계의 선과 선 글은 지운다.
 - **경계.** 신뢰 경계, 배포 단위, 소유 묶음처럼 "안과 밖"이 뜻인 묶음은 `group id "이름" dashed`로 두른다. 묶음 이름은 한글 5자 안으로 쓴다. 평평한 묶음은 한 그림에 3개 이하로 둔다.
 
-Torso에는 구조 그림의 범례 띠, 카드 위 큰 단계 숫자, 그림 안 제목 글꼴 선택이 없다. 범례는 꼬리표로, 단계 숫자는 `no=`로, 제목은 본문 머리로 대신하고, 카드나 그룹을 꾸며 흉내 내지 않는다. 범례 카드를 따로 두면 선 없는 카드라서 흩어진다.
+DiagramPlay에는 구조 그림의 범례 띠, 카드 위 큰 단계 숫자, 그림 안 제목 글꼴 선택이 없다. 범례는 꼬리표로, 단계 숫자는 `no=`로, 제목은 본문 머리로 대신하고, 카드나 그룹을 꾸며 흉내 내지 않는다. 범례 카드를 따로 두면 선 없는 카드라서 흩어진다.
 
 ## 3. 그림 종류 고르기
 
-| 전할 내용 | Torso 그림 | 주로 쓰는 문법 |
+| 전할 내용 | DiagramPlay 그림 | 주로 쓰는 문법 |
 |---|---|---|
 | 구성 요소와 요청이 지나는 길(아키텍처) | 구조 그림, 구성도 | `box`, `store`, `queue`, `external`, `group`, `badge=`, `icon=`, `count=`, `no=` |
 | 처리 단계의 차례(순서도) | 구조 그림 | 갈래가 있으면 `decision`, 하위 단계가 있으면 단계 카드 안 `text` 줄 |
@@ -82,8 +82,8 @@ Torso에는 구조 그림의 범례 띠, 카드 위 큰 단계 숫자, 그림 �
 ## 4. 배치 규칙
 
 - **이름 길이.** 카드 이름은 한글 5자와 띄어쓰기 하나, 영문 10자 이하로 쓴다. 이 안이면 카드 폭이 같아 줄과 열이 맞는다. 설명은 부제(`box id "이름" "부제"`)나 카드 안 `text`로 옮긴다. 선 글과 메시지 글은 한글 10자 이하로 쓴다.
-- **방향.** 방향을 적지 않는다. `view graph`는 보기를 둘 이상 둘 때만 이름과 함께 쓰고(`view graph "구조"`), `down`은 위아래에 뜻이 있을 때만 적는다. 본문 단을 넘는 가로 배치는 Torso가 접으므로 `right`를 적어도 효과가 없다.
-- **격자 만들기.** 사슬은 Torso가 격자로 접으므로 카드 수를 한 줄 칸 수의 배수(9개면 3x3)로 맞춘다. 갈래가 있는 그림은 같은 층에 올 카드를 `direction=down` 그룹으로 묶어 한 출발 카드에서 갈라지게 잇는다. 그룹끼리 사슬로 잇지 않는다.
+- **방향.** 방향을 적지 않는다. `view graph`는 보기를 둘 이상 둘 때만 이름과 함께 쓰고(`view graph "구조"`), `down`은 위아래에 뜻이 있을 때만 적는다. 본문 단을 넘는 가로 배치는 DiagramPlay가 접으므로 `right`를 적어도 효과가 없다.
+- **격자 만들기.** 사슬은 DiagramPlay가 격자로 접으므로 카드 수를 한 줄 칸 수의 배수(9개면 3x3)로 맞춘다. 갈래가 있는 그림은 같은 층에 올 카드를 `direction=down` 그룹으로 묶어 한 출발 카드에서 갈라지게 잇는다. 그룹끼리 사슬로 잇지 않는다.
 - **같은 역할.** 복제 서버나 워커는 `count=N` 카드 하나로 그리고 대상은 그룹으로 묶는다. 개별 서버마다 다른 선이나 값이 있을 때만 카드를 나눈다.
 - **예외 경로.** 정상 경로는 실선으로 한 줄을 이루게 두고, 실패, 취소, 재시도는 `dashed`로 옆에 둔다. 예외가 셋 이상이면 가로형 원칙대로 그림을 나눈다.
 
@@ -91,8 +91,8 @@ Torso에는 구조 그림의 범례 띠, 카드 위 큰 단계 숫자, 그림 �
 
 | 쓰임 | 넣는 방식 | 기준 |
 |---|---|---|
-| HTML로 넣는 블로그 글 | 본문의 `torso` 블록을 빌드가 HTML 그림으로 넣는다 | 그림이 틀 폭을 채우고 가로로 스크롤하지 않는다. 장면 탭을 쓸 수 있다. 삽입 빌드가 파일을 읽지 않으면 `data` 파일과 파일 아이콘 세트를 쓰지 않는다 |
-| Markdown 노트, GitHub 문서 | `torso` 블록과 `torso md`가 넣는 SVG 이미지 줄([Markdown과 CI](markdown.md)) | SVG가 칸 폭을 채운다. 가장 작은 글은 11 × 칸 폭 / SVG 폭 px이다. 둘째 장면부터는 `<details>` 안에 있어 접혀 보인다 |
+| HTML로 넣는 블로그 글 | 본문의 `diagramplay` 블록을 빌드가 HTML 그림으로 넣는다 | 그림이 틀 폭을 채우고 가로로 스크롤하지 않는다. 장면 탭을 쓸 수 있다. 삽입 빌드가 파일을 읽지 않으면 `data` 파일과 파일 아이콘 세트를 쓰지 않는다 |
+| Markdown 노트, GitHub 문서 | `diagramplay` 블록과 `diagramplay md`가 넣는 SVG 이미지 줄([Markdown과 CI](markdown.md)) | SVG가 칸 폭을 채운다. 가장 작은 글은 11 × 칸 폭 / SVG 폭 px이다. 둘째 장면부터는 `<details>` 안에 있어 접혀 보인다 |
 | 포트폴리오 한 장 이미지 | `render --static` SVG를 2배 PNG로 바꾼다 | A4 폭에서 가장 작은 글이 읽히도록 카드를 줄이거나 그림을 나눈다. 장면 없이 읽혀야 한다. 모든 항목을 첫 장면에 담는다. 그래프 그림의 제목은 그려지지 않으므로 보기 라벨이나 포트폴리오 쪽 제목으로 보탠다. 수치는 값 줄 카드 하나로 모으고 짧게 쓴다. 인쇄용이라 라이트 PNG 한 장을 만든다(career `scripts/figures.py`) |
 
 - 실제 표시는 넣을 환경에서 따로 확인한다. Markdown 앱이 SVG 안 움직임을 재생하는지는 확인하지 않았다.
@@ -104,7 +104,7 @@ Torso에는 구조 그림의 범례 띠, 카드 위 큰 단계 숫자, 그림 �
 **위계 없는 구성도.** 나쁜 예는 카드 다섯이 모두 같은 모양이고, 이름에 기술 값이 섞여 `Astro 오리진 서버 SSR과 MDX`가 두 줄로 접히고, 응답이 요청과 같은 실선이다.
 
 ```text
-torso
+diagramplay
 title "블로그 요청 경로"
 person reader "독자 브라우저"
 box edge "Cloudflare Pages 캐시"
@@ -118,10 +118,10 @@ origin -> bundle "MDX 읽기"
 origin -> cms "조회"
 ```
 
-좋은 예는 같은 카드 다섯에 꼬리표, 고정폭 부제, 초점 하나, 주 경로 번호, 점선 응답과 경계를 단다. Torso가 두 줄로 접어 가로형이고, 꼬리표만 읽어도 바깥, 경계, 우리 서버, 저장이 구분된다.
+좋은 예는 같은 카드 다섯에 꼬리표, 고정폭 부제, 초점 하나, 주 경로 번호, 점선 응답과 경계를 단다. DiagramPlay가 두 줄로 접어 가로형이고, 꼬리표만 읽어도 바깥, 경계, 우리 서버, 저장이 구분된다.
 
 ```text
-torso
+diagramplay
 title "블로그 요청 경로"
 external reader "독자" "브라우저" badge="EXT"
 box edge "Cloudflare" "Pages · 캐시" badge="EDGE"
@@ -137,10 +137,10 @@ origin -> cms "조회" no=4
 edge -> reader "응답" dashed
 ```
 
-**그룹으로 이은 단계 사슬.** 나쁜 예는 9단계를 `진입`, `처리`, `뒷단` 그룹 셋으로 묶고 그룹끼리 차례로 이어 192x1011의 세로 한 줄이 된다. 좋은 예는 그룹을 지운 사슬이고 Torso가 538x263의 3x3 격자로 접는다.
+**그룹으로 이은 단계 사슬.** 나쁜 예는 9단계를 `진입`, `처리`, `뒷단` 그룹 셋으로 묶고 그룹끼리 차례로 이어 192x1011의 세로 한 줄이 된다. 좋은 예는 그룹을 지운 사슬이고 DiagramPlay가 538x263의 3x3 격자로 접는다.
 
 ```text
-torso
+diagramplay
 title "요청 처리 경로"
 person user "사용자"
 box dns "DNS"
@@ -238,15 +238,15 @@ view graph "성과" {
 2. 항목과 배치 위험을 대조한다. `누락:`과 `경고` 줄이 없어야 한다. 경고를 남길 때는 그 이유를 답변에 적는다. 이 스크립트는 글과 크기로 잴 수 있는 위험(이름과 선 글 길이, 카드와 선 수, 계단, 꼬리표, 초점 수, `aspect`와 `width wide` 사용, 흩어진 카드, 세로형, 순서 그림의 메시지 수)만 보므로, 경고가 없어도 4번과 5번을 건너뛰지 않는다.
 
    ```sh
-   python3 <이 스킬 폴더>/scripts/figure_audit.py <원본>.torso --items .local/runs/figures-<그림 이름>/items.txt --svg <출력 폴더>/<원본>.svg
+   python3 <이 스킬 폴더>/scripts/figure_audit.py <원본>.diagramplay --items .local/runs/figures-<그림 이름>/items.txt --svg <출력 폴더>/<원본>.svg
    ```
 
-3. PNG로 찍어 직접 본다. Torso 소스 작업본의 `scripts/shoot.mjs`(npm 패키지에는 없다)는 Mac의 Chrome을 기본으로 쓰고, 다른 곳에서는 `CHROME_PATH`에 Chrome이나 Chromium 경로를 준다. 정지 SVG를 라이트와 다크로, HTML을 390px로 찍는다.
+3. PNG로 찍어 직접 본다. DiagramPlay 소스 작업본의 `scripts/shoot.mjs`(npm 패키지에는 없다)는 Mac의 Chrome을 기본으로 쓰고, 다른 곳에서는 `CHROME_PATH`에 Chrome이나 Chromium 경로를 준다. 정지 SVG를 라이트와 다크로, HTML을 390px로 찍는다.
 
    ```sh
-   node <Torso 경로>/scripts/shoot.mjs <출력 폴더>/<원본>.svg <이름>-light.png
-   node <Torso 경로>/scripts/shoot.mjs <출력 폴더>/<원본>.svg <이름>-dark.png --dark
-   node <Torso 경로>/scripts/shoot.mjs <출력 폴더>/<원본>.html <이름>-390.png --width 390
+   node <DiagramPlay 경로>/scripts/shoot.mjs <출력 폴더>/<원본>.svg <이름>-light.png
+   node <DiagramPlay 경로>/scripts/shoot.mjs <출력 폴더>/<원본>.svg <이름>-dark.png --dark
+   node <DiagramPlay 경로>/scripts/shoot.mjs <출력 폴더>/<원본>.html <이름>-390.png --width 390
    ```
 
 4. PNG에서 빼기 점검을 한다. 하나라도 "예"면 원본을 고치고 1번부터 다시 한다.

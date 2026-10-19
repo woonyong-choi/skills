@@ -1,5 +1,5 @@
-"""그림 원본을 Torso SVG와 VHS GIF로 변환.
-인자: 선택 원본 경로(생략 시 현재 위치가 속한 저장소 루트의 docs/assets/ 아래 git 추적 원본), --torso 경로, --static
+"""그림 원본을 DiagramPlay SVG와 VHS GIF로 변환.
+인자: 선택 원본 경로(생략 시 현재 위치가 속한 저장소 루트의 docs/assets/ 아래 git 추적 원본), --diagramplay 경로, --static
 출력: SVG·GIF와 도구 출력, stderr 실패(원본 없음, git 오류), 종료 0 성공·비영 종료 실패
 """
 
@@ -10,7 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-SOURCE_SUFFIXES = (".torso", ".tape")
+SOURCE_SUFFIXES = (".diagramplay", ".tape")
 
 
 class SourceError(Exception):
@@ -21,8 +21,8 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sources", nargs="*")
     parser.add_argument(
-        "--torso",
-        help="checkout or src/cli.js; default: TORSO_PATH or torso on PATH",
+        "--diagramplay",
+        help="checkout or src/cli.js; default: DIAGRAMPLAY_PATH or diagramplay on PATH",
     )
     parser.add_argument("--static", action="store_true")
     args = parser.parse_args(argv)
@@ -34,9 +34,9 @@ def main(argv: list[str]) -> int:
         invalid = [p for p in sources if not p.endswith(SOURCE_SUFFIXES)]
         if invalid:
             for source in invalid:
-                print(f"{source}: unsupported source; use .torso or .tape", file=sys.stderr)
+                print(f"{source}: unsupported source; use .diagramplay or .tape", file=sys.stderr)
             return 1
-        figures = [p for p in sources if p.endswith(".torso")]
+        figures = [p for p in sources if p.endswith(".diagramplay")]
         tapes = [p for p in sources if p.endswith(".tape")]
         if tapes and args.static:
             print("figure options cannot be applied to .tape files", file=sys.stderr)
@@ -44,8 +44,8 @@ def main(argv: list[str]) -> int:
         if tapes and shutil.which("vhs") is None:
             print("vhs not found on PATH; nothing rendered", file=sys.stderr)
             return 1
-        configured = args.torso or os.environ.get("TORSO_PATH")
-        command = ["torso"]
+        configured = args.diagramplay or os.environ.get("DIAGRAMPLAY_PATH")
+        command = ["diagramplay"]
         if configured:
             path = Path(configured).expanduser()
             cli = path / "src" / "cli.js" if path.is_dir() else path

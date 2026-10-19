@@ -1,4 +1,4 @@
 interface:
   display_name: "Repo Docs Figures"
-  short_description: "Torso 문서 그림과 SVG 변환, 검사, 대체 글, 스크린샷, VHS"
+  short_description: "DiagramPlay 문서 그림과 SVG 변환, 검사, 대체 글, 스크린샷, VHS"
   default_prompt: "$repo-docs-figures 스킬로 처리해 줘: [요청]"

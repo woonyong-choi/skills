@@ -1,6 +1,6 @@
 ---
 name: repo-docs-figures
-description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아키텍처 구성도, 순서도, 시퀀스, 상태도, 데이터 관계도, 차트를 Torso로 그리거나, 스크린샷, 데모 GIF, 대체 글을 만들거나 고칠 때 쓴다."
+description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아키텍처 구성도, 순서도, 시퀀스, 상태도, 데이터 관계도, 차트를 DiagramPlay로 그리거나, 스크린샷, 데모 GIF, 대체 글을 만들거나 고칠 때 쓴다."
 ---
 
 # 문서 그림
@@ -52,26 +52,26 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 
 ## 선택 어댑터
 
-기존 변환 스크립트가 지원하는 형식과 의존 도구다. 그림 도구 Torso(명령 `torso`, 원본 `.torso`, 저장소 https://github.com/woonyong-choi/torso)와 VHS, Playwright를 쓴다. 다른 렌더러를 쓰는 저장소는 위 공통 조건을 채우는 대응 명령을 쓴다. 해당 작업을 시작하기 전에 아래 하위 문서를 반드시 읽는다.
+기존 변환 스크립트가 지원하는 형식과 의존 도구다. 그림 도구 DiagramPlay(명령 `diagramplay`, 원본 `.diagramplay`, 저장소 https://github.com/woonyong-choi/diagramplay)와 VHS, Playwright를 쓴다. 다른 렌더러를 쓰는 저장소는 위 공통 조건을 채우는 대응 명령을 쓴다. 해당 작업을 시작하기 전에 아래 하위 문서를 반드시 읽는다.
 
 | 조건 | 하위 문서 |
 |---|---|
-| Torso 작업을 시작하기 전 | [references/torso.md](references/torso.md) |
-| Torso를 설치하거나 직접 실행하기 전 | [references/execution.md](references/execution.md) |
-| Torso Markdown 그림이나 CI 연결을 바꾸기 전 | [references/markdown.md](references/markdown.md) |
-| Torso 그림 원본을 쓰거나 바꾸기 전 | [references/syntax.md](references/syntax.md) |
-| Torso 그림에 담을 항목, 그림 종류, 꼬리표와 초점, 배치를 정하기 전, 렌더 결과의 품질을 확인하기 전 | [references/torso-quality.md](references/torso-quality.md) |
-| Torso 실험 차트를 쓰거나 바꾸기 전 | [references/charts.md](references/charts.md) |
+| DiagramPlay 작업을 시작하기 전 | [references/diagramplay.md](references/diagramplay.md) |
+| DiagramPlay를 설치하거나 직접 실행하기 전 | [references/execution.md](references/execution.md) |
+| DiagramPlay Markdown 그림이나 CI 연결을 바꾸기 전 | [references/markdown.md](references/markdown.md) |
+| DiagramPlay 그림 원본을 쓰거나 바꾸기 전 | [references/syntax.md](references/syntax.md) |
+| DiagramPlay 그림에 담을 항목, 그림 종류, 꼬리표와 초점, 배치를 정하기 전, 렌더 결과의 품질을 확인하기 전 | [references/diagramplay-quality.md](references/diagramplay-quality.md) |
+| DiagramPlay 실험 차트를 쓰거나 바꾸기 전 | [references/charts.md](references/charts.md) |
 | 스크린샷을 찍거나 합치기 전, `screens.json`을 쓰거나 바꾸기 전 | [references/screenshots.md](references/screenshots.md) |
 | VHS 녹화 원본을 쓰거나 실행하기 전 | [references/vhs.md](references/vhs.md) |
 | `render_figures.py` 변환을 실행하기 전 | [references/conversion.md](references/conversion.md) |
-| Torso 변환과 검사, 변환 도구 교체 전 | [references/validation.md](references/validation.md) |
+| DiagramPlay 변환과 검사, 변환 도구 교체 전 | [references/validation.md](references/validation.md) |
 
 ## 답변
 
 - 만들거나 고친 원본과 산출물 경로를 적는다.
 - 실행한 검사와 결과, 실제 삽입 환경에서 직접 확인한 범위를 나눠 적는다.
-- Torso 그림이면 [그림 품질](references/torso-quality.md) 1절 7번의 계획 줄, 뺀 항목과 그 자리(본문, 다른 그림), 확인한 쓰임과 폭을 적는다.
+- DiagramPlay 그림이면 [그림 품질](references/diagramplay-quality.md) 1절 7번의 계획 줄, 뺀 항목과 그 자리(본문, 다른 그림), 확인한 쓰임과 폭을 적는다.
 
 ## 구분
 

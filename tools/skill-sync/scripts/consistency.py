@@ -16,7 +16,7 @@ SKILL_MENTION = re.compile(r'\*\*([a-z][a-z0-9]*(?:-[a-z0-9]+)*)\*\* (원칙 )?�
 # 이 저장소 밖에서 오는 스킬. 이름으로 가리켜도 저장소 안에 폴더가 없다
 EXTERNAL_SKILLS = ('skill-creator',)
 # 제품 이름. 명령·확장자·환경 변수는 인라인 코드로 쓰므로 검사 밖이다
-PRODUCT_TERMS = {'ThinkFlow': 'Torso', '띵스플로우': 'Torso'}
+PRODUCT_TERMS = {'Torso': 'DiagramPlay', 'ThinkFlow': 'DiagramPlay', '띵스플로우': 'DiagramPlay'}
 
 
 def documents(skill: Path) -> list[Path]:

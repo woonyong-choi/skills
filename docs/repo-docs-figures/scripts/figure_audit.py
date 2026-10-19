@@ -1,8 +1,8 @@
-"""Torso 원본(.torso)의 항목 누락과 품질 위험 배치를 찾는다.
+"""DiagramPlay 원본(.diagramplay)의 항목 누락과 품질 위험 배치를 찾는다.
 
 인자: 원본 경로 하나, --items 요구 항목 파일(한 줄에 항목 하나, `#` 주석, `|`로 같은 뜻의 다른 이름), --svg 렌더한 SVG(크기와 세로형 판정)
 출력: stdout `누락:`, `경고 <코드>:`, `크기:` 줄, 종료 0 문제 없음·1 누락이나 경고 있음·2 인자 오류나 읽기 실패
-실행 조건: Python 3.9 이상, 표준 라이브러리만. Torso 문법 검사는 대신하지 않으므로 `torso check --strict`를 따로 돌린다
+실행 조건: Python 3.9 이상, 표준 라이브러리만. DiagramPlay 문법 검사는 대신하지 않으므로 `diagramplay check --strict`를 따로 돌린다
 """
 from __future__ import annotations
 
@@ -185,7 +185,7 @@ def warnings(fig: Figure) -> list[str]:
     if group_chain(fig) >= 3:
         found.append("staircase: 그룹 세 개 이상을 차례로 이어 계단처럼 대각선으로 늘어진다. 그룹을 한 출발점에서 갈라지게 묶거나, 단계 그룹이면 단계 카드 안 text 줄로 바꾼다")
     if fig.aspect:
-        found.append("aspect: 머리의 aspect는 Torso의 자동 맞춤을 끈다. 지우고 기본 배치에 맡긴다")
+        found.append("aspect: 머리의 aspect는 DiagramPlay의 자동 맞춤을 끈다. 지우고 기본 배치에 맡긴다")
     if fig.wide:
         found.append("wide: width wide는 표시 상한을 1440px로 넓혀 본문 칸에서 그림과 글자가 작아진다. 지우고 기본 배치에 맡긴다")
     tagged = [c for c, has in fig.badges.items() if has]
