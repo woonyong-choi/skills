@@ -71,8 +71,8 @@ disable-model-invocation: true
 판 상태 이동은 **git-issue** 스킬 `references/project-status.md`의 상태표를 따른다. 진행에서 검토로 가는 것은 `Closes`로 이은 PR뿐이다.
 
 1. **PR 열기.** `playbooks/opening-a-pr.md`를 따른다. 이슈를 잇는 표기(`Closes`, `Refs`)는 **git-issue** 스킬의 닫기 절을 따른다.
-2. **리뷰.** **interrogate**로 다른 회사 모델 둘 이상이 검토하고 지적마다 `P1`~`P5`를 붙인다. 요약 첫 줄과 P1·P2 지적을 PR 댓글로 올린다(**git-pull-request** 스킬 `references/review.md`의 댓글 절). 반영 확인은 그 코드를 쓴 에이전트가 아닌 다른 에이전트가 하고, 반영 뒤 남은 P1·P2 수를 다시 센다.
-3. **검증 판정.** PR이 하나여도 코드를 쓰지 않은 검증자가 PR head에서 변경을 사용자처럼 실행하고 그 PR에 `PASS`, `PASS+NOTES`, `FAIL`을 남긴다. 방법은 `playbooks/shipping.md` 1단계를 따른다.
+2. **리뷰.** **interrogate**로 다른 회사 모델 둘 이상이 검토하고 지적마다 `P1`~`P5`를 붙인다. 판정과 P1·P2 지적을 PR 댓글로 올린다. 공개 형식은 **git-pull-request** 스킬 `references/review.md`의 공개 피드백 형식을 따른다. 반영 확인은 그 코드를 쓴 에이전트가 아닌 다른 에이전트가 하고, 반영 뒤 남은 P1·P2 수를 다시 센다.
+3. **검증 판정.** PR이 하나여도 코드를 쓰지 않은 검증자가 PR head에서 변경을 사용자처럼 실행하고 그 PR에 검증 판정을 남긴다. 공개 형식은 **git-pull-request** 스킬 `references/review.md`의 공개 피드백 형식을 따른다. 방법은 `playbooks/shipping.md` 1단계를 따른다.
 4. **머지 조건.** 조건의 정본은 **git-pull-request** 스킬의 머지 조건 절이다. `READY` 판정은 `watch-pr`를 drive 모드로 돌려 기다린다(`playbooks/babysit.md`). 끝 고리에서는 요청이 없어도 이렇게 돌린다. 머지 조건이 막혀 사용자 결정이 필요하면 결정 기록에 phase `결정 필요`로 적고, 이슈를 "보류"로 옮기고, 다음 일로 간다.
 5. **squash 머지.** squash 메시지와 머지 명령은 **git-branch** 스킬의 머지 절을 따른다.
 6. **정리.** 이 작업에서 만든 워크트리와 브랜치만 **git-branch** 스킬의 정리 절을 따라 지운다.
