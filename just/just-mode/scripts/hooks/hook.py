@@ -67,23 +67,14 @@ def edit_request(payload: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def entry_notice(repo: Path | None, session: str) -> str:
-    """세션 시작·압축 뒤 안내. 한 줄 안내 + 연결 과업이면 이슈 URL과 결정 기록 마지막 줄들, 아니면 연결 명령과 최근 결정 기록 이름."""
-    lines = [f"코드를 바꾸는 개발 일(버그 수정, 기능, 리팩터링, 여러 파일 변경)이면 {store.entry_skill()}를 읽고 그 순서로 진행한다."]
+    """세션 시작·압축 뒤 이미 연결한 과업의 이슈와 결정 기록만 복원한다."""
     if repo is None or not session:
-        return lines[0]
+        return ""
     bound = store.binding(repo, session)
     if not bound:
-        script = shlex.quote(str(Path(__file__).with_name("task.py")))
-        branch = store.branch_task(repo) if store.on_work_branch(repo) else None
-        task = shlex.quote(branch) if branch else "<과업>"
-        later = "" if branch else " 브랜치를 만든 뒤 연결한다."
-        lines.append(f"과업 연결: `python3 {script} bind --session-id {session} --task {task} --issue <이슈 URL>`{later}")
-        recent = store.recent_tasks(repo)
-        if recent:
-            lines.append(f"최근 결정 기록({store.decisions_folder(repo)}): {', '.join(recent)}. 이어받을 일이면 그 과업 이름으로 연결한다.")
-        return "\n".join(lines)
+        return ""
     log = store.decision_log(repo, bound["task"])
-    lines.append(f"연결 과업: {bound['task']}" + (f", 이슈 {bound['issue']}" if bound.get("issue") else ""))
+    lines = [f"연결 과업: {bound['task']}" + (f", 이슈 {bound['issue']}" if bound.get("issue") else "")]
     rows = store.decision_rows(log)
     if rows:
         lines.append(f"결정 기록 {log} 마지막 {min(len(rows), store.TAIL_LINES)}줄:")
