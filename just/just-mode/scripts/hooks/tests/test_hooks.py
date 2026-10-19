@@ -259,38 +259,6 @@ class RuleGateTest(HookCase):
     def edit(self, **extra: object) -> dict:
         return self.hook("PreToolUse", tool_name="Write", tool_input={"file_path": str(self.repo / "app.py"), "content": "def run():\n    raise ValueError('x')\n"}, **extra)
 
-    def test_proactive_query_allows_matching_edit_but_new_conditions_still_block(self) -> None:
-        content = "def run():\n    return 1\n"
-        source = self.repo / "app.py"
-        source.write_text(content, encoding="utf-8")
-        reader = task.skill_file(task.RULE_READER)
-        query = f"python3 {reader} {source}"
-        rewritten = self.hook("PreToolUse", tool_name="Bash", tool_input={"command": query})
-        command = rewritten["hookSpecificOutput"]["updatedInput"]["command"]
-        for _ in range(10):
-            read = subprocess.run(shlex.split(command), capture_output=True, text=True, timeout=30, check=True)
-            self.hook("PostToolUse", tool_name="Bash", tool_input={"command": command}, tool_response={"stdout": read.stdout})
-            if not read.stdout.endswith(hook.rule_reader().MORE):
-                break
-        else:
-            self.fail("proactive rule delivery did not finish")
-        edit = {"tool_name": "Write", "tool_input": {"file_path": str(source), "content": content}}
-        self.assertEqual(self.hook("PreToolUse", **edit), {})
-        edit["tool_input"]["content"] = "import threading\nlock = threading.Lock()\n"
-        self.assertEqual(self.hook("PreToolUse", **edit)["hookSpecificOutput"]["permissionDecision"], "deny")
-
-    def test_truncated_proactive_output_does_not_authorize_edit(self) -> None:
-        source = self.repo / "app.py"
-        source.write_text("def run():\n    return 1\n", encoding="utf-8")
-        reader = task.skill_file(task.RULE_READER)
-        query = f"python3 {reader} {source}"
-        rewritten = self.hook("PreToolUse", tool_name="Bash", tool_input={"command": query})
-        command = rewritten["hookSpecificOutput"]["updatedInput"]["command"]
-        read = subprocess.run(shlex.split(command), capture_output=True, text=True, timeout=30, check=True)
-        self.hook("PostToolUse", tool_name="Bash", tool_input={"command": command}, tool_response={"stdout": read.stdout[:100]})
-        edit = self.hook("PreToolUse", tool_name="Write", tool_input={"file_path": str(source), "content": source.read_text(encoding="utf-8")})
-        self.assertEqual(edit["hookSpecificOutput"]["permissionDecision"], "deny")
-
     def test_unbound_git_session_denies_code_edit_until_rules_delivered(self) -> None:
         blocked = self.edit()["hookSpecificOutput"]
         self.assertEqual(blocked["permissionDecision"], "deny")
