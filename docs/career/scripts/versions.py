@@ -17,6 +17,8 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
+from contextlib import ExitStack
 from pathlib import Path
 
 
@@ -167,13 +169,26 @@ def confirm(folder: Path, build: bool = True) -> list[Path]:
     if number > 9999:
         raise CareerError("확정 번호 9999 초과")
     target = folder / f"{folder.name}-{number:04d}.typ"
-    target.write_text(clean, encoding="utf-8")
-    work.write_text(clean, encoding="utf-8")
-    written = [target]
-    if build:
-        written.append(compile_pdf(target, folder.parent))
-        compile_pdf(work, folder.parent)
-    return written
+    if not build:
+        target.write_text(clean, encoding="utf-8")
+        work.write_text(clean, encoding="utf-8")
+        return [target]
+    with ExitStack() as cleanup:
+        prepared = []
+        for destination in (target, work):
+            # Typst 상대 참조를 유지하려면 작업 파일과 같은 폴더에서 컴파일해야 한다.
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".typ", prefix=".confirm-", dir=folder, encoding="utf-8", delete=False) as stream:
+                staged = Path(stream.name)
+                cleanup.callback(staged.unlink, missing_ok=True)
+                stream.write(clean)
+            pdf = staged.with_suffix(".pdf")
+            pdf.touch(exist_ok=False)
+            cleanup.callback(pdf.unlink, missing_ok=True)
+            compile_pdf(staged, folder.parent)
+            prepared.extend(((staged, destination), (pdf, destination.with_suffix(".pdf"))))
+        for staged, destination in prepared:
+            os.replace(staged, destination)
+    return [target, target.with_suffix(".pdf")]
 
 
 def check(posting: Path) -> list[str]:

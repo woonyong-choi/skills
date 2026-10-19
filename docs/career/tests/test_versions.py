@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -116,6 +117,71 @@ class FlowTest(unittest.TestCase):
         for expected in ["career.typ가 스킬 양식과 다름", "전략.md 절", "옛 절 이름", "문서 폴더 안에: 포트폴리오.typ", "이력서-1.typ", "/career.typ", "확정 버전에 변경 표시"]:
             self.assertIn(expected, problems)
 
+    def test_confirm_compile_failure_preserves_files_and_retry_uses_same_number(self) -> None:
+        for failure_at, name in enumerate(VERSIONS.DOCUMENTS, start=1):
+            with self.subTest(failure_at=failure_at):
+                folder = self.posting / name
+                folder.mkdir(exist_ok=True)
+                work = folder / f"{name}.typ"
+                work.write_bytes(b"#added[new]\r\n")
+                previous = work.with_name(f"{name}-0003.typ")
+                previous.write_bytes(b"previous source\r\n")
+                previous.with_suffix(".pdf").write_bytes(b"previous PDF")
+                work.with_suffix(".pdf").write_bytes(b"work PDF")
+                target = work.with_name(f"{name}-0004.typ")
+                target.with_suffix(".pdf").write_bytes(b"existing next PDF")
+                before = {path: path.read_bytes() for path in self.posting.rglob("*") if path.is_file()}
+                calls = 0
+
+                def fail_compile(source: Path, root: Path) -> Path:
+                    nonlocal calls
+                    calls += 1
+                    source.with_suffix(".pdf").write_bytes(b"partial PDF")
+                    if calls == failure_at:
+                        raise subprocess.CalledProcessError(1, "typst")
+                    return source.with_suffix(".pdf")
+
+                with unittest.mock.patch.object(VERSIONS, "compile_pdf", side_effect=fail_compile):
+                    with self.assertRaises(subprocess.CalledProcessError):
+                        VERSIONS.confirm(folder)
+
+                self.assertEqual(calls, failure_at)
+                self.assertEqual({path: path.read_bytes() for path in self.posting.rglob("*") if path.is_file()}, before)
+                self.assertEqual(VERSIONS.numbered(folder), [3])
+
+                def compile_clean(source: Path, root: Path) -> Path:
+                    self.assertEqual(source.parent, folder)
+                    self.assertEqual(root, self.posting)
+                    self.assertEqual(source.read_text(encoding="utf-8"), "new\n")
+                    self.assertFalse(target.exists())
+                    for path, content in before.items():
+                        self.assertEqual(path.read_bytes(), content)
+                    source.with_suffix(".pdf").write_bytes(b"%PDF-clean")
+                    return source.with_suffix(".pdf")
+
+                with unittest.mock.patch.object(VERSIONS, "compile_pdf", side_effect=compile_clean) as compiler:
+                    self.assertEqual(VERSIONS.confirm(folder), [target, target.with_suffix(".pdf")])
+                self.assertEqual(compiler.call_count, 2)
+                self.assertEqual(target.read_bytes(), b"new\n")
+                self.assertEqual(work.read_bytes(), b"new\n")
+                self.assertEqual(target.with_suffix(".pdf").read_bytes(), b"%PDF-clean")
+                self.assertEqual(work.with_suffix(".pdf").read_bytes(), b"%PDF-clean")
+                self.assertEqual(previous.read_bytes(), before[previous])
+                self.assertEqual(previous.with_suffix(".pdf").read_bytes(), before[previous.with_suffix(".pdf")])
+                self.assertEqual(sorted(path.name for path in folder.iterdir()), sorted(f"{name}{suffix}" for suffix in ("-0003.pdf", "-0003.typ", "-0004.pdf", "-0004.typ", ".pdf", ".typ")))
+
+    def test_confirm_no_compile_preserves_existing_pdfs(self) -> None:
+        self.work.write_text("#added[new]", encoding="utf-8")
+        pdf = self.work.with_suffix(".pdf")
+        pdf.write_bytes(b"existing PDF")
+        with unittest.mock.patch.object(VERSIONS, "compile_pdf") as compiler:
+            written = VERSIONS.confirm(self.work.parent, build=False)
+        compiler.assert_not_called()
+        self.assertEqual(written, [self.work.with_name("이력서-0001.typ")])
+        self.assertEqual(self.work.read_text(encoding="utf-8"), "new")
+        self.assertEqual(pdf.read_bytes(), b"existing PDF")
+        self.assertEqual(self.files(), ["이력서-0001.typ", "이력서.pdf", "이력서.typ"])
+
     def test_confirm_requires_document_folder(self) -> None:
         with self.assertRaises(VERSIONS.CareerError):
             VERSIONS.confirm(self.posting, build=False)
@@ -193,11 +259,14 @@ class FlowTest(unittest.TestCase):
 
     @unittest.skipUnless(HAS_TYPST, "typst 없음")
     def test_subfolder_template_and_figure_compile_with_marks_on_and_off(self) -> None:
-        self.work.write_text(FIRST + "\n#changes-legend([이력서 작업본], [이력서-0001])\n#changed[이전 문장][새 문장]\n", encoding="utf-8")
+        self.work.with_name("summary.typ").write_text("상대 경로로 읽은 본문", encoding="utf-8")
+        self.work.write_text(FIRST + '\n#include "summary.typ"\n#changes-legend([이력서 작업본], [이력서-0001])\n#changed[이전 문장][새 문장]\n', encoding="utf-8")
         written = VERSIONS.confirm(self.posting / "이력서")
         self.assertEqual([path.name for path in written], ["이력서-0001.typ", "이력서-0001.pdf"])
         self.assertTrue((self.posting / "이력서" / "이력서.pdf").is_file())
         self.assertTrue((self.posting / "이력서" / "이력서-0001.pdf").read_bytes().startswith(b"%PDF"))
+        self.assertTrue(self.work.with_suffix(".pdf").read_bytes().startswith(b"%PDF"))
+        self.assertEqual(list(self.work.parent.glob(".confirm-*")), [])
 
 
 if __name__ == "__main__":
