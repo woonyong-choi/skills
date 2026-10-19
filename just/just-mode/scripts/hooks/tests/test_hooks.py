@@ -71,22 +71,15 @@ class HookCase(unittest.TestCase):
 
 
 class EntryNoticeTest(HookCase):
-    def test_session_start_is_one_line_outside_git(self) -> None:
+    def test_session_start_is_silent_outside_git(self) -> None:
         for host in ("claude", "codex"):
             payload = json.dumps({"hook_event_name": "SessionStart", "session_id": SESSION, "cwd": str(self.base)})
             done = subprocess.run([sys.executable, str(HOOKS / "hook.py"), host], input=payload, capture_output=True, text=True, env=self.env, timeout=30)
-            text = json.loads(done.stdout)["hookSpecificOutput"]["additionalContext"]
-            self.assertEqual(text, f"코드를 바꾸는 개발 일(버그 수정, 기능, 리팩터링, 여러 파일 변경)이면 {HOOKS.parents[1] / 'SKILL.md'}를 읽고 그 순서로 진행한다.")
-            self.assertNotIn("\n", text)
+            self.assertEqual(json.loads(done.stdout), {})
 
-    def test_unbound_session_gets_bind_command_without_skill_body(self) -> None:
-        text = self.context(self.hook("SessionStart"))
-        lines = text.splitlines()
-        self.assertEqual(len(lines), 2)
-        self.assertIn("just-mode/SKILL.md를 읽고 그 순서로 진행한다", lines[0])
-        self.assertIn(f"bind --session-id {SESSION}", lines[1])
-        skill = (HOOKS.parents[1] / "SKILL.md").read_text(encoding="utf-8")
-        self.assertNotIn(skill.splitlines()[-1], text)
+    def test_unbound_session_does_not_inject_entry_or_bind_command(self) -> None:
+        for host in ("claude", "codex"):
+            self.assertEqual(self.hook("SessionStart", host=host), {})
 
     def test_bound_session_gets_issue_and_last_five_decisions(self) -> None:
         bound = self.bind()
@@ -94,6 +87,8 @@ class EntryNoticeTest(HookCase):
         for number in range(7):
             self.log(f"결정 {number}")
         text = self.context(self.hook("SessionStart", host="codex"))
+        self.assertTrue(text.startswith("연결 과업:"))
+        self.assertNotIn("just-mode/SKILL.md", text)
         self.assertIn("연결 과업: hooks-work, 이슈 https://github.com/o/r/issues/7", text)
         self.assertEqual([number for number in range(7) if f"결정 {number}\t" in text], [2, 3, 4, 5, 6])
 
@@ -116,25 +111,18 @@ class EntryNoticeTest(HookCase):
         self.log("이번 요청 결정")
         self.assertEqual(self.hook("PreCompact"), {})
 
-    def test_new_session_lists_recent_decision_logs(self) -> None:
+    def test_recent_logs_do_not_activate_unbound_session(self) -> None:
         for name in ("old", "mid", "new", "latest"):
             self.log("결정", name=name)
             time.sleep(0.02)
-        text = self.context(self.hook("SessionStart"))
-        lines = text.splitlines()
-        self.assertEqual(len(lines), 3)
-        self.assertIn("latest, new, mid.", lines[2])
-        self.assertNotIn("old", lines[2])
+        self.assertEqual(self.hook("SessionStart"), {})
+        self.hook("PostCompact")
+        self.assertEqual(self.hook("UserPromptSubmit", prompt="일반 작업"), {})
 
-    def test_bind_hint_waits_for_work_branch(self) -> None:
-        # 기본 브랜치에서는 과업 자리표시와 "브랜치를 만든 뒤", 작업 브랜치에서는 그 브랜치 이름
-        first = self.context(self.hook("SessionStart")).splitlines()[1]
-        self.assertIn("--task <과업> ", first)
-        self.assertTrue(first.endswith("브랜치를 만든 뒤 연결한다."), first)
+    def test_work_branch_does_not_activate_unbound_session(self) -> None:
+        self.assertEqual(self.hook("SessionStart"), {})
         git(self.repo, "switch", "-q", "-c", "fix/12-hooks-bind")
-        second = self.context(self.hook("SessionStart")).splitlines()[1]
-        self.assertIn("--task fix-12-hooks-bind ", second)
-        self.assertNotIn("브랜치를 만든 뒤", second)
+        self.assertEqual(self.hook("SessionStart"), {})
 
     def test_local_folder_ignores_itself(self) -> None:
         self.hook("UserPromptSubmit", prompt="a")

@@ -171,9 +171,9 @@ def test_install_changed_zip_payload_rebuilt(install_home: Path, damage: str) ->
 
 
 def _check_installed_rule_hooks(skills: Path, work: Path) -> None:
-    # 설치본 just-mode 훅: 세션 시작·압축 뒤 한 줄 안내(본문 주입 없음), 연결 과업이면 결정 기록 꼬리
+    # 설치본 훅: 연결 과업만 복원하고 just-mode 자동 진입은 안내하지 않는다.
     hook = skills / 'just-mode/scripts/hooks/hook.py'
-    entry_line = f"코드를 바꾸는 개발 일(버그 수정, 기능, 리팩터링, 여러 파일 변경)이면 {skills / 'just-mode/SKILL.md'}를 읽고 그 순서로 진행한다."
+    entry_line = "연결 과업: install-check"
     body = (skills / 'just-mode/SKILL.md').read_text()
     work.mkdir(parents=True, exist_ok=True)
     subprocess.run(['git', 'init', '-q', str(work)], check=True)
@@ -191,7 +191,9 @@ def _check_installed_rule_hooks(skills: Path, work: Path) -> None:
                 hooked = subprocess.run([sys.executable, str(hook), host], input=json.dumps(payload), capture_output=True, text=True, env=env)
                 assert hooked.returncode == 0 and not hooked.stderr, hooked.stderr
                 context = json.loads(hooked.stdout).get('hookSpecificOutput', {}).get('additionalContext', '')
-                assert context.startswith(entry_line) == expected, (host, is_bound, event, context)
+                assert context.startswith(entry_line) == (expected and is_bound), (host, is_bound, event, context)
+                assert "코드를 바꾸는 개발 일" not in context
+                assert "just-mode/SKILL.md" not in context
                 assert body not in context
                 assert ('issues/58' in context) == (expected and is_bound), (host, is_bound, event)
             if is_bound:
