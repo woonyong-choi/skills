@@ -1,6 +1,6 @@
 # 역할별 모델
 
-스킬은 모델 이름 대신 역할 이름만 쓴다. 실제 모델은 사용자 설정 파일 `~/.config/skills/models.json`의 등록값을 우선한다. 파일, 역할, 현재 호스트 값이 없거나 비어 있으면 호스트 기본 모델로 실행한다. 검토도 생략하지 않는다. 설정은 `/just-setup`(Codex는 `$just-setup`)이 만든다.
+스킬은 모델 이름 대신 역할 이름만 쓴다. 실제 모델은 사용자 설정 파일 `~/.config/skills/models.json`의 등록값을 우선하고, 없으면 아래 기본값을 쓴다. 빈 검토 설정도 검토를 생략하지 않는다. 설정은 `/just-setup`(Codex는 `$just-setup`)이 만든다.
 
 ## 역할
 
@@ -13,24 +13,24 @@
 
 ## 기본값
 
-모든 역할의 기본 모델은 호스트 기본 모델이다. `review`가 미설정이거나 빈값이면 그 모델의 독립 검토자 둘을 둔다.
+`review`가 미설정이거나 빈값이면 호스트 기본 모델의 독립 검토자 둘을 둔다. 다른 역할의 기본값은 유지한다.
 
-| 역할 | 추론 수준 |
-|---|---|
-| `code` | `medium` |
-| `judgment` | `high` |
-| `review` | `high` |
-| `cheap` | `low` |
+| 역할 | Claude Code | Codex | OpenCode | 추론 수준 |
+|---|---|---|---|---|
+| `code` | `opus` | `gpt-6.1-sol` | 호스트 기본 모델 | `medium` |
+| `judgment` | `opus` | `gpt-6-astra` | 호스트 기본 모델 | `high` |
+| `review` | 호스트 기본 모델 | 호스트 기본 모델 | 호스트 기본 모델 | `high` |
+| `cheap` | `haiku` | `gpt-6-luna` | 가장 싼 모델 | `low` |
 
 ## 설정 파일 형식
 
 ```json
 {
   "roles": {
-    "code": {"claude": "", "codex": "", "opencode": ""},
-    "judgment": {"claude": "", "codex": "", "opencode": ""},
+    "code": {"claude": "opus", "codex": "gpt-6.1-sol", "opencode": ""},
+    "judgment": {"claude": "opus", "codex": "gpt-6-astra", "opencode": ""},
     "review": {"claude": [""], "codex": [""], "opencode": [""]},
-    "cheap": {"claude": "", "codex": "", "opencode": ""}
+    "cheap": {"claude": "haiku", "codex": "gpt-6-luna", "opencode": ""}
   },
   "effort": {"code": "medium", "judgment": "high", "review": "high", "cheap": "low"}
 }
