@@ -252,6 +252,21 @@ class ReadmeOrderTest(unittest.TestCase):
         self.assertEqual(self.errors("# T\n\n## Problem and constraints\n\n## Design decisions\n\n## Results\n"), [])
         self.assertEqual(self.errors("# T\n\n## Results\n\n## Implementation\n"), ["절 순서"])
 
+    def test_comparison_section_position_is_checked(self) -> None:
+        cases = (
+            ("## 해결하는 문제\n\n## 비교\n\n## 작동 방식\n", []),
+            ("## 작동 방식\n\n## 비교\n", ["절 순서"]),
+            ("## 비교\n\n## 해결하는 문제\n", ["절 순서"]),
+            ("## 비교\n\n## 비교\n", ["절 순서"]),
+            ("## Why\n\n## Comparison\n\n## How it works\n", []),
+            ("## How it works\n\n## Comparison\n", ["절 순서"]),
+            ("## Comparison\n\n## Why\n", ["절 순서"]),
+            ("## Comparison\n\n## Comparison\n", ["절 순서"]),
+        )
+        for headings, expected in cases:
+            with self.subTest(headings=headings):
+                self.assertEqual(self.errors("# T\n\n" + headings), expected)
+
 
 class DocsOrderTest(unittest.TestCase):
     """#96: architecture·design·decision 절 순서는 일상어 절 이름 기준."""
@@ -294,6 +309,15 @@ class EnglishReadmeTest(unittest.TestCase):
         korean = "# T\n\n## 빠른 시작\n\n## 작동 방식\n"
         self.assertEqual(self.run_in({"README.md": korean, "README.en.md": "# T\n\n## Quick start\n\n## How it works\n"}, "README.en.md"), [])
         self.assertEqual(self.run_in({"README.md": korean, "README.en.md": "# T\n\n## Quick start\n"}, "README.en.md"), ["README.md와 절 대응 불일치"])
+
+    def test_comparison_section_matches_between_languages(self) -> None:
+        korean = "# T\n\n## 해결하는 문제\n\n## 비교\n\n## 작동 방식\n"
+        english = "# T\n\n## Why\n\n## Comparison\n\n## How it works\n"
+        self.assertEqual(self.run_in({"README.md": korean, "README.en.md": english}, "README.en.md"), [])
+        without_comparison = "# T\n\n## Why\n\n## How it works\n"
+        self.assertEqual(self.run_in({"README.md": korean, "README.en.md": without_comparison}, "README.en.md"), ["README.md와 절 대응 불일치"])
+        unrelated_section = "# T\n\n## Why\n\n## Notes\n\n## How it works\n"
+        self.assertEqual(self.run_in({"README.md": korean, "README.en.md": unrelated_section}, "README.en.md"), ["README.md와 절 대응 불일치"])
 
     def test_korean_readme_is_formal(self) -> None:
         self.assertIn("README.md", check_doc.FORMAL_FILES)
