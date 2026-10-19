@@ -48,6 +48,7 @@ disable-model-invocation: true
 - **자기 브랜치는 다시 쓴다.** 내가 만들어 혼자 쓰는 작업 브랜치에서는 순서표대로 rebase, amend, `git push --force-with-lease`를 묻지 않고 한다. 기본 브랜치의 변경은 리베이스로 받는다.
 - **새 공개 문서는 승인 기준을 따른다.** 승인할 대상과 자율 실행 중 처리는 **repo-docs** 스킬의 새 문서 절이 정한다.
 - **사용자의 게이트는 사용자가 정한다.** 사용자가 지정한 검사와 위 멈춤 목록은 자율 권한 아래에서도 바꾸지 않는다.
+- **요청 범위를 지킨다.** 설계 요청은 설계와 필요한 설계 문서까지만 끝낸다. 자율 실행도 임의로 구현까지 넓히지 않는다. 구현까지 허용한 요청은 구현한다.
 - **멈추지 않는다.** "멈추지 마", "자러 간다", "끝날 때까지 돌려", "완전히 자율로 해"는 자율 실행(`playbooks/autonomous-run.md`)으로 간다. "자율 멈춰"나 "자동 모드 멈춰"를 들을 때까지 계속한다.
 - **아니라는 답도 괜찮다.** 제안이나 범위 확장을 받으면 자기 판단을 말한다. 맞다면 거절하고 반박한다. 추천은 판단이지 맞장구가 아니다. 동의는 기본값이 아니다.
 
@@ -71,8 +72,8 @@ disable-model-invocation: true
 판 상태 이동은 **git-issue** 스킬 `references/project-status.md`의 상태표를 따른다. 진행에서 검토로 가는 것은 `Closes`로 이은 PR뿐이다.
 
 1. **PR 열기.** `playbooks/opening-a-pr.md`를 따른다. 이슈를 잇는 표기(`Closes`, `Refs`)는 **git-issue** 스킬의 닫기 절을 따른다.
-2. **리뷰.** **interrogate**로 다른 회사 모델 둘 이상이 검토하고 지적마다 `P1`~`P5`를 붙인다. 판정과 P1·P2 지적을 PR 댓글로 올린다. 공개 형식은 **git-pull-request** 스킬 `references/review.md`의 공개 피드백 형식을 따른다. 반영 확인은 그 코드를 쓴 에이전트가 아닌 다른 에이전트가 하고, 반영 뒤 남은 P1·P2 수를 다시 센다.
-3. **검증 판정.** PR이 하나여도 코드를 쓰지 않은 검증자가 PR head에서 변경을 사용자처럼 실행하고 그 PR에 검증 판정을 남긴다. 공개 형식은 **git-pull-request** 스킬 `references/review.md`의 공개 피드백 형식을 따른다. 방법은 `playbooks/shipping.md` 1단계를 따른다.
+2. **리뷰.** **interrogate**로 [역할별 모델](references/models.md)에 따라 검토하고 지적마다 `P1`~`P5`를 붙인다. 판정과 P1·P2 지적을 PR 댓글로 올린다. 공개 형식은 **git-pull-request** 스킬 `references/review.md`의 공개 피드백 형식을 따른다. 반영 확인은 그 코드를 쓴 에이전트가 아닌 다른 에이전트가 하고, 반영 뒤 남은 P1·P2 수를 다시 센다.
+3. **검증 판정.** PR이 하나여도 코드를 쓰지 않은 검증자가 PR head에서 변경을 사용자처럼 실행하고 그 PR에 검증 판정을 남긴다. 검토자의 겸임과 유효한 기존 시험 재사용은 [서브에이전트](references/subagents.md#결과-받기)를 따른다. 공개 형식은 **git-pull-request** 스킬 `references/review.md`의 공개 피드백 형식을 따른다. 방법은 `playbooks/shipping.md` 1단계를 따른다.
 4. **머지 조건.** 조건의 정본은 **git-pull-request** 스킬의 머지 조건 절이다. `READY` 판정은 `watch-pr`를 drive 모드로 돌려 기다린다(`playbooks/babysit.md`). 끝 고리에서는 요청이 없어도 이렇게 돌린다. 머지 조건이 막혀 사용자 결정이 필요하면 결정 기록에 phase `결정 필요`로 적고, 이슈를 "보류"로 옮기고, 다음 일로 간다.
 5. **squash 머지.** squash 메시지와 머지 명령은 **git-branch** 스킬의 머지 절을 따른다.
 6. **정리.** 이 작업에서 만든 워크트리와 브랜치만 **git-branch** 스킬의 정리 절을 따라 지운다.
