@@ -25,7 +25,7 @@ def source_record(skill: Path, dist: Path) -> dict[str, str]:
     if description is None:
         raise ValueError(f"invalid description: {skill.name}")
     escapes = {
-        "0": "\0", "a": "\a", "b": "\b", "t": "\t", "n": "\n", "v": "\v",
+        "0": "\0", "a": "\a", "b": "\b", "t": "\t", "\t": "\t", "n": "\n", "v": "\v",
         "f": "\f", "r": "\r", "e": "\x1b", " ": " ", '"': '"', "/": "/", "\\": "\\",
         "N": "\x85", "_": "\xa0", "L": "\u2028", "P": "\u2029",
     }
