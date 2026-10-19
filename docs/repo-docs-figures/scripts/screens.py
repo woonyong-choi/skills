@@ -260,20 +260,39 @@ def main(argv: list[str]) -> int:
     if top.returncode or not top.stdout.strip():
         print("촬영 중단: git 저장소 밖에서 실행됨(합성 데이터는 저장소 .local/runs/ 아래에 만든다)", file=sys.stderr)
         return 2
-    data = Path(top.stdout.strip()) / ".local" / "runs" / f"screenshots-{args.run_id}"
-    data.mkdir(parents=True, exist_ok=True)
-    os.environ["SCREENS_DATA"] = str(data.resolve())
-    for entry in config.get("screens", []):
-        for key in ("url", "command"):
-            if key in entry:
-                values = entry[key] if isinstance(entry[key], list) else [entry[key]]
-                values = [value.replace("{data}", str(data.resolve())) for value in values]
-                entry[key] = values if isinstance(entry[key], list) else values[0]
+    if not args.run_id or Path(args.run_id).name != args.run_id or args.run_id in (".", ".."):
+        print("촬영 중단: run-id는 비어 있지 않은 단일 폴더 이름이어야 한다", file=sys.stderr)
+        return 2
+    runs = Path(top.stdout.strip()).resolve() / ".local" / "runs"
+    data = runs / f"screenshots-{args.run_id}"
     try:
+        if runs.resolve() != runs or data.is_symlink():
+            raise ValueError(f"합성 데이터 경로에 심볼릭 링크가 있음: {data}")
+        data.mkdir(parents=True)
+        owned = data.lstat()
+    except (OSError, ValueError) as error:
+        print(f"촬영 중단: 합성 데이터 폴더 신규 생성 실패: {error}", file=sys.stderr)
+        return 2
+    try:
+        os.environ["SCREENS_DATA"] = str(data)
+        for entry in config.get("screens", []):
+            for key in ("url", "command"):
+                if key in entry:
+                    values = entry[key] if isinstance(entry[key], list) else [entry[key]]
+                    values = [value.replace("{data}", str(data)) for value in values]
+                    entry[key] = values if isinstance(entry[key], list) else values[0]
         with Browser() as browser:
             return shoot(config, out, browser.capture, browser.render)
     finally:
-        discard(data)
+        try:
+            current = data.lstat()
+            is_owned = data.resolve() == data and (current.st_dev, current.st_ino) == (owned.st_dev, owned.st_ino)
+        except OSError:
+            is_owned = False
+        if is_owned:
+            discard(data)
+        else:
+            print(f"합성 데이터 폴더 변경 감지, 정리하지 않음: {data}", file=sys.stderr)
 
 
 if __name__ == "__main__":
