@@ -1,4 +1,4 @@
-name: Skills
+name: Skills isolated experiment
 on:
   pull_request:
   push:
@@ -8,6 +8,10 @@ permissions:
   issues: read
 jobs:
   python-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        sample: [1, 2, 3]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +34,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests design/design-tokens/tests just/just-mode/scripts/hooks/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests
   linked-hooks:
+    strategy:
+      fail-fast: false
+      matrix:
+        sample: [1, 2, 3]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,6 +55,10 @@ jobs:
           ln -s "$RUNNER_TEMP/real-tmp" "$RUNNER_TEMP/linked-tmp"
           TMPDIR="$RUNNER_TEMP/linked-tmp" python3 -m pytest -q just/just-mode/scripts/hooks/tests
   scripts-figures:
+    strategy:
+      fail-fast: false
+      matrix:
+        sample: [1, 2, 3]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -78,9 +90,64 @@ jobs:
           python3 experiments/skill-exposure/scripts/03-analyze.py
           python3 scripts/render_readme.py .runtime/diagramplay/src/cli.js
           git diff --exit-code -- docs/assets experiments/skill-exposure/results
+  serial-reference:
+    strategy:
+      fail-fast: false
+      matrix:
+        sample: [1, 2, 3]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test dependencies
+        run: python3 -m pip install pytest==8.4.2 typst==0.15.0
+      - name: Check skills
+        run: python3 tools/skill-sync/scripts/skill_check.py .
+      - name: Install skills for hook integration tests
+        run: |
+          mkdir -p "$HOME/.codex" "$HOME/.claude"
+          python3 tools/skill-sync/scripts/install.py --source . --tool codex --tool claude-code
+      - name: Run Python tests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests design/design-tokens/tests just/just-mode/scripts/hooks/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests
+      - name: Run hook tests with linked temp folder
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/real-tmp"
+          ln -s "$RUNNER_TEMP/real-tmp" "$RUNNER_TEMP/linked-tmp"
+          TMPDIR="$RUNNER_TEMP/linked-tmp" python3 -m pytest -q just/just-mode/scripts/hooks/tests
+      - name: Load DiagramPlay figure renderer
+        uses: actions/checkout@v4
+        with:
+          repository: woonyong-choi/diagramplay
+          ref: ebdc3e9c84c3d5443af7f1b6b5d9b2a18e5002ca
+          path: .runtime/diagramplay
+      - name: Install figure renderer
+        working-directory: .runtime/diagramplay
+        run: npm ci
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - name: Run just script tests
+        working-directory: just/just-mode/scripts
+        run: |
+          bun install --frozen-lockfile
+          bun test
+      - name: Verify README figures
+        run: |
+          python3 experiments/skill-exposure/scripts/03-analyze.py
+          python3 scripts/render_readme.py .runtime/diagramplay/src/cli.js
+          git diff --exit-code -- docs/assets experiments/skill-exposure/results
   check:
     if: ${{ always() }}
-    needs: [python-tests, linked-hooks, scripts-figures]
+    needs: [python-tests, linked-hooks, scripts-figures, serial-reference]
     runs-on: ubuntu-latest
     steps:
       - name: Require every parallel check to succeed
