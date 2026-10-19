@@ -1,6 +1,6 @@
 # 역할별 모델
 
-스킬은 모델 이름 대신 역할 이름만 쓴다. 실제 모델은 사용자 설정 파일 `~/.config/skills/models.json`이 정하고, 없으면 아래 기본값을 쓴다. 설정은 `/just-setup`(Codex는 `$just-setup`)이 만든다.
+스킬은 모델 이름 대신 역할 이름만 쓴다. 실제 모델은 사용자 설정 파일 `~/.config/skills/models.json`의 등록값을 우선하고, 없으면 아래 기본값을 쓴다. 빈 검토 설정도 검토를 생략하지 않는다. 설정은 `/just-setup`(Codex는 `$just-setup`)이 만든다.
 
 ## 역할
 
@@ -8,16 +8,18 @@
 |---|---|
 | `code` | 기능·리팩터링·버그·성능 코드 작성, 기계적 수정, 검증 워커 |
 | `judgment` | 설계 판단, 가장 어려운 변경(여러 모듈에 걸친 설계, 까다로운 동시성, 미묘한 알고리즘), 글쓰기 |
-| `review` | 교차 검토 패널. 서로 다른 회사 모델 두 개 이상(예: Claude 하나, GPT 하나) |
+| `review` | 독립 검토 패널. 등록한 모델이 서로 다른 회사면 교차 검토한다 |
 | `cheap` | 읽기 검토·요약처럼 가벼운 일 |
 
 ## 기본값
+
+`review`가 미설정이거나 빈값이면 호스트 기본 모델의 독립 검토자 둘을 둔다. 다른 역할의 기본값은 유지한다.
 
 | 역할 | Claude Code | Codex | OpenCode | 추론 수준 |
 |---|---|---|---|---|
 | `code` | `opus` | `gpt-6.1-sol` | 호스트 기본 모델 | `medium` |
 | `judgment` | `opus` | `gpt-6-astra` | 호스트 기본 모델 | `high` |
-| `review` | `opus` + 셸 `codex exec -m gpt-6.1-sol` | `gpt-6.1-sol` + 셸 `claude -p --model opus` | 설정된 두 제공자, 없으면 셸 `claude -p --model opus`·`codex exec -m gpt-6.1-sol` | `high` |
+| `review` | 호스트 기본 모델 | 호스트 기본 모델 | 호스트 기본 모델 | `high` |
 | `cheap` | `haiku` | `gpt-6-luna` | 가장 싼 모델 | `low` |
 
 ## 설정 파일 형식
@@ -27,7 +29,7 @@
   "roles": {
     "code": {"claude": "opus", "codex": "gpt-6.1-sol", "opencode": ""},
     "judgment": {"claude": "opus", "codex": "gpt-6-astra", "opencode": ""},
-    "review": {"claude": ["opus", "codex:gpt-6.1-sol"], "codex": ["gpt-6.1-sol", "claude:opus"], "opencode": []},
+    "review": {"claude": [""], "codex": [""], "opencode": [""]},
     "cheap": {"claude": "haiku", "codex": "gpt-6-luna", "opencode": ""}
   },
   "effort": {"code": "medium", "judgment": "high", "review": "high", "cheap": "low"}
@@ -42,5 +44,6 @@
 
 - 일의 난이도에 따라 추론 수준만 한 단계 올리거나 내린다. 모델 계열은 역할이 정한 대로 유지해 교차 검토의 다양성을 지킨다.
 - 호스트가 지원하지 않는 `effort` 값은 쓸 때 그보다 낮은 수준 중 가장 가까운 것으로 깎는다(예: Codex에는 `max`가 없으므로 `xhigh`). 파일의 값은 바꾸지 않는다.
-- 지정한 모델이 거부되면 다른 이름을 추측하지 않는다. 그 모델을 낸 회사의 기본 모델로 진행하고 답변에 한 줄로 알린다. 호스트 모델이면 호스트 기본 모델을, 셸로 부른 다른 회사 CLI면 모델 인자 없이(`codex exec`, `claude -p`) 다시 부른다.
-- 교차 검토는 거부가 나도 다른 회사 모델을 유지한다. 다른 회사 검토자를 같은 회사 모델로 바꾸지 않는다. 그 회사 CLI 자체를 쓸 수 없으면 그 검토자를 빼고 답변에 적는다.
+- 등록 모델을 권한, 사용량 한도, 미지원 때문에 실행할 수 없으면 현재 세션의 공급자와 모델로 새 에이전트를 띄워 같은 일을 맡기고 대체 사실을 알린다. 다른 회사 모델을 유지하려고 막힌 CLI를 다시 부르지 않는다.
+- 같은 실행에서 실행 불가로 확인한 모델은 다시 시도하지 않는다. 대체 모델도 실행할 수 없으면 그 한계를 보고하고, 필요한 검토를 통과했다고 하지 않는다.
+- 검토의 오류 지적이나 시험 실패는 모델 실행 불가가 아니다. 지적을 판정하고 실패 원인을 고친다. 모델 대체로 지적이나 실패를 없애지 않는다.
