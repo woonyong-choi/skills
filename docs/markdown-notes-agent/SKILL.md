@@ -69,12 +69,12 @@ Markdown Notes Agent는 사용자의 Markdown 노트 폴더(vault)를 검색하�
 
 - Markdown Notes Agent 결과와 오류의 `Tell the user:` 부분은 더하거나 빼지 않고 사용자 언어로 번역해 그대로 전한다.
 - `Then:` 부분은 사용자에게 전하지 않는다. AI가 실행할 다음 행동이다.
-- vault, Markdown Notes Agent, `.markdown-notes-agentignore`, `MARKDOWN_NOTES_AGENT.md`, 명령, 경로, id는 번역하지 않는다. "vault 경로를 알려 주세요"는 맞고, "노트 폴더 경로를 알려 주세요"는 틀리다.
+- vault, Markdown Notes Agent, `.markdown-notes-agentignore`, `MNA.md`, 명령, 경로, id는 번역하지 않는다. "vault 경로를 알려 주세요"는 맞고, "노트 폴더 경로를 알려 주세요"는 틀리다.
 
 ## 하지 않는 것
 
 - vault를 지우지 않는다. `remove_vault`는 항상 거절된다. 돌려받은 터미널 명령(`markdown-notes-agent vault remove`)만 사용자에게 안내한다.
-- `.markdown-notes-agentignore`와 `MARKDOWN_NOTES_AGENT.md`는 사용자의 규칙 파일이다. 사용자가 요청할 때만 직접 고친다.
+- `.markdown-notes-agentignore`와 `MNA.md`는 사용자의 규칙 파일이다. 사용자가 요청할 때만 직접 고친다.
 - Markdown Notes Agent 대신 노트 파일을 직접 쓰는 우회를 하지 않는다. 실패하거나, 늦거나, 거절될 때도 하지 않는다.
 
 ## 답변
