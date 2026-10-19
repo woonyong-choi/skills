@@ -1,13 +1,13 @@
 ---
-name: hanger
-description: "Hanger closet에 등록한 Markdown 노트(경력 원본 포함)를 찾아 읽거나, 노트를 쓰고 고치고 병합하고 정리하거나, 메모와 링크와 파일을 inbox에 모으거나, closet을 등록하거나, Hanger 결정 질문에 답할 때 쓴다. 저장소 코드와 문서 작업, JD 맞춤 이력서와 포트폴리오 작성은 맡지 않는다."
+name: markdown-notes-agent
+description: "Markdown Notes Agent closet에 등록한 Markdown 노트(경력 원본 포함)를 찾아 읽거나, 노트를 쓰고 고치고 병합하고 정리하거나, 메모와 링크와 파일을 inbox에 모으거나, closet을 등록하거나, Markdown Notes Agent 결정 질문에 답할 때 쓴다. 저장소 코드와 문서 작업, JD 맞춤 이력서와 포트폴리오 작성은 맡지 않는다."
 ---
 
-# 행거
+# Markdown Notes Agent
 
-노트 요청을 Hanger MCP 도구로 처리하고, Hanger가 한 말을 더하거나 빼지 않고 사용자에게 전한다.
+노트 요청을 Markdown Notes Agent MCP 도구로 처리하고, Markdown Notes Agent가 한 말을 더하거나 빼지 않고 사용자에게 전한다.
 
-Hanger는 사용자의 Markdown 노트 폴더(closet)를 검색하고, 바꿀 내용을 초안으로 만들어 검토한 뒤, 그사이 노트가 바뀌지 않았을 때만 쓰는 MCP 서버다. 노트 파일을 직접 고치지 않고 이 도구로만 처리한다.
+Markdown Notes Agent는 사용자의 Markdown 노트 폴더(closet)를 검색하고, 바꿀 내용을 초안으로 만들어 검토한 뒤, 그사이 노트가 바뀌지 않았을 때만 쓰는 MCP 서버다. 노트 파일을 직접 고치지 않고 이 도구로만 처리한다.
 
 ## 언제 쓰나
 
@@ -15,12 +15,12 @@ Hanger는 사용자의 Markdown 노트 폴더(closet)를 검색하고, 바꿀 �
 - 노트를 쓰거나, 고치거나, 병합하거나, 정리할 때 쓴다("이 내용으로 노트 만들어 줘", "두 노트 합쳐 줘").
 - 경력 원본(`career/master.md`, 프로젝트 폴더, 옛 형식의 `cases/`)에 사실을 더하거나 고칠 때 쓴다("경력 원본에 이 프로젝트 추가해줘"). PR 머지 뒤 경력 원본에 남길 성과를 기록할 때도 쓴다.
 - 메모, 링크, 파일을 그대로 보관할 때 쓴다("이 링크 inbox에 넣어 둬").
-- closet을 등록하거나 Hanger가 낸 결정 질문(`decision_required`)에 답할 때 쓴다.
+- closet을 등록하거나 Markdown Notes Agent가 낸 결정 질문(`decision_required`)에 답할 때 쓴다.
 
 ## 쓰지 않을 때
 
 - 다른 스킬이 맡는 일(저장소 코드와 문서, JD 맞춤 이력서와 포트폴리오)에는 쓰지 않는다. 경계는 [구분](#구분) 절이 정한다.
-- Hanger MCP 도구가 연결되지 않은 세션에서는 노트 파일을 직접 고쳐 대신하지 않고 연결이 필요하다고 보고한다.
+- Markdown Notes Agent MCP 도구가 연결되지 않은 세션에서는 노트 파일을 직접 고쳐 대신하지 않고 연결이 필요하다고 보고한다.
 
 ## 시작
 
@@ -47,7 +47,7 @@ Hanger는 사용자의 Markdown 노트 폴더(closet)를 검색하고, 바꿀 �
 `request_change`의 `intent`는 다음 칸으로 채운다.
 
 - `kind`는 `write`(새 내용), `edit`(있는 노트 수정), `organize`(병합, 나누기, 연결) 중 하나다.
-- `instruction`에는 사용자 말을 그대로 넣는다. 사용자가 붙여 준 메모도 고치지 않고 그대로 넣는다. Hanger가 그 메모를 근거로 인용한다.
+- `instruction`에는 사용자 말을 그대로 넣는다. 사용자가 붙여 준 메모도 고치지 않고 그대로 넣는다. Markdown Notes Agent가 그 메모를 근거로 인용한다.
 - 사용자 말 없이 AI가 시작하는 기록(PR 머지 뒤 성과 기록)은 `instruction`에 사실과 근거를 정리해 넣는다. PR 링크, 바뀐 동작, 검증 결과를 적고 확인하지 않은 성과를 더하지 않는다.
 - `query`에는 관련 노트를 찾을 검색어를 넣는다.
 - `paths`에는 이미 있는 문서 중 사용자가 지목한 것만 넣는다. 새로 만들 문서 경로는 넣지 않는다.
@@ -59,7 +59,7 @@ Hanger는 사용자의 Markdown 노트 폴더(closet)를 검색하고, 바꿀 �
 
 ## 결정 질문
 
-`decision_required` 오류는 Hanger가 사용자의 결정을 기다리는 상태다. 주로 `.hangerignore`를 고치거나 지운 뒤에 생긴다.
+`decision_required` 오류는 Markdown Notes Agent가 사용자의 결정을 기다리는 상태다. 주로 `.markdown-notes-agentignore`를 고치거나 지운 뒤에 생긴다.
 
 1. 질문과 두 선택지(`approve`, `decline`)를 사용자에게 보인다.
 2. 사용자 답을 기다린다. 한쪽이 뻔해 보여도 대신 고르지 않는다.
@@ -67,15 +67,15 @@ Hanger는 사용자의 Markdown 노트 폴더(closet)를 검색하고, 바꿀 �
 
 ## 메시지 전달
 
-- Hanger 결과와 오류의 `Tell the user:` 부분은 더하거나 빼지 않고 사용자 언어로 번역해 그대로 전한다.
+- Markdown Notes Agent 결과와 오류의 `Tell the user:` 부분은 더하거나 빼지 않고 사용자 언어로 번역해 그대로 전한다.
 - `Then:` 부분은 사용자에게 전하지 않는다. AI가 실행할 다음 행동이다.
-- closet, Hanger, `.hangerignore`, `HANGER.md`, 명령, 경로, id는 번역하지 않는다. "closet 경로를 알려 주세요"는 맞고, "노트 폴더 경로를 알려 주세요"는 틀리다.
+- closet, Markdown Notes Agent, `.markdown-notes-agentignore`, `MARKDOWN_NOTES_AGENT.md`, 명령, 경로, id는 번역하지 않는다. "closet 경로를 알려 주세요"는 맞고, "노트 폴더 경로를 알려 주세요"는 틀리다.
 
 ## 하지 않는 것
 
-- closet을 지우지 않는다. `remove_closet`은 항상 거절된다. 돌려받은 터미널 명령(`hanger closet remove`)만 사용자에게 안내한다.
-- `.hangerignore`와 `HANGER.md`는 사용자의 규칙 파일이다. 사용자가 요청할 때만 직접 고친다.
-- Hanger 대신 노트 파일을 직접 쓰는 우회를 하지 않는다. 실패하거나, 늦거나, 거절될 때도 하지 않는다.
+- closet을 지우지 않는다. `remove_closet`은 항상 거절된다. 돌려받은 터미널 명령(`markdown-notes-agent closet remove`)만 사용자에게 안내한다.
+- `.markdown-notes-agentignore`와 `MARKDOWN_NOTES_AGENT.md`는 사용자의 규칙 파일이다. 사용자가 요청할 때만 직접 고친다.
+- Markdown Notes Agent 대신 노트 파일을 직접 쓰는 우회를 하지 않는다. 실패하거나, 늦거나, 거절될 때도 하지 않는다.
 
 ## 답변
 

@@ -358,19 +358,17 @@ class PostToolTest(HookCase):
         self.assertIn("결정 기록에 지금까지의 결정과 다음 할 일을 남긴 뒤 남은 범위는 새 서브에이전트에 인계한다", first)
         self.assertEqual(self.context(self.hook("PostToolUse", tool_name="Bash", tool_input={"command": "ls"})), "")
 
-    def test_merge_notice_is_one_line_to_hanger(self) -> None:
-        # 원본 저장소: docs/hanger가 있으니 경력 원본 위치 설정 없이도 안내
+    def test_merge_notice_is_one_line_to_markdown_notes_agent(self) -> None:
         notice = self.context(self.merge())
         self.assertEqual(len(notice.splitlines()), 1)
         self.assertIn("경력 원본에 남길 성과", notice)
-        self.assertIn(f"hanger 스킬({REPO / 'docs/hanger/SKILL.md'})", notice)
+        self.assertIn(f"markdown-notes-agent 스킬({REPO / 'docs/markdown-notes-agent/SKILL.md'})", notice)
         self.assertNotIn("career", notice)
         failed = self.hook("PostToolUse", tool_name="Bash", tool_input={"command": "gh pr merge 12"}, tool_response="Exit code: 1\nnot mergeable")
         self.assertEqual(self.context(failed), "")
         self.assertEqual(self.context(self.hook("PostToolUse", tool_name="Bash", tool_input={"command": "gh pr view 12"}, tool_response={"exit_code": 0})), "")
 
-    def test_merge_notice_needs_installed_hanger(self) -> None:
-        # 설치본 배치: hanger 스킬이 just-mode 옆에 없으면 안내 생략, 설치하면 그 경로로 안내
+    def test_merge_notice_needs_installed_markdown_notes_agent(self) -> None:
         skills = self.base / "skills"
         hooks = skills / "just-mode/scripts/hooks"
         shutil.copytree(HOOKS, hooks, ignore=shutil.ignore_patterns("tests", "__pycache__", ".pytest_cache"))
@@ -382,9 +380,9 @@ class PostToolTest(HookCase):
             return self.context(json.loads(done.stdout))
 
         self.assertEqual(notice(), "")
-        (skills / "hanger").mkdir()
-        (skills / "hanger/SKILL.md").write_text("---\nname: hanger\n---\n", encoding="utf-8")
-        self.assertIn(f"hanger 스킬({skills / 'hanger/SKILL.md'})", notice())
+        (skills / "markdown-notes-agent").mkdir()
+        (skills / "markdown-notes-agent/SKILL.md").write_text("---\nname: markdown-notes-agent\n---\n", encoding="utf-8")
+        self.assertIn(f"markdown-notes-agent 스킬({skills / 'markdown-notes-agent/SKILL.md'})", notice())
 
 
 class TaskCliTest(HookCase):

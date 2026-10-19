@@ -153,7 +153,7 @@ Claude Code에서는 `/just-mode`, Codex에서는 `$just-mode` 뒤에 목표와 
   - [repo-docs-root](docs/repo-docs-root/SKILL.md)
   - [repo-docs-llms](docs/repo-docs-llms/SKILL.md)
   - [career](docs/career/SKILL.md)
-  - [hanger](docs/hanger/SKILL.md)
+  - [markdown-notes-agent](docs/markdown-notes-agent/SKILL.md)
 - [디자인](design/design-tokens/SKILL.md)
 - [스킬 관리](tools/skill-sync/SKILL.md)
 - [실험](experiments/skill-exposure/report.md)

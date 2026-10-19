@@ -124,7 +124,6 @@ def load_module(path: Path, name: str) -> ModuleType:
 
 
 def merge_notice(payload: dict[str, Any]) -> str:
-    """셸 PR 머지 성공 뒤 경력 원본 확인 안내 한 줄. hanger 스킬이 설치되지 않았으면 생략"""
     if payload.get("hook_event_name") != "PostToolUse":
         return ""
     command = tool_command(payload)
@@ -135,7 +134,7 @@ def merge_notice(payload: dict[str, Any]) -> str:
         return ""
     return (
         "PR 머지 성공. 경력 원본에 남길 성과(내 PR, 동작·결과 변화, 검증 근거 있음)인지 판단하고, "
-        f"남길 성과면 사실과 근거(PR 링크, 바뀐 동작, 검증)를 정리해 hanger 스킬({skill})에 경력 원본 기록을 요청한다."
+        f"남길 성과면 사실과 근거(PR 링크, 바뀐 동작, 검증)를 정리해 markdown-notes-agent 스킬({skill})에 경력 원본 기록을 요청한다."
     )
 
 
