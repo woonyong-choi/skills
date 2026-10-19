@@ -12,6 +12,7 @@ import tempfile
 import unittest
 import zlib
 from pathlib import Path
+from unittest import mock
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "screens.py"
 _SPEC = importlib.util.spec_from_file_location("screens", SCRIPT)
@@ -154,6 +155,103 @@ class FailureTest(unittest.TestCase):
             path = Path(folder) / "screens.json"
             path.write_text(json.dumps({"screens": [ENTRY]}, ensure_ascii=False), encoding="utf-8")
             self.assertEqual(SCREENS.load(path)["screens"][0]["name"], "lag-table")
+
+
+class CleanupOwnershipTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.stack = contextlib.ExitStack()
+        self.addCleanup(self.stack.close)
+        self.root = Path(self.stack.enter_context(tempfile.TemporaryDirectory())).resolve()
+        self.out = self.root / "assets"
+        self.out.mkdir()
+        self.config = self.out / "screens.json"
+        self.config.write_text(json.dumps({"screens": [{**ENTRY, "url": "{data}/scene"}]}), encoding="utf-8")
+        self.data = self.root / ".local" / "runs" / "screenshots-owned"
+        self.argv = ["shoot", "--config", str(self.config), "--run-id", "owned"]
+        self.stack.enter_context(mock.patch.dict(SCREENS.os.environ))
+        self.stack.enter_context(mock.patch.object(SCREENS.subprocess, "run", return_value=mock.Mock(returncode=0, stdout=str(self.root))))
+        self.discard = self.stack.enter_context(mock.patch.object(SCREENS, "discard"))
+        self.browser_type = self.stack.enter_context(mock.patch.object(SCREENS, "Browser"))
+        self.browser = self.browser_type.return_value.__enter__.return_value
+        self.browser.capture.return_value = png(1920, 4)
+        self.browser.render.return_value = png(1920, 4)
+        self.stack.enter_context(contextlib.redirect_stderr(io.StringIO()))
+
+    def test_main_rejects_run_id_path_components_without_cleanup(self) -> None:
+        for run_id in ("x/../../..", "x/../../../..", "x/../other", "", ".", ".."):
+            with self.subTest(run_id=run_id):
+                self.assertEqual(SCREENS.main(self.argv[:-1] + [run_id]), 2)
+                self.discard.assert_not_called()
+                self.browser_type.assert_not_called()
+                self.assertFalse((self.root / ".local").exists())
+
+    def test_main_rejects_existing_folder_without_cleanup(self) -> None:
+        self.data.mkdir(parents=True)
+        marker = self.data / "keep"
+        marker.write_text("existing", encoding="utf-8")
+
+        self.assertEqual(SCREENS.main(self.argv), 2)
+        self.discard.assert_not_called()
+        self.browser_type.assert_not_called()
+        self.assertEqual(marker.read_text(encoding="utf-8"), "existing")
+
+    def test_main_rejects_symlink_paths_without_cleanup(self) -> None:
+        target = self.root / "target"
+        target.mkdir()
+        for link in (self.root / ".local", self.root / ".local" / "runs", self.data):
+            with self.subTest(link=link):
+                link.parent.mkdir(parents=True, exist_ok=True)
+                link.symlink_to(target, target_is_directory=True)
+                try:
+                    self.assertEqual(SCREENS.main(self.argv), 2)
+                    self.discard.assert_not_called()
+                    self.browser_type.assert_not_called()
+                    self.assertEqual(list(target.iterdir()), [])
+                finally:
+                    link.unlink()
+
+    def test_main_creation_failure_does_not_cleanup(self) -> None:
+        with mock.patch.object(Path, "mkdir", side_effect=PermissionError("denied")):
+            self.assertEqual(SCREENS.main(self.argv), 2)
+        self.discard.assert_not_called()
+        self.browser_type.assert_not_called()
+
+    def test_main_default_run_id_cleans_only_new_folder_and_keeps_output(self) -> None:
+        expected = self.root / ".local" / "runs" / "screenshots-20261019-123456"
+        with mock.patch.object(SCREENS.time, "strftime", return_value="20261019-123456"):
+            self.assertEqual(SCREENS.main(self.argv[:-2]), 0)
+
+        self.discard.assert_called_once_with(expected)
+        self.assertTrue(expected.is_dir())
+        self.assertEqual(SCREENS.os.environ["SCREENS_DATA"], str(expected))
+        self.assertEqual(self.browser.capture.call_args.args[0].source, f"{expected}/scene")
+        self.assertEqual(SCREENS.check({"screens": [ENTRY]}, self.out), [])
+        self.assertTrue(self.config.is_file())
+
+    def test_main_capture_failure_cleans_only_new_folder_and_keeps_output(self) -> None:
+        output = self.out / "lag-table-light.png"
+        output.write_bytes(b"existing")
+        self.browser.capture.side_effect = RuntimeError("capture failed")
+
+        self.assertEqual(SCREENS.main(self.argv), 1)
+        self.discard.assert_called_once_with(self.data)
+        self.assertEqual(output.read_bytes(), b"existing")
+
+    def test_main_does_not_cleanup_replaced_folder(self) -> None:
+        saved = self.root / "saved"
+
+        def replace_folder(item: SCREENS.Capture) -> bytes:
+            if not saved.exists():
+                self.data.rename(saved)
+                self.data.mkdir()
+                (self.data / "keep").write_text("replacement", encoding="utf-8")
+            return png(1920, 4)
+
+        self.browser.capture.side_effect = replace_folder
+        self.assertEqual(SCREENS.main(self.argv), 0)
+        self.discard.assert_not_called()
+        self.assertTrue(saved.is_dir())
+        self.assertEqual((self.data / "keep").read_text(encoding="utf-8"), "replacement")
 
 
 @unittest.skipUnless(HAS_PLAYWRIGHT, "Playwright 없음")
