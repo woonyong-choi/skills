@@ -8,6 +8,21 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 import consistency  # noqa: E402
 import skill_check  # noqa: E402
+import install  # noqa: E402
+
+
+@pytest.mark.parametrize('name', ['-alpha', 'alpha-', 'alpha--beta', '-', 'Alpha', 'alpha_beta', 'alpha/beta', 'alpha', 'alpha-2', '0', 'a' * 100])
+def test_frontmatter_name_matches_installer(tmp_path: Path, name: str) -> None:
+    try:
+        install._skill_path(tmp_path, name)
+    except ValueError:
+        valid = False
+    else:
+        valid = True
+
+    errors = skill_check.check_frontmatter({'name': name, 'description': '"쓸 때 쓴다."'}, name)
+
+    assert (not errors) == valid
 
 
 @pytest.mark.parametrize('description', [

@@ -30,6 +30,11 @@ def checker(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
         timeout: int,
         check: bool,
     ) -> subprocess.CompletedProcess[str]:
+        if command[:2] == ['gh', 'api']:
+            endpoint = command[2]
+            data = ({'tree': [{'path': 'README.md', 'type': 'blob'}], 'truncated': False}
+                    if '/git/trees/' in endpoint else {'sha': endpoint.rsplit('/', 1)[1]})
+            return subprocess.CompletedProcess(command, 0, json.dumps(data), '')
         if command[:3] != ["gh", "repo", "view"]:
             return run(
                 command,
@@ -336,3 +341,94 @@ def test_main_fix_publishes_repository_file_link(
         expected,
         "",
     )
+
+
+@pytest.mark.parametrize('suffix', ['', '#section', ':2-4'])
+def test_fix_head_only_file_uses_verified_sha(checker: ModuleType, monkeypatch: pytest.MonkeyPatch, suffix: str) -> None:
+    root = Path(__file__).resolve().parents[3]
+    context = checker._Context(root)
+    path = 'git/git-issue/scripts/public_links.py'
+    calls = []
+    run = checker._run
+
+    def record(command: list[str]) -> str:
+        calls.append(command)
+        return run(command)
+
+    monkeypatch.setattr(checker, '_run', record)
+    body = f'[file]({path}{suffix}) [again]({path}{suffix})'
+    fixed = checker._fix(body, checker._scan(body, context))
+
+    fragment = '#L2-L4' if suffix == ':2-4' else suffix
+    assert fixed.count(f'/blob/{context.sha}/{path}{fragment}') == 2
+    assert not checker._scan(fixed, context)
+    assert sum('/git/trees/' in ' '.join(call) for call in calls) <= 1
+    assert sum('/commits/' in ' '.join(call) for call in calls) == 1
+    assert not any(call[0] == 'git' for call in calls)
+
+
+@pytest.mark.parametrize('failure', ['unpublished', 'wrong-sha', 'truncated', 'private'])
+def test_fix_unverified_version_does_not_publish(
+    checker: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    failure: str,
+) -> None:
+    context = checker._Context(Path(__file__).resolve().parents[3])
+    run = checker._run
+
+    def unavailable(command: list[str]) -> str:
+        if command[:2] == ['gh', 'api']:
+            if failure == 'unpublished':
+                raise subprocess.CalledProcessError(1, command)
+            if '/commits/' in command[2] and failure == 'wrong-sha':
+                return json.dumps({'sha': '0' * 40})
+            if failure == 'truncated':
+                return json.dumps({'tree': [], 'truncated': True})
+        return run(command)
+
+    monkeypatch.setattr(checker, '_run', unavailable)
+    if failure == 'private':
+        context.target = checker._Repository(context.target.name, 'PRIVATE', 'main')
+
+    monkeypatch.setattr(checker, '_Context', lambda *args: context)
+    monkeypatch.setattr(sys, 'stdin', io.StringIO('[file](git/git-issue/scripts/public_links.py)'))
+
+    status = checker.main(['--fix', '-'])
+
+    captured = capsys.readouterr()
+    assert status == 2
+    assert captured.out == ''
+    assert 'public links check failed' in captured.err
+
+
+def test_fix_default_branch_and_line_links_reuse_context(checker: ModuleType, monkeypatch: pytest.MonkeyPatch) -> None:
+    context = checker._Context(Path(__file__).resolve().parents[3])
+    calls = []
+    run = checker._run
+
+    def record(command: list[str]) -> str:
+        calls.append(command)
+        return run(command)
+
+    monkeypatch.setattr(checker, '_run', record)
+    body = '[a](README.md) [b](README.md#section) [c](README.md:1-2) [d](README.md:3)'
+    fixed = checker._fix(body, checker._scan(body, context))
+
+    assert '/blob/main/README.md)' in fixed
+    assert '/blob/main/README.md#section)' in fixed
+    assert f'/blob/{context.sha}/README.md#L1-L2)' in fixed
+    assert f'/blob/{context.sha}/README.md#L3)' in fixed
+    assert len(calls) == 2
+    assert all(call[:2] == ['gh', 'api'] for call in calls)
+
+
+@pytest.mark.parametrize('path', ['untracked.md', '.local/secret', 'project.wt/secret', '../outside.md'])
+def test_fix_unpublished_or_private_path_has_no_replacement(checker: ModuleType, tmp_path: Path, path: str) -> None:
+    context = checker._Context(Path(__file__).resolve().parents[3])
+    context.root = tmp_path.resolve()
+    (tmp_path / 'untracked.md').write_text('local only', encoding='utf-8')
+
+    findings = checker._scan(f'[file]({path})', context)
+
+    assert findings and all(finding.replacement is None for finding in findings)

@@ -294,6 +294,9 @@ def main() -> int:
     parser.add_argument("targets", nargs="+")
     parser.add_argument("--tokens", default=None, help="breakpoint를 읽을 tokens.json. 없으면 대상 폴더와 상위 폴더에서 찾는다")
     args = parser.parse_args()
+    for target in args.targets:
+        if not os.path.exists(target):
+            parser.error(f"input path does not exist: {target}")
     tokens_path = args.tokens or find_tokens_file(args.targets)
     if not tokens_path:
         print("tokens.json not found: every @media and @container number is reported, primitive references are not checked", file=sys.stderr)

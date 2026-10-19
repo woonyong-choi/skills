@@ -47,7 +47,7 @@ def check_frontmatter(fields: dict[str, str], folder: str) -> list[str]:
         if key and key not in KEYS:
             errors.append(f'frontmatter: 없는 칸 {key}')
     name = fields.get('name')
-    if not name or not re.fullmatch(r'[a-z0-9-]+', name):
+    if not name or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', name):
         errors.append('name: 영어 소문자·숫자·- 형식')
     elif name != folder:
         errors.append('name: 폴더 이름과 다름')
