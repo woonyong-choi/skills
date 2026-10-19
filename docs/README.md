@@ -12,5 +12,5 @@ Skills의 문서 작성과 노트 관리 스킬 목록이다. 문서는 한국�
   - [repo-docs-figures](repo-docs-figures/SKILL.md)
   - [repo-docs-root](repo-docs-root/SKILL.md)
   - [repo-docs-llms](repo-docs-llms/SKILL.md)
-- [노트와 경력](hanger/SKILL.md)
+- [노트와 경력](markdown-notes-agent/SKILL.md)
   - [career](career/SKILL.md)

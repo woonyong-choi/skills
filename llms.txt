@@ -16,5 +16,5 @@ Claude Code와 Codex로 작업할 때 커밋 형식, 코드 규칙, 문서 기�
 - [repo-docs-figures](https://raw.githubusercontent.com/woonyong-choi/skills/main/docs/repo-docs-figures/SKILL.md)
 - [repo-docs-root](https://raw.githubusercontent.com/woonyong-choi/skills/main/docs/repo-docs-root/SKILL.md)
 - [repo-docs-llms](https://raw.githubusercontent.com/woonyong-choi/skills/main/docs/repo-docs-llms/SKILL.md)
-- [노트와 경력](https://raw.githubusercontent.com/woonyong-choi/skills/main/docs/hanger/SKILL.md)
+- [노트와 경력](https://raw.githubusercontent.com/woonyong-choi/skills/main/docs/markdown-notes-agent/SKILL.md)
 - [career](https://raw.githubusercontent.com/woonyong-choi/skills/main/docs/career/SKILL.md)

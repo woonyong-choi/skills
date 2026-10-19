@@ -4,10 +4,10 @@
 
 ## 읽는 방법
 
-- 경력 원본은 Hanger closet의 `career/` 아래 Markdown이다. `search_documents`(`folders: ["career"]`)로 찾고, 목록에만 나온 문서는 `read_document`로 읽는다. closet 고르기와 오류 메시지 전달은 hanger 규칙을 따른다.
-- 원본 파일에 직접 쓰거나 Hanger 변경 요청(`request_change`, `collect`)을 하지 않는다. 이 스킬은 읽기만 한다.
-- 그림 원본(`.diagramplay`)은 Hanger가 색인하지 않는다. `list_closets`가 알려 준 closet 경로 아래 파일을 공고 폴더로 복사한다(읽기만 한다).
-- 원본이 비었거나 필요한 칸이 `미확인`이면 그대로 빈 곳으로 보고한다. 원본을 채우는 일은 사용자에게 hanger 요청으로 안내한다.
+- 경력 원본은 Markdown Notes Agent vault의 `career/` 아래 Markdown이다. `search_documents`(`folders: ["career"]`)로 찾고, 목록에만 나온 문서는 `read_document`로 읽는다. vault 고르기와 오류 메시지 전달은 markdown-notes-agent 규칙을 따른다.
+- 원본 파일에 직접 쓰거나 Markdown Notes Agent 변경 요청(`request_change`, `collect`)을 하지 않는다. 이 스킬은 읽기만 한다.
+- 그림 원본(`.diagramplay`)은 Markdown Notes Agent가 색인하지 않는다. `list_vaults`가 알려 준 vault 경로 아래 파일을 공고 폴더로 복사한다(읽기만 한다).
+- 원본이 비었거나 필요한 칸이 `미확인`이면 그대로 빈 곳으로 보고한다. 원본을 채우는 일은 사용자에게 markdown-notes-agent 요청으로 안내한다.
 
 ## 읽기 범위
 

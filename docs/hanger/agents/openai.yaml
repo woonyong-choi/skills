@@ -1,4 +1,0 @@
-interface:
-  display_name: "Hanger"
-  short_description: "Hanger MCP로 closet 노트 검색, 작성, 정리와 경력 원본 기록"
-  default_prompt: "$hanger 스킬로 처리해 줘: [노트 요청]"
