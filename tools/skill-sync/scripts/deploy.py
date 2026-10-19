@@ -55,10 +55,16 @@ def source_record(skill: Path, dist: Path) -> dict[str, str]:
         if len(digits) != width or re.fullmatch(r"[0-9a-fA-F]+", digits) is None:
             raise ValueError(f"invalid description: {skill.name}: invalid hex escape")
         codepoint = int(digits, 16)
+        index += width
+        if escape == "u" and 0xD800 <= codepoint <= 0xDBFF:
+            pair = encoded[index:index + 6]
+            if re.fullmatch(r"\\u[dD][c-fC-F][0-9a-fA-F]{2}", pair) is None:
+                raise ValueError(f"invalid description: {skill.name}: invalid surrogate pair")
+            codepoint = 0x10000 + (codepoint - 0xD800) * 0x400 + int(pair[2:], 16) - 0xDC00
+            index += 6
         if codepoint > 0x10FFFF or 0xD800 <= codepoint <= 0xDFFF:
             raise ValueError(f"invalid description: {skill.name}: invalid Unicode escape")
         decoded.append(chr(codepoint))
-        index += width
     return {"name": skill.name, "description": "".join(decoded), "sourceHash": install.tree_hash(skill),
             "skillHash": hashlib.sha256(content).hexdigest(), "path": str(dist / f"{skill.name}.zip")}
 
