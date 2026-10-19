@@ -9,7 +9,7 @@
 | 그림 | 가로형이 되는 한도 | 넘으면 |
 |---|---|---|
 | 구조 그림 사슬 | 짧은 이름 카드 12개까지 접혀 가로형이다(5개 464x239, 9개 538x263의 3x3, 12개 524x319) | 12개를 넘으면 전체 그림과 자세한 그림으로 나눈다 |
-| 갈래 있는 구성도 | 카드 5개와 그룹 하나인 블로그 요청 경로가 두 줄로 접혀 755x509 | 늘 함께 다니는 카드(서비스와 그 전용 DB)를 부제로 합치고, 그래도 세로형이면 전체 그림과 자세한 그림으로 나눈다 |
+| 갈래 있는 구성도 | 카드 5개와 그룹 하나인 블로그 요청 경로가 두 줄로 접혀 가로형 | 늘 함께 다니는 카드(서비스와 그 전용 DB)를 부제로 합치고, 그래도 세로형이면 전체 그림과 자세한 그림으로 나눈다 |
 | 상태 그림 | 8상태와 예외 전이 넷이 686x371 | 세로형이면 정상 흐름과 예외 흐름을 그림 둘로 나눈다 |
 | 순서 그림 | 메시지 수가 참여자 수의 두 배 빼기 둘 이하(3명 4개, 4명 6개). 폭은 참여자 수가 정하고(3명 331px, 4명 431px) 높이는 메시지마다 44px씩 늘어 접히지 않는다 | 단계(로그인, 갱신)마다 그림 하나로 나누고, 같은 흐름 안의 선택 경로만 `fragment`로 담는다 |
 
@@ -118,14 +118,14 @@ origin -> bundle "MDX 읽기"
 origin -> cms "조회"
 ```
 
-좋은 예는 같은 카드 다섯에 꼬리표, 고정폭 부제, 초점 하나, 주 경로 번호, 점선 응답과 경계를 단다. Torso가 두 줄로 접어 755x509 가로형이고, 꼬리표만 읽어도 바깥, 경계, 우리 서버, 저장이 구분된다.
+좋은 예는 같은 카드 다섯에 꼬리표, 고정폭 부제, 초점 하나, 주 경로 번호, 점선 응답과 경계를 단다. Torso가 두 줄로 접어 가로형이고, 꼬리표만 읽어도 바깥, 경계, 우리 서버, 저장이 구분된다.
 
 ```text
 torso
 title "블로그 요청 경로"
 external reader "독자" "브라우저" badge="EXT"
-box edge "Cloudflare" "Pages · 캐시" badge="EDGE" icon=cloud
-box origin "오리진" "Astro `SSR` + `MDX`" badge="APP" icon=server tone=blue appearance=filled
+box edge "Cloudflare" "Pages · 캐시" badge="EDGE"
+box origin "오리진" "Astro `SSR` + `MDX`" badge="APP" tone=blue appearance=filled
 group content "콘텐츠" dashed direction=down {
   box bundle "MDX 번들" "`src/content/*.mdx`" badge="DATA"
   store cms "콘텐츠 CMS" "자산 · OG 이미지" badge="DATA"
@@ -166,15 +166,15 @@ mq -> worker
 **같은 역할의 서버 여럿.** 나쁜 예는 `api1`, `api2`, `api3`를 따로 두고 각자 캐시, DB, 큐로 선 9개를 그어 선이 엉킨다. 좋은 예는 카드 하나와 그룹 둘로 선을 5개로 줄이고, 요청이 모이는 API 서버를 초점으로 칠한다.
 
 ```text
-box lb "로드밸런서" badge="EDGE" icon=lb
-box api "API 서버" badge="APP" icon=server count=3 tone=blue appearance=filled
+box lb "로드밸런서" badge="EDGE"
+box api "API 서버" badge="APP" count=3 tone=blue appearance=filled
 group data "데이터" direction=down {
   box cache "캐시" badge="DATA" icon=redis
-  store db "DB" badge="DATA" icon=db
+  store db "DB" badge="DATA"
 }
 group async "비동기 처리" direction=down {
   queue mq "메시지 큐" slots=4
-  box worker "워커" badge="ASYNC" icon=server
+  box worker "워커" badge="ASYNC"
 }
 lb -> api "분산"
 api -> cache "조회"
@@ -219,7 +219,7 @@ scene "로그인과 갱신"
 **흩어진 지표 카드.** 나쁜 예는 선 없는 지표 카드 셋이 2+1로 쌓이고 순서가 바뀐다. 좋은 예는 값 줄 카드 하나를 둘째 보기에 둔다.
 
 ```text
-box kpi "기존 대비" icon=chart {
+box kpi "기존 대비" {
   value latency "p95 지연" from=-85%
   value throughput "처리량" from=5배
   value cost "월 비용" from=-40%
