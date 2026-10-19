@@ -16,6 +16,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 
 HOOKS = Path(__file__).resolve().parents[1]
 PLUGIN = HOOKS.parents[2]
@@ -23,6 +24,7 @@ REPO = PLUGIN.parent
 sys.path.insert(0, str(HOOKS))
 
 import entry  # noqa: E402
+import hook  # noqa: E402
 import task  # noqa: E402
 
 SESSION = "019e0000-0000-7000-8000-00000000abcd"
@@ -68,6 +70,47 @@ class HookCase(unittest.TestCase):
     def log(self, decision: str, name: str = "hooks-work") -> None:
         path = self.repo / ".local/decisions" / f"{name}.tsv"
         subprocess.run(["bash", str(LOGGER), str(path), "구현", decision, "이유", "근거", "통과"], check=True, timeout=15)
+
+
+class EventPathsTest(HookCase):
+    def test_post_tool_resolves_common_path_once_per_event(self) -> None:
+        (self.repo / ".local").mkdir()
+        (self.repo / ".local/.gitignore").write_text("*\n", encoding="utf-8")
+        payload = {"hook_event_name": "PostToolUse", "session_id": SESSION, "cwd": str(self.repo), "tool_name": "Read", "tool_response": "read"}
+        original = subprocess.run
+        for _ in range(2):
+            with patch.object(task.subprocess, "run", wraps=original) as commands:
+                self.assertEqual(hook.handle("codex", payload), {})
+            lookups = [call for call in commands.call_args_list if "--git-common-dir" in call.args[0]]
+            self.assertEqual(len(lookups), 1)
+
+    def test_shared_root_scope_separates_repositories_and_retries_failure(self) -> None:
+        other = self.base / "other"
+        other.mkdir()
+        git(other, "init", "-q")
+        original = subprocess.run
+        with task.event_paths(), patch.object(task.subprocess, "run", wraps=original) as commands:
+            self.assertEqual(task.shared_root(self.repo), self.repo)
+            self.assertEqual(task.shared_root(other), other)
+            self.assertEqual(task.shared_root(self.repo), self.repo)
+            self.assertEqual(commands.call_count, 2)
+        failed = subprocess.CompletedProcess([], 1, "", "unavailable")
+        succeeded = subprocess.CompletedProcess([], 0, str(other / ".git"), "")
+        with task.event_paths(), patch.object(task.subprocess, "run", side_effect=[failed, succeeded]) as commands:
+            self.assertEqual(task.shared_root(self.repo), self.repo)
+            self.assertEqual(task.shared_root(self.repo), other)
+            self.assertEqual(commands.call_count, 2)
+
+    def test_shared_root_scope_restores_after_failure(self) -> None:
+        with self.assertRaisesRegex(ValueError, "probe"):
+            with task.event_paths():
+                task.shared_root(self.repo)
+                raise ValueError("probe")
+        original = subprocess.run
+        with patch.object(task.subprocess, "run", wraps=original) as commands:
+            task.shared_root(self.repo)
+            task.shared_root(self.repo)
+            self.assertEqual(commands.call_count, 2)
 
 
 class EntryNoticeTest(HookCase):
@@ -215,6 +258,38 @@ class WorktreeTest(HookCase):
 class RuleGateTest(HookCase):
     def edit(self, **extra: object) -> dict:
         return self.hook("PreToolUse", tool_name="Write", tool_input={"file_path": str(self.repo / "app.py"), "content": "def run():\n    raise ValueError('x')\n"}, **extra)
+
+    def test_proactive_query_allows_matching_edit_but_new_conditions_still_block(self) -> None:
+        content = "def run():\n    return 1\n"
+        source = self.repo / "app.py"
+        source.write_text(content, encoding="utf-8")
+        reader = task.skill_file(task.RULE_READER)
+        query = f"python3 {reader} {source}"
+        rewritten = self.hook("PreToolUse", tool_name="Bash", tool_input={"command": query})
+        command = rewritten["hookSpecificOutput"]["updatedInput"]["command"]
+        for _ in range(10):
+            read = subprocess.run(shlex.split(command), capture_output=True, text=True, timeout=30, check=True)
+            self.hook("PostToolUse", tool_name="Bash", tool_input={"command": command}, tool_response={"stdout": read.stdout})
+            if not read.stdout.endswith(hook.rule_reader().MORE):
+                break
+        else:
+            self.fail("proactive rule delivery did not finish")
+        edit = {"tool_name": "Write", "tool_input": {"file_path": str(source), "content": content}}
+        self.assertEqual(self.hook("PreToolUse", **edit), {})
+        edit["tool_input"]["content"] = "import threading\nlock = threading.Lock()\n"
+        self.assertEqual(self.hook("PreToolUse", **edit)["hookSpecificOutput"]["permissionDecision"], "deny")
+
+    def test_truncated_proactive_output_does_not_authorize_edit(self) -> None:
+        source = self.repo / "app.py"
+        source.write_text("def run():\n    return 1\n", encoding="utf-8")
+        reader = task.skill_file(task.RULE_READER)
+        query = f"python3 {reader} {source}"
+        rewritten = self.hook("PreToolUse", tool_name="Bash", tool_input={"command": query})
+        command = rewritten["hookSpecificOutput"]["updatedInput"]["command"]
+        read = subprocess.run(shlex.split(command), capture_output=True, text=True, timeout=30, check=True)
+        self.hook("PostToolUse", tool_name="Bash", tool_input={"command": command}, tool_response={"stdout": read.stdout[:100]})
+        edit = self.hook("PreToolUse", tool_name="Write", tool_input={"file_path": str(source), "content": source.read_text(encoding="utf-8")})
+        self.assertEqual(edit["hookSpecificOutput"]["permissionDecision"], "deny")
 
     def test_unbound_git_session_denies_code_edit_until_rules_delivered(self) -> None:
         blocked = self.edit()["hookSpecificOutput"]
