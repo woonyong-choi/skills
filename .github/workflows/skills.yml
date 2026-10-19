@@ -37,14 +37,14 @@ jobs:
           mkdir -p "$RUNNER_TEMP/real-tmp"
           ln -s "$RUNNER_TEMP/real-tmp" "$RUNNER_TEMP/linked-tmp"
           TMPDIR="$RUNNER_TEMP/linked-tmp" python3 -m pytest -q just/just-mode/scripts/hooks/tests
-      - name: Load Torso figure renderer
+      - name: Load DiagramPlay figure renderer
         uses: actions/checkout@v4
         with:
-          repository: woonyong-choi/torso
-          ref: a9c287d0bbe8e5929b369c1ea25c46d2248ef4d9
-          path: .runtime/torso
+          repository: woonyong-choi/diagramplay
+          ref: ebdc3e9c84c3d5443af7f1b6b5d9b2a18e5002ca
+          path: .runtime/diagramplay
       - name: Install figure renderer
-        working-directory: .runtime/torso
+        working-directory: .runtime/diagramplay
         run: npm ci
       - uses: oven-sh/setup-bun@v2
         with:
@@ -57,5 +57,5 @@ jobs:
       - name: Verify README figures
         run: |
           python3 experiments/skill-exposure/scripts/03-analyze.py
-          python3 scripts/render_readme.py .runtime/torso/src/cli.js
+          python3 scripts/render_readme.py .runtime/diagramplay/src/cli.js
           git diff --exit-code -- docs/assets experiments/skill-exposure/results

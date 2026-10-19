@@ -27,7 +27,7 @@ EN_CONTRACTION = re.compile(r"\b\w+n't\b|\b(it|that|there|what|here|who)'s\b|\b\
 PUNCTUATION = re.compile(r"[?!]$|\.\.\.|…")
 HEADING = re.compile(r"^#{1,6} ")
 GENERATED_BOUNDARY = re.compile(
-    r"^(?:(?:[ \t]*>[ \t]?)*[ \t]*<!-- /?torso (?:fold|scenes) v1 (?:name=[a-z0-9]+(?:-[a-z0-9]+)*|n=[1-9][0-9]*)"
+    r"^(?:(?:[ \t]*>[ \t]?)*[ \t]*<!-- /?diagramplay (?:fold|scenes) v1 (?:name=[a-z0-9]+(?:-[a-z0-9]+)*|n=[1-9][0-9]*)"
     r" -->|[ \t]*<!-- (?:check|grammar)-table:(?:start|end) -->)$"
 )
 HTML_TAG = re.compile(r"<(/?)([a-zA-Z][a-zA-Z0-9]*)[^>]*>|<!")
@@ -192,7 +192,7 @@ def english_errors(text: str) -> list[str]:
 
 def prose_errors(raw: str, is_formal: bool, english: bool, previous_quote: str, tags_allowed: set[str]) -> list[str]:
     errors = []
-    line = re.sub(r"`[^`]*`", "", GENERATED_BOUNDARY.sub("", raw)).replace("<!-- torso -->", "")
+    line = re.sub(r"`[^`]*`", "", GENERATED_BOUNDARY.sub("", raw)).replace("<!-- diagramplay -->", "")
     text = re.sub(r"^> ", "", line, count=1)
     text = re.sub(r" +$", "", text, count=1)
     text = re.sub(r"\(\[[^\]]*\]\([^)]*\)\)\.$", ".", text, count=1)
