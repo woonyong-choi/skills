@@ -233,7 +233,7 @@ class CommandLineTest(unittest.TestCase):
 
 
 class ReadmeOrderTest(unittest.TestCase):
-    """#90 지시 5: README 절 순서는 repo-docs-readme 틀의 두 종류 순서."""
+    """README 절 순서는 제품 소개와 설치·사용을 안내하는 기본 틀을 따른다."""
 
     def errors(self, text: str) -> list[str]:
         import tempfile
@@ -249,8 +249,10 @@ class ReadmeOrderTest(unittest.TestCase):
     def test_new_template_order(self) -> None:
         self.assertEqual(self.errors("# T\n\n## Quick start\n\n## Why\n\n## How it works\n\n## Status\n"), [])
         self.assertEqual(self.errors("# T\n\n## Why\n\n## Quick start\n"), ["절 순서"])
-        self.assertEqual(self.errors("# T\n\n## Problem and constraints\n\n## Design decisions\n\n## Results\n"), [])
-        self.assertEqual(self.errors("# T\n\n## Results\n\n## Implementation\n"), ["절 순서"])
+
+    def test_other_headings_do_not_add_a_second_ordering_mode(self) -> None:
+        self.assertEqual(self.errors("# T\n\n## Results\n\n## Implementation\n\n## Quick start\n\n## Why\n"), [])
+        self.assertEqual(self.errors("# T\n\n## 결과\n\n## 구현\n\n## 빠른 시작\n\n## 해결하는 문제\n"), [])
 
     def test_comparison_section_position_is_checked(self) -> None:
         cases = (
