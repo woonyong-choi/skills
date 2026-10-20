@@ -24,7 +24,7 @@
 |---|---|
 | 이름 | `README.en.md`, 없으면 `README.md`의 `#` 제목 |
 | 한 줄 소개 | 같은 파일의 제목 다음 첫 문단. 언어 전환 줄과 링크만 있는 줄(절 이동, 배지)은 뺀다 |
-| 소개 문단 | 같은 파일의 한 줄 소개 다음 문단. 없으면 해결하는 문제(`Why`)나 문제와 제약 절의 첫 문단(repo-docs-readme 틀) |
+| 소개 문단 | 같은 파일의 한 줄 소개 다음 문단. 구분선, 배지, 목차, 알림은 뺀다. 첫 `##` 전까지 없으면 해결하는 문제(`Why`)나 문제와 제약 절의 첫 문단을 같은 기준으로 고른다(repo-docs-readme 틀). 설치 절이나 다른 절의 본문은 가져오지 않는다 |
 | 문서 | `docs/README.md` 목록 링크 줄 중 정규화된 경로가 `docs/experiments/`, `docs/decisions/`로 시작하지 않는 줄. 같은 순서로, 키워드는 원문 그대로 |
 | Optional | 정규화된 경로가 `docs/experiments/`, `docs/decisions/`로 시작하는 목록 줄과 `CHANGELOG.md`. `CHANGELOG.md`의 링크 글자는 그 파일의 `#` 제목이고 설명은 없다 |
 | URL | `https://raw.githubusercontent.com/{소유자}/{저장소}/{기본 브랜치}/{저장소 상대경로}`. 목록의 경로를 `docs/README.md` 기준으로 풀고 공개 검사를 통과한 실제 경로로 정규화한다. 다른 호스트는 저장소 원문 URL 정책을 따른다 |

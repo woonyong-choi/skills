@@ -79,6 +79,84 @@ class GenerateIndexTest(unittest.TestCase):
                 self.assertIn("> Short tagline.\n\nIntro paragraph.\n", text)
                 self.assertNotIn("Status", text)
 
+    def test_markup_before_intro_preserves_prose(self) -> None:
+        for markup in (
+            "--",
+            "---",
+            "***",
+            "___",
+            "__",
+            "- - -",
+            "* * *",
+            "_ _ _",
+            '<hr class="divider">',
+            "<HR />",
+            "[![CI](badge.svg)](https://example.com/ci)",
+            '<p><a href="ci"><img src="badge.svg"></a></p>',
+            "- [Usage](#usage)\n- [Why](#why)",
+            "1. [Usage](#usage)\n2. [Why](#why)",
+            "> [!NOTE]\n> Beta only.",
+        ):
+            with self.subTest(markup=markup):
+                code, error = self.run_main(
+                    '<h1 align="center">Tool</h1>\n\n<p align="center">Short tagline.</p>\n\n'
+                    f"{markup}\n\n![Demo](demo.svg)\n\n[Play](demo.html)\n\n"
+                    "Keep **SQL** and [transactions](guide.md), not invented prose.\n\n"
+                    "## Usage\n\nInstall it.\n"
+                )
+                self.assertEqual(code, 0, error)
+                self.assertTrue(
+                    Path("llms.txt")
+                    .read_text()
+                    .startswith(
+                        "# Tool\n\n> Short tagline.\n\n"
+                        "Keep **SQL** and [transactions](guide.md), not invented prose.\n\n## Docs\n"
+                    )
+                )
+
+    def test_markup_without_intro_preserves_existing_outputs(self) -> None:
+        for suffix in (
+            "---\n\n## Install\n\nRun the command.\n",
+            "***\n\n> [!NOTE]\n> Beta only.\n",
+            "<hr>\n\n- [Usage](#usage)\n\n## Usage\n\nInstall it.\n",
+            "## Why\n\n---\n\n## Install\n\nRun it.\n",
+            "## Why\n\n> [!NOTE]\n> Not intro.\n\n## Install\n\nRun it.\n",
+            "## Why\n\n- Not a paragraph\n\n## Install\n\nRun it.\n",
+            "## Install\nRun it without a blank line.\n",
+        ):
+            with self.subTest(suffix=suffix):
+                for name in ("llms.txt", "llms-full.txt"):
+                    Path(name).write_text("previous", encoding="utf-8")
+                code, _ = self.run_main("# Tool\n\nShort tagline.\n\n" + suffix)
+                self.assertNotIn(code, (0, None))
+                for name in ("llms.txt", "llms-full.txt"):
+                    self.assertEqual(Path(name).read_text(), "previous")
+
+    def test_markup_in_why_section_selects_first_prose_only(self) -> None:
+        code, error = self.run_main(
+            "# Tool\n\nShort tagline.\n\n## Install\n\nRun it.\n\n"
+            "## Why\n\n---\n\n> [!NOTE]\n> Beta only.\n\n"
+            "Actual **problem** and constraints.\n\n## Usage\n\nNot intro.\n"
+        )
+        self.assertEqual(code, 0, error)
+        self.assertIn(
+            "> Short tagline.\n\nActual **problem** and constraints.\n\n## Docs",
+            Path("llms.txt").read_text(),
+        )
+
+    def test_markup_heading_without_blank_lines_keeps_section_boundary(self) -> None:
+        code, _ = self.run_main("# Tool\n\nShort tagline.\n## Install\nRun it.\n")
+        self.assertNotIn(code, (0, None))
+        self.assertFalse(Path("llms.txt").exists())
+        code, error = self.run_main(
+            "# Tool\n\nShort tagline.\n\nOriginal intro.\n## Install\nRun it.\n"
+        )
+        self.assertEqual(code, 0, error)
+        self.assertIn(
+            "> Short tagline.\n\nOriginal intro.\n\n## Docs",
+            Path("llms.txt").read_text(),
+        )
+
     def test_missing_intro_exits_with_reason(self) -> None:
         for readme in [
             "# Tool\n\nOnly tagline.\n",

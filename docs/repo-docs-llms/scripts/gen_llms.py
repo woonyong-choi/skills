@@ -93,13 +93,42 @@ def section_intro(blocks: list[str]) -> list[str]:
     """소개 절(INTRO_SECTIONS) 바로 아래 첫 문단. 없으면 빈 목록"""
     for index, block in enumerate(blocks[:-1]):
         if block.startswith("## ") and block[3:].strip() in INTRO_SECTIONS:
-            following = blocks[index + 1]
-            return (
-                []
-                if following.startswith("#")
-                else [" ".join(line.strip() for line in following.splitlines())]
-            )
+            for following in blocks[index + 1 :]:
+                if following.startswith("#"):
+                    break
+                text = _paragraph_text(following)
+                if text:
+                    return [text]
+            return []
     return []
+
+
+def _paragraph_text(block: str) -> str:
+    block = IMAGE.sub("", block).strip()
+    block = re.sub(
+        r"<h1[^>]*>.*?</h1>|^#{1,6} [^\n]*$",
+        "",
+        block,
+        flags=re.MULTILINE | re.DOTALL,
+    ).strip()
+    if re.match(r">\s*\[!", block):
+        return ""
+    block = re.sub(r"^>[ \t]?", "", block, flags=re.MULTILINE)
+    if re.match(r"(?:[-*+] |\d+[.)] |<(?:ul|ol)\b)", block, re.IGNORECASE):
+        return ""
+    lines = [
+        line.strip()
+        for line in block.splitlines()
+        if not LANGUAGE_LINE.search(line) and not link_only(line)
+    ]
+    lines = [re.sub(r"<[^>]+>", "", line).strip() for line in lines]
+    lines = [
+        line
+        for line in lines
+        if line
+        and not re.fullmatch(r"(?:-[ \t]*){2,}|(?:\*[ \t]*){2,}|(?:_[ \t]*){2,}", line)
+    ]
+    return " ".join(lines)
 
 
 def read_rows() -> list[tuple[str, str, str]]:
@@ -204,6 +233,7 @@ def main(
         for title, target, summary in rows
     ]
     readme = FENCE.sub("", Path(source).read_text(encoding="utf-8"))
+    readme = re.sub(r"^(#{2,6} [^\n]*)\n", r"\n\n\1\n\n", readme, flags=re.MULTILINE)
     blocks = [block.strip() for block in re.split(r"\n\s*\n", readme) if block.strip()]
     heading = re.search(
         r"<h1[^>]*>(.*?)</h1>|^# ([^\n]+)$", readme, re.MULTILINE | re.DOTALL
@@ -214,27 +244,9 @@ def main(
             if len(texts) == 1:
                 texts.extend(section_intro(blocks[block_index:]))
             break
-        block = IMAGE.sub("", block).strip()
-        # 제목 줄만 지우고 같은 블록의 한 줄 소개는 유지
-        block = re.sub(
-            r"<h1[^>]*>.*?</h1>|^#{1,6} [^\n]*$",
-            "",
-            block,
-            flags=re.MULTILINE | re.DOTALL,
-        ).strip()
-        if block.startswith(">"):
-            if re.match(r">\s*\[!", block):
-                continue
-            block = re.sub(r"^>[ \t]?", "", block, flags=re.MULTILINE)
-        lines = [
-            line.strip()
-            for line in block.splitlines()
-            if not LANGUAGE_LINE.search(line) and not link_only(line)
-        ]
-        lines = [re.sub(r"<[^>]+>", "", line).strip() for line in lines]
-        lines = [line for line in lines if line]
-        if lines:
-            texts.append(" ".join(lines))
+        text = _paragraph_text(block)
+        if text:
+            texts.append(text)
     if not heading or len(texts) < 2:
         raise SystemExit(
             f"{source} needs a title, a tagline paragraph and an intro paragraph"
