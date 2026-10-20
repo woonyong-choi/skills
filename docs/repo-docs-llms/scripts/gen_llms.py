@@ -17,7 +17,7 @@ import sys
 import urllib.parse
 from pathlib import Path
 
-OPTIONAL_PREFIXES = ("experiments/", "decisions/")
+OPTIONAL_PREFIXES = ("docs/experiments/", "docs/decisions/")
 # 머리 뒤 소개 문단이 없는 README 틀(repo-docs-readme)의 소개 절
 INTRO_SECTIONS = ("Why", "해결하는 문제", "Problem and constraints", "문제와 제약")
 IMAGE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
@@ -123,6 +123,8 @@ def read_rows() -> list[tuple[str, str, str]]:
             match = ITEM.match(text)
             if match:
                 title, target, summary = match.groups()
+                if target.startswith("/") or re.search(r"[:?#\\]", target):
+                    raise SystemExit("공개 문서 경로 아님: " + target)
                 rows.append((title, target, summary or ""))
             elif not KEYWORD.fullmatch(text):
                 raise SystemExit(
@@ -154,7 +156,6 @@ def is_public(
     real = (root / relative).resolve()
     if (
         Path(relative).is_absolute()
-        or ".." in Path(relative).parts
         or real.suffix != ".md"
         or not real.is_relative_to(root)
     ):
@@ -194,6 +195,14 @@ def main(
     for relative in inputs:
         if not is_public(root, relative, private_dirs):
             raise SystemExit("공개 문서 경로 아님: " + relative)
+    rows = [
+        (
+            title,
+            (root / "docs" / target).resolve().relative_to(root).as_posix(),
+            summary,
+        )
+        for title, target, summary in rows
+    ]
     readme = FENCE.sub("", Path(source).read_text(encoding="utf-8"))
     blocks = [block.strip() for block in re.split(r"\n\s*\n", readme) if block.strip()]
     heading = re.search(
@@ -248,11 +257,11 @@ def main(
     optional_rows = [row for row in rows if row[1].startswith(OPTIONAL_PREFIXES)]
     index = [f"# {name}", "", f"> {tagline}", "", intro, "", "## Docs", ""]
     index += [
-        f"- [{title}]({raw}docs/{target})" + (f": {summary}" if summary else "")
+        f"- [{title}]({raw}{target})" + (f": {summary}" if summary else "")
         for title, target, summary in main_rows
     ]
     extra = [
-        f"- [{title}]({raw}docs/{target})" + (f": {summary}" if summary else "")
+        f"- [{title}]({raw}{target})" + (f": {summary}" if summary else "")
         for title, target, summary in optional_rows
     ]
     try:
@@ -268,7 +277,7 @@ def main(
         pass
     if extra:
         index += ["", "## Optional", ""] + extra
-    parts = ["README.md"] + ["docs/" + target for _, target, _ in rows]
+    parts = ["README.md"] + [target for _, target, _ in rows]
     full_text = [
         f"<!-- {part} -->\n\n" + Path(part).read_text(encoding="utf-8").strip() + "\n"
         for part in parts

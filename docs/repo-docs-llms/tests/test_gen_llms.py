@@ -296,6 +296,7 @@ class DocumentListTest(unittest.TestCase):
         ("./architecture.md", "docs/architecture.md"),
         ("design/../architecture.md", "docs/architecture.md"),
         ("design/../decisions/README.md", "docs/decisions/README.md"),
+        ("alias.md", "docs/architecture.md"),
     ],
 )
 def test_main_relative_links_generate_canonical_outputs(
@@ -311,6 +312,7 @@ def test_main_relative_links_generate_canonical_outputs(
     Path("docs/decisions").mkdir()
     Path("README.md").write_text("# Tool\n\nTagline.\n\nIntro.\n", encoding="utf-8")
     Path("docs/architecture.md").write_text("# Architecture\n", encoding="utf-8")
+    Path("docs/alias.md").symlink_to("architecture.md")
     Path("docs/decisions/README.md").write_text("# Decisions\n", encoding="utf-8")
     Path("docs/README.md").write_text(
         f"# 문서\n\n- 시작\n  - [사용](../README.md)\n  - [문서]({target})\n",
@@ -320,8 +322,13 @@ def test_main_relative_links_generate_canonical_outputs(
     assert gen_llms.main(True, branch="main") == 0
 
     index = Path("llms.txt").read_text(encoding="utf-8")
-    assert f"[문서](https://raw.githubusercontent.com/owner/repo/main/{canonical})" in index
-    assert "[사용](https://raw.githubusercontent.com/owner/repo/main/README.md)" in index
+    assert (
+        f"[문서](https://raw.githubusercontent.com/owner/repo/main/{canonical})"
+        in index
+    )
+    assert (
+        "[사용](https://raw.githubusercontent.com/owner/repo/main/README.md)" in index
+    )
     assert ("## Optional" in index) == (canonical == "docs/decisions/README.md")
     full = Path("llms-full.txt").read_text(encoding="utf-8")
     assert f"<!-- {canonical} -->\n\n{Path(canonical).read_text().strip()}\n" in full
@@ -331,12 +338,28 @@ def test_main_relative_links_generate_canonical_outputs(
 @pytest.mark.parametrize(
     "target",
     [
-        "../../outside.md", "../.local/../README.md", "../.LoCaL/secret.md",
-        "../%252elocal/secret.md", "../private/secret.md", "../PRIVATE/secret.md",
-        "../%2570rivate/secret.md", "../ignored/secret.md", "../hidden.md",
-        "../escape/secret.md", "/README.md", "file:///README.md",
-        "https://example.com/page.md", "//example.com/page.md", "#start",
-        "architecture.md#start", "architecture.md?raw=1", "../missing.md",
+        "../../outside.md",
+        "../.local/../README.md",
+        "../.LoCaL/secret.md",
+        "../%252elocal/secret.md",
+        "../private/secret.md",
+        "../PRIVATE/secret.md",
+        "../%2570rivate/secret.md",
+        "../ignored/secret.md",
+        "../hidden.md",
+        "../escape/secret.md",
+        "../ignored-alias.md",
+        "../blocked.md",
+        "../private/../README.md",
+        "../%252elocal/../README.md",
+        "/README.md",
+        "file:///README.md",
+        "https://example.com/page.md",
+        "//example.com/page.md",
+        "#start",
+        "architecture.md#start",
+        "architecture.md?raw=1",
+        "../missing.md",
     ],
 )
 def test_main_unsafe_links_preserve_outputs(
@@ -347,16 +370,38 @@ def test_main_unsafe_links_preserve_outputs(
     monkeypatch.chdir(root)
     subprocess.run(["git", "init", "-q"], check=True)
     Path("README.md").write_text("# Tool\n\nTagline.\n\nIntro.\n", encoding="utf-8")
-    for name in ("docs", ".local", ".LoCaL", "%252elocal", "private", "PRIVATE", "%2570rivate", "ignored"):
+    for name in (
+        "docs",
+        ".local",
+        ".LoCaL",
+        "%252elocal",
+        "private",
+        "PRIVATE",
+        "%2570rivate",
+        "ignored",
+    ):
         Path(name).mkdir(exist_ok=True)
         Path(name, "secret.md").write_text("secret", encoding="utf-8")
     Path("docs/architecture.md").write_text("# Architecture\n", encoding="utf-8")
-    Path(".gitignore").write_text("ignored/\n", encoding="utf-8")
+    Path(".gitignore").write_text("ignored/\nblocked.md\n", encoding="utf-8")
     Path("hidden.md").symlink_to(".local/secret.md")
+    Path("ignored-alias.md").symlink_to("ignored/secret.md")
+    Path("blocked.md").symlink_to("docs/architecture.md")
     Path("escape").symlink_to(tmp_path, target_is_directory=True)
     (tmp_path / "secret.md").write_text("outside", encoding="utf-8")
     (tmp_path / "outside.md").write_text("outside", encoding="utf-8")
-    Path("docs/README.md").write_text(f"# Docs\n\n- [Unsafe]({target})\n", encoding="utf-8")
+    for literal in (
+        "file:/README.md",
+        "https:/example.com/page.md",
+        "architecture.md#start",
+        "architecture.md?raw=1",
+    ):
+        path = Path("docs", literal)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("not a relative document link", encoding="utf-8")
+    Path("docs/README.md").write_text(
+        f"# Docs\n\n- [Unsafe]({target})\n", encoding="utf-8"
+    )
     for output in ("llms.txt", "llms-full.txt"):
         Path(output).write_text("previous", encoding="utf-8")
 
