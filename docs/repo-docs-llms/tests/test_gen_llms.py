@@ -12,6 +12,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import gen_llms
 
@@ -285,6 +287,84 @@ class DocumentListTest(unittest.TestCase):
         index = self.LIST + "\n```md\n- [예시](missing.md): 틀 예시\n- 형식 아님\n```\n"
         self.assertEqual(self.run_main(index), 0)
         self.assertNotIn("예시", Path("llms.txt").read_text(encoding="utf-8"))
+
+
+@pytest.mark.parametrize(
+    ("target", "canonical"),
+    [
+        ("../README.md", "README.md"),
+        ("./architecture.md", "docs/architecture.md"),
+        ("design/../architecture.md", "docs/architecture.md"),
+        ("design/../decisions/README.md", "docs/decisions/README.md"),
+    ],
+)
+def test_main_relative_links_generate_canonical_outputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, target: str, canonical: str
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    subprocess.run(["git", "init", "-q"], check=True)
+    subprocess.run(
+        ["git", "remote", "add", "origin", "https://github.com/owner/repo.git"],
+        check=True,
+    )
+    Path("docs/design").mkdir(parents=True)
+    Path("docs/decisions").mkdir()
+    Path("README.md").write_text("# Tool\n\nTagline.\n\nIntro.\n", encoding="utf-8")
+    Path("docs/architecture.md").write_text("# Architecture\n", encoding="utf-8")
+    Path("docs/decisions/README.md").write_text("# Decisions\n", encoding="utf-8")
+    Path("docs/README.md").write_text(
+        f"# 문서\n\n- 시작\n  - [사용](../README.md)\n  - [문서]({target})\n",
+        encoding="utf-8",
+    )
+
+    assert gen_llms.main(True, branch="main") == 0
+
+    index = Path("llms.txt").read_text(encoding="utf-8")
+    assert f"[문서](https://raw.githubusercontent.com/owner/repo/main/{canonical})" in index
+    assert "[사용](https://raw.githubusercontent.com/owner/repo/main/README.md)" in index
+    assert ("## Optional" in index) == (canonical == "docs/decisions/README.md")
+    full = Path("llms-full.txt").read_text(encoding="utf-8")
+    assert f"<!-- {canonical} -->\n\n{Path(canonical).read_text().strip()}\n" in full
+    assert "docs/../" not in index + full
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "../../outside.md", "../.local/../README.md", "../.LoCaL/secret.md",
+        "../%252elocal/secret.md", "../private/secret.md", "../PRIVATE/secret.md",
+        "../%2570rivate/secret.md", "../ignored/secret.md", "../hidden.md",
+        "../escape/secret.md", "/README.md", "file:///README.md",
+        "https://example.com/page.md", "//example.com/page.md", "#start",
+        "architecture.md#start", "architecture.md?raw=1", "../missing.md",
+    ],
+)
+def test_main_unsafe_links_preserve_outputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, target: str
+) -> None:
+    root = tmp_path / "repo"
+    root.mkdir()
+    monkeypatch.chdir(root)
+    subprocess.run(["git", "init", "-q"], check=True)
+    Path("README.md").write_text("# Tool\n\nTagline.\n\nIntro.\n", encoding="utf-8")
+    for name in ("docs", ".local", ".LoCaL", "%252elocal", "private", "PRIVATE", "%2570rivate", "ignored"):
+        Path(name).mkdir(exist_ok=True)
+        Path(name, "secret.md").write_text("secret", encoding="utf-8")
+    Path("docs/architecture.md").write_text("# Architecture\n", encoding="utf-8")
+    Path(".gitignore").write_text("ignored/\n", encoding="utf-8")
+    Path("hidden.md").symlink_to(".local/secret.md")
+    Path("escape").symlink_to(tmp_path, target_is_directory=True)
+    (tmp_path / "secret.md").write_text("outside", encoding="utf-8")
+    (tmp_path / "outside.md").write_text("outside", encoding="utf-8")
+    Path("docs/README.md").write_text(f"# Docs\n\n- [Unsafe]({target})\n", encoding="utf-8")
+    for output in ("llms.txt", "llms-full.txt"):
+        Path(output).write_text("previous", encoding="utf-8")
+
+    with pytest.raises(SystemExit, match="공개 문서 경로 아님"):
+        gen_llms.main(True, raw_url=RAW, private_dirs=(".local", "private"))
+
+    assert Path("llms.txt").read_text() == "previous"
+    assert Path("llms-full.txt").read_text() == "previous"
 
 
 if __name__ == "__main__":
