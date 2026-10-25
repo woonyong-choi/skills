@@ -37,7 +37,8 @@ export async function syncAccount(skills, account, receipt, save, dryRun, { prun
   const plan = planAccount(skills, present, receipt);
   for (const item of plan) console.log(`계정 ${item.action}: ${item.name} (${item.reason})`);
   const names = new Set(skills.map((skill) => skill.name));
-  const outside = present.filter((item) => !names.has(item.name)).map((item) => item.name);
+  // 내가 만든 스킬만 정리 대상. Anthropic·파트너 제공 스킬은 원본 밖이어도 건드리지 않음
+  const outside = present.filter((item) => item.mine && !names.has(item.name)).map((item) => item.name);
   console.log(`계정 원본 밖 ${prune ? "제거" : "보존"}: ${outside.join(", ") || "없음"}`);
   if (dryRun) return plan;
   if (prune) {
@@ -61,7 +62,7 @@ export async function syncAccount(skills, account, receipt, save, dryRun, { prun
     console.log(`계정 확인: ${item.name}`);
   }
   present = await account.list();
-  const left = prune ? present.filter((item) => !names.has(item.name)).map((item) => item.name) : [];
+  const left = prune ? present.filter((item) => item.mine && !names.has(item.name)).map((item) => item.name) : [];
   if (left.length) throw new UiError(`account prune failed: ${left.join(", ")}`);
   const failed = planAccount(skills, present, receipt);
   if (failed.length) throw new UiError(`final account verification failed: ${failed.map((item) => item.name).join(", ")}`);
@@ -93,7 +94,8 @@ async function listAccount(page) {
     const button = row.querySelector('button[aria-label$=" 보기"]');
     const detail = row.querySelector('span.text-secondary.text-footnote');
     const description = detail ? [...detail.childNodes].filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent).join("").trim() : null;
-    return { name: button?.getAttribute("aria-label")?.slice(0, -3), description, updatedAt: row.querySelector('time')?.getAttribute('datetime') };
+    const mine = detail?.firstChild?.textContent.trim() === "내가 만든";
+    return { name: button?.getAttribute("aria-label")?.slice(0, -3), description, updatedAt: row.querySelector('time')?.getAttribute('datetime'), mine };
   }));
   if (!items.length || items.some((item) => !item.name || !item.description || !item.updatedAt)) await fail(page, "계정 목록의 이름·description·시각 확인 실패");
   return items;

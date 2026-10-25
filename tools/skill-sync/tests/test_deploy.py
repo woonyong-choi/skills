@@ -137,7 +137,8 @@ const { syncAccount } = await import(process.argv[1]);
 const { record, prune } = JSON.parse(readFileSync(0, "utf8"));
 let present = [
   { name: record.name, description: record.description, updatedAt: "same" },
-  { name: "legacy", description: "옛 스킬", updatedAt: "old" },
+  { name: "legacy", description: "옛 스킬", updatedAt: "old", mine: true },
+  { name: "skill-creator", description: "제공 스킬", updatedAt: "vendor", mine: false },
 ];
 const receipt = { version: 1, skills: {
   example: { sourceHash: record.sourceHash, skillHash: record.skillHash, description: record.description, accountUpdatedAt: "same" },
@@ -155,6 +156,7 @@ await syncAccount([record], account, receipt, () => {}, false, { prune });
 assert.deepEqual(removed, prune ? ["legacy"] : []);
 assert.equal("legacy" in receipt.skills, !prune);
 assert.ok("example" in receipt.skills);
+assert.ok(present.some((item) => item.name === "skill-creator"));
 '''
 
     result = subprocess.run(
