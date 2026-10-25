@@ -129,4 +129,4 @@ JD를 분석하고 경력 원본에서 사실을 골라 고정 양식의 이력�
 ## 구분
 
 - 경력 원본을 찾고 읽는 방법(Markdown Notes Agent MCP)과 원본에 사실을 더하거나 고치는 일은 [markdown-notes-agent](../markdown-notes-agent/SKILL.md)가 맡는다.
-- 포트폴리오 그림 원본의 문법과 배치는 [repo-docs-figures](../repo-docs-figures/SKILL.md)가 맡는다.
+- 포트폴리오 그림 원본의 문법과 배치는 **repo-docs-figures** 스킬이 맡는다.

@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Callable
 
 MAP = Path(__file__).resolve().with_name("rule-map.json")
-CATEGORIES = ("just", "code", "docs", "git", "design", "tools")
+CATEGORIES = ("just", "code", "docs", "git", "design", "tools", "personal")
 BATCH_BYTES = 12000
 DONE = "필수 원문 전달 완료. 같은 원문 재조회 없이 적용."
 MORE = "\n\n미전달 원문이 남아 있습니다. 같은 --pending 명령으로 이어서 조회하세요.\n"

@@ -1,6 +1,6 @@
 # 문서
 
-Skills의 문서 작성과 노트 관리 스킬 목록이다. 문서는 한국어로 쓴다. 처음이면 [repo-docs](repo-docs/SKILL.md)부터 읽는다.
+Skills의 문서 작성과 개인 기록 스킬 목록이다. 문서는 한국어로 쓴다. 처음이면 [repo-docs](repo-docs/SKILL.md)부터 읽는다.
 
 - [저장소 문서](repo-docs/SKILL.md)
   - [repo-docs-readme](repo-docs-readme/SKILL.md)
@@ -12,5 +12,5 @@ Skills의 문서 작성과 노트 관리 스킬 목록이다. 문서는 한국�
   - [repo-docs-figures](repo-docs-figures/SKILL.md)
   - [repo-docs-root](repo-docs-root/SKILL.md)
   - [repo-docs-llms](repo-docs-llms/SKILL.md)
-- [노트와 경력](markdown-notes-agent/SKILL.md)
-  - [career](career/SKILL.md)
+- [개인 기록](../personal/markdown-notes-agent/SKILL.md)
+  - [career](../personal/career/SKILL.md)

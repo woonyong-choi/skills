@@ -77,7 +77,7 @@ def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
     for tool in ('.claude/skills', '.codex/skills', '.gemini/config/skills'):
         installed = install_home / tool / 'skill-sync'
         assert {path.relative_to(installed).as_posix(): path.read_bytes() for path in installed.rglob('*') if path.is_file()} == files
-        expected_names = {p.parent.name for category in ('code', 'docs', 'design', 'git', 'tools', 'just') for p in (ROOT / category).glob('*/SKILL.md')}
+        expected_names = {p.parent.name for category in ('code', 'docs', 'design', 'git', 'tools', 'just', 'personal') for p in (ROOT / category).glob('*/SKILL.md')}
         assert {p.parent.name for p in installed.parent.glob('*/SKILL.md')} == expected_names
         assert not list(installed.parent.glob('*/tests'))
         assert not list(installed.parent.glob('*/.claude-plugin'))

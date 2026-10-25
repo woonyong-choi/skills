@@ -393,7 +393,7 @@ class PostToolTest(HookCase):
         notice = self.context(self.merge())
         self.assertEqual(len(notice.splitlines()), 1)
         self.assertIn("경력 원본에 남길 성과", notice)
-        self.assertIn(f"markdown-notes-agent 스킬({REPO / 'docs/markdown-notes-agent/SKILL.md'})", notice)
+        self.assertIn(f"markdown-notes-agent 스킬({REPO / 'personal/markdown-notes-agent/SKILL.md'})", notice)
         self.assertNotIn("career", notice)
         failed = self.hook("PostToolUse", tool_name="Bash", tool_input={"command": "gh pr merge 12"}, tool_response="Exit code: 1\nnot mergeable")
         self.assertEqual(self.context(failed), "")

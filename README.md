@@ -98,6 +98,7 @@ Claude Code와 Codex로 작업할 때 커밋 형식, 코드 규칙, 문서 기�
 | 커밋 분리와 메시지 작성 | [git-commit](git/git-commit/SKILL.md) |
 | 이슈와 PR 작성 | [git-issue](git/git-issue/SKILL.md), [git-pull-request](git/git-pull-request/SKILL.md) |
 | README 작성 | [repo-docs-readme](docs/repo-docs-readme/SKILL.md) |
+| 채용 공고에 맞춘 이력서와 포트폴리오 | [career](personal/career/SKILL.md) |
 | 역할별 모델과 추론 예산 설정 | [just-setup](just/just-setup/SKILL.md) |
 
 Claude Code에서는 `/mode`, Codex에서는 `$mode` 뒤에 목표와 완료 조건을 적으세요. 문서 작업만 맡기려면 `/repo-docs-readme` 또는 `$repo-docs-readme`처럼 해당 스킬을 직접 부르세요. 파일 수정과 GitHub 게시 범위는 요청에 따릅니다. 나머지 just 스킬과 상황별 호출 예시는 [just 도움말](just/just-help/SKILL.md#스킬-고르기)에 있습니다.
@@ -152,8 +153,8 @@ Claude Code에서는 `/mode`, Codex에서는 `$mode` 뒤에 목표와 완료 조
   - [repo-docs-figures](docs/repo-docs-figures/SKILL.md)
   - [repo-docs-root](docs/repo-docs-root/SKILL.md)
   - [repo-docs-llms](docs/repo-docs-llms/SKILL.md)
-  - [career](docs/career/SKILL.md)
-  - [markdown-notes-agent](docs/markdown-notes-agent/SKILL.md)
+- [개인 기록](personal/markdown-notes-agent/SKILL.md)
+  - [career](personal/career/SKILL.md)
 - [디자인](design/design-tokens/SKILL.md)
 - [스킬 관리](tools/skill-sync/SKILL.md)
 - [실험](experiments/skill-exposure/report.md)
@@ -171,7 +172,7 @@ Claude Code에서는 `/mode`, Codex에서는 `$mode` 뒤에 목표와 완료 조
 ```sh
 mkdir -p "$HOME/.codex" "$HOME/.claude"
 python3 tools/skill-sync/scripts/install.py --source . --tool codex --tool claude-code
-python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests just/mode/scripts/hooks/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests
+python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests design/design-tokens/tests just/mode/scripts/hooks/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests personal/career/tests
 (cd just/mode/scripts && bun install --frozen-lockfile && bun test)
 python3 tools/skill-sync/scripts/skill_check.py .
 python3 docs/repo-docs/scripts/check_doc.py README.md

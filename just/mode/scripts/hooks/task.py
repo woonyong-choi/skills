@@ -34,7 +34,7 @@ RULE_READER = ("mode", "scripts/rules/read_rules.py")
 CAREER_NOTES = ("markdown-notes-agent", "SKILL.md")
 DECISION_LOGGER = ("show-me-your-work", "scripts/log.sh")
 ENTRY_SKILL = "mode"
-CATEGORIES = ("just", "code", "docs", "git", "design", "tools")
+CATEGORIES = ("just", "code", "docs", "git", "design", "tools", "personal")
 
 LOCAL = ".local"
 SESSIONS = "sessions"
