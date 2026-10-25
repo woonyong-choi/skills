@@ -1,5 +1,5 @@
 // 개인 계정 배포 어댑터
-// 인자: --login, 기본 stdin JSON(skills, dryRun)
+// 인자: --login, 기본 stdin JSON(skills, dryRun, prune)
 // 출력: 변경·대조, 종료 0 성공·1 실패
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, chmodSync, readFileSync, writeFileSync, renameSync, unlinkSync, lstatSync } from "node:fs";
@@ -32,13 +32,22 @@ export function planAccount(skills, present, receipt) {
   });
 }
 
-export async function syncAccount(skills, account, receipt, save, dryRun) {
+export async function syncAccount(skills, account, receipt, save, dryRun, { prune = false } = {}) {
   let present = await account.list();
   const plan = planAccount(skills, present, receipt);
   for (const item of plan) console.log(`계정 ${item.action}: ${item.name} (${item.reason})`);
   const names = new Set(skills.map((skill) => skill.name));
-  console.log(`계정 원본 밖 보존: ${present.filter((item) => !names.has(item.name)).map((item) => item.name).join(", ") || "없음"}`);
+  const outside = present.filter((item) => !names.has(item.name)).map((item) => item.name);
+  console.log(`계정 원본 밖 ${prune ? "제거" : "보존"}: ${outside.join(", ") || "없음"}`);
   if (dryRun) return plan;
+  if (prune) {
+    for (const name of outside) {
+      await account.remove(name);
+      delete receipt.skills[name];
+      save(receipt);
+      console.log(`계정 제거: ${name}`);
+    }
+  }
   for (const item of plan) {
     delete receipt.skills[item.name];
     save(receipt);
@@ -52,6 +61,8 @@ export async function syncAccount(skills, account, receipt, save, dryRun) {
     console.log(`계정 확인: ${item.name}`);
   }
   present = await account.list();
+  const left = prune ? present.filter((item) => !names.has(item.name)).map((item) => item.name) : [];
+  if (left.length) throw new UiError(`account prune failed: ${left.join(", ")}`);
   const failed = planAccount(skills, present, receipt);
   if (failed.length) throw new UiError(`final account verification failed: ${failed.map((item) => item.name).join(", ")}`);
   console.log(`계정 대조: 원본 ${skills.length}개 이름·description·영수증 일치`);
@@ -110,8 +121,11 @@ async function main() {
       if (!existsSync(item.path)) throw new UiError(`missing zip: ${item.name}`);
       if (item.action === "교체") await deleteSkill(page, item.name);
       await uploadSkill(page, item);
+    }, remove: async (name) => {
+      await openMySkills(page);
+      await deleteSkill(page, name);
     } };
-    await syncAccount(request.skills, account, receipt, saveReceipt, request.dryRun);
+    await syncAccount(request.skills, account, receipt, saveReceipt, request.dryRun, { prune: request.prune === true });
   } catch (error) {
     if (!(error instanceof UiError)) await fail(context.pages()[0], "계정 UI 처리 실패");
     throw error;

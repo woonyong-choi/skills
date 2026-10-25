@@ -43,9 +43,9 @@ POINTER = INSTALL_HOME / ".config" / "skills" / "source"
 TRASH = INSTALL_HOME / ".skill-trash"
 TEST_FILES = {"tests", "*.test.ts", "*.test-helper.ts"}
 SKIP = {".claude-plugin", ".codex-plugin", ".DS_Store", ".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__", "node_modules"} | TEST_FILES
-CATEGORIES = ("git", "code", "docs", "design", "tools", "just")
+CATEGORIES = ("git", "code", "docs", "design", "tools", "just", "personal")
 # just do 플러그인 훅의 런타임을 담은 스킬과 안정된 진입점(~/.config/skills 아래 이름)
-HOOK_SKILL = "just-mode"
+HOOK_SKILL = "mode"
 HOOK_ENTRY_SOURCE = "scripts/hooks/entry.py"
 HOOK_ENTRY = "just-do.py"
 

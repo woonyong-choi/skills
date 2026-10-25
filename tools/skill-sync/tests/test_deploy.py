@@ -121,3 +121,54 @@ if (mismatch) {
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")
+@pytest.mark.parametrize("prune", [False, True])
+def test_sync_account_prune_removes_only_skills_outside_source(
+    deploy: ModuleType, skill: Path, prune: bool
+) -> None:
+    (skill / "SKILL.md").write_text('---\nname: example\ndescription: "설명"\n---\n', encoding="utf-8")
+    record = deploy.source_record(skill, skill.parent / "dist")
+    script = r'''
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const { syncAccount } = await import(process.argv[1]);
+const { record, prune } = JSON.parse(readFileSync(0, "utf8"));
+let present = [
+  { name: record.name, description: record.description, updatedAt: "same" },
+  { name: "legacy", description: "옛 스킬", updatedAt: "old" },
+];
+const receipt = { version: 1, skills: {
+  example: { sourceHash: record.sourceHash, skillHash: record.skillHash, description: record.description, accountUpdatedAt: "same" },
+  legacy: { sourceHash: "x", skillHash: "y", description: "옛 스킬", accountUpdatedAt: "old" },
+} };
+const removed = [];
+const account = {
+  list: async () => present,
+  upload: async () => { throw new Error("no upload expected"); },
+  remove: async (name) => { removed.push(name); present = present.filter((item) => item.name !== name); },
+};
+await syncAccount([record], account, receipt, () => {}, true, { prune });
+assert.deepEqual(removed, []);
+await syncAccount([record], account, receipt, () => {}, false, { prune });
+assert.deepEqual(removed, prune ? ["legacy"] : []);
+assert.equal("legacy" in receipt.skills, !prune);
+assert.ok("example" in receipt.skills);
+'''
+
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script, (SCRIPTS / "claude_upload.mjs").as_uri()],
+        input=json.dumps({"record": record, "prune": prune}),
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_login_rejects_prune(deploy: ModuleType) -> None:
+    with pytest.raises(SystemExit) as error:
+        deploy.main(["--login", "--prune"])
+    assert error.value.code == 2

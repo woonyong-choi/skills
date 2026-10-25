@@ -20,7 +20,7 @@ description: "Git 브랜치를 만들거나 PR 생성, 머지, 릴리스, 머지
 ## 작업 단위
 
 - 작은 일은 이슈 하나, 브랜치 하나, PR 하나, 작업 주체 하나로 진행한다.
-- 큰 일은 브랜치가 아니라 이슈를 하위 이슈로 나눈다. 하위 이슈마다 브랜치와 PR을 하나씩 두고 쌓는 스택으로 진행하며, 아래 PR부터 차례로 머지한다. 스택 진행은 **just-mode** 스킬 `playbooks/shipping.md`를 따른다.
+- 큰 일은 브랜치가 아니라 이슈를 하위 이슈로 나눈다. 하위 이슈마다 브랜치와 PR을 하나씩 두고 쌓는 스택으로 진행하며, 아래 PR부터 차례로 머지한다. 스택 진행은 **mode** 스킬 `playbooks/shipping.md`를 따른다.
 - 서로 독립된 추적 작업이면 이슈부터 나눈다.
 - 작업에 이슈를 연결하는 기준과 작은 후속 작업이 기존 이슈를 다시 쓰는 기준은 [git-issue 과업 연결과 기록](../git-issue/SKILL.md#과업-연결과-기록)을 따른다.
 - 작업 주체는 이슈 담당자와 bind된 과업이다. 재개나 인계 때는 이슈, 작업본, 기록이 서로 맞는지와 기존 작업자가 동시에 고치고 있는지 대조한다. 세션 ID가 바뀐 것만으로 다른 주체라고 판정하지 않는다.
@@ -67,7 +67,7 @@ description: "Git 브랜치를 만들거나 PR 생성, 머지, 릴리스, 머지
 - 검사를 시작할 때와 끝낼 때 대상 HEAD를 대조하고 바뀌었는지 기록한다.
 - 임시 폴더, 저장소 사본, 두 번째 clone을 만들지 않는다. 검사는 자기 worktree에서만 한다.
 - 작업이 끝나면 커밋, 자기 작업 브랜치 push, PR 생성까지 직접 한다. 사용자에게 git 명령을 넘기지 않는다.
-- 기본 브랜치의 변경은 자기 작업 브랜치를 `git rebase {원격}/{기본 브랜치}`로 그 위에 옮겨 받고, `git push --force-with-lease`로 올린다. 다시 rebase하는 때는 **just-mode** 스킬 `playbooks/shipping.md`가 정한다.
+- 기본 브랜치의 변경은 자기 작업 브랜치를 `git rebase {원격}/{기본 브랜치}`로 그 위에 옮겨 받고, `git push --force-with-lease`로 올린다. 다시 rebase하는 때는 **mode** 스킬 `playbooks/shipping.md`가 정한다.
 
 ## PR
 
@@ -98,7 +98,7 @@ description: "Git 브랜치를 만들거나 PR 생성, 머지, 릴리스, 머지
 
 - 머지한 뒤에는 미커밋 변경, 미전송 커밋과 실행 중인 작업을 확인하고 보존한다. 안전한 자기 worktree와 로컬 브랜치만 `git worktree remove {경로}`, `git branch -D {브랜치}`로 지운다. 다른 작업의 worktree와 브랜치는 지우지 않는다.
 - 원격 작업 브랜치는 위 머지 명령이나 `git push {원격} --delete {브랜치}`로 지우고 결과를 확인한다.
-- **just-mode** 스킬 `playbooks/worktree-cleanup.md`의 점검(`worktree-audit.sh`)과 지우는 순서는 사용자가 공간 확보나 대청소를 요청할 때만 쓴다.
+- **mode** 스킬 `playbooks/worktree-cleanup.md`의 점검(`worktree-audit.sh`)과 지우는 순서는 사용자가 공간 확보나 대청소를 요청할 때만 쓴다.
 - 이슈를 취소하면 PR을 닫고 브랜치를 직접 지운다.
 
 ## 릴리스
@@ -110,7 +110,7 @@ description: "Git 브랜치를 만들거나 PR 생성, 머지, 릴리스, 머지
 - 기본 브랜치와 `v{major}`에 직접 commit하거나 push하지 않는다.
 - 같은 이슈의 브랜치를 두 번 만들지 않고, 다른 이슈의 작업을 섞지 않는다.
 - 다른 주체의 브랜치에서 작업(commit, push 포함)하지 않는다.
-- 자기 브랜치의 rebase와 amend, 공유 브랜치 강제 push 금지는 **just-mode** 스킬의 자율 절이 정한다.
+- 자기 브랜치의 rebase와 amend, 공유 브랜치 강제 push 금지는 **mode** 스킬의 자율 절이 정한다.
 - 요청 없이 태그나 브랜치 보호 설정을 바꾸지 않는다.
 
 ## 답변
@@ -125,4 +125,4 @@ description: "Git 브랜치를 만들거나 PR 생성, 머지, 릴리스, 머지
 - 커밋 메시지, PR 제목, squash 메시지의 형식은 [git-commit](../git-commit/SKILL.md)이 맡는다.
 - PR 본문, 검토, 머지 조건은 [git-pull-request](../git-pull-request/SKILL.md)가 맡는다.
 - 검사 범위와 증거는 **principle-prove-it-works** 스킬이 맡는다.
-- PR 스택의 머지 순서는 **just-mode** 스킬 `playbooks/shipping.md`가 맡는다. 공간 확보와 대청소는 `playbooks/worktree-cleanup.md`가 맡는다.
+- PR 스택의 머지 순서는 **mode** 스킬 `playbooks/shipping.md`가 맡는다. 공간 확보와 대청소는 `playbooks/worktree-cleanup.md`가 맡는다.

@@ -1,0 +1,58 @@
+# 호스트 대응표
+
+just 스킬이 공통으로 쓰는 동작을 Claude Code CLI, Codex CLI, OpenCode에서 어떻게 실행하는지 정한다. 스킬 본문은 동작 이름만 쓰고 이 표를 가리킨다. 호스트 이름으로 지시를 나누는 곳은 이 파일 하나다.
+
+## 현재 호스트 알아내기
+
+- `Agent`(또는 `Task`) 도구와 `/` 명령이 있고 환경 변수 `CLAUDECODE=1`이면 Claude Code다.
+- `apply_patch` 도구가 있으면 Codex다. 스킬은 `$이름`으로 부른다.
+- `subagent`(구버전은 `task`) 도구와 `skill` 도구가 있으면 OpenCode다.
+- 모르면 셋 다 아닌 것으로 보고 "서브에이전트 없음" 방식으로 진행한다.
+
+## 동작별 실행 방법
+
+| 동작 | Claude Code | Codex | OpenCode |
+|---|---|---|---|
+| 스킬 부르기 | `/이름` | `$이름` | `/이름`(`opencode/slash` 메타데이터가 있을 때) 또는 `skill` 도구 |
+| 서브에이전트 실행 | `Agent` 도구. 같은 프롬프트를 여러 개 동시에 보내면 병렬 | 같은 세션 서브에이전트가 없으면 셸에서 `codex exec --cd <작업 폴더> "<프롬프트>"`를 백그라운드로 실행하고 출력 파일을 읽는다 | `subagent` 도구(`general`, `explore`). 구버전은 `task` 도구를 쓴다 |
+| 서브에이전트 추론 수준 | `Agent` 도구에는 지정 칸이 없어 건너뛴다 | `codex exec -c model_reasoning_effort=<값>` | 지원 variant를 확인해 모델을 `provider/model#variant`로 지정하거나 실행 도구의 variant 칸을 쓴다([V2 agents](https://opencode.ai/v2/docs/agents#model)) |
+| 읽기 전용 서브에이전트 | `Agent` 도구의 탐색용 에이전트를 쓰거나 프롬프트에 "파일 수정 금지"를 넣는다 | `codex exec --sandbox read-only` | `explore` 서브에이전트 |
+| 다른 회사 모델로 검토 | 등록된 모델을 셸에서 `codex exec "<프롬프트>"`로 실행한다 | 등록된 모델을 셸에서 `claude -p "<프롬프트>"`로 실행한다 | 등록된 다른 제공자 모델로 서브에이전트를 실행한다. CLI로 등록한 모델은 셸에서 실행한다 |
+| 주기적으로 다시 깨우기 | `/loop <간격> <프롬프트>` | 내장 기능이 없다. 같은 세션 안에서 대기 명령(`sleep`)과 확인을 반복한다. 셸 반복문으로 `codex exec`를 새로 띄우지 않는다([무한 자율 실행](#무한-자율-실행)) | 단회 실행으로 진행하고 백그라운드 작업은 완료 알림으로 이어받는다. 주기적 깨우기를 위해 새 `opencode run`을 반복하지 않는다 |
+| 사람에게 묻기 | 질문 도구가 있으면 쓰고, 없으면 답변으로 묻는다 | 답변으로 질문 | 답변으로 질문 |
+| 프로젝트 전용 스킬 위치 | `.claude/skills/<이름>/` | `.agents/skills/<이름>/` | `.claude/skills/`, `.agents/skills/`, `.opencode/skills/`를 모두 읽는다 |
+| 항상 적용 규칙 | `CLAUDE.md` | `AGENTS.md` | `AGENTS.md` |
+| 대화 기록 위치 | `~/.claude/projects/<프로젝트 경로를 -로 바꾼 이름>/*.jsonl` | `~/.codex/sessions/**/rollout-*.jsonl` | `~/.local/share/opencode/` 아래 세션 저장소 |
+
+just의 TypeScript CLI는 Bun 런타임을 쓴다. 검증한 버전은 1.4.2다(2026-10-17 확인). Bun을 전역 설치하지 않고 실행하려면 Node.js와 npm이 있는 환경에서 다음 명령을 쓴다. 경로는 스킬 원본 저장소 루트 기준이다.
+
+```sh
+npm exec --yes --package bun@1.4.2 -- bun just/mode/scripts/watch-pr/watch-pr --owner <소유자> --repo <저장소 이름> --pr <PR 번호> --pretty
+```
+
+`--repo`에는 저장소 이름만 넣고 소유자는 `--owner`로 넘긴다. 다른 just TypeScript CLI도 같은 Bun 런타임으로 실행한다.
+
+## 무한 자율 실행
+
+멈추라고 할 때까지 도는 [자율 실행](../playbooks/autonomous-run.md)은 세션이 스스로 다시 깨어날 수 있는 호스트에서만 한다.
+
+| 호스트 | 지원 | 방법 |
+|---|---|---|
+| Claude Code | 됨 | `/loop <간격> <프롬프트>`로 다시 깨우기를 건다 |
+| Codex | 됨 | 같은 세션 안에서 대기 명령(`sleep`)과 확인을 반복한다. 셸 반복문으로 `codex exec`를 새로 띄우면 세션 맥락이 끊기므로 다시 깨우기에는 쓰지 않는다. 서브에이전트 실행과 다른 회사 모델 검토에 `codex exec`를 쓰는 것은 그대로 된다 |
+| OpenCode | 안 됨 | 한 번 실행용이다. 종료 조건까지 한 번 돌고 끝내며, 끝낼 때 결정 기록에 phase `다음`으로 이어 할 일을 남긴다 |
+
+- 잠자기 방지의 정본은 이 줄이다. 자율 실행을 시작할 때 macOS에서 `caffeinate -dimsu &`를 실행하고 PID를 결정 기록에 남긴다. 멈출 때 그 PID를 `kill`한다. 다른 운영체제는 건너뛰고 보고에 적는다.
+
+## 서브에이전트 공통 규칙
+
+- 프롬프트에 파일 내용을 붙이지 않고 파일 경로를 넘긴다.
+- 쓰기 작업 서브에이전트마다 별도 git 워크트리(`git worktree add`)를 주어 같은 파일을 동시에 고치지 않게 한다.
+- 모델 선택, 미설정·빈값과 실행 불가 대체는 [역할별 모델](models.md)을 따른다.
+- 서브에이전트 정의(`just-agent`, `comment-sicko`)가 호스트에 설치돼 있으면 그 이름을 쓰고, 없으면 [agents](agents/just-agent.md) 폴더의 같은 이름 파일 지시를 프롬프트 첫머리에 넣는다.
+- 결과는 그대로 전달하지 않고 부모가 diff를 직접 확인한 뒤 요약한다.
+
+## 없는 기능을 만날 때
+
+- 호스트에 없는 동작은 표의 대체 방법으로 하고, 대체도 불가능하면 그 단계를 건너뛴 이유를 답변에 한 줄로 적는다.
+- 클라우드 실행, 자동 리뷰 봇 같은 외부 서비스는 있으면 쓰고 없으면 로컬 서브에이전트로 대신한다.

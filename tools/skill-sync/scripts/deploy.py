@@ -1,6 +1,6 @@
 """원본 검사·로컬 설치·계정 반영·대조.
 
-인자: --source, --dry-run, --login
+인자: --source, --dry-run, --login, --prune(계정에서 원본에 없는 스킬 제거)
 출력: 대조 표, 종료 0 성공·1 실패·2 인자 오류
 """
 from __future__ import annotations
@@ -93,11 +93,12 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--source")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--login", action="store_true")
+    parser.add_argument("--prune", action="store_true")
     args = parser.parse_args(argv)
     try:
         if args.login:
-            if args.dry_run:
-                parser.error("--login and --dry-run are mutually exclusive")
+            if args.dry_run or args.prune:
+                parser.error("--login cannot be combined with --dry-run or --prune")
             return subprocess.run(["node", str(SCRIPTS / "claude_upload.mjs"), "--login"]).returncode
         source = install.resolve_source(args.source)
         checked = subprocess.run([sys.executable, str(SCRIPTS / "skill_check.py"), str(source)], capture_output=True, text=True)
@@ -114,7 +115,7 @@ def main(argv: list[str]) -> int:
         install_args = ["--source", str(source)] + (["--dry-run"] if args.dry_run else [])
         if install.main(install_args):
             return 1
-        request = json.dumps({"skills": records, "dryRun": args.dry_run})
+        request = json.dumps({"skills": records, "dryRun": args.dry_run, "prune": args.prune})
         sys.stdout.flush()
         account = subprocess.run(["node", str(SCRIPTS / "claude_upload.mjs")], input=request, text=True)
         if args.dry_run:

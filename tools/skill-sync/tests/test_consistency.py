@@ -66,8 +66,8 @@ def section(path: str, title: str) -> list[str]:
 
 
 def test_shared_guides_have_one_owner() -> None:
-    # #82: UI·CSS 안내는 code-style, Closes·Refs 선택은 git-issue 닫기만 소유. 입구는 just-mode 하나
-    entry = (ROOT / 'just/just-mode/SKILL.md').read_text(encoding='utf-8')
+    # #82: UI·CSS 안내는 code-style, Closes·Refs 선택은 git-issue 닫기만 소유. 입구는 mode 하나
+    entry = (ROOT / 'just/mode/SKILL.md').read_text(encoding='utf-8')
     assert 'design-tokens' not in entry and 'code-style-css' not in entry
     commit = (ROOT / 'git/git-commit/SKILL.md').read_text(encoding='utf-8')
     assert '→ 관련 이슈' not in commit and '→ 이 커밋으로 닫는 이슈' not in commit
@@ -75,9 +75,9 @@ def test_shared_guides_have_one_owner() -> None:
 
 
 def test_issue_binding_reads_hooks_before_bind() -> None:
-    # #82: bind를 정의한 just-mode hooks.md 확인이 bind 지시보다 먼저
+    # #82: bind를 정의한 mode hooks.md 확인이 bind 지시보다 먼저
     lines = section('git/git-issue/SKILL.md', '과업 연결과 기록')
-    required = next(index for index, line in enumerate(lines) if 'just-mode `references/hooks.md`' in line)
+    required = next(index for index, line in enumerate(lines) if 'mode `references/hooks.md`' in line)
     bind = next(index for index, line in enumerate(lines) if 'bind(' in line)
     assert required < bind
-    assert (ROOT / 'just/just-mode/references/hooks.md').is_file()
+    assert (ROOT / 'just/mode/references/hooks.md').is_file()

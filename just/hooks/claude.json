@@ -1,5 +1,5 @@
 {
-  "description": "just do: just-mode 진입 안내, 결정 기록 확인, 편집 전 필수 규칙 확인",
+  "description": "just do: mode 진입 안내, 결정 기록 확인, 편집 전 필수 규칙 확인",
   "hooks": {
     "SessionStart": [
       {
@@ -8,7 +8,7 @@
             "type": "command",
             "command": "if [ -f \"$HOME/.config/skills/just-do.py\" ]; then python3 \"$HOME/.config/skills/just-do.py\" claude; else printf '%s\\n' 'just do hook unavailable; verify installation' >&2; printf '%s\\n' '{}'; fi",
             "timeout": 5,
-            "statusMessage": "Load just-mode Entry"
+            "statusMessage": "Load mode Entry"
           }
         ]
       }
