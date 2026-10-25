@@ -5,11 +5,11 @@ description: "just가 역할마다 쓸 모델과 추론 예산, 자율 실행의
 
 # just 설정
 
-`~/.config/skills/models.json`을 써서 just가 역할마다 쓸 모델과 추론 수준을 정하고, `~/.config/skills/just.json`을 써서 자율 실행의 동시 작업 수를 정한다. 모델 파일 형식, 역할의 뜻, 기본값은 [역할별 모델](../just-mode/references/models.md)이 정본이다. 호스트를 알아내는 방법은 [호스트 대응표](../just-mode/references/hosts.md)를 따른다.
+`~/.config/skills/models.json`을 써서 just가 역할마다 쓸 모델과 추론 수준을 정하고, `~/.config/skills/just.json`을 써서 자율 실행의 동시 작업 수를 정한다. 모델 파일 형식, 역할의 뜻, 기본값은 [역할별 모델](../mode/references/models.md)이 정본이다. 호스트를 알아내는 방법은 [호스트 대응표](../mode/references/hosts.md)를 따른다.
 
 ## 1. 호스트 알아내기
 
-[호스트 대응표](../just-mode/references/hosts.md)의 "현재 호스트 알아내기"로 지금 호스트가 `claude`(Claude Code), `codex`(Codex), `opencode`(OpenCode) 중 무엇인지 정한다. 이 값이 설정 파일에서 이번에 고칠 열이다. 셋 다 아니면 사용자에게 어느 호스트에서 쓸지 질문한다.
+[호스트 대응표](../mode/references/hosts.md)의 "현재 호스트 알아내기"로 지금 호스트가 `claude`(Claude Code), `codex`(Codex), `opencode`(OpenCode) 중 무엇인지 정한다. 이 값이 설정 파일에서 이번에 고칠 열이다. 셋 다 아니면 사용자에게 어느 호스트에서 쓸지 질문한다.
 
 다른 회사 CLI가 있는지도 확인한다. `command -v claude`와 `command -v codex`를 돌려 둘 다 기록한다. `review` 역할에 쓴다.
 
@@ -26,7 +26,7 @@ description: "just가 역할마다 쓸 모델과 추론 예산, 자율 실행의
 
 ## 3. 현재 상태 읽기
 
-`~/.config/skills/models.json`이 있으면 읽고, 그 안의 `roles`와 `effort`를 현재 선택으로 본다. 없으면 [역할별 모델](../just-mode/references/models.md)의 기본값에서 시작한다. 파일이 JSON으로 읽히지 않으면 덮어쓰지 않고 사용자에게 알리고 멈춘다.
+`~/.config/skills/models.json`이 있으면 읽고, 그 안의 `roles`와 `effort`를 현재 선택으로 본다. 없으면 [역할별 모델](../mode/references/models.md)의 기본값에서 시작한다. 파일이 JSON으로 읽히지 않으면 덮어쓰지 않고 사용자에게 알리고 멈춘다.
 
 현재 예산은 `effort`를 기본값(`code` `medium`, `judgment` `high`, `review` `high`, `cheap` `low`)과 비교해 알아낸다. 단계가 다르게 섞여 있으면 "사용자 지정"으로 본다.
 
@@ -39,7 +39,7 @@ description: "just가 역할마다 쓸 모델과 추론 예산, 자율 실행의
 - `medium, 한 단계 낮춤`
 - `small, 두 단계 낮춤`
 
-**(나) 예산을 적용한다.** 추론 수준 순서는 `low` < `medium` < `high` < `xhigh` < `max`다. `large`는 역할별 기본값을 그대로 쓴다. `unlimited`는 모든 역할을 `max`로 올린다. `medium`은 기본값에서 한 단계, `small`은 두 단계 내린다. `low`보다 내려가지 않는다. `effort`는 모든 호스트가 함께 읽는 값이라 현재 호스트에 맞춰 깎아 쓰지 않는다. 지원하지 않는 수준은 쓰는 쪽이 깎는다([역할별 모델](../just-mode/references/models.md#고르는-규칙)).
+**(나) 예산을 적용한다.** 추론 수준 순서는 `low` < `medium` < `high` < `xhigh` < `max`다. `large`는 역할별 기본값을 그대로 쓴다. `unlimited`는 모든 역할을 `max`로 올린다. `medium`은 기본값에서 한 단계, `small`은 두 단계 내린다. `low`보다 내려가지 않는다. `effort`는 모든 호스트가 함께 읽는 값이라 현재 호스트에 맞춰 깎아 쓰지 않는다. 지원하지 않는 수준은 쓰는 쪽이 깎는다([역할별 모델](../mode/references/models.md#고르는-규칙)).
 
 **(다) 역할마다 모델을 고른다.** 다시 돌릴 때 사용자가 전에 바꾼 값은 그대로 둔다. 처음이면 기본값에서 출발한다.
 
@@ -53,7 +53,7 @@ description: "just가 역할마다 쓸 모델과 추론 예산, 자율 실행의
 ## 5. 검증
 
 - 쓰려는 모든 모델 이름이 2단계에서 확인한 목록에 있는지 본다. 빈 문자열은 언제나 통과한다.
-- `review`는 빈 목록이나 빈 문자열 항목도 허용한다. `codex:`나 `claude:`로 시작하는 항목은 그 CLI가 2단계에서 확인된 경우에만 통과한다. 실행 불가 대체는 [역할별 모델](../just-mode/references/models.md#고르는-규칙)을 따른다.
+- `review`는 빈 목록이나 빈 문자열 항목도 허용한다. `codex:`나 `claude:`로 시작하는 항목은 그 CLI가 2단계에서 확인된 경우에만 통과한다. 실행 불가 대체는 [역할별 모델](../mode/references/models.md#고르는-규칙)을 따른다.
 - 하나라도 실패하면 쓰지 않고 그 역할을 다시 질문한다.
 
 ## 6. 파일 쓰기
@@ -90,7 +90,7 @@ EOF
 
 ## 7. 동시 작업 수 정하기
 
-[자율 실행](../just-mode/playbooks/autonomous-run.md)이 판의 대기 이슈를 동시에 몇 개까지 처리할지 `~/.config/skills/just.json`의 `parallel`에 둔다. 값은 1 이상의 정수이고, 파일이 없으면 3이다. 실행할 때 `JUST_PARALLEL` 환경 변수가 있으면 파일보다 먼저 쓴다.
+[자율 실행](../mode/playbooks/autonomous-run.md)이 판의 대기 이슈를 동시에 몇 개까지 처리할지 `~/.config/skills/just.json`의 `parallel`에 둔다. 값은 1 이상의 정수이고, 파일이 없으면 3이다. 실행할 때 `JUST_PARALLEL` 환경 변수가 있으면 파일보다 먼저 쓴다.
 
 ```json
 {

@@ -9,7 +9,7 @@
 3. 탐색은 `just-agent` 서브에이전트에 맡긴다([호스트 대응표](../references/hosts.md)). [서브에이전트](../references/subagents.md)에 따라 역할별 모델을 명시한다(**principle-guard-the-context-window** 원칙 스킬). 각 서브에이전트는 파일 위치, 관례, 테스트 명령, 진입점을 돌려준다. 파일 내용을 통째로 붙여 돌려주지 않는다.
 4. 아래 뼈대를 계획 파일에 복사하고 모든 자리 표시자를 채운다. 사용자가 경로를 정하지 않으면 `.local/plans/<이름>.md`에 쓴다. 공개 문서로 남길 때의 승인은 **repo-docs** 스킬의 새 문서 절을 따른다. 모든 제목과 하위 블록을 뼈대에 있는 순서대로 유지한다. PR 하나에 절 하나를 둔다. PR 하나는 자기 증거를 가진 변경 하나이고 이슈 하나다(**principle-sequence-verifiable-units** 원칙 스킬). PR 절 제목에 이슈 번호를 적고, **확인할 결과.** 상자가 그 이슈의 완료 조건이다. **읽는 법**에 실행 플레이북 이름을 적는다. `playbooks/autopilot-full.md`와 `playbooks/autopilot-stack.md` 중 하나를 `playbooks/autopilot-stack.md`의 두 오토파일럿 중 고르기 절에 따라 고른다. 상시 운영 프로그램은 `playbooks/orchestrate.md`를 쓴다.
 5. **technical-writing** 스킬로 전부 쓴 뒤 **unslop** 스킬을 돌린다. 본문은 Diátaxis의 네 방식 중 how-to 하나로만 쓴다. 설명과 참고 자료는 부록에 둔다. 각 제목은 할 일이나 발견한 사실을 말한다. 엠 대시를 쓰지 않는다. 문장 중간에 콜론을 쓰지 않는다.
-6. `node <just-mode 스킬 폴더>/scripts/check-plan.mjs <plan.md>`를 실행하고 출력된 줄을 모두 고친다(**principle-encode-lessons-in-structure** 원칙 스킬).
+6. `node <mode 스킬 폴더>/scripts/check-plan.mjs <plan.md>`를 실행하고 출력된 줄을 모두 고친다(**principle-encode-lessons-in-structure** 원칙 스킬).
 7. 계획을 넘긴다. 계획 경로와 스크립트 출력을 올리고 멈춘다. 실행은 사용자가 명시적으로 시작하라고 할 때, 계획이 정한 실행 플레이북으로 시작한다.
 
 ## 검증 규칙
@@ -33,7 +33,7 @@
 
 상자 하나가 작업 단위 하나다. 모든 상자는 자기를 체크할 증거를 적는다. 들여 쓴 상자는 위 상자의 하위 단계다. 증거가 있을 때만 상자를 체크한다. 증거는 파일, 로그 한 줄, 스크린샷, 테스트 실행, SHA다. 본문은 how-to다. 부록에는 설명과 기록을 둔다.
 
-이 프로그램은 `<just-mode 스킬 폴더>/playbooks/<실행 플레이북>.md`로 실행한다. <누가 머지하는지, 그리고 어느 PR id가 머지 준비에서 멈추는 사용자 몫인지.>
+이 프로그램은 `<mode 스킬 폴더>/playbooks/<실행 플레이북>.md`로 실행한다. <누가 머지하는지, 그리고 어느 PR id가 머지 준비에서 멈추는 사용자 몫인지.>
 
 테스트만으로는 검증이 충분하지 않다. PR은 단위, 실사용, 성능 상자가 모두 체크됐을 때만 검증된 것이다.
 
@@ -43,10 +43,10 @@
 
 - [ ] 사용자에게 진행 방식과 이 계획을 설명하고 멈춘다. 실행은 사용자의 명시적 시작 지시가 있을 때만 시작한다.
 - [ ] 프로그램 시작 때 trunk(`origin/HEAD`가 가리키는 기본 브랜치)에서 다음을 읽는다. 주기 확인 때마다 다시 읽는다. 스킬이 저장소 밖에 설치돼 있으면 설치된 파일을 매번 다시 읽는다.
-  - [ ] `git show origin/HEAD:<just-mode 스킬 폴더>/playbooks/<실행 플레이북>.md`
+  - [ ] `git show origin/HEAD:<mode 스킬 폴더>/playbooks/<실행 플레이북>.md`
   - [ ] `git show origin/HEAD:<swarm 스킬 폴더>/SKILL.md`
   - [ ] `git show origin/HEAD:<검증 스킬 경로>`
-  - [ ] `git show origin/HEAD:<just-mode 스킬 폴더>/playbooks/opening-a-pr.md`
+  - [ ] `git show origin/HEAD:<mode 스킬 폴더>/playbooks/opening-a-pr.md`
   - [ ] `git show origin/HEAD:<프로그램이 쓰는 다른 스킬 폴더>/SKILL.md`
 - [ ] 사용자의 시작 지시가 있으면 아래 주기 확인 프롬프트로 1시간마다 주기적으로 다시 깨우기를 건다(호스트 대응표). 주기를 기억에 맡기지 않는다.
 - [ ] 주기 확인 프롬프트는 이 문장을 그대로 쓴다. "trunk에서 실행 플레이북을 다시 읽는다. 운영 상태를 플레이북과 대조하고 어긋난 점을 이번 확인에서 고친다. 진행 중인 모든 작업을 확인하고, 진행 여부는 실제로 남긴 결과로만 판단한다. 멈춘 작업은 내리고 대체 작업을 바로 보낸다. 그다음 이전 상태 메시지가 알리지 않은 추적 대상 변화를 점검에서 찾았을 때만 사용자에게 대화로 짧은 상태 메시지를 보낸다. 예를 들면 PR 생성, 코드 준비가 끝난 head, 라운드 시작이나 종료, 판정, 머지, 멈춘 에이전트와 취한 조치, 추가되거나 풀린 차단 요인, 사용자만 내릴 수 있는 결정이다. 그런 변화만 모두 적고 다른 것은 적지 않는다. 표, 머지 목록, 바뀌지 않은 차단 요인을 반복하지 않는다. 찾은 것이 없으면 답변 글 없이 턴을 끝낸다. 어느 쪽이든 결정 기록에 이번 확인의 행을 남긴다. 그 행에는 알린 항목을 적거나 없음이라고 적는다."
@@ -64,10 +64,10 @@
 ### PR 절차(모든 PR 공통)
 
 - [ ] PR 작업은 모두 `gh`로 한다. `gt`를 요구하지 않는다.
-- [ ] `<just-mode 스킬 폴더>/playbooks/opening-a-pr.md`에 따라 PR을 draft가 아닌 ready로 연다. 실행 환경에 내장 PR 도구가 있으면 쓰고, 없으면 `gh pr create --base <base-branch>`를 쓴다. 스택의 자식 PR은 부모 브랜치를 대상으로 한다.
+- [ ] `<mode 스킬 폴더>/playbooks/opening-a-pr.md`에 따라 PR을 draft가 아닌 ready로 연다. 실행 환경에 내장 PR 도구가 있으면 쓰고, 없으면 `gh pr create --base <base-branch>`를 쓴다. 스택의 자식 PR은 부모 브랜치를 대상으로 한다.
 - [ ] PR에 반영할 push 전에 저장소의 lint와 typecheck를 한 번 돌린다. hook을 켠 채로 push한다.
 - [ ] 커밋마다 그 전에 `unslop`과 `no-comments` 스킬을 돌린다.
-- [ ] 리뷰 봇(설정된 경우)의 댓글은 모두 `<just-mode 스킬 폴더>/references/bugbot-triage.md`에 따라 분류한다. 리뷰 봇이 없으면 `interrogate` 스킬로 교차 검토한다.
+- [ ] 리뷰 봇(설정된 경우)의 댓글은 모두 `<mode 스킬 폴더>/references/bugbot-triage.md`에 따라 분류한다. 리뷰 봇이 없으면 `interrogate` 스킬로 교차 검토한다.
 - [ ] 코드 준비 보고와 PR 돌보기 전에 현재 trunk 위로 rebase한다. 수정 라운드 동안 그 merge base를 유지한다. 다시 rebase하는 때는 머지 준비 단계, trunk와 `git merge-tree` 충돌이 날 때, trunk의 변경 때문에 CI가 실패할 때뿐이다.
 
 ### 판정과 머지(모든 PR 공통)

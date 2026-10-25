@@ -11,7 +11,7 @@ const commanderPackagePath = join(
 );
 const installKeyPath = join(
   nodeModulesDirectory,
-  ".just-mode-tools-install-key"
+  ".mode-tools-install-key"
 );
 
 function currentInstallKey(): string {

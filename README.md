@@ -50,7 +50,7 @@ $just-help README를 고칠 때 어떤 스킬을 쓰는지 알려 줘.
 
 ### just do 훅 설치
 
-위 명령으로 설치한 스킬은 직접 불러 쓸 수 있습니다. 연결한 과업의 복원과 편집 전 규칙 확인도 받으려면 사용하는 도구에 just do 플러그인을 추가하세요. 플러그인은 저스트모드를 자동으로 켜지 않으며, 스킬 설치를 먼저 마쳐야 합니다.
+위 명령으로 설치한 스킬은 직접 불러 쓸 수 있습니다. 연결한 과업의 복원과 편집 전 규칙 확인도 받으려면 사용하는 도구에 just do 플러그인을 추가하세요. 플러그인은 mode를 자동으로 켜지 않으며, 스킬 설치를 먼저 마쳐야 합니다.
 
 Claude Code에서 실행할 명령입니다.
 
@@ -66,33 +66,33 @@ codex plugin marketplace add woonyong-choi/skills
 codex plugin add just-do@woon-skills
 ```
 
-Codex는 대화형 TUI의 `/hooks`에서 새 훅을 검토하고 신뢰해야 실행합니다. `codex exec`는 신뢰 전 훅을 건너뜁니다. 설치 성공만으로 현재 세션에서 훅이 활성화됐다고 판단하지 마세요. 위 명령 형식은 2026-10-18에 확인했습니다. 활성화 확인과 이벤트별 동작은 [just do 훅](just/just-mode/references/hooks.md)에 있습니다.
+Codex는 대화형 TUI의 `/hooks`에서 새 훅을 검토하고 신뢰해야 실행합니다. `codex exec`는 신뢰 전 훅을 건너뜁니다. 설치 성공만으로 현재 세션에서 훅이 활성화됐다고 판단하지 마세요. 위 명령 형식은 2026-10-18에 확인했습니다. 활성화 확인과 이벤트별 동작은 [just do 훅](just/mode/references/hooks.md)에 있습니다.
 
 ## 해결하는 문제
 
 Claude Code와 Codex로 작업할 때 커밋 형식, 코드 규칙, 문서 기준을 요청마다 다시 설명해야 합니다. 이 저장소는 그 규칙을 스킬로 나누어 두 도구에 같은 내용으로 설치합니다. 스킬은 적용할 조건과 작업 방법을 적은 `SKILL.md`와 참조 파일의 묶음입니다.
 
-개발 작업 전체를 맡길 때는 just-mode가 작업 종류에 맞는 순서표를 골라 재현, 구현, 검토, 검증으로 연결합니다. 한 저장소에서만 쓰는 짧은 규칙은 그 저장소의 `AGENTS.md`에 두는 편이 관리하기 좋습니다.
+개발 작업 전체를 맡길 때는 mode가 작업 종류에 맞는 순서표를 골라 재현, 구현, 검토, 검증으로 연결합니다. 한 저장소에서만 쓰는 짧은 규칙은 그 저장소의 `AGENTS.md`에 두는 편이 관리하기 좋습니다.
 
 ## 작동 방식
 
 1. 설치기가 `git`, `code`, `docs`, `design`, `tools`, `just`의 스킬을 도구의 사용자 스킬 폴더에 같은 이름으로 설치합니다.
-2. 사용자가 스킬을 부르거나 도구가 설명에 맞는 스킬을 고릅니다. just-mode는 사용자가 명시적으로 요청한 작업에서만 시작합니다.
+2. 사용자가 스킬을 부르거나 도구가 설명에 맞는 스킬을 고릅니다. mode는 사용자가 명시적으로 요청한 작업에서만 시작합니다.
 3. 선택한 스킬이 본문을 읽고, 상황에 필요한 참조와 다른 스킬을 연결합니다.
-4. just-mode는 이슈의 완료 조건에 맞춰 작업하고 결정과 실행 근거를 기록합니다. just do 훅을 활성화하면 편집 전 규칙 확인과 기록 누락 안내도 받습니다.
+4. mode는 이슈의 완료 조건에 맞춰 작업하고 결정과 실행 근거를 기록합니다. just do 훅을 활성화하면 편집 전 규칙 확인과 기록 누락 안내도 받습니다.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/skill-exposure-dark.svg">
   <img src="docs/assets/skill-exposure-light.svg" alt="분류별 원본을 평평한 목록으로 설치하고 선택한 스킬의 본문과 참조를 읽는 구조">
 </picture>
 
-설치 구조와 충돌 처리는 [skill-sync](tools/skill-sync/SKILL.md#설치), 실행 순서는 [just-mode](just/just-mode/SKILL.md), 도구별 차이는 [호스트 대응표](just/just-mode/references/hosts.md)에 있습니다.
+설치 구조와 충돌 처리는 [skill-sync](tools/skill-sync/SKILL.md#설치), 실행 순서는 [mode](just/mode/SKILL.md), 도구별 차이는 [호스트 대응표](just/mode/references/hosts.md)에 있습니다.
 
 ### 작업에 맞는 스킬
 
 | 할 일 | 시작할 스킬 |
 |---|---|
-| 버그 수정, 기능 개발, 리팩터링 | [just-mode](just/just-mode/SKILL.md) |
+| 버그 수정, 기능 개발, 리팩터링 | [mode](just/mode/SKILL.md) |
 | 코드가 어떻게 동작하는지 조사 | [how](just/how/SKILL.md) |
 | 변경 검토 | [interrogate](just/interrogate/SKILL.md) |
 | 커밋 분리와 메시지 작성 | [git-commit](git/git-commit/SKILL.md) |
@@ -100,7 +100,7 @@ Claude Code와 Codex로 작업할 때 커밋 형식, 코드 규칙, 문서 기�
 | README 작성 | [repo-docs-readme](docs/repo-docs-readme/SKILL.md) |
 | 역할별 모델과 추론 예산 설정 | [just-setup](just/just-setup/SKILL.md) |
 
-Claude Code에서는 `/just-mode`, Codex에서는 `$just-mode` 뒤에 목표와 완료 조건을 적으세요. 문서 작업만 맡기려면 `/repo-docs-readme` 또는 `$repo-docs-readme`처럼 해당 스킬을 직접 부르세요. 파일 수정과 GitHub 게시 범위는 요청에 따릅니다. 나머지 just 스킬과 상황별 호출 예시는 [just 도움말](just/just-help/SKILL.md#스킬-고르기)에 있습니다.
+Claude Code에서는 `/mode`, Codex에서는 `$mode` 뒤에 목표와 완료 조건을 적으세요. 문서 작업만 맡기려면 `/repo-docs-readme` 또는 `$repo-docs-readme`처럼 해당 스킬을 직접 부르세요. 파일 수정과 GitHub 게시 범위는 요청에 따릅니다. 나머지 just 스킬과 상황별 호출 예시는 [just 도움말](just/just-help/SKILL.md#스킬-고르기)에 있습니다.
 
 ## 상태
 
@@ -125,10 +125,10 @@ Claude Code에서는 `/just-mode`, Codex에서는 `$just-mode` 뒤에 목표와 
 
 ## 문서
 
-- [작업 진행](just/just-mode/SKILL.md)
+- [작업 진행](just/mode/SKILL.md)
   - [just 도움말](just/just-help/SKILL.md)
-  - [just do 훅](just/just-mode/references/hooks.md)
-  - [호스트 대응표](just/just-mode/references/hosts.md)
+  - [just do 훅](just/mode/references/hooks.md)
+  - [호스트 대응표](just/mode/references/hosts.md)
   - [모델 설정](just/just-setup/SKILL.md)
 - [Git과 GitHub](git/git-branch/SKILL.md)
   - [git-commit](git/git-commit/SKILL.md)
@@ -171,8 +171,8 @@ Claude Code에서는 `/just-mode`, Codex에서는 `$just-mode` 뒤에 목표와 
 ```sh
 mkdir -p "$HOME/.codex" "$HOME/.claude"
 python3 tools/skill-sync/scripts/install.py --source . --tool codex --tool claude-code
-python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests just/just-mode/scripts/hooks/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests
-(cd just/just-mode/scripts && bun install --frozen-lockfile && bun test)
+python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests just/mode/scripts/hooks/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests
+(cd just/mode/scripts && bun install --frozen-lockfile && bun test)
 python3 tools/skill-sync/scripts/skill_check.py .
 python3 docs/repo-docs/scripts/check_doc.py README.md
 ```

@@ -27,7 +27,7 @@ just 스킬이 공통으로 쓰는 동작을 Claude Code CLI, Codex CLI, OpenCod
 just의 TypeScript CLI는 Bun 런타임을 쓴다. 검증한 버전은 1.4.2다(2026-10-17 확인). Bun을 전역 설치하지 않고 실행하려면 Node.js와 npm이 있는 환경에서 다음 명령을 쓴다. 경로는 스킬 원본 저장소 루트 기준이다.
 
 ```sh
-npm exec --yes --package bun@1.4.2 -- bun just/just-mode/scripts/watch-pr/watch-pr --owner <소유자> --repo <저장소 이름> --pr <PR 번호> --pretty
+npm exec --yes --package bun@1.4.2 -- bun just/mode/scripts/watch-pr/watch-pr --owner <소유자> --repo <저장소 이름> --pr <PR 번호> --pretty
 ```
 
 `--repo`에는 저장소 이름만 넣고 소유자는 `--owner`로 넘긴다. 다른 just TypeScript CLI도 같은 Bun 런타임으로 실행한다.

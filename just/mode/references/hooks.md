@@ -10,7 +10,7 @@
 ## 과업 연결과 결정 기록
 
 - 과업 연결은 "이 세션이 어느 과업·이슈인지"만 기록한다. 목표·제약·계획은 이슈 본문에, 진행 상태는 판 상태에 둔다. 이슈에 진행 로그 댓글을 달지 않는다.
-- 연결은 `python3 <just-mode 폴더>/scripts/hooks/task.py bind --session-id <세션 ID> --task <과업> --issue <이슈 URL>`로 한다. 세션 ID는 세션 시작 안내에 나온다. Codex는 생략하면 `CODEX_THREAD_ID`를 쓴다. `--task`를 생략하면 현재 브랜치 이름의 `/`를 `-`로 바꾼 이름을 쓴다. 확인은 `show`, 해제는 `unbind`다.
+- 연결은 `python3 <mode 폴더>/scripts/hooks/task.py bind --session-id <세션 ID> --task <과업> --issue <이슈 URL>`로 한다. 세션 ID는 세션 시작 안내에 나온다. Codex는 생략하면 `CODEX_THREAD_ID`를 쓴다. `--task`를 생략하면 현재 브랜치 이름의 `/`를 `-`로 바꾼 이름을 쓴다. 확인은 `show`, 해제는 `unbind`다.
 - 결정 기록은 `.local/decisions/<과업>.tsv` 하나다. 형식, 쓰는 방법, 과업 이름 규칙은 **show-me-your-work** 스킬이 맡는다.
 - 결정 기록과 상태 파일은 워크트리가 아니라 기본 체크아웃(`git rev-parse --git-common-dir`의 상위)의 `.local/`에 둔다. 워크트리를 지워도 남는다. 워크트리 안에서 `log.sh`에 워크트리의 `.local/` 경로를 줘도 기본 체크아웃으로 옮겨 쓴다.
 - 상태 파일은 `.local/sessions/` 아래 세션마다 하나(연결, 요청 시작 지문, 사용량)와 세션·서브에이전트마다 하나(규칙 전달 기록)다. 지워도 연결과 규칙 전달 기록만 처음으로 돌아간다.
@@ -20,7 +20,7 @@
 
 | 이벤트 | 동작 |
 |---|---|
-| SessionStart | 규칙 전달 기록을 비운다. 이미 연결한 과업이 있을 때만 이슈 URL과 결정 기록 마지막 5줄을 복원한다. 연결이 없으면 아무 안내도 넣지 않는다. just-mode를 읽거나 과업을 연결하라는 자동 지시는 하지 않는다. |
+| SessionStart | 규칙 전달 기록을 비운다. 이미 연결한 과업이 있을 때만 이슈 URL과 결정 기록 마지막 5줄을 복원한다. 연결이 없으면 아무 안내도 넣지 않는다. mode를 읽거나 과업을 연결하라는 자동 지시는 하지 않는다. |
 | UserPromptSubmit | 요청 시작 시점의 작업본 지문과 결정 기록 줄 수를 저장한다. 압축 뒤 첫 요청이면 이미 연결한 과업의 복원 정보를 다시 넣는다. |
 | PreToolUse | 편집 대상 경로가 git 작업본 안인 코드 파일 편집(Write, Edit, MultiEdit, apply_patch, 셸 apply_patch) 전에 필수 규칙 원문이 도구 결과로 전달됐는지 본다. 남았으면 조회 명령과 함께 거부한다. 규칙 조회 명령은 미전달분만 내는 `--pending` 조회로 바꾼다. 작업본은 편집 대상 경로마다 판정하므로 세션 폴더 밖의 형제 워크트리(`../{저장소}.wt/`)도 든다. 연결 과업이 없어도 동작한다. |
 | PostToolUse | 도구 출력에 들어간 규칙 원문을 전달됨으로 기록한다. 성공한 편집의 대상 작업본을 이번 요청 상태에 더한다. 문맥 사용량이 80% 이상이면 한 번 "결정 기록 후 새 서브에이전트에 인계"를 안내한다. 셸 PR 머지가 성공하면 경력 원본에 남길 성과인지 판단해 사실과 근거를 정리하고 markdown-notes-agent 스킬에 기록을 요청하라는 한 줄을 넣는다(markdown-notes-agent 스킬이 설치돼 있을 때만). |
@@ -39,7 +39,7 @@
 
 ## 설치
 
-1. 스킬을 설치한다. 설치기가 just-mode를 설치할 때 안정된 진입점 `~/.config/skills/just-do.py`도 함께 바꾼다. 훅 정의는 이 진입점만 부르고, 진입점은 `~/.<claude|codex>/skills/just-mode/scripts/hooks/hook.py`를 실행한다.
+1. 스킬을 설치한다. 설치기가 mode를 설치할 때 안정된 진입점 `~/.config/skills/just-do.py`도 함께 바꾼다. 훅 정의는 이 진입점만 부르고, 진입점은 `~/.<claude|codex>/skills/mode/scripts/hooks/hook.py`를 실행한다.
 2. 플러그인을 설치한다. 카탈로그 정본은 저장소의 `.claude-plugin/marketplace.json`과 `.agents/plugins/marketplace.json`이고 플러그인 루트는 `just/`다.
 3. Claude는 사용량 기록을 원하면 status line을 연결한다. 기존 명령의 입력·출력·종료 코드는 그대로 두고 `remove`가 원래 설정으로 되돌린다. Codex는 확인한 사용량 출처가 없어 80% 안내가 나오지 않는다.
 
@@ -49,7 +49,7 @@ claude plugin marketplace add <스킬 정본 경로>
 claude plugin install just-do@woon-skills
 codex plugin marketplace add <스킬 정본 경로>
 codex plugin add just-do@woon-skills
-python3 ~/.claude/skills/just-mode/scripts/hooks/install_statusline.py install
+python3 ~/.claude/skills/mode/scripts/hooks/install_statusline.py install
 ```
 
 - Codex는 대화형 시작 때 `/hooks`에서 새 훅을 한 번 신뢰해야 동작한다. `codex exec`는 신뢰 전 훅을 알림 없이 건너뛴다. 신뢰 우회 옵션은 쓰지 않는다.
@@ -57,5 +57,5 @@ python3 ~/.claude/skills/just-mode/scripts/hooks/install_statusline.py install
 
 ## 확인
 
-- 원본 저장소에서 `python3 -m pytest just/just-mode/scripts/hooks/tests`를 돌린다. 진입 안내, 결정 기록 꼬리, Stop 막기, 형제 워크트리 판정, 규칙 거부, 진입점 실패 처리, 매니페스트를 본다.
+- 원본 저장소에서 `python3 -m pytest just/mode/scripts/hooks/tests`를 돌린다. 진입 안내, 결정 기록 꼬리, Stop 막기, 형제 워크트리 판정, 규칙 거부, 진입점 실패 처리, 매니페스트를 본다.
 - 실제 동작은 임시 git 저장소에서 이벤트 JSON을 만들어 설치된 진입점에 직접 넣어 본다. 시험 통과를 실제 호스트 동작 확인으로 보고하지 않는다.

@@ -131,7 +131,7 @@ class EntryNoticeTest(HookCase):
             self.log(f"결정 {number}")
         text = self.context(self.hook("SessionStart", host="codex"))
         self.assertTrue(text.startswith("연결 과업:"))
-        self.assertNotIn("just-mode/SKILL.md", text)
+        self.assertNotIn("mode/SKILL.md", text)
         self.assertIn("연결 과업: hooks-work, 이슈 https://github.com/o/r/issues/7", text)
         self.assertEqual([number for number in range(7) if f"결정 {number}\t" in text], [2, 3, 4, 5, 6])
 
@@ -401,7 +401,7 @@ class PostToolTest(HookCase):
 
     def test_merge_notice_needs_installed_markdown_notes_agent(self) -> None:
         skills = self.base / "skills"
-        hooks = skills / "just-mode/scripts/hooks"
+        hooks = skills / "mode/scripts/hooks"
         shutil.copytree(HOOKS, hooks, ignore=shutil.ignore_patterns("tests", "__pycache__", ".pytest_cache"))
         payload = json.dumps({"hook_event_name": "PostToolUse", "session_id": SESSION, "cwd": str(self.base), "tool_name": "Bash", "tool_input": {"command": "gh pr merge 12 --squash"}, "tool_response": {"exit_code": 0}})
 

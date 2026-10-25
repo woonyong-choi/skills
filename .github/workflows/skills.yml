@@ -28,7 +28,7 @@ jobs:
       - name: Run Python tests
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests design/design-tokens/tests just/just-mode/scripts/hooks/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests
+        run: python3 -m pytest -q tools/skill-sync/tests git/git-issue/tests design/design-tokens/tests just/mode/scripts/hooks/tests docs/repo-docs/tests docs/repo-docs-llms/tests docs/repo-docs-figures/tests docs/career/tests
       - name: Run hook tests with linked temp folder
         # macOS의 /var 링크와 같은 경로 형태에서 실패하는 시험을 Linux에서 잡는다
         env:
@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/real-tmp"
           ln -s "$RUNNER_TEMP/real-tmp" "$RUNNER_TEMP/linked-tmp"
-          TMPDIR="$RUNNER_TEMP/linked-tmp" python3 -m pytest -q just/just-mode/scripts/hooks/tests
+          TMPDIR="$RUNNER_TEMP/linked-tmp" python3 -m pytest -q just/mode/scripts/hooks/tests
       - name: Load DiagramPlay figure renderer
         uses: actions/checkout@v4
         with:
@@ -50,7 +50,7 @@ jobs:
         with:
           bun-version: 1.4.2
       - name: Run just script tests
-        working-directory: just/just-mode/scripts
+        working-directory: just/mode/scripts
         run: |
           bun install --frozen-lockfile
           bun test

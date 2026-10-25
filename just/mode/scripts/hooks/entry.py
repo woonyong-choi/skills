@@ -1,7 +1,7 @@
 """스킬 설치본 교체와 독립된 just do 훅 진입점. 설치기가 `~/.config/skills/just-do.py`로 복사한다.
 
 인자: claude|codex, stdin 훅 이벤트 JSON
-출력: 설치된 just-mode 훅(`~/.<host>/skills/just-mode/scripts/hooks/hook.py`)의 응답 JSON.
+출력: 설치된 mode 훅(`~/.<host>/skills/mode/scripts/hooks/hook.py`)의 응답 JSON.
 런타임이 없거나 실패·시간 초과면 stderr 진단과 `{}`, git 저장소 안 편집 도구 PreToolUse는 복구 명령과 함께 거부
 """
 
@@ -18,7 +18,7 @@ import sys
 import time
 
 
-RUNTIME = "skills/just-mode/scripts/hooks/hook.py"
+RUNTIME = "skills/mode/scripts/hooks/hook.py"
 FALLBACK_REPAIR = "python3 tools/skill-sync/scripts/install.py in the skills source repo"
 # hooks/{host}.json의 이벤트별 timeout(초). 시험이 두 파일과 같은지 검사한다.
 HOOK_TIMEOUTS = {

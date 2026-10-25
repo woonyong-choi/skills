@@ -82,19 +82,19 @@ def test_install_tests_excluded_from_all_targets(install_home: Path) -> None:
         assert not list(installed.parent.glob('*/tests'))
         assert not list(installed.parent.glob('*/.claude-plugin'))
         assert not list(installed.parent.glob('*/.codex-plugin'))
-        assert not [path for path in (installed.parent / 'just-mode').rglob('*') if path.name.endswith(('.test.ts', '.test-helper.ts'))]
+        assert not [path for path in (installed.parent / 'mode').rglob('*') if path.name.endswith(('.test.ts', '.test-helper.ts'))]
         # #25: 평탄한 설치본의 검사기가 하위 문서·앵커·용어 정본을 원본과 똑같이 조회. 위반 수는 원본 검사와 같아야 한다.
         checked = subprocess.run([sys.executable, str(installed / 'scripts/skill_check.py'), '--json', str(installed.parent)], capture_output=True, text=True)
         assert checked.returncode in (0, 1), checked.stderr
         assert json.loads(checked.stdout) == source_counts
-        _check_rule_reader(installed.parent / 'just-mode/scripts/rules/read_rules.py', install_home / 'work' / f'{installed.parent.parent.name}-reader')
+        _check_rule_reader(installed.parent / 'mode/scripts/rules/read_rules.py', install_home / 'work' / f'{installed.parent.parent.name}-reader')
         _check_installed_rule_hooks(installed.parent, install_home / 'work' / installed.parent.parent.name)
 
     with zipfile.ZipFile(install_home / 'dist/skill-sync.zip') as archive:
         assert [name for name in archive.namelist() if Path(name).name == 'SKILL.md'] == ['skill-sync/SKILL.md']
         expected = {f'skill-sync/{name}': content for name, content in files.items() if not name.startswith('tests/fixtures/valid/')}
         assert {name: archive.read(name) for name in archive.namelist()} == expected
-    with zipfile.ZipFile(install_home / 'dist/just-mode.zip') as archive:
+    with zipfile.ZipFile(install_home / 'dist/mode.zip') as archive:
         assert not [name for name in archive.namelist() if name.endswith(('.test.ts', '.test-helper.ts'))]
     # #25: 모든 스킬 zip에 하위 문서 원문과 SKILL.md 하나 보존.
     for archive_path in (install_home / 'dist').glob('*.zip'):
@@ -171,10 +171,10 @@ def test_install_changed_zip_payload_rebuilt(install_home: Path, damage: str) ->
 
 
 def _check_installed_rule_hooks(skills: Path, work: Path) -> None:
-    # 설치본 훅: 연결 과업만 복원하고 just-mode 자동 진입은 안내하지 않는다.
-    hook = skills / 'just-mode/scripts/hooks/hook.py'
+    # 설치본 훅: 연결 과업만 복원하고 mode 자동 진입은 안내하지 않는다.
+    hook = skills / 'mode/scripts/hooks/hook.py'
     entry_line = "연결 과업: install-check"
-    body = (skills / 'just-mode/SKILL.md').read_text()
+    body = (skills / 'mode/SKILL.md').read_text()
     work.mkdir(parents=True, exist_ok=True)
     subprocess.run(['git', 'init', '-q', str(work)], check=True)
     (work / 'tool.py').write_text("import subprocess\n\ndef run():\n    raise ValueError('x')\n")
@@ -193,7 +193,7 @@ def _check_installed_rule_hooks(skills: Path, work: Path) -> None:
                 context = json.loads(hooked.stdout).get('hookSpecificOutput', {}).get('additionalContext', '')
                 assert context.startswith(entry_line) == (expected and is_bound), (host, is_bound, event, context)
                 assert "코드를 바꾸는 개발 일" not in context
-                assert "just-mode/SKILL.md" not in context
+                assert "mode/SKILL.md" not in context
                 assert body not in context
                 assert ('issues/58' in context) == (expected and is_bound), (host, is_bound, event)
             if is_bound:

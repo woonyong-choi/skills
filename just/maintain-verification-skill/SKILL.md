@@ -22,7 +22,7 @@ disable-model-invocation: true
 
 ## 점검
 
-0. **대상 찾기.** 유지보수할 검증 스킬을 찾는다. 본문에 실행·조작 절과 기능 맵이 있는 프로젝트 전용 스킬이다(대개 `.agents/skills/verify-*/`. 프로젝트 전용 스킬 위치는 [호스트 대응표](../just-mode/references/hosts.md)). 후보가 여럿이면 사용자에게 어느 것인지 묻는다. 없으면 대상을 지어내지 말고 멈춘 뒤 `create-verification-skill` 스킬을 알려 준다.
+0. **대상 찾기.** 유지보수할 검증 스킬을 찾는다. 본문에 실행·조작 절과 기능 맵이 있는 프로젝트 전용 스킬이다(대개 `.agents/skills/verify-*/`. 프로젝트 전용 스킬 위치는 [호스트 대응표](../mode/references/hosts.md)). 후보가 여럿이면 사용자에게 어느 것인지 묻는다. 없으면 대상을 지어내지 말고 멈춘 뒤 `create-verification-skill` 스킬을 알려 준다.
 
 1. **색인 정리.** 기능 맵 README를 읽고 같은 폴더의 파일을 glob으로 찾는다. 빠진 항목, 남는 항목, 중복 항목, 깨진 항목을 고친다. 가볍게 한다. 목록을 따로 생성하지 않는다.
 

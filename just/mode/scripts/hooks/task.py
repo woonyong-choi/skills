@@ -30,10 +30,10 @@ import time
 from typing import Any, Iterator
 
 # 훅이 쓰는 다른 스킬의 파일. 위치가 바뀌면 이 표만 고친다.
-RULE_READER = ("just-mode", "scripts/rules/read_rules.py")
+RULE_READER = ("mode", "scripts/rules/read_rules.py")
 CAREER_NOTES = ("markdown-notes-agent", "SKILL.md")
 DECISION_LOGGER = ("show-me-your-work", "scripts/log.sh")
-ENTRY_SKILL = "just-mode"
+ENTRY_SKILL = "mode"
 CATEGORIES = ("just", "code", "docs", "git", "design", "tools")
 
 LOCAL = ".local"
@@ -76,7 +76,7 @@ def skill_file(owner: tuple[str, str]) -> Path | None:
 
 
 def entry_skill() -> Path:
-    """설치된 just-mode의 SKILL.md 절대 경로."""
+    """설치된 mode의 SKILL.md 절대 경로."""
     return Path(__file__).resolve().parents[2] / "SKILL.md"
 
 
