@@ -64,8 +64,7 @@ const ready = {
 
 void ready;
 
-// PR 179929's shape. Each assertion below stays a single short statement so a
-// reformat cannot drift the directive away from the line that actually errors.
+// 포맷을 바꿔도 지시 주석이 오류 줄에서 떨어지지 않게 단언마다 짧은 문장 하나로 둔다.
 const refused = {
   kind: "allowed",
   basis: "rollup",

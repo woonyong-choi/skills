@@ -27,7 +27,7 @@ disable-model-invocation: true
 | 벤치마크, 직접 잰 속도·회귀 보고 | 그 숫자로 보고하거나 행동하기 전에 **benchmark-checklist**를 돌린다 |
 | PR 상태 요청("PR X 확인해 줘", "CI 통과시켜 줘", "봇 지적 처리해 줘") | `playbooks/babysit.md`를 따른다. PR을 열었다는 사실만으로 시작하지 않는다. 예외는 끝 고리 4단계다. 폴링 전에 모드를 밝힌다. 단계 에이전트 안에서 `drive`를 쓰면 그 에이전트가 턴을 끝내지 못한다 |
 | CI를 통과한 스택의 머지·배포 요청 | `playbooks/shipping.md`를 따른다. CI 통과는 안전하다는 뜻이 아니다. PR마다 검증 판정이 나오기 전에는 자동 머지를 걸지 않는다 |
-| PR 생성, 수정, 보기, 감시, 머지 | GitHub CLI(`gh`)로 한다. Graphite(`gt`)를 요구하지 않는다. 내장 PR 도구가 있을 때의 규칙은 `playbooks/opening-a-pr.md`에 있다 |
+| PR 생성, 수정, 보기, 감시, 머지 | GitHub CLI(`gh`)로 한다. 내장 PR 도구가 있을 때의 규칙은 `playbooks/opening-a-pr.md`에 있다 |
 | 리뷰 봇이나 자동 보안 리뷰의 지적 | 의심하며 하나씩 따진다. 분류는 `references/bugbot-triage.md`를 따른다 |
 | 스킬 지시가 틀렸거나 스크립트가 안 돎 | 하던 일은 계속하고 스킬은 별도 PR로 고친다. 말없이 건너뛰지 않고 보고에 적는다 |
 | 길거나, 자율이거나, 사용자가 자리를 비운 작업 | **show-me-your-work**로 결정 기록을 남긴다(시작 고리 6단계) |

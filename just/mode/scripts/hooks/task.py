@@ -33,7 +33,6 @@ from typing import Any, Iterator
 RULE_READER = ("mode", "scripts/rules/read_rules.py")
 CAREER_NOTES = ("markdown-notes-agent", "SKILL.md")
 DECISION_LOGGER = ("show-me-your-work", "scripts/log.sh")
-ENTRY_SKILL = "mode"
 CATEGORIES = ("just", "code", "docs", "git", "design", "tools", "personal")
 
 LOCAL = ".local"
@@ -41,7 +40,6 @@ SESSIONS = "sessions"
 DECISIONS = "decisions"
 TAIL_LINES = 5
 DEADLINE_ENV = "JUST_DO_DEADLINE"
-CONFIG_ENV = "SKILLS_CONFIG_DIR"
 TASK_NAME = re.compile(r"[^/\\\s.][^/\\\s]{0,79}")
 _EVENT_PATHS: contextvars.ContextVar[dict[Path, Path] | None] = contextvars.ContextVar("event_paths", default=None)
 
@@ -62,10 +60,6 @@ def time_budget(limit: float) -> float:
     return min(limit, remaining)
 
 
-def config_directory() -> Path:
-    return Path(os.environ.get(CONFIG_ENV) or Path.home() / ".config/skills").expanduser()
-
-
 def skill_file(owner: tuple[str, str]) -> Path | None:
     """설치본(스킬 폴더 나란히) 또는 원본 저장소(분류 폴더 아래)의 스킬 파일."""
     name, relative = owner
@@ -73,11 +67,6 @@ def skill_file(owner: tuple[str, str]) -> Path | None:
     candidates = [entry.parent / name / relative]
     candidates += [entry.parents[1] / category / name / relative for category in CATEGORIES]
     return next((path for path in candidates if path.is_file()), None)
-
-
-def entry_skill() -> Path:
-    """설치된 mode의 SKILL.md 절대 경로."""
-    return Path(__file__).resolve().parents[2] / "SKILL.md"
 
 
 def git_root(cwd: object) -> Path | None:
@@ -208,12 +197,6 @@ def decisions_folder(repo: Path) -> Path:
 
 def decision_log(repo: Path, task: str) -> Path:
     return decisions_folder(repo) / f"{task}.tsv"
-
-
-def recent_tasks(repo: Path, limit: int = 3) -> list[str]:
-    """최근에 고친 결정 기록의 과업 이름. 새 세션이 이어받을 기록을 고르게 알려 준다."""
-    paths = sorted(decisions_folder(repo).glob("*.tsv"), key=lambda path: path.stat().st_mtime, reverse=True)
-    return [path.stem for path in paths[:limit]]
 
 
 def decision_rows(path: Path) -> list[str]:

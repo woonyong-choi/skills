@@ -63,7 +63,7 @@
 
 ### PR 절차(모든 PR 공통)
 
-- [ ] PR 작업은 모두 `gh`로 한다. `gt`를 요구하지 않는다.
+- [ ] PR 작업은 모두 `gh`로 한다.
 - [ ] `<mode 스킬 폴더>/playbooks/opening-a-pr.md`에 따라 PR을 draft가 아닌 ready로 연다. 실행 환경에 내장 PR 도구가 있으면 쓰고, 없으면 `gh pr create --base <base-branch>`를 쓴다. 스택의 자식 PR은 부모 브랜치를 대상으로 한다.
 - [ ] PR에 반영할 push 전에 저장소의 lint와 typecheck를 한 번 돌린다. hook을 켠 채로 push한다.
 - [ ] 커밋마다 그 전에 `unslop`과 `no-comments` 스킬을 돌린다.
