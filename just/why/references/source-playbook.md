@@ -5,7 +5,7 @@ why 스킬은 쓸 수 있는 증거 범주마다 조사자 하나를 띄우고, 
 | 범주 | 플레이북 | 예시로 다룬 MCP |
 |---|---|---|
 | 소스 관리 이력 | [`code-archaeology.md`](./sources/code-archaeology.md) | git, `gh` |
-| 이슈·티켓 트래커 | [`linear.md`](./sources/linear.md) | Linear(Jira, GitHub Issues, Plane, Shortcut에 맞춰 고쳐 씀) |
+| 이슈·티켓 트래커 | GitHub 이슈는 why `SKILL.md` 찾기 절의 `gh issue` 명령, 그 밖은 [`linear.md`](./sources/linear.md) | GitHub Issues, Linear(Jira, Plane, Shortcut에 맞춰 고쳐 씀) |
 | 장문 문서 | [`notion.md`](./sources/notion.md) | Notion(Confluence, Google Docs, Coda에 맞춰 고쳐 씀) |
 | 실시간 팀 채팅 | [`slack.md`](./sources/slack.md) | Slack(Discord, Microsoft Teams, Mattermost에 맞춰 고쳐 씀) |
 | 인프라 관측 | [`datadog.md`](./sources/datadog.md) | Datadog(New Relic, Honeycomb, Grafana, Splunk에 맞춰 고쳐 씀) |
