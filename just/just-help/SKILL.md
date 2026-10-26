@@ -52,7 +52,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 
 `/mode`로 부르거나 사용자가 mode 사용을 명시적으로 요청한 작업에만 적용한다. 다음 별개 작업에 자동으로 이어 붙이지 않는다.
 
-`just-do` 플러그인은 mode를 자동으로 켜지 않는다. 이미 연결한 과업의 복원과 편집 전 규칙 확인 등은 [just do 훅](../mode/references/hooks.md)을 따른다.
+`just-do` 플러그인은 mode를 자동으로 켜지 않는다. 편집 전 규칙 확인은 `/mode`나 `/mode on`으로 켜고 `/mode off`로 끄며 새 세션은 꺼진 상태다. 이미 연결한 과업의 복원 등은 [just do 훅](../mode/references/hooks.md)을 따른다.
 
 대화 중에 "새 작업"이라고 말하면 모드가 새 플레이북을 맞춘다. `/mode`는 플레이북 단계가 띄우는 서브에이전트에 이미 `just-agent`를 쓴다. 직접 띄우는 서브에이전트에서 같은 방식을 쓰려면 `just-agent` 서브에이전트로 띄운다. 정의가 설치되지 않은 호스트에서는 [just-agent 지시](../mode/references/agents/just-agent.md)를 프롬프트에 넣는다(호스트 대응표).
 

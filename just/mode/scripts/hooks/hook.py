@@ -27,6 +27,8 @@ from typing import Any
 
 import task as store
 
+# 요청 첫머리의 `/mode`, `$mode`(Codex), `/mode on`은 켜고 `/mode off`는 끈다
+MODE_PROMPT = re.compile(r"\s*[/$]mode(?:\s+(on|off))?(?=\s|$)")
 EDIT_TOOLS = frozenset({"Write", "Edit", "MultiEdit", "apply_patch"})
 SHELL_PATCH = re.compile(r"\bapply_?patch\b")
 PLAN_MODES = ("plan", "planMode")
@@ -151,7 +153,8 @@ def handle(host: str, payload: dict[str, Any]) -> dict[str, Any]:
         record_edit(payload, repo, session)
         return response(event, "\n".join(text for text in (usage_notice(repo, session), merge_notice(payload)) if text))
     if event == "UserPromptSubmit":
-        return response(event, prompt_started(repo, session))
+        prompt = payload.get("prompt") if isinstance(payload.get("prompt"), str) else ""
+        return response(event, prompt_started(repo, session, prompt))
     if event == "PostCompact":
         reset_session(repo, session, payload)
         return {}
@@ -177,10 +180,13 @@ def reset_session(repo: Path, session: str, payload: dict[str, Any]) -> None:
             rules.unlink(missing_ok=True)
 
 
-def prompt_started(repo: Path, session: str) -> str:
+def prompt_started(repo: Path, session: str, prompt: str = "") -> str:
     path = store.session_path(repo, session)
+    switch = MODE_PROMPT.match(prompt)
     with store.locked(repo):
         state = store.read(path)
+        if switch:
+            state["mode"] = switch.group(1) != "off"
         state.update({
             "session_id": session,
             "prompt_at": time.time(),
@@ -279,9 +285,11 @@ def rule_reader() -> ModuleType:
 
 
 def rule_gate(payload: dict[str, Any], repo: Path, session: str) -> dict[str, Any]:
-    """git 작업본 안 편집 전 필수 규칙 원문 전달 확인. 작업본은 편집 대상 경로마다 판정하고, 상태는 세션·서브에이전트마다 따로 둔다."""
+    """`/mode`로 켠 세션에서만 git 작업본 안 편집 전 필수 규칙 원문 전달 확인. 작업본은 편집 대상 경로마다 판정하고, 상태는 세션·서브에이전트마다 따로 둔다."""
     event = payload.get("hook_event_name")
     if event not in {"PreToolUse", "PostToolUse", "Stop"}:
+        return {}
+    if not store.read(store.session_path(repo, session)).get("mode"):
         return {}
     edit = edit_request(payload)
     reader = rule_reader()

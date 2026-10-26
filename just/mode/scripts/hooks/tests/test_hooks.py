@@ -58,6 +58,9 @@ class HookCase(unittest.TestCase):
         self.assertEqual(done.stderr, "")
         return json.loads(done.stdout)
 
+    def mode_on(self) -> None:
+        self.hook("UserPromptSubmit", prompt="/mode 작업")
+
     def context(self, result: dict) -> str:
         return result.get("hookSpecificOutput", {}).get("additionalContext", "")
 
@@ -235,6 +238,7 @@ class WorktreeTest(HookCase):
         self.assertEqual(status.stdout, "")
 
     def test_sibling_worktree_edit_is_gated_from_main_checkout(self) -> None:
+        self.mode_on()
         # 세션은 기본 체크아웃, 편집은 ../{저장소}.wt/ 형제 워크트리: 규칙 거부와 결정 기록 확인이 그 경로의 작업본으로 판정한다
         worktree = self.base / "work.wt" / "fix-5-sibling"
         git(self.repo, "worktree", "add", "-q", "-b", "fix/5-sibling", str(worktree))
@@ -256,6 +260,20 @@ class WorktreeTest(HookCase):
 
 
 class RuleGateTest(HookCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.mode_on()
+
+    def test_mode_off_or_unset_skips_rule_gate(self) -> None:
+        edit = {"tool_name": "Write", "tool_input": {"file_path": str(self.repo / "tool.py"), "content": "def run():\n    return 1\n"}}
+        self.assertEqual(self.hook("PreToolUse", **edit)["hookSpecificOutput"]["permissionDecision"], "deny")
+        self.hook("UserPromptSubmit", prompt="/mode off")
+        self.assertEqual(self.hook("PreToolUse", **edit), {})
+        self.hook("UserPromptSubmit", prompt="$mode on")
+        self.assertEqual(self.hook("PreToolUse", host="codex", **edit)["hookSpecificOutput"]["permissionDecision"], "deny")
+        other = {**edit, "session_id": "다른-세션"}
+        self.assertEqual(self.hook("PreToolUse", **other), {})
+
     def edit(self, **extra: object) -> dict:
         return self.hook("PreToolUse", tool_name="Write", tool_input={"file_path": str(self.repo / "app.py"), "content": "def run():\n    raise ValueError('x')\n"}, **extra)
 
@@ -304,6 +322,10 @@ class RuleGateTest(HookCase):
 
 class RuleMapTest(HookCase):
     """편집할 파일 종류·내용 → 원칙 파일, code-style 절, 언어별 스킬 대응(rule-map.json)."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.mode_on()
 
     def delivered(self, name: str, content: str) -> str:
         """훅 거부 → --pending 조회 반복 → 출력 기록으로 편집이 열릴 때까지 받은 원문 전체."""
