@@ -1,6 +1,6 @@
 """DiagramPlay 원본(.diagramplay)의 항목 누락과 품질 위험 배치를 찾는다.
 
-인자: 원본 경로 하나, --items 요구 항목 파일(한 줄에 항목 하나, `#` 주석, `|`로 같은 뜻의 다른 이름), --svg 렌더한 SVG(크기와 세로형 판정)
+인자: 원본 경로 하나, --items 요구 항목 파일(한 줄에 항목 하나, `#` 주석, `|`로 같은 뜻의 다른 이름), --svg 렌더한 SVG(크기, 세로형, 되돌아오는 선 판정)
 출력: stdout `누락:`, `경고 <코드>:`, `크기:` 줄, 종료 0 문제 없음·1 누락이나 경고 있음·2 인자 오류나 읽기 실패
 실행 조건: Python 3.9 이상, 표준 라이브러리만. DiagramPlay 문법 검사는 대신하지 않으므로 `diagramplay check --strict`를 따로 돌린다
 """
@@ -23,6 +23,7 @@ TAGGED = {"box", "external", "store"}  # 꼬리표를 다는 카드. person은 �
 FLAT_MIN = 4
 SERIES_MAX = 7
 BODY = 680
+SMALL_TEXT = 8.5  # 본문 단에서 읽히는 가장 작은 글 크기(px)
 TOKEN = re.compile(r'"(?:[^"\\]|\\.)*"|\S+')
 EDGE = re.compile(r"^([\w.-]+)\s*->\s*([\w.-]+)(.*)$")
 
@@ -184,8 +185,8 @@ def warnings(fig: Figure) -> list[str]:
         found.append(f"edges: 선이 {len(fig.edges)}개다. {EDGES_MAX}개 이하로 줄이거나 그림을 나눈다")
     if group_chain(fig) >= 3:
         found.append("staircase: 그룹 세 개 이상을 차례로 이어 계단처럼 대각선으로 늘어진다. 그룹을 한 출발점에서 갈라지게 묶거나, 단계 그룹이면 단계 카드 안 text 줄로 바꾼다")
-    if fig.aspect:
-        found.append("aspect: 머리의 aspect는 DiagramPlay의 자동 맞춤을 끈다. 지우고 기본 배치에 맡긴다")
+    if fig.aspect and not chain_length(fig):
+        found.append("aspect: 갈래가 있는 그림의 aspect는 줄 바꿈으로 선이 엉킬 수 있다. 지우고 기본 배치에 맡긴다. aspect는 갈래 없는 순서 사슬에만 쓴다")
     if fig.wide:
         found.append("wide: width wide는 표시 상한을 1440px로 넓혀 본문 칸에서 그림과 글자가 작아진다. 지우고 기본 배치에 맡긴다")
     tagged = [c for c, has in fig.badges.items() if has]
@@ -219,12 +220,35 @@ def svg_size(path: Path) -> tuple[float, float]:
     return float(match.group(1)), float(match.group(2))
 
 
+def wrap_backs(path: Path, width: float) -> int:
+    """그림 폭의 절반 넘게 왼쪽으로 가로지르는 선 수. 사슬이 줄을 바꿀 때 생기는 되돌아오는 선이다"""
+    text = path.read_text(encoding="utf-8")
+    paths = set(re.findall(r'<path[^>]*class="fl-path"[^>]*\sd="([^"]+)"', text))
+    paths |= set(re.findall(r'<path[^>]*\sd="([^"]+)"[^>]*class="fl-path"', text))
+    count = 0
+    for d in paths:
+        # M·L은 끝점 하나, Q는 조절점 뒤의 끝점을 쓴다
+        points = [(float(x), float(y)) for x, y in re.findall(r"(?:[ML]|Q\s*[\d.-]+\s+[\d.-]+\s*,)\s*([\d.-]+)\s+([\d.-]+)", d)]
+        if any(y1 == y2 and x1 - x2 > width / 2 for (x1, y1), (x2, y2) in zip(points, points[1:])):
+            count += 1
+    return count
+
+
+def wrap_lines(fig: Figure, backs: int) -> list[str]:
+    cards = chain_length(fig) or len(fig.cards)
+    if not backs or cards / (backs + 1) >= 3:
+        return []
+    return [f"wrap: 되돌아오는 선 {backs}개로 한 줄에 카드 {cards / (backs + 1):.0f}개씩 지그재그로 접혔다. 순서 사슬이면 `aspect 3`을 넣고, 그래도 남으면 카드를 줄이거나 부제를 본문으로 옮긴다"]
+
+
 def size_lines(width: float, height: float) -> tuple[list[str], list[str]]:
     body = BODY / width  # SVG는 칸 폭을 꽉 채우므로 칸보다 좁은 그림은 커지고 넓은 그림은 줄어든다
     info = [f"크기: {width:g}x{height:g}, 본문 단 {BODY}px 칸에서 {body:.2f}배, 가장 작은 글 {11 * body:.1f}px"]
     found = []
     if height > width:
         found.append(f"portrait: 높이 {height:g}가 폭 {width:g}보다 커 세로형이다. 가로형 원칙의 한도대로 줄이거나 그림을 나눈다")
+    if 11 * body < SMALL_TEXT:
+        found.append(f"small: 본문 단에서 가장 작은 글이 {11 * body:.1f}px로 {SMALL_TEXT}px보다 작다. 카드 부제와 본문 줄을 줄여 폭을 줄이거나 그림을 나눈다")
     return info, found
 
 
@@ -238,11 +262,12 @@ def main(argv: list[str] | None = None) -> int:
         fig = parse(args.source.read_text(encoding="utf-8"))
         items = read_items(args.items) if args.items else []
         info, size_found = size_lines(*svg_size(args.svg)) if args.svg else ([], [])
+        backs = wrap_backs(args.svg, svg_size(args.svg)[0]) if args.svg else 0
     except (OSError, ValueError) as error:
         print(error, file=sys.stderr)
         return 2
     lost = missing(fig, items)
-    found = warnings(fig) + size_found
+    found = warnings(fig) + size_found + wrap_lines(fig, backs)
     for line in info:
         print(line)
     for item in lost:
