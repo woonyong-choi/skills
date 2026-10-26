@@ -22,6 +22,14 @@ const page = await browser.newPage({ deviceScaleFactor: 2, colorScheme: 'light' 
 for (const [svg, png] of files) {
   await page.goto('file://' + svg);
   await page.$$eval('.fl-canvas-surface', (els) => els.forEach((el) => el.remove()));
+  const size = await page.evaluate(() => {
+    const root = document.querySelector('svg');
+    const box = root.viewBox.baseVal;
+    root.setAttribute('width', box.width);
+    root.setAttribute('height', box.height);
+    return { width: Math.ceil(box.width), height: Math.ceil(box.height) };
+  });
+  await page.setViewportSize(size);
   await page.locator('svg').first().screenshot({ path: png, animations: 'disabled', omitBackground: true });
 }
 await browser.close();
