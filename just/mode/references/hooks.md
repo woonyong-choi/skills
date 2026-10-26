@@ -10,7 +10,7 @@
 ## 과업 연결과 결정 기록
 
 - 과업 연결은 "이 세션이 어느 과업·이슈인지"만 기록한다. 목표·제약·계획은 이슈 본문에, 진행 상태는 판 상태에 둔다. 이슈에 진행 로그 댓글을 달지 않는다.
-- 연결은 `python3 <mode 폴더>/scripts/hooks/task.py bind --session-id <세션 ID> --task <과업> --issue <이슈 URL>`로 한다. 세션 ID는 세션 시작 안내에 나온다. Codex는 생략하면 `CODEX_THREAD_ID`를 쓴다. `--task`를 생략하면 현재 브랜치 이름의 `/`를 `-`로 바꾼 이름을 쓴다. 확인은 `show`, 해제는 `unbind`다.
+- 연결은 `python3 <mode 폴더>/scripts/hooks/task.py bind --session-id <세션 ID> --task <과업> --issue <이슈 URL>`로 한다. 세션 ID는 세션 시작 안내의 `세션 ID:` 줄에 나온다. Codex는 생략하면 `CODEX_THREAD_ID`를 쓴다. `--task`를 생략하면 현재 브랜치 이름의 `/`를 `-`로 바꾼 이름을 쓴다. 확인은 `show`, 해제는 `unbind`다.
 - 결정 기록은 `.local/decisions/<과업>.tsv` 하나다. 형식, 쓰는 방법, 과업 이름 규칙은 **show-me-your-work** 스킬이 맡는다.
 - 결정 기록과 상태 파일은 워크트리가 아니라 기본 체크아웃(`git rev-parse --git-common-dir`의 상위)의 `.local/`에 둔다. 워크트리를 지워도 남는다. 워크트리 안에서 `log.sh`에 워크트리의 `.local/` 경로를 줘도 기본 체크아웃으로 옮겨 쓴다.
 - 상태 파일은 `.local/sessions/` 아래 세션마다 하나(연결, 요청 시작 지문, 사용량)와 세션·서브에이전트마다 하나(규칙 전달 기록)다. 지워도 연결과 규칙 전달 기록만 처음으로 돌아간다.
@@ -20,7 +20,7 @@
 
 | 이벤트 | 동작 |
 |---|---|
-| SessionStart | 규칙 전달 기록을 비운다. 이미 연결한 과업이 있을 때만 이슈 URL과 결정 기록 마지막 5줄을 복원한다. 연결이 없으면 아무 안내도 넣지 않는다. mode를 읽거나 과업을 연결하라는 자동 지시는 하지 않는다. |
+| SessionStart | 규칙 전달 기록을 비운다. 이미 연결한 과업이 있을 때만 이슈 URL과 결정 기록 마지막 5줄을 복원한다. 연결이 없으면 Claude Code에만 bind에 쓸 `세션 ID:` 한 줄을 넣고 Codex에는 아무것도 넣지 않는다. mode를 읽거나 과업을 연결하라는 자동 지시는 하지 않는다. |
 | UserPromptSubmit | 요청 시작 시점의 작업본 지문과 결정 기록 줄 수를 저장한다. 압축 뒤 첫 요청이면 이미 연결한 과업의 복원 정보를 다시 넣는다. |
 | PreToolUse | 편집 대상 경로가 git 작업본 안인 코드 파일 편집(Write, Edit, MultiEdit, apply_patch, 셸 apply_patch) 전에 필수 규칙 원문이 도구 결과로 전달됐는지 본다. 남았으면 조회 명령과 함께 거부한다. 규칙 조회 명령은 미전달분만 내는 `--pending` 조회로 바꾼다. 작업본은 편집 대상 경로마다 판정하므로 세션 폴더 밖의 형제 워크트리(`../{저장소}.wt/`)도 든다. 연결 과업이 없어도 동작한다. |
 | PostToolUse | 도구 출력에 들어간 규칙 원문을 전달됨으로 기록한다. 성공한 편집의 대상 작업본을 이번 요청 상태에 더한다. 문맥 사용량이 80% 이상이면 한 번 "결정 기록 후 새 서브에이전트에 인계"를 안내한다. 셸 PR 머지가 성공하면 경력 원본에 남길 성과인지 판단해 사실과 근거를 정리하고 markdown-notes-agent 스킬에 기록을 요청하라는 한 줄을 넣는다(markdown-notes-agent 스킬이 설치돼 있을 때만). |
@@ -31,7 +31,7 @@
 - 규칙 조회기는 `scripts/rules/read_rules.py`이고 훅은 `scripts/hooks/task.py`의 `RULE_READER` 한 곳에서 찾는다. 위치를 옮기면 이 값만 고친다.
 - 어떤 편집에 어떤 규칙을 넘길지는 `scripts/rules/rule-map.json`이 정한다. `rules`는 규칙 이름마다 원문 위치(스킬, 파일, 고를 절이나 뺄 절)와 sha256이고, `select`는 확장자·경로·내용 조건이 모두 맞을 때 더할 규칙 목록이다. 규칙 단위는 원칙 파일 하나, code-style 절 하나, 언어별 스킬 하나다.
 - 내용 조건은 편집 입력(새 내용, 바꿀 글)에만 맞추고, 편집 입력이 없는 직접 조회는 기존 파일에 맞춘다.
-- 지금 대응은 이렇다. 모든 코드 파일에는 `principle-prove-it-works`와 code-style 머리·원칙 절이 간다. 로직이 있는 파일에는 `principle-foundational-thinking`과 `principle-laziness-protocol`이 더해진다. 확장자로 언어별 스킬을 고르고(`.js` `.mjs` `.cjs` `.jsx`는 `code-style-typescript`에서 TypeScript 전용 절을 뺀 것, `.ts` `.tsx`는 전체와 `principle-type-system-discipline`), 테스트 파일이면 code-style 테스트 문서와 `principle-test-behavior-not-implementation`, `principle-sequence-verifiable-units`가, 동시성 낱말이 있으면 code-style 데이터 절과 `principle-separate-before-serializing-shared-state`, `principle-make-operations-idempotent`가 더해진다. 나머지 조건은 대응표를 본다.
+- 지금 대응은 이렇다. 모든 코드 파일에는 `principle-prove-it-works`와 code-style 머리·원칙 절이 간다. 로직이 있는 파일에는 `principle-foundational-thinking`과 `principle-laziness-protocol`이 더해진다. 확장자로 언어별 스킬을 고르고(`.js` `.mjs` `.cjs` `.jsx`는 `code-style-typescript`에서 TypeScript 전용 절을 뺀 것, `.ts` `.tsx`는 전체와 `principle-type-system-discipline`, `principle-boundary-discipline`), 테스트 파일이면 code-style 테스트 문서와 `principle-test-behavior-not-implementation`, `principle-sequence-verifiable-units`가, 동시성 낱말이 있으면 code-style 데이터 절과 `principle-separate-before-serializing-shared-state`, `principle-make-operations-idempotent`가 더해진다. 나머지 조건은 대응표를 본다.
 - 규칙 원문을 고치면 `python3 scripts/rules/read_rules.py --check`가 바뀐 규칙과 새 sha256을 알린다. 선택 조건이 여전히 맞는지 본 뒤 대응표의 값을 고친다. 고치기 전에는 훅이 그 규칙을 넘기지 않고 조회 실패를 알린다.
 - 훅이 실패하면 진단을 stderr에 남기고 빈 응답으로 끝난다. 세션 폴더가 git 저장소 안인 편집 도구의 PreToolUse만 복구 명령과 함께 거부한다.
 - 시간 상한은 `scripts/hooks/entry.py`의 `HOOK_TIMEOUTS`가 훅 정의의 timeout과 같고, 진입점이 그보다 먼저 런타임을 끊는다. 런타임 안의 git 대기는 넘겨받은 마감 시각(`JUST_DO_DEADLINE`) 안에서 끝난다.

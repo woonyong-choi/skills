@@ -137,7 +137,11 @@ def handle(host: str, payload: dict[str, Any]) -> dict[str, Any]:
     if event == "SessionStart":
         if repo is not None and session:
             reset_session(repo, session, payload)
-        return response(event, entry_notice(repo, session))
+        notice = entry_notice(repo, session)
+        if not notice and host == "claude" and repo is not None and session:
+            # Claude Code는 bind에 넘길 세션 ID를 셸에 주지 않는다
+            notice = f"세션 ID: {session}"
+        return response(event, notice)
     if repo is None or not session:
         return response(event, merge_notice(payload)) if event == "PostToolUse" else {}
     if event == "PreToolUse":

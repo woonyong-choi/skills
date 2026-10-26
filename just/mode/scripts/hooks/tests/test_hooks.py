@@ -121,8 +121,8 @@ class EntryNoticeTest(HookCase):
             self.assertEqual(json.loads(done.stdout), {})
 
     def test_unbound_session_does_not_inject_entry_or_bind_command(self) -> None:
-        for host in ("claude", "codex"):
-            self.assertEqual(self.hook("SessionStart", host=host), {})
+        self.assertEqual(self.hook("SessionStart", host="codex"), {})
+        self.assertEqual(self.context(self.hook("SessionStart", host="claude")), f"세션 ID: {SESSION}")
 
     def test_bound_session_gets_issue_and_last_five_decisions(self) -> None:
         bound = self.bind()
@@ -158,14 +158,14 @@ class EntryNoticeTest(HookCase):
         for name in ("old", "mid", "new", "latest"):
             self.log("결정", name=name)
             time.sleep(0.02)
-        self.assertEqual(self.hook("SessionStart"), {})
+        self.assertEqual(self.context(self.hook("SessionStart")), f"세션 ID: {SESSION}")
         self.hook("PostCompact")
         self.assertEqual(self.hook("UserPromptSubmit", prompt="일반 작업"), {})
 
     def test_work_branch_does_not_activate_unbound_session(self) -> None:
-        self.assertEqual(self.hook("SessionStart"), {})
+        self.assertEqual(self.context(self.hook("SessionStart")), f"세션 ID: {SESSION}")
         git(self.repo, "switch", "-q", "-c", "fix/12-hooks-bind")
-        self.assertEqual(self.hook("SessionStart"), {})
+        self.assertEqual(self.context(self.hook("SessionStart")), f"세션 ID: {SESSION}")
 
     def test_local_folder_ignores_itself(self) -> None:
         self.hook("UserPromptSubmit", prompt="a")
