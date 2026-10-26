@@ -1,16 +1,22 @@
 """그림 원본을 DiagramPlay SVG와 VHS GIF로 변환.
-인자: 선택 원본 경로(생략 시 현재 위치가 속한 저장소 루트의 docs/assets/ 아래 git 추적 원본), --diagramplay 경로, --static
-출력: SVG·GIF와 도구 출력, stderr 실패(원본 없음, git 오류), 종료 0 성공·비영 종료 실패
+인자: 선택 원본 경로(생략 시 현재 위치가 속한 저장소 루트의 docs/assets/ 아래 git 추적 원본), --diagramplay 경로, --static,
+      --require-data(차트 숫자를 data 줄로만 읽게 요구)
+출력: SVG·GIF와 도구 출력, stderr 실패(원본 없음, git 오류, 숫자를 원본에 적은 차트), 종료 0 성공·비영 종료 실패
 """
 
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 SOURCE_SUFFIXES = (".diagramplay", ".tape")
+# 차트 블록 머리(`chart id "제목" 종류 {`)와 그 안의 데이터 파일 줄
+CHART_OPEN = re.compile(r"^\s*chart\s+([\w.-]+)\b.*\{\s*(?:#.*)?$")
+DATA_LINE = re.compile(r"^\s*data\s+\"")
+QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"')
 
 
 class SourceError(Exception):
@@ -25,6 +31,7 @@ def main(argv: list[str]) -> int:
         help="checkout or src/cli.js; default: DIAGRAMPLAY_PATH or diagramplay on PATH",
     )
     parser.add_argument("--static", action="store_true")
+    parser.add_argument("--require-data", action="store_true")
     args = parser.parse_args(argv)
     try:
         sources = args.sources or _tracked_sources()
@@ -50,9 +57,15 @@ def main(argv: list[str]) -> int:
             path = Path(configured).expanduser()
             cli = path / "src" / "cli.js" if path.is_dir() else path
             command = ["node", str(cli)]
+        if args.require_data:
+            inline = [line for source in figures for line in _inline_charts(source)]
+            for line in inline:
+                print(line, file=sys.stderr)
+            if inline:
+                return 1
         if figures:
-            subprocess.run(command + ["check", *figures, "--strict"], check=True)
-            render_flags = ["--strict"] + (["--static"] if args.static else [])
+            subprocess.run(command + ["check", *figures, "--strict", "--docs"], check=True)
+            render_flags = ["--strict", "--docs"] + (["--static"] if args.static else [])
             subprocess.run(command + ["render", *figures, *render_flags], check=True)
         for source in tapes:
             # 찾은 녹화의 Output은 저장소 루트 기준이라 루트에서 실행. 경로 지정 녹화는 현재 위치 유지
@@ -69,6 +82,30 @@ def main(argv: list[str]) -> int:
     except OSError as error:
         print(f"failed to render figures: {error}", file=sys.stderr)
         return 1
+
+
+def _inline_charts(source: str) -> list[str]:
+    """data 줄 없이 숫자를 원본에 적은 차트마다 `경로:줄: 메시지`. 실험 결과 차트가 결과 파일을 읽게 한다."""
+    found = []
+    chart = None
+    depth = 0
+    lines = Path(source).read_text(encoding="utf-8").splitlines()
+    for number, line in enumerate(lines, 1):
+        # 따옴표 안 글과 주석의 중괄호는 블록을 열고 닫지 않는다
+        body = QUOTED.sub("", line).split("#", 1)[0]
+        if chart is None:
+            opened = CHART_OPEN.match(line)
+            if opened:
+                chart, depth, has_data = (opened.group(1), number), 1, False
+            continue
+        if DATA_LINE.match(line):
+            has_data = True
+        depth += body.count("{") - body.count("}")
+        if depth == 0:
+            if not has_data:
+                found.append(f'{source}:{chart[1]}: chart "{chart[0]}" writes its numbers in the source. Read them from the result file with data "<file>.json"')
+            chart = None
+    return found
 
 
 def _tracked_sources() -> list[str]:

@@ -5,7 +5,7 @@ DiagramPlay로 실험 결과 차트를 쓰거나 바꿀 때 값을 결과 파일
 ## 값
 
 - 값을 손으로 적지 않는다. 부제의 표본 수만 예외다.
-- `data "../experiments/{실험}/results/summary.json" at "/배열"`로 원본 기준 상대 경로와 JSON Pointer를 준다(charts 값 출처).
+- `data "../experiments/{실험}/results/summary.json" at "/배열"`로 원본 기준 상대 경로와 JSON Pointer를 준다(charts 값 출처). 실험 결과 차트는 `render_figures.py --require-data`로 변환해 숫자를 원본에 적은 차트를 막는다([변환](conversion.md)).
 - JSON 배열 형식이 다르면 `03-analyze`가 차트용 배열을 `results/summary.json` 안에 만든다. 원소에는 그 종류의 이름 키(막대는 `label`), 계열 키, `.low`, `.high`만 둔다. 다른 키는 `--strict`에서 실패하므로 표본 수 n 같은 값은 같은 파일의 다른 키에 둔다.
 - 계열 키는 `series`의 `key=`나 계열 이름이다. 신뢰구간은 같은 키의 `.low`, `.high`다. 행 키, 결측값, 계열 수는 charts 값 출처 정본을 따른다.
 - `data`와 인라인 `row`, `point`, `cell`을 섞지 않는다. 예시 데이터만 자리표시 규칙에 따라 인라인 값을 쓸 수 있다(repo-docs 자리표시).
