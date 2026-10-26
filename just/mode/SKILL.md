@@ -19,7 +19,7 @@ disable-model-invocation: true
 | 병렬 분배(빠짐없이 나누기, 경주, 차례 검증, 탐색 나누기) | **swarm**을 쓴다. 여러 안을 겨뤄 기준안을 고르고 좋은 부분을 옮길 때는 **arena**를 쓴다 |
 | 사소하지 않은 여러 단계 작업 | 처리량 점검을 적는다(기능 개발 플레이북 3단계) |
 | 모든 글(답변 포함) | **unslop**을 적용하고, 답변은 답변 절을 따른다. 스킬 문서는 **skill-sync** 스킬 `references/authoring.md`를 따른다 |
-| 문서, RFC, README, PR 설명, 커밋 메시지 | **technical-writing**으로 쓴다 |
+| 문서, RFC, README, PR 설명, 커밋 메시지 | 문체·용어·서식은 **repo-docs** 스킬 `references/writing.md`, 갈래와 문장 명료성은 **technical-writing**으로 쓴다 |
 | 커밋 전 | **unslop**과 **no-comments**를 돌린다 |
 | UI나 CLI 배포 | 프로젝트 검증 스킬(`verify-<앱>`)로 확인한다. 버그 수정이면 같은 화면에서 직접 먼저 재현한다. 사용자에게 넘기는 것은 버그 수정 1단계의 좁은 예외뿐이다 |
 | 벤치마크, 직접 잰 속도·회귀 보고 | 그 숫자로 보고하거나 행동하기 전에 **benchmark-checklist**를 돌린다 |
