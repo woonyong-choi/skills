@@ -204,8 +204,15 @@ def _check_rule_gate(hook: Path, env: dict[str, str], host: str, session: str, w
     # #58: 실제 설치 훅 → 누락 차단 → 원문 조회 → 출력 대조 → 원래 도구 재개. #62: 편집만 차단 대상
     target = str(work / 'tool.py')
     payload = {'cwd': str(work), 'session_id': session, 'tool_name': 'Edit', 'tool_input': {'file_path': target, 'old_string': 'a', 'new_string': "import subprocess\n\ndef run():\n    raise ValueError('x')\n"}}
+    switched_on = set()
+
     def invoke(event: str, **extra: object) -> dict:
-        done = subprocess.run([sys.executable, str(hook), host], input=json.dumps({**payload, 'hook_event_name': event, **extra}), capture_output=True, text=True, env=env)
+        request = {**payload, 'hook_event_name': event, **extra}
+        if request['session_id'] not in switched_on:
+            # 규칙 확인은 /mode로 켠 세션에서만 동작
+            switched_on.add(request['session_id'])
+            invoke('UserPromptSubmit', session_id=request['session_id'], prompt='/mode')
+        done = subprocess.run([sys.executable, str(hook), host], input=json.dumps(request), capture_output=True, text=True, env=env)
         assert done.returncode == 0 and not done.stderr, done.stderr
         return json.loads(done.stdout)
 

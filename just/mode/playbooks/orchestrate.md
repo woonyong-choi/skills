@@ -96,7 +96,7 @@ STANDING     <preferences.md 원문 그대로>
 
 검증 크기는 단위에 맞춘다. VERIFY가 값싼 명령 하나면 워커가 돌리고 출력을 보고하며, 조정자는 증거를 표본 확인한다. 코드를 쓰지 않은 전담 검증자 에이전트는 검증이 비싸거나, 판단이 들어가거나, 영향 범위가 큰 단위에 쓴다. 명령 하나를 다시 돌리는 일이 전부인 검증자 에이전트는 형식적인 절차일 뿐 검증이 아니다.
 
-장부 줄은 `orch ledger record`로 쓴다. 현재 PR과 head SHA는 `orch ledger check`로 확인한다. `ledger.tsv`는 판정마다 한 줄이고 PR 번호와 head SHA가 키다. 값은 `live-ui-verified | unit-test-verified | type-check-only | verifier-blocked | verifier-failed` 중 하나다. CI 통과는 판정의 입력이지 판정이 아니다. 동작을 바꾸는 작업은 `type-check-only`보다 높아야 한다. `verifier-blocked`는 통과가 아니다. 환경이 회복되면 다시 띄운다. `verifier-failed`에는 재검증이 아니라 수정 단위를 준다. 워커는 스스로 보고할 수 있다. 같은 키에서는 검증자가 그것을 덮어쓴다. 새 head SHA는 그 줄을 무효로 만들므로 스택을 다시 정리(restack)한 뒤 재검증한다. "검증됐는가"는 기억이나 대화 기록이 아니라 장부가 답한다.
+장부 줄은 `orch ledger record <PR> <head SHA> <판정> --evidence <증거 경로>`로 쓴다. 현재 PR과 head SHA는 `orch ledger check`로 확인한다. `ledger.tsv`는 판정마다 한 줄이고 PR 번호와 head SHA가 키다. 값은 `live-ui-verified | unit-test-verified | type-check-only | verifier-blocked | verifier-failed` 중 하나다. CI 통과는 판정의 입력이지 판정이 아니다. 동작을 바꾸는 작업은 `type-check-only`보다 높아야 한다. `verifier-blocked`는 통과가 아니다. 환경이 회복되면 다시 띄운다. `verifier-failed`에는 재검증이 아니라 수정 단위를 준다. 워커는 스스로 보고할 수 있다. 같은 키에서는 검증자가 그것을 덮어쓴다. 새 head SHA는 그 줄을 무효로 만들므로 스택을 다시 정리(restack)한 뒤 재검증한다. "검증됐는가"는 기억이나 대화 기록이 아니라 장부가 답한다.
 
 단위는 끝나는 즉시 결과를 작업 환경 밖에 남겨야 끝난 것이다. 실행이 끝날 때까지 모아 두지 않는다. 워커는 브랜치를 push하고, 검증자는 장부 줄을 쓰고, 증거는 스토어 폴더에 들어간다. 한 워크트리나 한 머신에만 있다가 그것과 함께 사라진 작업은 끝난 적이 없는 것이다.
 

@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 검증 가능한 단위로 순서 짓기(Sequence Verifiable Units)
+# 검증 가능한 단위로 순서 짓기
 
 작업을 작은 단위의 순서로 짜고 각 단위는 확인할 수 있는 상태로 끝낸다. 지금 단위가 통과하기 전에는 다음으로 넘어가지 않는다.
 

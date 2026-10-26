@@ -19,7 +19,7 @@
 
 ## 본문
 
-- 모든 PR 제목, 설명, 커밋 본문은 **technical-writing** 스킬로 쓰고, 그다음 **unslop**을 적용한다. technical-writing은 Diátaxis를 뺀 모든 계층을 적용한다. 본문의 끝말과 개조식 형식은 **git-pull-request**와 **git-commit** 스킬의 틀이 정하고, 이 틀이 technical-writing과 unslop의 서술어 규칙보다 앞선다.
+- 모든 PR 제목, 설명, 커밋 본문은 **repo-docs** 스킬 `references/writing.md` 문체와 **technical-writing** 스킬(Diátaxis 제외)로 쓰고, 그다음 **unslop**을 적용한다. 끝말과 개조식 형식은 **git-pull-request**와 **git-commit** 틀이 정본이다.
 - PR 본문은 diff를 보고 있는 리뷰어가 1분 안에 읽을 요약이지 실험 노트가 아니다. 틀, 절 순서, 뺄 수 있는 절은 **git-pull-request** 스킬의 본문 절을 따른다.
 - 이슈를 잇는 표기는 **git-issue** 스킬의 닫기 절을 따른다(완료 조건을 모두 채우면 `Closes #<이슈번호>`). 본문의 체크 상자는 기록용이고 머지 조건이 아니다.
 - 각 절에는 변경 이유, 일부러 뺀 것, 깨뜨릴 수 있는 것, 실제로 돌린 검증과 결과가 드러나야 한다. 성능이면 대표 숫자 하나를 단위와 함께 `이전 → 이후`로 쓰고, 나머지 숫자는 PR 댓글에 둔다.

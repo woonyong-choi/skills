@@ -490,7 +490,7 @@
   --fx-flash: var(--color-figure-flash);
   --fx-edge-rest: var(--color-figure-outline);
   --fx-ink-rest: var(--color-ui-muted);
-  --fx-line-rest: var(--color-line);
+  --fx-line-rest: var(--color-outline);
 }
 
 /* 도형의 평소 면과 켜진 면. 옅은 면으로 고른 도형(filled)은 켜져도 면이 같다. 면이 없는 윤곽(fill='none')과 점은 자기 면이 없거나 자기 색이다. */

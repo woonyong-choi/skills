@@ -38,8 +38,8 @@ description: "Git 브랜치를 만들거나 PR 생성, 머지, 릴리스, 머지
 |---|---|
 | `feat/{번호}-api-add-endpoint` | 해당 이슈에서 api에 엔드포인트를 더한다 |
 | `fix/{번호}-ui-panel-height` | 해당 이슈에서 ui 영역 높이 오류를 고친다 |
-| `docs/{번호}-readme-install` | 해당 이슈에서 README 설치 방법을 고친다 |
-| `docs/{번호}-repo-comment-cleanup` | 기존 이슈의 후속 주석 정리다 |
+| `docs/{번호}-readme-install-steps` | 해당 이슈에서 README 설치 방법을 고친다 |
+| `refactor/{번호}-repo-comment-cleanup` | 기존 이슈의 후속 주석 정리다 |
 | `v1` | 지난 메이저 수정 브랜치다. 예외 형식이며 [릴리스](#릴리스) 절을 본다 |
 
 ## 시작 전 확인

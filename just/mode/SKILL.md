@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # mode
 
+`/mode off`(Codex는 `$mode off`)로 불리면 이 세션의 편집 전 규칙 확인을 끄는 요청이다. 훅이 이미 껐으므로 다른 일은 하지 않고 "mode 꺼짐" 한 줄로 답한다. `/mode`와 `/mode on`은 훅이 규칙 확인을 켜고, 이어서 아래 절차를 따른다.
+
 요청에 맞는 순서표를 골라 시작 고리, 순서표, 끝 고리 순으로 끝까지 진행한다. 오타나 문구 한 줄 수정은 고리 없이 해도 된다. 함께 설치된 스킬은 이 파일 기준 `../<이름>/SKILL.md`에 있다. 호스트마다 다른 동작(스킬 부르기, 서브에이전트, 다시 깨우기, 규칙 파일)은 [호스트 대응표](references/hosts.md)를 따른다.
 
 ## 반드시 지킬 것
@@ -19,7 +21,7 @@ disable-model-invocation: true
 | 병렬 분배(빠짐없이 나누기, 경주, 차례 검증, 탐색 나누기) | **swarm**을 쓴다. 여러 안을 겨뤄 기준안을 고르고 좋은 부분을 옮길 때는 **arena**를 쓴다 |
 | 사소하지 않은 여러 단계 작업 | 처리량 점검을 적는다(기능 개발 플레이북 3단계) |
 | 모든 글(답변 포함) | **unslop**을 적용하고, 답변은 답변 절을 따른다. 스킬 문서는 **skill-sync** 스킬 `references/authoring.md`를 따른다 |
-| 문서, RFC, README, PR 설명, 커밋 메시지 | **technical-writing**으로 쓴다 |
+| 문서, RFC, README, PR 설명, 커밋 메시지 | 문체·용어·서식은 **repo-docs** 스킬 `references/writing.md`, 갈래와 문장 명료성은 **technical-writing**으로 쓴다 |
 | 커밋 전 | **unslop**과 **no-comments**를 돌린다 |
 | UI나 CLI 배포 | 프로젝트 검증 스킬(`verify-<앱>`)로 확인한다. 버그 수정이면 같은 화면에서 직접 먼저 재현한다. 사용자에게 넘기는 것은 버그 수정 1단계의 좁은 예외뿐이다 |
 | 벤치마크, 직접 잰 속도·회귀 보고 | 그 숫자로 보고하거나 행동하기 전에 **benchmark-checklist**를 돌린다 |
@@ -61,7 +63,7 @@ disable-model-invocation: true
 1. **이슈 연결.** 같은 일의 이슈가 있으면 재사용하고, 없으면 **git-issue** 스킬의 제목·본문 틀로 만든다. 목표, 제약, 완료 조건은 이슈 본문에 둔다. 진행 로그 댓글은 달지 않는다.
 2. **시작 전 확인.** **git-branch** 스킬의 시작 전 확인 절대로 같은 이슈의 브랜치, PR, 워크트리와 담당자를 확인한다.
 3. **브랜치와 워크트리.** **git-branch** 스킬의 이름 절과 작업 중 절대로 만든다.
-4. **과업 연결.** 브랜치를 만든 뒤 `references/hooks.md`의 과업 연결 명령을 실행한다. `--task`는 그 브랜치의 과업 이름이다.
+4. **과업 연결.** 브랜치를 만든 뒤 `python3 <이 스킬 폴더>/scripts/hooks/task.py bind --session-id <세션 ID> --task <과업> --issue <이슈 URL>`을 실행한다. 세션 ID는 세션 시작 안내에 나오고, Codex는 생략하면 `CODEX_THREAD_ID`를 쓴다. `--task`는 그 브랜치의 과업 이름이다.
 5. **판 상태.** 이슈를 "진행"으로 옮긴다. 들어가는 조건은 **git-issue** 스킬 `references/project-status.md`의 상태표가 정하고, 판이 없으면 같은 문서의 새 저장소 절차로 만든다.
 6. **결정 기록 시작.** 작업용 파일은 모두 `.local/` 아래에 둔다(**repo-docs** 스킬의 비공개 작업 파일 절). `bash <show-me-your-work 폴더>/scripts/log.sh .local/decisions/<과업>.tsv start <decision> <why> <evidence> <result>`로 첫 줄을 쓴다. 과업 이름 규칙은 **show-me-your-work** 스킬의 기록을 두는 곳 절이 정한다.
 

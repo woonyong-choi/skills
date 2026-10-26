@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 경계 규율(Boundary Discipline)
+# 경계 규율
 
 검증, 타입 좁히기, 오류 처리는 시스템 경계에 둔다. 내부 코드는 조건 없이 믿는다. 비즈니스 로직은 순수 함수에 둔다. 입출력을 맡는 바깥 계층(shell)은 로직 없이 얇게 둔다.
 

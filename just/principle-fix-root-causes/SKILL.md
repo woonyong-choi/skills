@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 근본 원인 고치기(Fix Root Causes)
+# 근본 원인 고치기
 
 디버깅할 때는 문제가 드러난 곳이 아니라 결함을 고친다. 증상은 잘못된 상태가 눈에 보이게 된 곳이다. 근본 원인은 시스템이 하지 말아야 할 일을 처음 한 곳, 또는 다뤄야 할 상태를 처음 다루지 못한 곳이다.
 

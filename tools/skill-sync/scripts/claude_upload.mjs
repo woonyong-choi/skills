@@ -4,9 +4,10 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, chmodSync, readFileSync, writeFileSync, renameSync, unlinkSync, lstatSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
+const SCRIPTS = dirname(fileURLToPath(import.meta.url));
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const PROFILE_DIR = join(homedir(), ".config/skills/browser-profile");
 const LOG_DIR = join(homedir(), ".config/skills/browser-logs");
@@ -254,7 +255,7 @@ async function shot(page, label) {
 async function fail(page, what) {
   const state = await pageState(page);
   const recovery = state === "login" || state === "challenge"
-    ? " 로그인·보안 확인 필요: python3 tools/skill-sync/scripts/deploy.py --login" : "";
+    ? ` 로그인·보안 확인 필요: python3 ${join(SCRIPTS, "deploy.py")} --login` : "";
   const path = await shot(page, "fail");
   throw new UiError(`${what}.${recovery} 스크린샷: ${path}`);
 }

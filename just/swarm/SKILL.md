@@ -26,7 +26,7 @@ disable-model-invocation: true
 
 ## 2. 병렬로 띄우기
 
-워커 N개를 한 메시지에서 동시에 서브에이전트로 띄운다([호스트 대응표](../mode/references/hosts.md)). 각 워커는 별도 워크트리의 독립 서브에이전트이고(`git worktree add`), 모델은 3단계에서 고른 것이다.
+워커 N개를 한 메시지에서 동시에 서브에이전트로 띄운다([호스트 대응표](../mode/references/hosts.md)). 각 워커는 별도 워크트리의 독립 서브에이전트이고(`git worktree add`), 모델은 1단계에서 고른 것이다.
 
 워커가 기본이 아닌 브랜치에서 시작해야 하면 그 브랜치로 워크트리를 만든다(`git worktree add <path> <branch>`).
 

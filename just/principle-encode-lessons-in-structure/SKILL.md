@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 교훈을 구조로 남기기(Encode Lessons in Structure)
+# 교훈을 구조로 남기기
 
 같은 지시를 두 번째로 쓰고 있거나 같은 교정이 반복되면 글을 더 쓰지 않는다. 그 규칙을 린트, 메타데이터 플래그, 실행 시 검사, 스크립트로 만든다.
 

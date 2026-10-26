@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 더하기 전에 빼기(Subtract Before You Add)
+# 더하기 전에 빼기
 
 시스템을 발전시킬 때는 먼저 복잡도를 지우고 그다음 만든다. 기본은 빼기다.
 

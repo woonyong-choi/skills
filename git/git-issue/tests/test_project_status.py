@@ -16,18 +16,24 @@ import project_status  # noqa: E402
 
 
 class ProjectAttentionTest(unittest.TestCase):
-    def gh(self, items: list[dict], issues: list[dict]) -> object:
+    def gh(self, items: list[dict], issues: list[dict], comments: dict[str, list[str]] | None = None) -> object:
+        comments = comments or {}
         page = {"hasNextPage": False, "endCursor": None}
         options = [{"id": name, "name": name, "color": "GRAY", "description": ""} for name in ("대기", "진행", "검토", "보류", "완료")]
 
         def fake(args: list[str], payload: str | None) -> dict:
-            query = json.loads(payload or "{}").get("query", "")
+            request = json.loads(payload or "{}")
+            query = request.get("query", "")
+            variables = request.get("variables", {})
             if "mutation" in query:
                 raise AssertionError("check must not change status")
             if "projectsV2" in query:
                 return {"data": {"repository": {"projectsV2": {"nodes": [{"id": "P", "number": 1, "title": "판"}], "pageInfo": page}}}}
             if "fields(" in query:
                 return {"data": {"node": {"fields": {"nodes": [{"id": "S", "name": "Status", "options": options}], "pageInfo": page}}}}
+            if "comments(" in query:
+                bodies = comments.get(variables["id"], [])
+                return {"data": {"node": {"comments": {"nodes": [{"body": body} for body in bodies]}}}}
             if "issues(" in query:
                 self.assertNotIn("comments", query)
                 return {"data": {"repository": {"issues": {"nodes": issues, "pageInfo": page}}}}
@@ -47,19 +53,21 @@ class ProjectAttentionTest(unittest.TestCase):
         }
 
     def test_check_reports_missing_resume_and_long_hold(self) -> None:
-        issues = [{"id": f"C{number}", "number": number, "state": "OPEN"} for number in (1, 2, 3)]
+        issues = [{"id": f"C{number}", "number": number, "state": "OPEN"} for number in (1, 2, 3, 4)]
         items = [
             self.item(1, "진행"),
             self.item(2, "보류", hold="결정 대기"),
             self.item(3, "보류", days=31, hold="결정 대기; 재개 조건: 사용자 선택"),
+            self.item(4, "보류"),
         ]
         with mock.patch("builtins.print") as printed:
-            code = project_status.main(["--repo", "o/r", "check", "--fix"], gh=self.gh(items, issues))
+            code = project_status.main(["--repo", "o/r", "check", "--fix"], gh=self.gh(items, issues, {"C4": ["질문 하나\n재개 조건: 사용자 선택"]}))
         lines = [call.args[0] for call in printed.call_args_list]
         self.assertEqual(code, 1, lines)
         self.assertFalse(any("#1" in line for line in lines), lines)
         self.assertTrue(any("#2" in line and "재개 조건 없음" in line for line in lines), lines)
         self.assertTrue(any("#3" in line and "보류 30일" in line for line in lines), lines)
+        self.assertFalse(any("#4" in line for line in lines), lines)
 
 
 class ProjectQueueTest(unittest.TestCase):

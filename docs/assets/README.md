@@ -8,14 +8,14 @@ Python 3.9 이상, Node.js 22와 DiagramPlay 작업본이 필요하다. 저장�
 
 ```sh
 git clone https://github.com/woonyong-choi/diagramplay .runtime/diagramplay
-git -C .runtime/diagramplay fetch origin ebdc3e9c84c3d5443af7f1b6b5d9b2a18e5002ca
-git -C .runtime/diagramplay checkout ebdc3e9c84c3d5443af7f1b6b5d9b2a18e5002ca
-npm --prefix .runtime/diagramplay ci && (cd .runtime/diagramplay && npx playwright-core install chromium)
+git -C .runtime/diagramplay fetch origin 0f35b9b1c400355e769f8302a3f3f348a07d69f5
+git -C .runtime/diagramplay checkout 0f35b9b1c400355e769f8302a3f3f348a07d69f5
+npm --prefix .runtime/diagramplay ci
 python3 experiments/skill-exposure/scripts/03-analyze.py
 python3 scripts/render_readme.py .runtime/diagramplay/src/cli.js
 ```
 
-Node.js 22에서 확인한 도구는 DiagramPlay 후보 `76cdaacd39258174db4182393a19184cb7a7f001`이다. 최종 main `ebdc3e9c84c3d5443af7f1b6b5d9b2a18e5002ca`은 후보와 Git 트리가 같다. CI는 같은 커밋을 `.runtime/diagramplay`에 받아 쓰고, 다시 만든 SVG가 커밋된 파일과 같지 않으면 실패한다. `check --strict` 통과 뒤 `render --strict --static`으로 생성한다. 정상 종료 코드는 0이며 검사 실패 시 렌더를 시작하지 않는다.
+Node.js 22에서 확인한 도구는 DiagramPlay main 커밋 `0f35b9b1c400355e769f8302a3f3f348a07d69f5`이다. 브랜치에 남아 있는 커밋으로 고정해 GitHub가 정리하지 않게 한다. CI는 같은 커밋을 `.runtime/diagramplay`에 받아 쓰고, 다시 만든 SVG가 커밋된 파일과 같지 않으면 실패한다. `check --strict` 통과 뒤 `render --strict --static`으로 생성한다. 정상 종료 코드는 0이며 검사 실패 시 렌더를 시작하지 않는다.
 
 렌더 스크립트는 SVG 루트의 `data-theme`만 light 또는 dark로 고정한다. 색·글꼴·배치는 DiagramPlay 산출물을 유지한다. 생성 파일을 손으로 수정하지 않는다. 같은 원본과 집계, 도구 커밋으로 두 번 생성한 바이트가 같은지 확인한다.
 

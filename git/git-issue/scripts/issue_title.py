@@ -11,7 +11,7 @@ from pathlib import Path
 
 _ENDINGS = {
     "design": ("결정",),
-    "build": ("추가", "구현", "변경"),
+    "build": ("추가", "구현", "변경", "개선", "정리", "분리"),
     "bug": ("수정",),
     "experiment": ("측정",),
     "docs": ("문서 갱신",),

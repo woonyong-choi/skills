@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: woonyong-choi/diagramplay
-          ref: ebdc3e9c84c3d5443af7f1b6b5d9b2a18e5002ca
+          ref: 0f35b9b1c400355e769f8302a3f3f348a07d69f5
           path: .runtime/diagramplay
       - name: Install figure renderer
         working-directory: .runtime/diagramplay

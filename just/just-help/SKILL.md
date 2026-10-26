@@ -52,7 +52,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 
 `/mode`로 부르거나 사용자가 mode 사용을 명시적으로 요청한 작업에만 적용한다. 다음 별개 작업에 자동으로 이어 붙이지 않는다.
 
-`just-do` 플러그인은 mode를 자동으로 켜지 않는다. 이미 연결한 과업의 복원과 편집 전 규칙 확인 등은 [just do 훅](../mode/references/hooks.md)을 따른다.
+`just-do` 플러그인은 mode를 자동으로 켜지 않는다. 편집 전 규칙 확인은 `/mode`나 `/mode on`으로 켜고 `/mode off`로 끄며 새 세션은 꺼진 상태다. 이미 연결한 과업의 복원 등은 [just do 훅](../mode/references/hooks.md)을 따른다.
 
 대화 중에 "새 작업"이라고 말하면 모드가 새 플레이북을 맞춘다. `/mode`는 플레이북 단계가 띄우는 서브에이전트에 이미 `just-agent`를 쓴다. 직접 띄우는 서브에이전트에서 같은 방식을 쓰려면 `just-agent` 서브에이전트로 띄운다. 정의가 설치되지 않은 호스트에서는 [just-agent 지시](../mode/references/agents/just-agent.md)를 프롬프트에 넣는다(호스트 대응표).
 
@@ -79,7 +79,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 | `.ts`, `.tsx` 작업에 TypeScript 규칙 적용하기 | 편집 전 훅이 **code-style-typescript** 스킬의 TypeScript 전용 절을 함께 넘긴다. |
 | 주석을 쓰지 않은 검토자로 커밋 전에 주석 걷어 내기 | [`/no-comments`](../no-comments/SKILL.md) |
 | 글에서 AI 티 걷어 내기 | [`/unslop`](../unslop/SKILL.md) |
-| 문서, RFC, README, PR 설명, 커밋 메시지를 기준에 맞게 쓰기 | [`/technical-writing`](../technical-writing/SKILL.md) |
+| 문서, RFC, README, PR 설명의 갈래와 문장 명료성 맞추기 | [`/technical-writing`](../technical-writing/SKILL.md) |
 | 마지막 답변을 쉬운 말로 다시 듣기 | [`/bro`](../bro/SKILL.md) |
 | 에이전트가 앱을 스크립트로 조작해 동작을 증명할 수단 만들기 | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
 | 검증 스킬과 그 기능 맵을 앱에 다시 맞추기 | [`/maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
@@ -98,7 +98,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 
 - `/how`는 코드가 무엇을 하는지 설명한다. `/why`는 이유를 설명한다. `/teach`는 둘 중 하나나 둘 다 돌리고 결과를 쉬운 말로 설명한다.
 - `/arena`는 모든 워커에게 같은 지시를 주고 가장 좋은 부분을 합친다. `/swarm`은 일을 조각이나 경주로 나누고 보고서 하나를 돌려준다.
-- `/architect`는 설계를 정한 바로 뒤에 구현한다. 코드를 쓰기 전에 설계를 검토하려면 "확인 지점 포함"을 덧붙인다.
+- `/architect`는 설계만 요청하면 설계에서 멈추고, 구현까지 맡기면 설계를 정한 바로 뒤에 구현한다. 코드를 쓰기 전에 설계를 검토하려면 "확인 지점 포함"을 덧붙인다.
 - `/interrogate`는 diff를 검토한다. `/blast-radius`는 diff 바깥의 깨짐을 찾고, 변경을 안전하게 만드는 사실 하나를 증명한다.
 - `/recall`은 최근 여러 대화에 걸친 맥락을 다시 세운다. `/ketchup`은 사용자의 마지막 메시지 뒤 이 대화만 다룬다. 특정 대화나 브랜치 하나를 재개하는 것은 세션 이어받기 플레이북이다.
 - `/figure-it-out`은 엄격한 실행 하나를 설계한다. 오케스트레이션 플레이북은 여러 날과 많은 PR에 걸친 프로그램을 돌린다. 자율 실행 플레이북은 멈추라고 할 때까지 판의 대기 이슈를 계속 처리한다. 작업 하나를 종료 조건까지 혼자 진행하는 일(단일 과업)은 그 작업에 맞는 순서표가 맡는다.
@@ -133,7 +133,7 @@ just에는 계획 스킬이 없다. 호스트의 계획 모드가 있으면 함�
 | 질문이 지난 작업의 다음 단계로 처리됨 | "새 작업"이라고 하거나, 이 턴에는 모드가 필요 없다고 말한다. |
 | 새 모델 선택이 효과가 없음 | `/just-setup`이 쓴 `~/.config/skills/models.json`을 확인한다. 이미 돌고 있는 서브에이전트에는 적용되지 않으므로 새로 띄운다. |
 | 실행 비용이 예상보다 큼 | 설정하기 절의 비용 문단을 본다. |
-| 스킬이 저절로 호출되지 않음 | 사용자의 말만으로 호출되는 스킬은 `/just-setup`뿐이다. 나머지는 사용자가 치거나 `/mode`가 돌릴 때 호출되고, `/mode`가 모든 스킬을 돌리지는 않는다. |
+| 스킬이 저절로 호출되지 않음 | 사용자의 말만으로 호출되는 스킬은 `/just-setup`과 `/why`뿐이다. 나머지는 사용자가 치거나 `/mode`가 돌릴 때 호출되고, `/mode`가 모든 스킬을 돌리지는 않는다. |
 | 병렬 에이전트가 서로 덮어씀 | 에이전트마다 별도 워크트리를 준다. |
 | 밤새 돌았는데 움직이기만 하고 끝난 게 없음 | 주기적으로 다시 깨우기에는 시간이 아니라 통과하거나 실패할 수 있는 확인 조건이 필요하다. [`references/prompting.md`](references/prompting.md)의 자리 비우기 전 절을 본다. |
 | 빌드의 CI 통과만으로 성공했다고 답함 | 실제 명령, 흐름, 저장된 값, 프로파일을 요구한다. 동작 증명 원칙이다. |

@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 작업을 멱등으로 만들기(Make Operations Idempotent)
+# 작업을 멱등으로 만들기
 
 몇 번 실행되든, 앞선 실행이 어디서 멈췄든 올바른 상태로 수렴하도록 작업을 설계한다. 상태를 바꾸는 모든 작업은 "이것이 두 번 돌면 어떻게 되는가? 앞선 실행이 중간에 죽었다면 어떻게 되는가?"에 답해야 한다.
 

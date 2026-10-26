@@ -11,7 +11,7 @@
       "name": "just-do",
       "displayName": "just do",
       "source": "./just",
-      "description": "mode 진입 안내와 결정 기록·편집 전 규칙 확인 훅",
+      "description": "과업 복원과 결정 기록·편집 전 규칙 확인 훅",
       "version": "0.2.0"
     }
   ]

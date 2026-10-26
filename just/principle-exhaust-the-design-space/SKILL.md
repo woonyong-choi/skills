@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 설계 공간 다 훑기(Exhaust the Design Space)
+# 설계 공간 다 훑기
 
 코드베이스에 선례가 없는 새 UI 상호작용이나 아키텍처 결정을 마주하면 경쟁하는 프로토타입을 2~3개 만들어 나란히 비교한 뒤 결정한다.
 

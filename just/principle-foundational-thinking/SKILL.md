@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 기초부터 생각하기(Foundational Thinking)
+# 기초부터 생각하기
 
 **구조 결정**은 나중에 다른 선택을 할 여지를 지킨다. **코드 수준 결정**은 단순함을 지킨다.
 

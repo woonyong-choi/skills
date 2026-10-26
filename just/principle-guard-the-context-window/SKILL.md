@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 컨텍스트 창 지키기(Guard the Context Window)
+# 컨텍스트 창 지키기
 
 대량 작업은 서브에이전트로 보내고, 메인 대화에는 원본 데이터가 아니라 요약을 둔다.
 

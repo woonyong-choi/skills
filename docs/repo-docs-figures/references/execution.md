@@ -4,7 +4,7 @@ DiagramPlay를 설치하거나 소스 작업본에서 직접 실행할 때 명�
 
 ## 환경
 
-- Node.js 20 이상이 필요하다. 설치와 배포의 정본은 [DiagramPlay README](https://github.com/woonyong-choi/diagramplay/blob/main/README.md#installation)다. 패키지 버전만 보고 npm 배포 여부를 판단하지 않는다.
+- Node.js 20 이상이 필요하다. 설치와 배포의 정본은 [DiagramPlay README](https://github.com/woonyong-choi/diagramplay/blob/main/README.md)다. 패키지 버전만 보고 npm 배포 여부를 판단하지 않는다.
 - `<DiagramPlay 경로>`는 의존성을 설치한 기존 작업본의 절대 경로다. 아래 명령은 문서 저장소 루트에서 실행한다.
 
 ```sh

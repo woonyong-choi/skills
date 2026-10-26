@@ -1,6 +1,6 @@
 ---
 name: reflect
-description: "현재 대화 기록에서 오래 남을 교훈을 찾아 기존 스킬의 구체적인 수정으로 연결할 때 쓴다. 검토 서브에이전트 셋을 병렬로 띄운다. 사용자가 reflect라고 말할 때 쓴다."
+description: "현재 대화 기록에서 오래 남을 교훈을 찾아 기존 스킬의 구체적인 수정으로 연결할 때 쓴다. 검토 서브에이전트 셋을 병렬로 띄운다. 사용자가 /reflect로 부를 때 쓴다."
 disable-model-invocation: true
 ---
 
@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 현재 대화에서 오래 남을 교훈을 캐내고, 그것을 스킬 수정으로 연결한다.
 
-사용자가 "reflect"라고 말하거나 이 스킬을 부를 때 실행한다. 대화가 사소하거나, 주제에서 벗어났거나, 부모가 제대로 따른 기존 스킬이 이미 다루는 내용이면 건너뛴다. 한 번뿐인 일은 교훈이 아니다.
+사용자가 `/reflect`로 이 스킬을 부를 때 실행한다. 대화가 사소하거나, 주제에서 벗어났거나, 부모가 제대로 따른 기존 스킬이 이미 다루는 내용이면 건너뛴다. 한 번뿐인 일은 교훈이 아니다.
 
 ## 1. 현재 대화 기록 찾기
 
@@ -52,7 +52,7 @@ ls -t <transcripts>/*.jsonl <transcripts>/*/*.jsonl <transcripts>/*/subagents/*.
 
 - 사소한 기존 스킬 수정(한 줄 항목, 다듬은 문장, 낡은 사실 고치기)은 부모가 직접 한다.
 - 실질적인 기존 스킬 수정(새 절, 새 패턴 표, 약 10줄 넘음)은 `skill-creator` 스킬이 있으면 넘겨서 초안 / 테스트 / 반복 루프를 돌린다. 없으면 부모가 SKILL.md 형식(frontmatter `name`·`description`)을 지켜 직접 고친다.
-- `tune description: <skill path>`(스킬은 있지만 호출돼야 할 때 호출되지 않음)는 `skill-creator`가 있으면 넘겨서 description 최적화 루프를 돌린다. 없으면 부모가 description을 직접 고친다.
+- `tune description: <skill path>`(스킬은 있지만 호출돼야 할 때 호출되지 않음)는 `skill-creator`가 있으면 넘겨서 description 최적화 루프를 돌린다. 없으면 부모가 description을 직접 고친다. 대상 스킬이 `disable-model-invocation: true`(명시 호출형)이면 description을 고쳐도 자동으로 불리지 않으므로, 대신 mode의 반드시 지킬 것 표나 해당 플레이북에 그 스킬을 부르는 단계를 넣는다.
 - `new skill via skill-creator: <kebab-name>`는 생성을 `skill-creator`에 넘긴다. 없으면 SKILL.md 형식(frontmatter `name`·`description`)을 직접 작성한다. 형식을 즉석에서 지어내지 않는다.
 
 환경에 SKILL.md 검증기가 있으면 완료를 선언하기 전에 건드린 모든 스킬에 돌린다.
