@@ -24,7 +24,7 @@ description: "Rust 코드를 쓰거나 검토하거나 리팩터링할 때, rust
 
 파일은 다음 순서로 쓴다.
 
-1. `//!` 모듈 설명
+1. 공개 모듈의 `//!` 모듈 설명
 2. `use`. `std`, 외부 crate, `crate::`와 `super::` 순서로 묶고 그룹 사이에 빈 줄을 둔다.
 3. `mod foo;` 선언
 4. `const`와 `static`

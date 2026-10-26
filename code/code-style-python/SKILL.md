@@ -27,7 +27,7 @@ description: "Python 코드를 쓰거나 검토할 때, Ruff, mypy, pytest 설�
 
 모듈 파일은 다음 순서로 쓴다.
 
-1. 모듈 docstring
+1. 공개 모듈·실행 파일의 모듈 docstring
 2. `from __future__ import ...`
 3. `__all__`
 4. import. 표준 라이브러리, 서드파티, 같은 프로젝트 순서로 묶고 그룹 사이에 빈 줄을 둔다. 절대 경로로 import하고 와일드카드를 쓰지 않는다.

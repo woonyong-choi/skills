@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 from typing import Any, Iterator
 
-from project_status import PAGE, STATES, ProjectError, ProjectStatus, run_gh
+from project_status import PAGE, STATE_COLORS, STATES, ProjectError, ProjectStatus, run_gh
 
 
 class ProjectBootstrap(ProjectStatus):
@@ -103,7 +103,7 @@ class ProjectBootstrap(ProjectStatus):
             mapping = {"Todo": "대기", "In Progress": "진행", "Done": "완료"}
             options = [{**item, "name": mapping[item["name"]]} for item in options]
             options += [
-                {"name": name, "color": "GRAY", "description": ""}
+                {"name": name, "color": STATE_COLORS[name], "description": ""}
                 for name in ("검토", "보류")
             ]
             options.sort(key=lambda item: STATES.index(item["name"]))

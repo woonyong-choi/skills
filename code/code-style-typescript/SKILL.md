@@ -81,7 +81,7 @@ description: "JavaScript와 TypeScript 코드를 쓰거나 검토할 때, ESLint
 ## 공개 범위와 주석
 
 - 주석을 남기는 경우는 [code-style 공개 범위와 주석](../code-style/references/structure.md#공개-범위와-주석)을 따른다. 문서 주석은 공개 API 계약을 정의할 때만 JSDoc `/** */`으로 쓰고, 실패 조건은 `@throws`로 적는다.
-- 매개변수와 반환값의 타입은 `.js` 파일에서만 JSDoc `@param`과 `@returns`로 적는다. `.ts` 파일에서는 TypeScript 타입으로 쓰고 JSDoc에 타입을 되풀이하지 않는다([TypeScript 전용](#typescript-전용)).
+- 공개 API 함수의 매개변수와 반환값 타입은 `.js` 파일에서만 JSDoc `@param`과 `@returns`로 적는다. `.ts` 파일에서는 TypeScript 타입으로 쓰고 JSDoc에 타입을 되풀이하지 않는다([TypeScript 전용](#typescript-전용)).
 - checkJs를 쓰는 저장소이거나 공개 JSDoc 타입을 바꾸면 `// @ts-check`를 달고 `tsc --noEmit --checkJs`로 검사한다.
 
 ## 테스트
