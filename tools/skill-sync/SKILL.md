@@ -48,7 +48,7 @@ python3 <이 스킬 폴더>/scripts/install.py
 | Codex | `~/.codex/skills/` |
 | Antigravity | `~/.gemini/config/skills/` |
 | Claude Code | `~/.claude/skills/` |
-| Claude 계정(웹, 데스크톱, 원격 세션) | 실행할 때 확인한 공식 배포 방식을 쓴다. 아래 UI 스크립트는 지원 환경에서만 쓴다 |
+| Claude 계정(웹, 데스크톱, 원격 세션) | 공식 API나 CLI가 없어 [선택 어댑터](references/claude-upload.md)의 UI 스크립트를 지원 환경에서만 쓴다 |
 
 - 도구 폴더가 없는 도구에는 설치하지 않는다.
 - 원본 저장소는 `--source`, 환경 변수 `SKILLS_SOURCE`, 스크립트가 든 git 저장소, 마지막으로 쓴 원본(`~/.config/skills/source`) 순서로 찾는다. 모두 없으면 사용자에게 원본 경로를 묻는다.

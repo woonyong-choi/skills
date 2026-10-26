@@ -1,6 +1,6 @@
 # DiagramPlay 그림 품질
 
-요청한 항목을 빠짐없이 담고, 가로형으로 읽히고, 무엇이 중요한지 바로 보이는 DiagramPlay 그림을 만든다. 문법과 정본 고르기는 [그림 작성](syntax.md), 명령은 [설치와 실행](execution.md)과 [검사](validation.md)가 맡는다. 편집 규칙은 [Diagram Design](https://github.com/cathrynlavery/diagram-design)(MIT)의 "더 뺄 것이 없을 때 끝난다", 종류 꼬리표, 초점 1~2개, 기술 글만 고정폭, 복잡도 상한을 DiagramPlay 문법으로 옮긴 것이다. 아래 수치는 이름 변경 전 `Torso a9c287d`에서 쟀다. DiagramPlay 후보에서 다시 잰 값은 아니다.
+요청한 항목을 빠짐없이 담고, 가로형으로 읽히고, 무엇이 중요한지 바로 보이는 DiagramPlay 그림을 만든다. 문법과 정본 고르기는 [그림 작성](syntax.md), 명령은 [설치와 실행](execution.md)과 [검사](validation.md)가 맡는다. 편집 규칙은 [Diagram Design](https://github.com/cathrynlavery/diagram-design)(MIT)의 "더 뺄 것이 없을 때 끝난다", 종류 꼬리표, 초점 1~2개, 기술 글만 고정폭, 복잡도 상한을 DiagramPlay 문법으로 옮긴 것이다. 아래
 
 ## 가로형 원칙
 
