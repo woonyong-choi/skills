@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 결과 중심 실행(Outcome-Oriented Execution)
+# 결과 중심 실행
 
 중간 상태를 매끄럽게 유지하기보다, 의도했고 검증할 수 있는 최종 상태에 맞춰 최적화한다.
 

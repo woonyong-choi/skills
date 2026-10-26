@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 전제부터 의심하기(Attack the Premise)
+# 전제부터 의심하기
 
 같은 전제를 공유한 수정이 두 번 이상 같은 게이트(통과해야 다음으로 가는 검사)에서 실패했다면 수정이 아니라 전제를 의심한다.
 

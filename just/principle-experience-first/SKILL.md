@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 경험 우선(Experience First)
+# 경험 우선
 
 구현이 편한 쪽과 사용자가 쓰기 좋은 쪽이 부딪히면 쓰기 좋은 쪽을 고른다.
 

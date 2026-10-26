@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 도메인 모델링(Model the Domain)
+# 도메인 모델링
 
 실제 도메인을 조건문에 흩뿌리지 말고 자료구조에 담는다. 도메인에 맞는 구조는 잘못된 상태를 표현할 수 없게 만들고 분기를 지운다. 코드를 쓸 때 고르면 싸다. 나중에 바로잡으려면 리팩터링 작업으로 보여서 미뤄진다.
 

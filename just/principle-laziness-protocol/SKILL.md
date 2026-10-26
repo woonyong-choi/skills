@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 게으름 규약(Laziness Protocol)
+# 게으름 규약
 
 삭제 쪽으로 기울고, 문제를 푸는 가장 작은 변경을 고른다.
 

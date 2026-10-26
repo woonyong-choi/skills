@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 처음부터 다시 설계(Redesign From First Principles)
+# 처음부터 다시 설계
 
 새 요구사항이 지금 설계에 맞지 않으면 기존 설계에 덧대지 않는다. 그 요구사항이 처음부터 기본 가정이었던 것처럼 다시 설계한다. 지금 설계에 그대로 들어가는 요구는 그대로 넣는다. 확인한 문제 없이 재설계하거나, 지금 쓰임이 없는 계층·설정·추상화를 더하지 않는다.
 

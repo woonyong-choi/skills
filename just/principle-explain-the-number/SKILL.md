@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 숫자 설명하기(Explain the Number)
+# 숫자 설명하기
 
 직접 잰 숫자를 믿거나 보고하거나 그에 따라 행동하기 전에, 그 숫자의 상한을 정하는 것을 찾고 의도한 작업이 아닌 다른 것을 잰 것은 아닌지 확인한다.
 

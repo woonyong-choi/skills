@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 호출부 옮긴 뒤 레거시 API 삭제(Migrate Callers Then Delete Legacy APIs)
+# 호출부 옮긴 뒤 레거시 API 삭제
 
 옛 호출부가 남아 있는 상태에서 새 내부 API를 도입하면 호환 계층을 남기지 않는다. 같은 웨이브에서 호출부를 옮기고 옛 API를 삭제한다.
 

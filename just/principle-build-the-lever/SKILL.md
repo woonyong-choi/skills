@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 도구부터 만들기(Build the Lever)
+# 도구부터 만들기
 
 사소하지 않은 작업이면 손으로 하지 말고 그 일을 하는 도구를 만든다.
 

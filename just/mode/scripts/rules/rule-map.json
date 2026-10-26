@@ -9,57 +9,57 @@
     "principle-foundational-thinking": {
       "skill": "principle-foundational-thinking",
       "path": "SKILL.md",
-      "sha256": "07a27f3e5518010e98518800fdfe2a042c0f8770856bf8abfb3b4100db9d5c7c"
+      "sha256": "8a37c9ef92e1ab99ffc32c13a933024a3be891e4143c60c9e7b74979f6a81f54"
     },
     "principle-laziness-protocol": {
       "skill": "principle-laziness-protocol",
       "path": "SKILL.md",
-      "sha256": "32d17d35939be3b05ed35ab6184cd0faee490d1adc165d586bb7fe193ff841eb"
+      "sha256": "094943f11db7250f6dc2838aa7955a98dc0f52028c4299a684e733bb7e29e0ef"
     },
     "principle-test-behavior-not-implementation": {
       "skill": "principle-test-behavior-not-implementation",
       "path": "SKILL.md",
-      "sha256": "9220cc169c765bca86fa89bad86f0f9b653736430f64ab5181ff25bb3a58e3a3"
+      "sha256": "8cafff3e5498a1f56b6b6c3a52a559355a715156b58c13a0ffb4b2aa729beeb1"
     },
     "principle-sequence-verifiable-units": {
       "skill": "principle-sequence-verifiable-units",
       "path": "SKILL.md",
-      "sha256": "aea3aa3f199b9c6eb22c298fcc1ba8d2ef8f9122c84f72981a3a65f10fa87a2e"
+      "sha256": "e2a8685f07fb00281abefe042caa032d9a62efa6c19abf8c22741ced8ae96afd"
     },
     "principle-boundary-discipline": {
       "skill": "principle-boundary-discipline",
       "path": "SKILL.md",
-      "sha256": "e96e358affbf1ffc78a0e581c290391f9d6117032ac07c9c62aafe374d4ec9a0"
+      "sha256": "bf23ae049e2f40d19458aa3a88127695c9e7aed96b5a24a1eb04d7323d73a1c5"
     },
     "principle-type-system-discipline": {
       "skill": "principle-type-system-discipline",
       "path": "SKILL.md",
-      "sha256": "0a46e9d414c72092345ce32acf86a097588204dafb2d36ed1db4c8e373d01e04"
+      "sha256": "b56a2369fb00f1baa2c6705acee6f236c60cb6bb65809fd288784415f525f297"
     },
     "principle-model-the-domain": {
       "skill": "principle-model-the-domain",
       "path": "SKILL.md",
-      "sha256": "1840007f47f3657949abd842f430504dab00f41dfd79349ddcc58f4b9753c638"
+      "sha256": "6c9deb52501fa3bdc7bf5da80ef98db2de715a6bb4ccb221b66d3a9b6a8ba82d"
     },
     "principle-separate-before-serializing-shared-state": {
       "skill": "principle-separate-before-serializing-shared-state",
       "path": "SKILL.md",
-      "sha256": "85e12622c130110d7e0fb4e378188e55f3dcc373de0b7a36d0108e862bb6ddaf"
+      "sha256": "fbea4bb3390ad928640f8e083b8564167bbc4d2f84eed7368a2d973de130b117"
     },
     "principle-make-operations-idempotent": {
       "skill": "principle-make-operations-idempotent",
       "path": "SKILL.md",
-      "sha256": "a65a5879649405e7491ecc5180d5572be016f0a8e4c6c0fc2cc77dbea97fc4ae"
+      "sha256": "bcc0eb91877e8152e61091b629c2bd66074c761c529ad9df7888929b10d96a0e"
     },
     "principle-explain-the-number": {
       "skill": "principle-explain-the-number",
       "path": "SKILL.md",
-      "sha256": "28f71cc55e65f17cbcd630b351dc0492de9dff35c5e629f588415b8bb09dbd4b"
+      "sha256": "50d3fb9754b77d6600bc6600f305d27c9d5f6645812b695fd7aaa470da1a6e81"
     },
     "principle-experience-first": {
       "skill": "principle-experience-first",
       "path": "SKILL.md",
-      "sha256": "68df9765c9aff3da96294e877ba7afce8bde6f9d3bacda2b73a19cb3e870d578"
+      "sha256": "a16e85cb5f33a964771f7bf232ad0ffefb92ae6639248e3b66752eb689bf6aa7"
     },
     "CS-CORE": {
       "skill": "code-style",

@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: false
 ---
 
-# 타입 시스템 규율(Type System Discipline)
+# 타입 시스템 규율
 
 불가능한 상태, 섞인 원시값, 다루지 않은 변형을 컴파일러가 거부하게 만든다. 처리기를 늘리기보다 오류와 특수 사례가 애초에 생기지 않게 정의한다. TypeScript 문법은 `code-style-typescript` 스킬의 TypeScript 전용 절을 본다.
 
