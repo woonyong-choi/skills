@@ -33,7 +33,7 @@ export function ensureDependenciesInstalled(): void {
   }
 
   const result = Bun.spawnSync(
-    [process.execPath, "install", "--frozen-lockfile"],
+    [process.execPath, "install", "--frozen-lockfile", "--production"],
     { cwd: scriptsDirectory }
   );
   if (result.exitCode !== 0) {

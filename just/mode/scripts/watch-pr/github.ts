@@ -152,9 +152,7 @@ const REVIEW_DECISIONS = [
   "CHANGES_REQUESTED",
   "REVIEW_REQUIRED",
 ] as const;
-// `gh pr view` reports no review decision as "", not null. Only this field does
-// it, so the normalization stays here rather than in nullableEnum, where it
-// would stop a genuinely unexpected rollup state from failing closed.
+// `gh pr view`는 리뷰 결정이 없으면 null 대신 ""를 준다. 이 필드만 그래서 nullableEnum이 아닌 여기서 바꾼다.
 const reviewDecision = (value: unknown): T.ReviewDecision =>
   nullableEnum(
     value === "" ? null : value,
@@ -247,9 +245,7 @@ export function parseFastCheck(value: unknown): T.Check {
     return { ...details, kind: "skipped", reportedState: state };
   return { ...details, kind: "failed", reportedState: state };
 }
-// Every read path classifies the owner-approval gate here, so the rule has one
-// home. A gate that is pending or waits on an owner approval must not count as
-// pending or failed, or the watcher waits on a human.
+// 소유자 승인 대기 검사는 대기나 실패로 세지 않는다. 세면 감시가 사람을 기다린다.
 function gateOr(
   kind: "pending" | "failed",
   details: {

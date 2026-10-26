@@ -230,15 +230,8 @@ export type QueryFailure =
       readonly rawValue: string;
     };
 /**
- * `frontier` names the lowest unmerged PR that is actually waiting, and
- * `pending` is that PR's checks only. Pooling every row's pending under the
- * bottom PR's number misattributed upstack waits to the frontier.
- *
- * This decision serves single and `--stack` mode. Queued mode deliberately
- * reports its own merge frontier instead: when that PR is blocker-free it
- * emits a merge-queue wait that ignores upstack pending, because upstack
- * checks do not block the frontier's merge. That is the Python watcher's
- * contract, not an attribution bug.
+ * `frontier`는 실제로 기다리는 가장 아래의 머지 안 된 PR이고 `pending`은 그 PR의 검사만 담는다.
+ * 큐 모드는 위쪽 PR의 대기 검사가 아래 PR 머지를 막지 않으므로 자기 머지 경계만 보고한다.
  */
 export interface WaitingDecision {
   readonly kind: "waiting";

@@ -240,11 +240,6 @@ def _style_errors(text: str) -> list[str]:
     return errors
 
 
-def _visible_length(text: str) -> int:
-    text = re.sub(r"^\s*(?:#{1,6}\s+|(?:[-+*]|\d+\.)\s+)", "", text)
-    return len(re.sub(r"[\s*_#|>\[\]]", "", text))
-
-
 def _without_comments(raw: str, in_comment: bool) -> tuple[str, bool]:
     parts = []
     start = 0

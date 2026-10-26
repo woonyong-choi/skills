@@ -19,8 +19,6 @@ import time
 from pathlib import Path
 from typing import Callable, NamedTuple
 
-HERE = Path(__file__).resolve().parent
-
 PAGE = 960
 SCALE = 2
 WINDOW = {"single": 960, "two": 640, "zoom": 640}
