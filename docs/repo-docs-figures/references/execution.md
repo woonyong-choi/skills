@@ -12,9 +12,9 @@ node <DiagramPlay 경로>/src/cli.js --help
 ```
 
 ```sh
-node <DiagramPlay 경로>/src/cli.js check docs/assets/architecture.diagramplay --strict
-node <DiagramPlay 경로>/src/cli.js render docs/assets/architecture.diagramplay --strict
-node <DiagramPlay 경로>/src/cli.js render docs/assets/architecture.diagramplay --strict --static
+node <DiagramPlay 경로>/src/cli.js check docs/assets/architecture.diagramplay --strict --docs
+node <DiagramPlay 경로>/src/cli.js render docs/assets/architecture.diagramplay --strict --docs
+node <DiagramPlay 경로>/src/cli.js render docs/assets/architecture.diagramplay --strict --docs --static
 node <DiagramPlay 경로>/src/cli.js render docs/assets/architecture.diagramplay --strict --html --out <폴더>
 ```
 

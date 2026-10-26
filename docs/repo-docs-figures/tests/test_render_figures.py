@@ -85,11 +85,11 @@ class DiagramPlayCliTest(unittest.TestCase):
         )
         self.assertEqual(
             run.call_args_list[0].args[0],
-            ["diagramplay", "check", "diagram with spaces.diagramplay", "--strict"],
+            ["diagramplay", "check", "diagram with spaces.diagramplay", "--strict", "--docs"],
         )
         self.assertEqual(
             run.call_args_list[1].args[0],
-            ["diagramplay", "render", "diagram with spaces.diagramplay", "--strict"],
+            ["diagramplay", "render", "diagram with spaces.diagramplay", "--strict", "--docs"],
         )
         with contextlib.redirect_stderr(io.StringIO()) as stderr:
             self.assertEqual(FIGURES.main(["old.torso"]), 1)
@@ -154,6 +154,25 @@ class DiagramPlayCliTest(unittest.TestCase):
         ):
             self.assertEqual(FIGURES.main(["invalid.diagramplay"]), 1)
         self.assertEqual(run.call_count, 1)
+
+    # --require-data: 숫자를 원본에 적은 차트가 있으면 DiagramPlay를 부르기 전에 줄 번호와 함께 실패한다.
+    def test_require_data_refuses_inline_chart_numbers(self) -> None:
+        inline = 'diagramplay\nchart a "A {x}" bar {\n  x "x(u)"\n  series v "v"\n  row "가" v=1\n}\n'
+        linked = 'diagramplay\nchart b "B" bar {\n  x "x(u)"\n  data "r.json" at "/b"\n  series v "v"\n}\n'
+        with tempfile.TemporaryDirectory() as folder:
+            first, second = Path(folder) / "a.diagramplay", Path(folder) / "b.diagramplay"
+            first.write_text(inline, encoding="utf-8")
+            second.write_text(linked, encoding="utf-8")
+            with (
+                patch.dict(os.environ, {}, clear=True),
+                patch.object(FIGURES.subprocess, "run") as run,
+                contextlib.redirect_stderr(io.StringIO()) as stderr,
+            ):
+                self.assertEqual(FIGURES.main(["--require-data", str(first), str(second)]), 1)
+                run.assert_not_called()
+                self.assertEqual(stderr.getvalue().splitlines(), [f'{first}:2: chart "a" writes its numbers in the source. Read them from the result file with data "<file>.json"'])
+                self.assertEqual(FIGURES.main(["--require-data", str(second)]), 0)
+                self.assertEqual(FIGURES.main([str(first)]), 0)
 
 
 if __name__ == "__main__":
