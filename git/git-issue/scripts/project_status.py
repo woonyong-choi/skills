@@ -318,6 +318,12 @@ class ProjectStatus:
                 changes.append((issue, target))
         return changes
 
+    def _recent_comments(self, issue_id: str) -> str:
+        """보류 이슈의 최근 댓글 20개 본문. 목록 조회를 가볍게 두려고 보류 이슈만 따로 읽는다"""
+        data = self._query("query($id:ID!){node(id:$id){... on Issue{comments(last:20){nodes{body}}}}}", {"id": issue_id})
+        nodes = ((data.get("node") or {}).get("comments") or {}).get("nodes") or []
+        return "\n".join(node.get("body") or "" for node in nodes if node)
+
     def _attention(
         self,
         project: dict[str, Any],
@@ -334,7 +340,9 @@ class ProjectStatus:
             status = self._status(item)
             reasons = []
             if status == self.states["보류"]:
-                if "재개 조건" not in ((item or {}).get("hold") or {}).get("text", ""):
+                # 옛 보드의 보류 사유 필드도 재개 조건 근거로 인정
+                held = ((item or {}).get("hold") or {}).get("text", "")
+                if "재개 조건" not in held and "재개 조건" not in self._recent_comments(issue["id"]):
                     reasons.append("보류인데 재개 조건 없음")
                 stamp = ((item or {}).get("fieldValueByName") or {}).get("updatedAt")
                 if stamp and now - datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp() >= HOLD_DAYS * 86400:
