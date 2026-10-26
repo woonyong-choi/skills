@@ -87,7 +87,6 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 | 크거나 여러 곳에 걸친 변경, 또는 자리를 비웠다가 검토할 변경 돌리기 | [`/figure-it-out`](../figure-it-out/SKILL.md) |
 | 실행 중 결정 기록을 남기고 나중에 검토하기 | [`/show-me-your-work`](../show-me-your-work/SKILL.md) |
 | 역할마다 모델과 추론 예산 고르기 | [`/just-setup`](../just-setup/SKILL.md) |
-| 내 작업 습관을 개인 모드 스킬로 만들기 | [`/automate-me`](../automate-me/SKILL.md) |
 | 끝난 작업에서 배운 것을 스킬 수정으로 바꾸기 | [`/reflect`](../reflect/SKILL.md) |
 | 이 저장소에서 에이전트가 같은 실수를 되풀이하지 않게 하기 | [`/correct`](../correct/SKILL.md) |
 | just 안에서 길 찾기 | `/just-help` |
@@ -142,7 +141,6 @@ just에는 계획 스킬이 없다. 호스트의 계획 모드가 있으면 함�
 
 ## just를 내 것으로 만들기
 
-- [`/automate-me`](../automate-me/SKILL.md)는 사용자 자신의 기록으로 `/mode`와 함께 쓸 개인 모드 스킬 초안을 만든다.
 - 세션 뒤 [`/reflect`](../reflect/SKILL.md)는 그 세션의 교훈을 사용자가 승인하는 스킬 수정으로 바꾼다.
 - `/mode <작업 흐름> 스킬 써 줘`는 스킬 작성·수정 플레이북을 돌린다. 평가 플레이북은 스킬 변경을 블라인드로 테스트한다.
 - 이상하게 동작하는 스킬은 문제가 난 기능 작업 안에서가 아니라 별도 PR로 고친다.

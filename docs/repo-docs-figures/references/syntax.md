@@ -4,7 +4,7 @@ DiagramPlay 그림 원본을 쓰거나 바꿀 때 보여 줄 것에 맞는 정�
 
 ## 정본 고르기
 
-보여 줄 것에 맞는 정본을 [reference](https://github.com/woonyong-choi/diagramplay/blob/main/docs/reference)에서 읽는다.
+보여 줄 것에 맞는 정본을 [reference](https://github.com/woonyong-choi/diagramplay/blob/main/docs/reference)에서 읽는다. 네트워크가 막혔으면 쓰는 DiagramPlay 작업본의 `docs/reference/`와 `docs/design/figure-syntax.md`를 읽는다.
 
 | 보여 줄 것 | 정본 |
 |---|---|

@@ -39,7 +39,8 @@ class WarningTest(unittest.TestCase):
         self.assertEqual(codes(CHAIN), [])
 
     def test_aspect_and_width_wide_warn(self) -> None:
-        self.assertEqual(codes(CHAIN.replace("diagramplay\n", "diagramplay\naspect 1.6\n")), ["aspect"])
+        self.assertEqual(codes(CHAIN.replace("diagramplay\n", "diagramplay\naspect 3\n")), [])
+        self.assertEqual(codes(CHAIN.replace("diagramplay\n", "diagramplay\naspect 3\n") + "a -> e\n"), ["aspect"])
         self.assertEqual(codes(CHAIN.replace("diagramplay\n", "diagramplay\nwidth wide\n")), ["wide"])
 
     def test_branching_graph_is_not_a_chain(self) -> None:
@@ -135,12 +136,12 @@ class CliTest(unittest.TestCase):
             root = Path(tmp)
             (root / "a.diagramplay").write_text(CHAIN, encoding="utf-8")
             (root / "items.txt").write_text("# 요구 항목\n가\n마\n", encoding="utf-8")
-            (root / "a.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 1020 300"></svg>', encoding="utf-8")
+            (root / "a.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 800 300"></svg>', encoding="utf-8")
             code, out = self.run_cli(str(root / "a.diagramplay"), "--items", str(root / "items.txt"))
             self.assertEqual((code, out), (0, ""))
             code, out = self.run_cli(str(root / "a.diagramplay"), "--svg", str(root / "a.svg"))
             self.assertEqual(code, 0)
-            self.assertIn("크기: 1020x300", out)
+            self.assertIn("크기: 800x300", out)
             (root / "tall.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 300 900"></svg>', encoding="utf-8")
             (root / "b.diagramplay").write_text(CHAIN, encoding="utf-8")
             code, out = self.run_cli(str(root / "b.diagramplay"), "--svg", str(root / "tall.svg"))
@@ -149,8 +150,28 @@ class CliTest(unittest.TestCase):
             (root / "items.txt").write_text("바\n", encoding="utf-8")
             code, out = self.run_cli(str(root / "a.diagramplay"), "--items", str(root / "items.txt"))
             self.assertEqual((code, out), (1, "누락: 바\n"))
+            (root / "wide.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 300"></svg>', encoding="utf-8")
+            code, out = self.run_cli(str(root / "a.diagramplay"), "--svg", str(root / "wide.svg"))
+            self.assertEqual(code, 1)
+            self.assertIn("경고 small", out)
             code, _ = self.run_cli(str(root / "none.diagramplay"))
             self.assertEqual(code, 2)
+
+    def test_zigzag_wrap_warns_but_three_per_row_passes(self) -> None:
+        six = CHAIN.replace("d -> e\n", "d -> e\nbox f \"바\" badge=\"S\"\ne -> f\n")
+        across = 'M 620 80 L 650 80 Q 670 80, 670 100 L 670 140 Q 670 160, 650 160 L 40 160 Q 20 160, 20 180 L 20 220 Q 20 240, 40 240 L 150 240'
+        svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 480"><path class="fl-path" d="{0}"/><path class="fl-path" d="{1}"/><path class="fl-path" d="M 300 80 L 440 80"/></svg>'
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "six.diagramplay").write_text(six, encoding="utf-8")
+            (root / "zigzag.svg").write_text(svg.format(across, across.replace("80", "320").replace("160", "400")), encoding="utf-8")
+            code, out = self.run_cli(str(root / "six.diagramplay"), "--svg", str(root / "zigzag.svg"))
+            self.assertEqual(code, 1)
+            self.assertIn("경고 wrap", out)
+            self.assertIn("카드 2개씩", out)
+            (root / "rows.svg").write_text(svg.format(across, "M 100 400 L 200 400"), encoding="utf-8")
+            code, out = self.run_cli(str(root / "six.diagramplay"), "--svg", str(root / "rows.svg"))
+            self.assertEqual(code, 0, out)
 
 
 if __name__ == "__main__":
