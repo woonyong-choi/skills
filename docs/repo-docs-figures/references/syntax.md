@@ -12,9 +12,8 @@ DiagramPlay 그림 원본을 쓰거나 바꿀 때 보여 줄 것에 맞는 정�
 |---|---|
 | 맥락, 구성 요소와 요청 흐름 | `flow.md`, `architecture.md` |
 | 메시지 순서 | `sequence.md` |
-| 상태와 전이 | `state.md` |
 | 테이블과 외래 키 | `data.md` |
-| 비트 필드, 배열, 스택, 행렬 | `grid.md` |
+| 클래스·인터페이스·필드·메서드·관계 | `../design/figure-kinds.md`와 클래스 예제 |
 
 ## 배치
 
@@ -26,4 +25,4 @@ DiagramPlay 그림 원본을 쓰거나 바꿀 때 보여 줄 것에 맞는 정�
 - 맥락 그림에는 외부 요소 표의 요소와 시스템을 그린다. 구성 요소 그림에는 구성 요소 표의 행마다 카드 하나를 그리고, 실제 표시에서 읽기 어려우면 [그림 품질](diagramplay-quality.md) 1절 5번대로 합치거나 나눈다.
 - `title`은 그림 주제다. `scene`은 순서나 변화가 이해를 도울 때만 쓴다.
 - 그림에 꼭 보여야 할 항목은 머리에 `require "이름" [or "다른 이름"]` 줄로 적는다([그림 품질](diagramplay-quality.md) 1절 3번). 정본은 DiagramPlay `docs/design/figure-quality.md`다.
-- 구조, 상태, 데이터 그림의 정지 SVG는 장면과 상관없이 선언한 모든 선을 그린다. 순서 그림은 [그림 품질](diagramplay-quality.md#품질이-무너지는-원인)의 장면 규칙을 따른다.
+- 아키텍처, 카드 흐름, ERD, 클래스 그림의 정지 SVG는 장면과 상관없이 선언한 모든 선을 그린다. 순서 그림은 [그림 품질](diagramplay-quality.md#품질이-무너지는-원인)의 장면 규칙을 따른다.
