@@ -79,6 +79,7 @@ just 스킬은 Agent Skills 형식이라 Claude Code, Codex, OpenCode가 모두 
 | `.ts`, `.tsx` 작업에 TypeScript 규칙 적용하기 | 편집 전 훅이 **code-style-typescript** 스킬의 TypeScript 전용 절을 함께 넘긴다. |
 | 주석을 쓰지 않은 검토자로 커밋 전에 주석 걷어 내기 | [`/no-comments`](../no-comments/SKILL.md) |
 | 글에서 AI 티 걷어 내기 | [`/unslop`](../unslop/SKILL.md) |
+| 작성자 경험과 근거로 블로그 원고 함께 쓰기 | **docs** 스킬을 `docs on`으로 켠다. |
 | 문서, RFC, README, PR 설명의 갈래와 문장 명료성 맞추기 | [`/technical-writing`](../technical-writing/SKILL.md) |
 | 마지막 답변을 쉬운 말로 다시 듣기 | [`/bro`](../bro/SKILL.md) |
 | 에이전트가 앱을 스크립트로 조작해 동작을 증명할 수단 만들기 | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
