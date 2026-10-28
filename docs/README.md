@@ -12,5 +12,8 @@ Skills의 문서 작성과 개인 기록 스킬 목록이다. 문서는 한국�
   - [repo-docs-figures](repo-docs-figures/SKILL.md)
   - [repo-docs-root](repo-docs-root/SKILL.md)
   - [repo-docs-llms](repo-docs-llms/SKILL.md)
+- [글쓰기](docs/SKILL.md)
+  - [글 유형](docs/references/catalog.md)
+  - [학습 구현](docs/references/learning-implementation.md)
 - [개인 기록](../personal/markdown-notes-agent/SKILL.md)
   - [career](../personal/career/SKILL.md)

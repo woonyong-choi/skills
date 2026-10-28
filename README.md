@@ -98,10 +98,13 @@ Claude Code와 Codex로 작업할 때 커밋 형식, 코드 규칙, 문서 기�
 | 커밋 분리와 메시지 작성 | [git-commit](git/git-commit/SKILL.md) |
 | 이슈와 PR 작성 | [git-issue](git/git-issue/SKILL.md), [git-pull-request](git/git-pull-request/SKILL.md) |
 | README 작성 | [repo-docs-readme](docs/repo-docs-readme/SKILL.md) |
+| 경험과 근거로 블로그 원고 작성 | [docs](docs/docs/SKILL.md) |
 | 채용 공고에 맞춘 이력서와 포트폴리오 | [career](personal/career/SKILL.md) |
 | 역할별 모델과 추론 예산 설정 | [just-setup](just/just-setup/SKILL.md) |
 
 Claude Code에서는 `/mode`, Codex에서는 `$mode` 뒤에 목표와 완료 조건을 적으세요. 문서 작업만 맡기려면 `/repo-docs-readme` 또는 `$repo-docs-readme`처럼 해당 스킬을 직접 부르세요. 파일 수정과 GitHub 게시 범위는 요청에 따릅니다. 나머지 just 스킬과 상황별 호출 예시는 [just 도움말](just/just-help/SKILL.md#스킬-고르기)에 있습니다.
+
+블로그 원고를 함께 쓸 때는 `docs on`으로 글쓰기 기준을 켜세요. 독자 질문으로 12개 유형 중 하나를 고르고 그 유형의 기준만 읽습니다. 현재는 학습 구현 유형만 채워져 있고, 나머지는 첫 글을 함께 쓰면서 채웁니다. `docs off`로 해당 세션의 적용을 끝냅니다. 도구 훅이나 전역 설정을 바꾸지 않습니다.
 
 ## 상태
 
@@ -153,6 +156,9 @@ Claude Code에서는 `/mode`, Codex에서는 `$mode` 뒤에 목표와 완료 조
   - [repo-docs-figures](docs/repo-docs-figures/SKILL.md)
   - [repo-docs-root](docs/repo-docs-root/SKILL.md)
   - [repo-docs-llms](docs/repo-docs-llms/SKILL.md)
+- [글쓰기](docs/docs/SKILL.md)
+  - [글 유형](docs/docs/references/catalog.md)
+  - [학습 구현](docs/docs/references/learning-implementation.md)
 - [개인 기록](personal/markdown-notes-agent/SKILL.md)
   - [career](personal/career/SKILL.md)
 - [디자인](design/design-tokens/SKILL.md)
