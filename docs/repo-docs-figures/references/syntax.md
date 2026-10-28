@@ -2,6 +2,8 @@
 
 DiagramPlay 그림 원본을 쓰거나 바꿀 때 보여 줄 것에 맞는 정본을 읽고 배치를 정한다.
 
+작성 범위는 [도구와 파일의 기능 범위](diagramplay.md#기능-범위)를 따른다. 차트나 분석 전용 보기를 만드는 문법은 사용하지 않는다.
+
 ## 정본 고르기
 
 보여 줄 것에 맞는 정본을 [reference](https://github.com/woonyong-choi/diagramplay/blob/main/docs/reference)에서 읽는다. 네트워크가 막혔으면 쓰는 DiagramPlay 작업본의 `docs/reference/`와 `docs/design/figure-syntax.md`를 읽는다.
@@ -13,8 +15,6 @@ DiagramPlay 그림 원본을 쓰거나 바꿀 때 보여 줄 것에 맞는 정�
 | 상태와 전이 | `state.md` |
 | 테이블과 외래 키 | `data.md` |
 | 비트 필드, 배열, 스택, 행렬 | `grid.md` |
-| 측정한 시간 구간 | `timing.md` |
-| 조건별 값과 신뢰구간, 비교, 분포, 관계, 변화, 교차표, 차이 | `charts.md`. 차이 값은 차이 차트로, 조건별 원래 값은 막대나 덤벨로 그린다 |
 
 ## 배치
 

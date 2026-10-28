@@ -1,6 +1,6 @@
 ---
 name: repo-docs-figures
-description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아키텍처 구성도, 순서도, 시퀀스, 상태도, 데이터 관계도, 차트를 DiagramPlay로 그리거나, 스크린샷, 데모 GIF, 대체 글을 만들거나 고칠 때 쓴다."
+description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아키텍처 구성도, 순서도, 시퀀스, 상태도, 데이터 관계도를 DiagramPlay로 그리거나, 스크린샷, 데모 GIF, 대체 글을 만들거나 고칠 때 쓴다."
 ---
 
 # 문서 그림
@@ -9,6 +9,7 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 
 ## 원칙
 
+- DiagramPlay는 아키텍처·순서도·시퀀스를 중심으로 흐름이 실행되는 다이어그램 도구다. Mermaid가 다루는 구조·관계·상태 표현을 요청·응답·이벤트·상태 변화로 확장한다. 통계 차트와 분석용 시계열 플롯은 범위 밖이다. 기능을 정리할 때 예제만 숨기지 않고 문법·렌더러·재생 로직·공개 API·전용 검사와 문서를 함께 제거한다. 설치된 도구에 기능이 남아 있다는 사실을 사용 근거로 삼지 않는다.
 - 원본, 입력 JSON, 만든 그림을 함께 커밋한다. 만든 그림을 손으로 고치지 않는다.
 - 순서, 전이, 시간 변화가 전할 정보이면 움직이는 SVG를 만든다. 구조 그림은 입력에 따른 호출 경로와 활성 구성 요소를, 상태 그림은 사건에 따른 전이를 보여 준다. 수량이나 값의 변화가 핵심이면 이동과 관련 값이 함께 바뀌어야 한다. 관계를 설명하지 않는 장식용 이동은 넣지 않는다. 실제 관측값과 설명용 모형은 repo-docs 자리표시 절에 따라 구분한다. 마지막 구조나 값만 전하면 정지 SVG를 만든다.
 
@@ -21,7 +22,7 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 | 로고 | SVG, 없으면 PNG(투명 배경) | `docs/assets/logo-light.*`, `logo-dark.*` | 표시 72~96px, PNG면 그 2배 | 100KB 이하 |
 | 데모 GIF | GIF | `docs/assets/demo.gif` | 폭 960px 이하 | 15초 이하, 10MB 이하 |
 | 스크린샷 | PNG | `docs/assets/{이름}-light.png`, `{이름}-dark.png` | 파일 폭 1920px | 1장 1MB 이하 |
-| 구조도와 차트 | SVG와 원본 | `docs/assets/{이름}.svg` | 제한 없음 | 해당 없음 |
+| 다이어그램 | SVG와 원본 | `docs/assets/{이름}.svg` | 제한 없음 | 해당 없음 |
 | PR 화면 비교 | PNG | `pr-assets` 브랜치 | 창 폭 1280px, 390px(**git-pull-request** 스킬의 화면·움직임 변경 절) | 스크린샷과 같다 |
 
 - 이름은 보여 주는 것을 영어 소문자 kebab-case로 짓는다(`lag-table-growing-light.png`). `image1`, 날짜, 한글 이름을 쓰지 않는다.
@@ -30,11 +31,10 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 
 - **렌더러.** 저장소의 그림 도구와 원본 형식을 먼저 쓴다. 원본, 입력, 변환 명령, 도구 버전을 남겨 같은 입력으로 다시 만들 수 있게 한다.
 - **원본과 산출물.** `docs/assets/{이름}.{원본 확장자}`와 `docs/assets/{이름}.svg`로 둔다. 이름은 규격 절을 따른다.
-- **실험 차트.** 분석 결과에서 만든 입력을 쓴다. 원자료, 추출 경로, 생성 명령을 남기고 수치를 다시 손으로 넣지 않는다.
 - **색, 글꼴, 크기, 아이콘.** 대상 저장소의 디자인 정본에서 정한다. 정본 값을 복사하지 않고, 사용자 아이콘 세트는 경로로 참조한다.
 - **면과 경계.** 판·업무 카드·그룹을 구분하고 장식으로 면을 늘리지 않는다. 클라우드 구성도는 [NHN Cloud 구성도 규칙](references/nhn-cloud.md)의 박스형 아이콘, 이름, 경계와 실제 포함 관계를 따른다. 그룹 테두리를 일괄 제거하지 않는다.
-- **의미별 색 역할.** 흐름·상태·차트는 정본의 의미 역할을 쓴다. 클라우드 아이콘의 원본 팔레트를 주 강조색이나 단색으로 덮지 않는다. 성공과 실패는 각각 정상·오류 역할을 쓰고 상태 글을 함께 표시한다.
-- **글꼴 역할.** 본문, 숫자, 코드는 정본 글꼴을 쓰고 차트 숫자는 `tabular-nums`를 쓴다. 자간도 정본을 따른다.
+- **의미별 색 역할.** 흐름·상태는 정본의 의미 역할을 쓴다. 클라우드 아이콘의 원본 팔레트를 주 강조색이나 단색으로 덮지 않는다. 성공과 실패는 각각 정상·오류 역할을 쓰고 상태 글을 함께 표시한다.
+- **글꼴 역할.** 본문, 숫자, 코드는 정본 글꼴을 쓰고 자간도 정본을 따른다.
 - **대비.** 라이트와 다크 모두 글자는 4.5 이상, 도형 외곽선과 뜻 있는 그래픽은 3 이상이다. 꾸밈 요소만 정본이 명시한 예외를 따른다.
 - **문서 표시.** 문서에는 SVG와 대체 글을 넣는다. 문서 안 원본을 쓰는 도구는 원본 블록도 남긴다. 그림을 모두 같은 폭으로 늘리지 않고, [그림 품질의 가로형 원칙](references/diagramplay-quality.md#가로형-원칙)에 따라 실제 표시 크기를 정한다. HTML 재생기는 검증용이다.
 - **기계 검사.** 원본과 입력 수를 산출물과 문서 링크 수와 대조한다. 같은 입력과 도구 버전으로 다시 만든 바이트를 비교한다. 녹화물은 프레임 바이트 비교에서 뺀다.
@@ -48,7 +48,7 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 - 라이트와 다크 두 장은 같은 대체 글을 쓴다. 두 장면을 합친 그림은 두 장면을 비교한 결론 한 문장으로 쓴다.
 - `README.en.md`는 같은 그림 파일을 쓰고 대체 글만 영어로 쓴다.
 - 문서 이미지에는 대체 글이 반드시 있어야 한다. SVG 안 제목으로 대신하지 않고, 생성된 이미지 줄까지 확인한다.
-- 데이터 출처와 구현 여부 표시, 파일 이름은 repo-docs 자리표시 절을 따른다. 그림 제목, 부제, 단계 설명에도 같은 사실 상태를 적용한다. 예시 차트 부제의 접두사도 그 정본을 따른다.
+- 데이터 출처와 구현 여부 표시, 파일 이름은 repo-docs 자리표시 절을 따른다. 그림 제목, 부제, 단계 설명에도 같은 사실 상태를 적용한다.
 
 ## 선택 어댑터
 
@@ -62,7 +62,6 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 | 클라우드 구성도의 아이콘·서비스·리소스·그룹·선을 정하거나 검수하기 전 | [references/nhn-cloud.md](references/nhn-cloud.md) |
 | DiagramPlay 그림 원본을 쓰거나 바꾸기 전 | [references/syntax.md](references/syntax.md) |
 | DiagramPlay 그림에 담을 항목, 그림 종류, 꼬리표와 초점, 배치를 정하기 전, 렌더 결과의 품질을 확인하기 전 | [references/diagramplay-quality.md](references/diagramplay-quality.md) |
-| DiagramPlay 실험 차트를 쓰거나 바꾸기 전 | [references/charts.md](references/charts.md) |
 | 스크린샷을 찍거나 합치기 전, `screens.json`을 쓰거나 바꾸기 전 | [references/screenshots.md](references/screenshots.md) |
 | VHS 녹화 원본을 쓰거나 실행하기 전 | [references/vhs.md](references/vhs.md) |
 | `render_figures.py` 변환을 실행하기 전 | [references/conversion.md](references/conversion.md) |
@@ -77,5 +76,5 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 ## 구분
 
 - README 그림 배치는 [repo-docs-readme](../repo-docs-readme/SKILL.md)의 머리와 절 규칙이 맡는다.
-- 실험 차트의 통계와 신뢰구간은 [repo-docs-experiment](../repo-docs-experiment/SKILL.md)의 통계 규칙이 맡는다.
+- 실험 통계와 신뢰구간은 [repo-docs-experiment](../repo-docs-experiment/SKILL.md)가 맡는다. 통계 시각화를 DiagramPlay 기능으로 추가하지 않는다.
 - 그림을 넣는 자리는 각 종류별 `repo-docs-*` 스킬이 맡는다.
