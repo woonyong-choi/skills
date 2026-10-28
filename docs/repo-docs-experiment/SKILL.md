@@ -50,7 +50,7 @@ docs/experiments/
 | `processed/` | 스크립트만 만든다. 지워도 `run.sh process`로 다시 만든다 |
 | `scripts/` | 번호가 실행 순서다. 입력은 앞 단계 파일만 쓴다 |
 | `results/summary.json` | 보고서의 모든 수치를 담는다. 보고서 수치는 이 파일에서만 가져온다 |
-| 결과 차트 | 원본과 산출물 위치, JSON 입력과 변환, 검사는 repo-docs-figures `references/charts.md`의 실험 차트를 따른다 |
+| 결과 차트 | 저장소의 분석 도구로 결과 파일에서 재현한다. 원자료·추출 경로·생성 명령과 산출물을 연결하고 수치를 손으로 옮기지 않는다. 통계 차트는 DiagramPlay 범위에 포함하지 않는다 |
 | `run.sh` | `collect`, `process`, `analyze`, `verify`, `all` 다섯 명령을 둔다. `./run.sh analyze`는 `raw/`에서 전처리를 다시 실행한 뒤 분석해 결과를 다시 만든다 |
 | `logs/` | `run.sh` 명령마다 실행 출력 전부를 남긴다. 고치지 않고 홈 경로는 `~`로 쓴다. 아래 `log` 함수로만 남기고, 같은 로그가 있으면 거부한다. 검사나 재현으로 다시 돌릴 때는 `RUN_ID={실행 id}-check`를 쓰고 그 로그는 커밋하지 않는다 |
 | 실행 id 공유 | `collect`가 첫 줄에 출력한 id를 같은 실행의 다음 명령에 `RUN_ID={실행 id} ./run.sh {명령}`으로 넘긴다. 빼면 새 id가 생긴다 |
@@ -74,7 +74,7 @@ log() { local f="logs/$1-$id.log"; [[ ! -e $f ]] || { echo "$f exists; use anoth
 3. 일반 실측은 2번의 계획 커밋을 같은 PR의 첫 기준점으로 두고, 수집과 결과를 더해 함께 머지한다.
 4. 수집 전에 승인받아야 할 데이터 접근이나 판정 조건이 있는 실험만 2번을 저장소 승인 절차로 먼저 확정한다. PR을 쓰면 사전 등록 PR을 머지한다. 이슈 연결은 **git-issue** 스킬의 닫기 절을 따른다.
 5. `./run.sh collect`로 수집하고 출력 첫 줄의 실행 id를 남긴다. 미리 본 데이터는 계획에 적고 가설 검증용 자료와 가른다.
-6. `RUN_ID={실행 id} ./run.sh verify`, `RUN_ID={실행 id} ./run.sh analyze`를 돌린 뒤 결과 차트를 변환한다(repo-docs-figures `references/conversion.md`).
+6. `RUN_ID={실행 id} ./run.sh verify`, `RUN_ID={실행 id} ./run.sh analyze`를 돌린 뒤 저장소의 분석 도구로 결과 차트를 만든다. 원자료·추출 경로·생성 명령을 연결하고 수치를 손으로 옮기지 않는다.
 7. `report.md`, `data/README.md`를 쓰고 `docs/experiments/README.md`의 결론 칸을 채운다.
 8. 결론이 설계를 바꾸면 같은 PR에서 설계 문서를 고친다.
 
@@ -116,7 +116,7 @@ log() { local f="logs/$1-$id.log"; [[ ! -e $f ]] || { echo "$f exists; use anoth
 
 1. 수집 전 계획 커밋이 첫 `raw/` 파일 커밋의 조상이다.
 2. `RUN_ID={실행 id}-check ./run.sh verify`가 통과한다.
-3. `RUN_ID={실행 id}-check ./run.sh analyze` 뒤 `results/`가 커밋본과 바이트까지 같다. 차트 재현 검사는 repo-docs-figures `references/validation.md`를 따른다.
+3. `RUN_ID={실행 id}-check ./run.sh analyze` 뒤 `results/`가 커밋본과 바이트까지 같다. 결과 차트도 같은 입력·분석 도구·생성 명령으로 재현되는지 확인한다.
 4. 보고서의 모든 수치가 `results/summary.json`에 있다.
 5. 실패하거나 뺀 실행이 모두 데이터 처리 표에 있다.
 6. `logs/`에 보고한 실행 id의 명령별 로그가 있다.
@@ -129,6 +129,6 @@ log() { local f="logs/$1-$id.log"; [[ ! -e $f ]] || { echo "$f exists; use anoth
 
 ## 구분
 
-- 결과 차트는 [repo-docs-figures](../repo-docs-figures/SKILL.md)가 맡는다.
+- 구성도·순서도·시퀀스와 문서에 넣는 스크린샷·데모는 [repo-docs-figures](../repo-docs-figures/SKILL.md)가 맡는다. 통계 결과 차트는 실험의 분석 도구로 만든다.
 - 완료 조건의 범위 변경은 **git-issue** 스킬의 범위 변경 절이 맡는다.
 - 실험 이슈, 브랜치, PR, 커밋 실행은 **git-issue**, **git-branch**, **git-pull-request**, **git-commit** 스킬이 맡는다.
