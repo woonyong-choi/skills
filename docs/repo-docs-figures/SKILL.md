@@ -1,6 +1,6 @@
 ---
 name: repo-docs-figures
-description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아키텍처, 카드 흐름, 시퀀스, ERD, 클래스 다이어그램를 DiagramPlay로 그리거나, 스크린샷, 데모 GIF, 대체 글을 만들거나 고칠 때 쓴다."
+description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아키텍처, 카드 흐름, 시퀀스, ERD, 클래스 다이어그램을 DiagramPlay로 그리거나, 스크린샷, 데모 GIF, 대체 글을 만들거나 고칠 때 쓴다."
 ---
 
 # 문서 그림
@@ -32,7 +32,7 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 - **렌더러.** 저장소의 그림 도구와 원본 형식을 먼저 쓴다. 원본, 입력, 변환 명령, 도구 버전을 남겨 같은 입력으로 다시 만들 수 있게 한다.
 - **원본과 산출물.** `docs/assets/{이름}.{원본 확장자}`와 `docs/assets/{이름}.svg`로 둔다. 이름은 규격 절을 따른다.
 - **색, 글꼴, 크기, 아이콘.** 대상 저장소의 디자인 정본에서 정한다. 정본 값을 복사하지 않고, 사용자 아이콘 세트는 경로로 참조한다.
-- **면과 경계.** 판·업무 카드·그룹을 구분하고 장식으로 면을 늘리지 않는다. 클라우드 구성도는 [NHN Cloud 구성도 규칙](references/nhn-cloud.md)의 박스형 아이콘, 이름, 경계와 실제 포함 관계를 따른다. 그룹 테두리를 일괄 제거하지 않는다.
+- **면과 경계.** 판·업무 카드·그룹을 구분하고 장식으로 면을 늘리지 않는다. 클라우드 구성도는 [클라우드 구성도 규칙](references/cloud-architecture.md)의 그룹 아이콘, 이름, 경계와 실제 포함 관계를 따른다. 그룹 테두리를 일괄 제거하지 않는다.
 - **그룹과 관계 라벨.** [공통 표시 기준](references/diagramplay-quality.md#그룹과-관계-라벨의-공통-기준)을 따른다. 그룹 헤더를 통일하고 관계 라벨은 번호 유무와 관계없이 채운 배경과 대비 글자를 쓰며 알약 외곽선은 두지 않는다. 관계 설명은 중앙 우선, 다중성은 양 끝에 둔다.
 - **의미별 색 역할.** 흐름·상태는 정본의 의미 역할을 쓴다. 클라우드 아이콘의 원본 팔레트를 주 강조색이나 단색으로 덮지 않는다. 성공과 실패는 각각 정상·오류 역할을 쓰고 상태 글을 함께 표시한다.
 - **글꼴 역할.** 본문, 숫자, 코드는 정본 글꼴을 쓰고 자간도 정본을 따른다.
@@ -60,7 +60,7 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 | DiagramPlay 작업을 시작하기 전 | [references/diagramplay.md](references/diagramplay.md) |
 | DiagramPlay를 설치하거나 직접 실행하기 전 | [references/execution.md](references/execution.md) |
 | DiagramPlay Markdown 그림이나 CI 연결을 바꾸기 전 | [references/markdown.md](references/markdown.md) |
-| 클라우드 구성도의 아이콘·서비스·리소스·그룹·선을 정하거나 검수하기 전 | [references/nhn-cloud.md](references/nhn-cloud.md) |
+| 클라우드 구성도의 아이콘·서비스·리소스·그룹·선을 정하거나 검수하기 전 | [references/cloud-architecture.md](references/cloud-architecture.md)와 그 공급자의 세트별 문서 |
 | DiagramPlay 그림 원본을 쓰거나 바꾸기 전 | [references/syntax.md](references/syntax.md) |
 | DiagramPlay 그림에 담을 항목, 그림 종류, 꼬리표와 초점, 배치를 정하기 전, 렌더 결과의 품질을 확인하기 전 | [references/diagramplay-quality.md](references/diagramplay-quality.md) |
 | 스크린샷을 찍거나 합치기 전, `screens.json`을 쓰거나 바꾸기 전 | [references/screenshots.md](references/screenshots.md) |
