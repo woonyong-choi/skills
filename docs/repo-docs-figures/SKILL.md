@@ -32,8 +32,8 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 - **원본과 산출물.** `docs/assets/{이름}.{원본 확장자}`와 `docs/assets/{이름}.svg`로 둔다. 이름은 규격 절을 따른다.
 - **실험 차트.** 분석 결과에서 만든 입력을 쓴다. 원자료, 추출 경로, 생성 명령을 남기고 수치를 다시 손으로 넣지 않는다.
 - **색, 글꼴, 크기, 아이콘.** 대상 저장소의 디자인 정본에서 정한다. 정본 값을 복사하지 않고, 사용자 아이콘 세트는 경로로 참조한다.
-- **면 위계.** 판과 그룹은 무채색이고 중첩 깊이마다 밝기 단계를 둔다. 그룹에는 테두리가 없고 도형 외곽선은 둔다. 강조 그룹도 무채색이다.
-- **의미별 색 역할.** 핵심 흐름, 현재 상태, 주 계열, 아이콘은 주 강조색을 쓴다. 오류, 정상, 주의, 비교 계열은 각각 정본의 역할 토큰을 쓴다. 드문 강조와 주 강조를 가른다.
+- **면과 경계.** 판·업무 카드·그룹을 구분하고 장식으로 면을 늘리지 않는다. 클라우드 구성도는 [NHN Cloud 구성도 규칙](references/nhn-cloud.md)의 박스형 아이콘, 이름, 경계와 실제 포함 관계를 따른다. 그룹 테두리를 일괄 제거하지 않는다.
+- **의미별 색 역할.** 흐름·상태·차트는 정본의 의미 역할을 쓴다. 클라우드 아이콘의 원본 팔레트를 주 강조색이나 단색으로 덮지 않는다. 성공과 실패는 각각 정상·오류 역할을 쓰고 상태 글을 함께 표시한다.
 - **글꼴 역할.** 본문, 숫자, 코드는 정본 글꼴을 쓰고 차트 숫자는 `tabular-nums`를 쓴다. 자간도 정본을 따른다.
 - **대비.** 라이트와 다크 모두 글자는 4.5 이상, 도형 외곽선과 뜻 있는 그래픽은 3 이상이다. 꾸밈 요소만 정본이 명시한 예외를 따른다.
 - **문서 표시.** 문서에는 SVG와 대체 글을 넣는다. 문서 안 원본을 쓰는 도구는 원본 블록도 남긴다. 그림을 모두 같은 폭으로 늘리지 않고, [그림 품질의 가로형 원칙](references/diagramplay-quality.md#가로형-원칙)에 따라 실제 표시 크기를 정한다. HTML 재생기는 검증용이다.
@@ -59,6 +59,7 @@ description: "README, docs, PR, 블로그, 노트, 포트폴리오에 넣는 아
 | DiagramPlay 작업을 시작하기 전 | [references/diagramplay.md](references/diagramplay.md) |
 | DiagramPlay를 설치하거나 직접 실행하기 전 | [references/execution.md](references/execution.md) |
 | DiagramPlay Markdown 그림이나 CI 연결을 바꾸기 전 | [references/markdown.md](references/markdown.md) |
+| 클라우드 구성도의 아이콘·서비스·리소스·그룹·선을 정하거나 검수하기 전 | [references/nhn-cloud.md](references/nhn-cloud.md) |
 | DiagramPlay 그림 원본을 쓰거나 바꾸기 전 | [references/syntax.md](references/syntax.md) |
 | DiagramPlay 그림에 담을 항목, 그림 종류, 꼬리표와 초점, 배치를 정하기 전, 렌더 결과의 품질을 확인하기 전 | [references/diagramplay-quality.md](references/diagramplay-quality.md) |
 | DiagramPlay 실험 차트를 쓰거나 바꾸기 전 | [references/charts.md](references/charts.md) |
