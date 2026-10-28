@@ -75,6 +75,9 @@ def check_description(raw: str | None) -> list[str]:
         errors.append('description: 언제 쓰는지 말하는 문장을 "쓴다."로 끝냄')
     if not text.endswith('.'):
         errors.append('description: 마침표로 끝냄')
+    # Claude 계정 업로드는 description의 꺾쇠를 XML 태그로 보고 거절한다
+    if re.search(r'[<>]', text):
+        errors.append('description: 꺾쇠(<, >) 없음')
     return errors
 
 

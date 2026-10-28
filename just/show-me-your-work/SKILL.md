@@ -1,6 +1,6 @@
 ---
 name: show-me-your-work
-description: "오래 걸리거나 사람이 자리를 비운 사이 진행하는 작업에서 나중에 검토할 수 있는 결정 기록을 남길 때 쓴다. 결정 하나에 한 행(무엇을, 왜, 증거, 결과)인 TSV 기록을 저장소 `.local/decisions/<과업>.tsv`에 두고, 마지막 정리는 PR 본문과 대화 답변에 쓴다. /show-me-your-work, 자율 실행이나 여러 단계 실행, 사람이 자리를 비운 뒤 검토하는 작업에 쓴다."
+description: "오래 걸리거나 사람이 자리를 비운 사이 진행하는 작업에서 나중에 검토할 수 있는 결정 기록을 남길 때 쓴다. 결정 하나에 한 행(무엇을, 왜, 증거, 결과)인 TSV 기록을 저장소 `.local/decisions/{과업}.tsv`에 두고, 마지막 정리는 PR 본문과 대화 답변에 쓴다. /show-me-your-work, 자율 실행이나 여러 단계 실행, 사람이 자리를 비운 뒤 검토하는 작업에 쓴다."
 disable-model-invocation: true
 ---
 

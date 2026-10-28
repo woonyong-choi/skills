@@ -38,6 +38,7 @@ def test_description_accepts_use_sentence(description: str) -> None:
     (None, 'description: 없음'),
     ('커밋 메시지를 쓸 때 쓴다.', 'description: 큰따옴표 한 줄'),
     ('>-', 'description: 큰따옴표 한 줄'),
+    ('"결정 기록을 <과업>.tsv에 남길 때 쓴다."', 'description: 꺾쇠(<, >) 없음'),
     ('"커밋 메시지를 쓸 때 사용."', 'description: 언제 쓰는지 말하는 문장을 "쓴다."로 끝냄'),
     ('"디버깅할 때 적용한다."', 'description: 언제 쓰는지 말하는 문장을 "쓴다."로 끝냄'),
     ('"Use when writing commits. 쓴다."', None),
