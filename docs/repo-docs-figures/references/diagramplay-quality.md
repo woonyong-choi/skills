@@ -61,7 +61,6 @@ DiagramPlay에는 구조 그림의 범례 띠, 카드 위 큰 단계 숫자, 그
 | 테이블, 키, 참조 | 데이터 관계 그림 | `table`, `pk`, `fk=` |
 | API 요청과 응답 칸 | 구조 그림의 API 카드 | `api`, `카드.칸` 연결 |
 | 클래스와 인터페이스 | 구조 그림의 클래스 카드 | `class`, `interface`, `relation=` |
-| 배열, 비트, 메모리, 스택 | 칸 격자 | `grid`, `item` |
 | 큐와 병목 | 구조 그림의 흐름 장면 | `queue slots=N`, `track`, `every`, `wait`. 용량과 속도는 단위로 적는다(`8건/분`) |
 | 구조와 핵심 수치 한 장 | 구조 그림 보기 둘 | `view graph "구조"`, `view graph "성과"`와 값 줄 카드 |
 
