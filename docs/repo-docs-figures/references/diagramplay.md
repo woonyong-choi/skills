@@ -12,3 +12,5 @@ DiagramPlay 작업을 시작하기 전에 그림 종류마다 쓰는 도구, 원
 - 문법의 정본은 [figure-syntax](https://github.com/woonyong-choi/diagramplay/blob/main/docs/design/figure-syntax.md)와 [reference](https://github.com/woonyong-choi/diagramplay/blob/main/docs/reference)다. 문법과 기본값을 옮겨 적지 않는다.
 - 테마와 토큰은 DiagramPlay가 의존하는 `@woonyong-choi/design-tokens` 패키지(`node_modules/@woonyong-choi/design-tokens/dist`)에서 온다. 색 역할과 대비는 [docs-integration](https://github.com/woonyong-choi/diagramplay/blob/main/docs/design/docs-integration.md)이 정본이다.
 - 문서 안 원본은 `diagramplay` 블록과 생성 이미지 줄을 남긴다.
+
+- 클라우드 구성도의 아이콘·그룹·선·생략 기준은 [NHN Cloud 구성도 규칙](nhn-cloud.md)을 먼저 읽는다. 자산 이름은 설치한 카탈로그가 정하며 임시 SVG를 만들지 않는다.
