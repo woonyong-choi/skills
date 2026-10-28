@@ -1,6 +1,6 @@
 interface:
   display_name: "just-help"
-  short_description: "just 설정, /mode 사용법, 스킬·플레이북 고르기 안내"
+  short_description: "just 설정, /just dev 사용법, 스킬·플레이북 고르기 안내"
   default_prompt: "$just-help [질문]"
 policy:
   allow_implicit_invocation: false

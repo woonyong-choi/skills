@@ -24,11 +24,11 @@ diff나 파일 내용에, 검토자가 코드를 이해하는 데 필요한 주�
 
 ## 3. 검토자 띄우기
 
-모든 검토자를 한 메시지에서 동시에 서브에이전트로 띄운다([호스트 대응표](../mode/references/hosts.md)). 검토자는 [역할별 모델](../mode/references/models.md)의 `review` 역할에 적힌 모델마다 하나씩 두고, 개수에 맞춰 검토자 A, B처럼 이름을 붙인다. 미설정·빈값과 실행 불가 대체도 역할별 모델을 따른다. 모델 문제로 검토를 생략하지 않는다.
+모든 검토자를 한 메시지에서 동시에 서브에이전트로 띄운다([호스트 대응표](../just/references/hosts.md)). 검토자는 [역할별 모델](../just/references/models.md)의 `review` 역할에 적힌 모델마다 하나씩 두고, 개수에 맞춰 검토자 A, B처럼 이름을 붙인다. 미설정·빈값과 실행 불가 대체도 역할별 모델을 따른다. 모델 문제로 검토를 생략하지 않는다.
 
-현재 호스트와 다른 회사 모델은 호스트 대응표의 "다른 회사 모델로 검토" 방법으로 실행한다. 모든 검토자는 읽기 전용으로 실행한다. 코드 작성자가 아닌 검토자의 독립 실행 검증 겸임은 [서브에이전트](../mode/references/subagents.md#결과-받기)를 따른다.
+현재 호스트와 다른 회사 모델은 호스트 대응표의 "다른 회사 모델로 검토" 방법으로 실행한다. 모든 검토자는 읽기 전용으로 실행한다. 코드 작성자가 아닌 검토자의 독립 실행 검증 겸임은 [서브에이전트](../just/references/subagents.md#결과-받기)를 따른다.
 
-`references/reviewer-prompt.md`를 읽고 모든 검토자에게 같은 템플릿을 채워 준다. 채울 내용은 적어 둔 의도, diff나 파일 내용, `references/rubric.md`의 채점 기준, `references/code-quality-review.md`의 코드 품질 관점이다. 각 서브에이전트의 추론 수준은 일에 맞게 고른다([서브에이전트](../mode/references/subagents.md#추론-수준과-속도-고르기)).
+`references/reviewer-prompt.md`를 읽고 모든 검토자에게 같은 템플릿을 채워 준다. 채울 내용은 적어 둔 의도, diff나 파일 내용, `references/rubric.md`의 채점 기준, `references/code-quality-review.md`의 코드 품질 관점이다. 각 서브에이전트의 추론 수준은 일에 맞게 고른다([서브에이전트](../just/references/subagents.md#추론-수준과-속도-고르기)).
 
 ## 4. 종합
 

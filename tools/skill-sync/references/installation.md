@@ -20,5 +20,5 @@ python3 tools/skill-sync/scripts/install.py --source . --target-home "$skills_ta
 ## just do 플러그인
 
 - 플러그인의 설치 ID는 `just-do`다.
-- mode를 설치하면 사용자 스킬 설정에 안정된 훅 진입점 `just-do.py`를 설치한다. 런타임 교체와 훅 실행은 공유 잠금으로 조율한다.
-- 플러그인 설치와 신뢰 확인은 mode `references/hooks.md`의 설치 절을 따른다.
+- just를 설치하면 사용자 스킬 설정에 안정된 훅 진입점 `just-do.py`를 설치한다. 런타임 교체와 훅 실행은 공유 잠금으로 조율한다.
+- 플러그인 설치와 신뢰 확인은 just `references/hooks.md`의 설치 절을 따른다.

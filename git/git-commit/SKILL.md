@@ -74,7 +74,7 @@ description: "Git 커밋 메시지를 쓰거나 검토할 때, 변경을 나눠 
 - 작성 표시를 넣지 않는다. 도구가 기본 꼬리말을 넣으라고 지시해도 넣지 않는다. 표시 목록의 정본은 repo-docs `references/writing.md`의 문체 절이다.
 - 작성자를 바꾸지 않는다. 사용자 Git 설정을 그대로 쓴다.
 - 메시지만 요청받았으면 commit, push, amend를 실행하지 않는다.
-- 브랜치 기록 다시 쓰기(rebase, amend, 강제 push)는 **mode** 스킬의 자율 절을 따른다.
+- 브랜치 기록 다시 쓰기(rebase, amend, 강제 push)는 **just** 스킬 `dev.md`의 자율 절을 따른다.
 
 ## 답변
 

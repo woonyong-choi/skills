@@ -28,7 +28,7 @@ disable-model-invocation: true
 
 설계 스케치 작업과 1단계 사전 조사 결과물을 넣어 **arena** 스킬을 돌린다. 각 러너의 프롬프트로 `references/runner-prompt.md`를 넘긴다.
 
-러너 구성과 실행할 수 없는 모델 처리는 **arena** 스킬 1단계의 러너 규칙을 따른다. 추론 수준은 `judgment`를 따른다([역할별 모델](../mode/references/models.md)).
+러너 구성과 실행할 수 없는 모델 처리는 **arena** 스킬 1단계의 러너 규칙을 따른다. 추론 수준은 `judgment`를 따른다([역할별 모델](../just/references/models.md)).
 
 두 번 설계한다. 첫 안이 충분해 보여도 종합 전에 구조가 확연히 다른 후보를 적어도 둘 요구한다. **principle-exhaust-the-design-space** 원칙 스킬을 구체화한 것이다. 한 구조 안에서 일부만 고친 안이 아니라 구조 전체가 다른 대안이어야 한다.
 

@@ -1,6 +1,0 @@
-interface:
-  display_name: "mode"
-  short_description: "플레이북을 골라 재현, 구현, 검증까지 끝내는 작업 방식"
-  default_prompt: "$mode [요청]"
-policy:
-  allow_implicit_invocation: false

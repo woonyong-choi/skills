@@ -30,7 +30,7 @@ description: "Git 커밋 메시지를 쓰거나 검토할 때, 변경을 나눠 
 | 종류 | 예 | 호출 칸 |
 |---|---|---|
 | 자동 호출형. 모델이 description을 보고 고른다 | git-commit, code-style, just-setup | 두 칸 모두 쓰지 않는다 |
-| 명시 호출형과 입구. 사용자가 `/이름`이나 `$이름`으로 부를 때만 쓴다 | mode, how, unslop | `disable-model-invocation: true` |
+| 명시 호출형과 입구. 사용자가 `/이름`이나 `$이름`으로 부를 때만 쓴다 | just, how, unslop | `disable-model-invocation: true` |
 | 내부 참조형. 다른 스킬이나 훅이 경로로 읽고 메뉴에 보이지 않는다 | principle-* | `disable-model-invocation: true`, `user-invocable: false` |
 
 - `user-invocable: false`는 `disable-model-invocation: true`와 함께만 쓴다.
@@ -143,7 +143,7 @@ description: "예시 작업을 할 때 쓴다."
 - 손으로 대조한 것, 실행한 것, 독립 평가를 나눠 적는다. 정답을 알려 준 실행이나 형식 통과로 행동이 나아졌다고 말하지 않는다.
 - 기존 설정, 명령, 자료로 검토한다. 시험만을 위해 프로젝트 지침을 더하지 않는다.
 - 승인 전 설치와 활성화를 막는 방식은 저장소 배포 정책이 정한다. 정책이 없으면 검토 전에 설치, 활성화, 기존 스킬 대체를 하지 않는다.
-- 규칙은 그 규칙을 소유한 스킬 하나에 두고, 실행 순서와 스킬 고르기는 mode 하나가 맡는다. 하위 스킬이 입구를 다시 부르거나 절차를 복제하거나 중계 스킬을 더하지 않는다.
+- 규칙은 그 규칙을 소유한 스킬 하나에 두고, 실행 순서와 스킬 고르기는 just 하나가 맡는다. 하위 스킬이 입구를 다시 부르거나 절차를 복제하거나 중계 스킬을 더하지 않는다.
 
 ## 본보기
 

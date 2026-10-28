@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 ## 1. 현재 대화 기록 찾기
 
-검토자를 띄우기 전에 이 대화의 대화 기록을 현재 호스트의 대화 기록 위치([호스트 대응표](../mode/references/hosts.md))에서 찾는다. 현재 프로젝트의 폴더만 본다. 모든 프로젝트의 대화 기록 폴더를 가로질러 glob하지 않는다. 그러면 작업 공간 경계를 넘어 상관없는 프로젝트의 비공개 대화를 읽게 된다.
+검토자를 띄우기 전에 이 대화의 대화 기록을 현재 호스트의 대화 기록 위치([호스트 대응표](../just/references/hosts.md))에서 찾는다. 현재 프로젝트의 폴더만 본다. 모든 프로젝트의 대화 기록 폴더를 가로질러 glob하지 않는다. 그러면 작업 공간 경계를 넘어 상관없는 프로젝트의 비공개 대화를 읽게 된다.
 
 ```bash
 ls -t <transcripts>/*.jsonl <transcripts>/*/*.jsonl <transcripts>/*/subagents/*.jsonl 2>/dev/null | head -10
@@ -24,7 +24,7 @@ ls -t <transcripts>/*.jsonl <transcripts>/*/*.jsonl <transcripts>/*/subagents/*.
 
 한 메시지에서 서브에이전트 셋을 동시에 띄운다(호스트 대응표). 읽기 전용 모드로 띄우지 않는다. 검토자는 대화 기록이 가리키는 티켓, 채팅 스레드, 관측 트레이스를 MCP로 찾아봐야 하는데, 읽기 전용 모드는 MCP를 막을 수 있다. 파일 수정 금지는 프롬프트 템플릿이 정한다.
 
-각 검토자와 종합자의 모델은 [역할별 모델](../mode/references/models.md)의 역할로 고른다. 지정한 모델이 거부되면 [역할별 모델](../mode/references/models.md#고르는-규칙)의 규칙대로 처리하고 그 사실을 알린다. 각 서브에이전트의 추론 수준은 일에 맞게 고른다([서브에이전트](../mode/references/subagents.md#추론-수준과-속도-고르기)).
+각 검토자와 종합자의 모델은 [역할별 모델](../just/references/models.md)의 역할로 고른다. 지정한 모델이 거부되면 [역할별 모델](../just/references/models.md#고르는-규칙)의 규칙대로 처리하고 그 사실을 알린다. 각 서브에이전트의 추론 수준은 일에 맞게 고른다([서브에이전트](../just/references/subagents.md#추론-수준과-속도-고르기)).
 
 | 관점 | 역할 | 프롬프트 템플릿 |
 |---|---|---|
