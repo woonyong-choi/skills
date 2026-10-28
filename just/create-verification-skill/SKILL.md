@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # 검증 스킬 만들기
 
-제대로 된 프로젝트라면 실제 앱을 조작해 동작을 증명하는 스크립트가 필요하다. 앱을 띄우고, 사용자처럼 기능을 써 보고, 증거를 남기는 방법이다. 이 스킬은 그것을 저장소에 맞춘 프로젝트 전용 스킬로 만든다. 만든 스킬은 `.agents/skills/verify-<app>/`에 쓰고 `.claude/skills/verify-<app>`에 같은 내용을 링크한다(`ln -s ../../.agents/skills/verify-<app> .claude/skills/verify-<app>`, [호스트 대응표](../mode/references/hosts.md)의 프로젝트 전용 스킬 위치). 생성 결과는 사람이 아니라 다음 에이전트를 위해 쓴다. 앱을 한 번도 본 적 없는 에이전트가 작업 도중에 사전 지식 없이 읽게 된다.
+제대로 된 프로젝트라면 실제 앱을 조작해 동작을 증명하는 스크립트가 필요하다. 앱을 띄우고, 사용자처럼 기능을 써 보고, 증거를 남기는 방법이다. 이 스킬은 그것을 저장소에 맞춘 프로젝트 전용 스킬로 만든다. 만든 스킬은 `.agents/skills/verify-<app>/`에 쓰고 `.claude/skills/verify-<app>`에 같은 내용을 링크한다(`ln -s ../../.agents/skills/verify-<app> .claude/skills/verify-<app>`, [호스트 대응표](../just/references/hosts.md)의 프로젝트 전용 스킬 위치). 생성 결과는 사람이 아니라 다음 에이전트를 위해 쓴다. 앱을 한 번도 본 적 없는 에이전트가 작업 도중에 사전 지식 없이 읽게 된다.
 
 ## 1. 사용자가 아니라 저장소에서 답을 찾는다
 

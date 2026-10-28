@@ -86,4 +86,4 @@ Markdown Notes Agent는 사용자의 Markdown 노트 폴더(vault)를 검색하�
 ## 구분
 
 - JD를 받아 이력서와 포트폴리오를 만드는 일은 [career](../career/SKILL.md)가 맡는다.
-- 저장소 코드 작업은 **mode** 스킬이, 저장소 문서(README, `docs/`) 작업은 repo-docs 계열 스킬이 맡는다.
+- 저장소 코드 작업은 **just** 스킬이, 저장소 문서(README, `docs/`) 작업은 repo-docs 계열 스킬이 맡는다.

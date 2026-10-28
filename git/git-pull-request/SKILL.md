@@ -74,7 +74,7 @@ PR의 종류를 정하고, 틀에 맞춰 증거가 있는 본문을 쓰고, 검�
 
 모두 채우면 머지한다. 막히면 결정 기록에 `결정 필요`로 적고 다음 일로 넘어간다.
 
-1. `watch-pr` 판정이 `READY`다. CI와 리뷰 상태를 포함한다(**mode** 스킬 `scripts/watch-pr`).
+1. `watch-pr` 판정이 `READY`다. CI와 리뷰 상태를 포함한다(**just** 스킬 `scripts/watch-pr`).
 2. 남은 P1과 P2가 0개다([references/review.md](references/review.md)의 등급). 반영되거나 근거를 단 반박으로 해결된 것은 남은 것이 아니다.
 3. 검증 판정이 현재 head에 유효하다. 결과 재사용은 **principle-prove-it-works** 스킬의 조건을 따른다.
 4. 저장소 지침, 실제 보호 규칙과 사용자 승인 조건을 채운다. 없는 승인 조건을 더하지 않고 필요한 승인을 우회하지 않는다.

@@ -182,13 +182,13 @@ python3 <이 스킬 폴더>/scripts/check_doc.py README.md README.en.md
 
 ## 답변
 
-- 답변 형식은 **mode** 스킬 답변 절을 따른다.
+- 답변 형식은 **just** 스킬 `dev.md` 답변 절을 따른다.
 - 근거를 들어 고친 파일 경로를 적는다.
 - 사실 상태 때문에 옮기거나 지운 문장을 적는다.
 
 ## 구분
 
-- 코드 주석의 허용 범위는 **mode** 스킬의 주석 절이 맡는다.
+- 코드 주석의 허용 범위는 **just** 스킬 `dev.md`의 주석 절이 맡는다.
 - 커밋, PR, 이슈, 브랜치는 **git-commit**, **git-pull-request**, **git-issue**, **git-branch** 스킬이 맡는다.
 - 그림 파일과 대체 글은 [repo-docs-figures](../repo-docs-figures/SKILL.md)가 맡는다.
 - 종류별 절 구성과 필수 절은 각 `repo-docs-*` 스킬이 맡는다.
