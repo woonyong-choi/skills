@@ -14,7 +14,7 @@
 |---|---|
 | `frontmatter` | 여는·닫는 `---`, 한 줄 값, 허용한 네 칸만, 호출 칸 값 `true`·`false`, `user-invocable: false`는 `disable-model-invocation: true`와 함께 |
 | `name` | 영어 소문자·숫자·`-`, 폴더 이름과 같음 |
-| `description` | 큰따옴표 한 줄, 1~1024자, 한글 포함, `쓴다.`로 끝나는 문장 포함, 마침표로 끝남 |
+| `description` | 큰따옴표 한 줄, 1~1024자, 한글 포함, `쓴다.`로 끝나는 문장 포함, 마침표로 끝남, 꺾쇠(`<`, `>`) 없음(Claude 계정이 XML 태그로 보고 거절) |
 | `본문 구조` | 본문 첫 줄이 `# 제목`, 그다음 줄이 목록·표·제목·코드·인용이 아닌 문단 |
 | `agent` | `agents/openai.yaml`의 `display_name`·`short_description`·`default_prompt`, `$이름` 호출, `disable-model-invocation: true`와 `allow_implicit_invocation: false`가 함께 있음 |
 | `절 구조` | 제목 단계 생략, 문서 안 `#` 둘 이상, 같은 `##` 절 이름 중복 |
